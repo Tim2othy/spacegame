@@ -5,31 +5,16 @@ import math
 # Initialize Pygame
 pygame.init()
 
-# region display
-
 # Set up the display
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Spaceship Game")
-
-# Camera offset
-camera_x = 0
-camera_y = 0
-
-# endregion
-
-
-# region World
 
 # World size
 WORLD_WIDTH, WORLD_HEIGHT = 3000, 3000
 
 def distance(pos1, pos2):
     return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
-
-# endregion
-
-# region Planets
 
 class Planet:
     def __init__(self, x, y, radius, color):
@@ -46,7 +31,33 @@ class Planet:
 
     def check_collision(self, ship_pos, ship_radius):
         return distance(ship_pos, self.pos) < self.radius + ship_radius
-    
+
+# Camera offset
+camera_x = 0
+camera_y = 0
+
+ship_color = (255, 255, 255)  # White
+collision_time = 0
+
+# Ship properties
+ship_pos = [WORLD_WIDTH // 2, WORLD_HEIGHT // 2]
+ship_angle = 0
+ship_speed = [0, 0]
+ship_radius = 15
+thrust = 0.05
+drag = 1
+rotation_thrust = 0.1
+rotation_fuel_consumption_rate = 0.02
+
+# Thruster states
+front_thruster_on = False
+rear_thruster_on = False
+left_rotation_thruster_on = False
+right_rotation_thruster_on = False
+
+# Fuel
+fuel = 100
+fuel_consumption_rate = 0.04
 
 # Create planets
 planets = [
@@ -54,35 +65,42 @@ planets = [
     Planet(2000, 2000, 50, (0, 255, 0)),  # Top-right
     Planet(100, 100, 50, (0, 0, 255)),    # Bottom-left
     Planet(2000, 100, 50, (255, 255, 0))  # Bottom-right
-
-
 ]
 
+def draw_thruster(pos, is_on):
+    color = (0, 0, 255) if is_on else (255, 255, 255)
+    thruster_width = 10
+    thruster_height = 20
+    points = [
+        (pos[0] - math.sin(math.radians(ship_angle)) * thruster_width/2,
+         pos[1] - math.cos(math.radians(ship_angle)) * thruster_width/2),
+        (pos[0] + math.sin(math.radians(ship_angle)) * thruster_width/2,
+         pos[1] + math.cos(math.radians(ship_angle)) * thruster_width/2),
+        (pos[0] + math.sin(math.radians(ship_angle)) * thruster_width/2 + math.cos(math.radians(ship_angle)) * thruster_height,
+         pos[1] + math.cos(math.radians(ship_angle)) * thruster_width/2 - math.sin(math.radians(ship_angle)) * thruster_height),
+        (pos[0] - math.sin(math.radians(ship_angle)) * thruster_width/2 + math.cos(math.radians(ship_angle)) * thruster_height,
+         pos[1] - math.cos(math.radians(ship_angle)) * thruster_width/2 - math.sin(math.radians(ship_angle)) * thruster_height)
+    ]
+    pygame.draw.polygon(screen, color, points)
 
-# endregion
-
-# region Ship properties
-
-# General properties
-ship_pos = [WORLD_WIDTH // 2, WORLD_HEIGHT // 2]
-ship_angle = 0
-ship_speed = [0, 0]
-ship_radius = 15
-thrust = 0.05
-drag = 1
-
-# Thruster states
-front_thruster_on = False
-rear_thruster_on = False
-
-# Fuel
-fuel = 100
-fuel_consumption_rate = 0.04
-
-ship_color = (255, 255, 255)  # White
-collision_time = 0
-
-# endregion
+def draw_rotation_thruster(pos, is_on, is_left):
+    color = (0, 255, 255) if is_on else (255, 255, 255)  # Cyan when on, white when off
+    rotation_thruster_width = 5
+    rotation_thruster_height = 10
+    angle_offset = 90 if is_left else -90
+    thruster_angle = ship_angle + angle_offset
+    
+    points = [
+        (pos[0] - math.sin(math.radians(thruster_angle)) * rotation_thruster_width/2,
+         pos[1] - math.cos(math.radians(thruster_angle)) * rotation_thruster_width/2),
+        (pos[0] + math.sin(math.radians(thruster_angle)) * rotation_thruster_width/2,
+         pos[1] + math.cos(math.radians(thruster_angle)) * rotation_thruster_width/2),
+        (pos[0] + math.sin(math.radians(thruster_angle)) * rotation_thruster_width/2 + math.cos(math.radians(thruster_angle)) * rotation_thruster_height,
+         pos[1] + math.cos(math.radians(thruster_angle)) * rotation_thruster_width/2 - math.sin(math.radians(thruster_angle)) * rotation_thruster_height),
+        (pos[0] - math.sin(math.radians(thruster_angle)) * rotation_thruster_width/2 + math.cos(math.radians(thruster_angle)) * rotation_thruster_height,
+         pos[1] - math.cos(math.radians(thruster_angle)) * rotation_thruster_width/2 - math.sin(math.radians(thruster_angle)) * rotation_thruster_height)
+    ]
+    pygame.draw.polygon(screen, color, points)
 
 # Game loop
 running = True
@@ -93,10 +111,17 @@ while running:
 
     # Handle input
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        ship_angle += 0.3
-    if keys[pygame.K_RIGHT]:
-        ship_angle -= 0.3
+    left_rotation_thruster_on = False
+    right_rotation_thruster_on = False
+
+    if keys[pygame.K_LEFT] and fuel > 0:
+        ship_angle += rotation_thrust
+        fuel -= rotation_fuel_consumption_rate
+        left_rotation_thruster_on = True
+    if keys[pygame.K_RIGHT] and fuel > 0:
+        ship_angle -= rotation_thrust
+        fuel -= rotation_fuel_consumption_rate
+        right_rotation_thruster_on = True
 
     front_thruster_on = False
     rear_thruster_on = False
@@ -159,8 +184,6 @@ while running:
     pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
 
     # Calculate thruster positions and sizes
-    thruster_width = 10
-    thruster_height = 20
     front_thruster_pos = (
         int(ship_screen_pos[0] + math.cos(math.radians(ship_angle)) * ship_radius),
         int(ship_screen_pos[1] - math.sin(math.radians(ship_angle)) * ship_radius)
@@ -170,23 +193,21 @@ while running:
         int(ship_screen_pos[1] + math.sin(math.radians(ship_angle)) * ship_radius)
     )
 
-    # Draw thrusters
-    def draw_thruster(pos, is_on):
-        color = (0, 0, 255) if is_on else (255, 255, 255)
-        points = [
-            (pos[0] - math.sin(math.radians(ship_angle)) * thruster_width/2,
-             pos[1] - math.cos(math.radians(ship_angle)) * thruster_width/2),
-            (pos[0] + math.sin(math.radians(ship_angle)) * thruster_width/2,
-             pos[1] + math.cos(math.radians(ship_angle)) * thruster_width/2),
-            (pos[0] + math.sin(math.radians(ship_angle)) * thruster_width/2 + math.cos(math.radians(ship_angle)) * thruster_height,
-             pos[1] + math.cos(math.radians(ship_angle)) * thruster_width/2 - math.sin(math.radians(ship_angle)) * thruster_height),
-            (pos[0] - math.sin(math.radians(ship_angle)) * thruster_width/2 + math.cos(math.radians(ship_angle)) * thruster_height,
-             pos[1] - math.cos(math.radians(ship_angle)) * thruster_width/2 - math.sin(math.radians(ship_angle)) * thruster_height)
-        ]
-        pygame.draw.polygon(screen, color, points)
+    # Calculate rotation thruster positions
+    left_rotation_thruster_pos = (
+        int(ship_screen_pos[0] + math.cos(math.radians(ship_angle + 90)) * ship_radius),
+        int(ship_screen_pos[1] - math.sin(math.radians(ship_angle + 90)) * ship_radius)
+    )
+    right_rotation_thruster_pos = (
+        int(ship_screen_pos[0] + math.cos(math.radians(ship_angle - 90)) * ship_radius),
+        int(ship_screen_pos[1] - math.sin(math.radians(ship_angle - 90)) * ship_radius)
+    )
 
+    # Draw thrusters
     draw_thruster(front_thruster_pos, front_thruster_on)
     draw_thruster(rear_thruster_pos, rear_thruster_on)
+    draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
+    draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
 
     # Display ship coordinates
     font = pygame.font.Font(None, 22)
