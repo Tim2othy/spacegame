@@ -5,16 +5,31 @@ import math
 # Initialize Pygame
 pygame.init()
 
+# region display
+
 # Set up the display
 SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Spaceship Game")
+
+# Camera offset
+camera_x = 0
+camera_y = 0
+
+# endregion
+
+
+# region World
 
 # World size
 WORLD_WIDTH, WORLD_HEIGHT = 3000, 3000
 
 def distance(pos1, pos2):
     return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
+
+# endregion
+
+# region Planets
 
 class Planet:
     def __init__(self, x, y, radius, color):
@@ -31,15 +46,24 @@ class Planet:
 
     def check_collision(self, ship_pos, ship_radius):
         return distance(ship_pos, self.pos) < self.radius + ship_radius
+    
 
-# Camera offset
-camera_x = 0
-camera_y = 0
+# Create planets
+planets = [
+    Planet(100, 2000, 50, (255, 0, 0)),   # Top-left
+    Planet(2000, 2000, 50, (0, 255, 0)),  # Top-right
+    Planet(100, 100, 50, (0, 0, 255)),    # Bottom-left
+    Planet(2000, 100, 50, (255, 255, 0))  # Bottom-right
 
-ship_color = (255, 255, 255)  # White
-collision_time = 0
 
-# Ship properties
+]
+
+
+# endregion
+
+# region Ship properties
+
+# General properties
 ship_pos = [WORLD_WIDTH // 2, WORLD_HEIGHT // 2]
 ship_angle = 0
 ship_speed = [0, 0]
@@ -55,13 +79,10 @@ rear_thruster_on = False
 fuel = 100
 fuel_consumption_rate = 0.04
 
-# Create planets
-planets = [
-    Planet(100, 2000, 50, (255, 0, 0)),   # Top-left
-    Planet(2000, 2000, 50, (0, 255, 0)),  # Top-right
-    Planet(100, 100, 50, (0, 0, 255)),    # Bottom-left
-    Planet(2000, 100, 50, (255, 255, 0))  # Bottom-right
-]
+ship_color = (255, 255, 255)  # White
+collision_time = 0
+
+# endregion
 
 # Game loop
 running = True
