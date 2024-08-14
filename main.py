@@ -35,11 +35,10 @@ game_over = False
 
 
 
-
 # region --- grid ---
 
-GRID_SIZE = 500  # Size of each grid cell
-GRID_COLOR = (0, 100, 0)  # Dark green color for the grid
+GRID_SIZE = 600  # Size of each grid cell
+GRID_COLOR = (0, 70, 0)  # Dark green color for the grid
 
 def draw_grid(screen, camera_x, camera_y):
     # Vertical lines
@@ -57,21 +56,26 @@ def draw_grid(screen, camera_x, camera_y):
 # endregion
 
 
-
+G = (6.67430e-11)*1000000  # Gravitational constant
 
 # region --- Ship properties ---
 # basic properties
 ship_pos = [10000, 10000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 10
-thrust = 0.05
-drag = 1
-rotation_thrust = 0.9
-rotation_fuel_consumption_rate = 0.01
-
-# Ship health
+ship_radius = 4
 ship_health = 100
+drag = 1
+ship_mass = 1000  # Add mass to the ship
+
+#Thrusters
+thrust = 0.09
+rotation_thrust = 0.9
+# Fuel
+fuel = 100
+fuel_consumption_rate = 0.01
+rotation_fuel_consumption_rate = 0.01
+MAX_FUEL = 100
 
 # Thruster states
 front_thruster_on = False
@@ -79,15 +83,12 @@ rear_thruster_on = False
 left_rotation_thruster_on = False
 right_rotation_thruster_on = False
 
-# Fuel
-fuel = 100
-fuel_consumption_rate = 0.02
-MAX_FUEL = 100
+
 
 def draw_thruster(pos, is_on):
     color = (0, 0, 255) if is_on else (255, 255, 255)
-    thruster_width = 10
-    thruster_height = 20
+    thruster_width = 5
+    thruster_height = 10
     points = [
         (pos[0] - math.sin(math.radians(ship_angle)) * thruster_width/2,
          pos[1] - math.cos(math.radians(ship_angle)) * thruster_width/2),
@@ -102,8 +103,8 @@ def draw_thruster(pos, is_on):
 
 def draw_rotation_thruster(pos, is_on, is_left):
     color = (0, 255, 255) if is_on else (255, 255, 255)  # Cyan when on, white when off
-    rotation_thruster_width = 5
-    rotation_thruster_height = 10
+    rotation_thruster_width = 8
+    rotation_thruster_height = 4
     angle_offset = 90 if is_left else -90
     thruster_angle = ship_angle + angle_offset
     
@@ -185,7 +186,6 @@ space_gun2 = SpaceGun(30000, 32000)
 
 
 
-
 # region --- Planets and squares---
 
 class Planet:
@@ -205,6 +205,20 @@ class Planet:
 
     def check_collision(self, ship_pos, ship_radius):
         return distance(ship_pos, self.pos) < self.radius + ship_radius
+    
+
+    def calculate_gravity(self, ship_pos, ship_mass):
+        dx = self.pos[0] - ship_pos[0]
+        dy = self.pos[1] - ship_pos[1]
+        distance_squared = dx**2 + dy**2
+        force_magnitude = G * (4/3 * 3.13 * self.radius**3) * ship_mass / distance_squared
+        
+        # Normalize the direction
+        distance = math.sqrt(distance_squared)
+        force_x = force_magnitude * dx / distance
+        force_y = force_magnitude * dy / distance
+        
+        return force_x, force_y
 
 class Square:
     def __init__(self, x, y, size, color, action):
@@ -232,9 +246,11 @@ planets = [
     Planet(260_000,  90_000, 6500,  (0, 0, 255)),
     Planet(330_000, 350_000, 32000, (255, 255, 0)),
     Planet(340_000, 230_000, 3300,  (255, 100, 255)),
-    Planet(410_000, 270_000, 3300,  (50, 200, 200))
+    Planet(410_000, 270_000, 3300,  (50, 200, 200)),
+    Planet(11000, 11000, 200,  (50, 200, 200))
 
 ]
+
 
 # Create squares
 
@@ -415,7 +431,16 @@ while running:
 
         # endregion
 
+        total_force_x = 0
+        total_force_y = 0
+        for planet in planets:
+            force_x, force_y = planet.calculate_gravity(ship_pos, ship_mass)
+            total_force_x += force_x
+            total_force_y += force_y
 
+        # Update ship velocity
+        ship_speed[0] += total_force_x / ship_mass
+        ship_speed[1] += total_force_y / ship_mass
 
         # region --- spacegun ---
 
