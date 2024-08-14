@@ -6,31 +6,15 @@ import math
 pygame.init()
 
 # Set up the display
-SCREEN_WIDTH, SCREEN_HEIGHT = 1000, 600
+SCREEN_WIDTH, SCREEN_HEIGHT = 1400, 900
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Spaceship Game")
 
-# World size
-WORLD_WIDTH, WORLD_HEIGHT = 3000, 3000
+# World size (increased)
+WORLD_WIDTH, WORLD_HEIGHT = 8000, 8000
 
 def distance(pos1, pos2):
     return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
-
-class Planet:
-    def __init__(self, x, y, radius, color):
-        self.pos = [x, y]
-        self.radius = radius
-        self.color = color
-
-    def draw(self, screen, camera_x, camera_y):
-        if (0 <= self.pos[0] - camera_x < SCREEN_WIDTH and 
-            0 <= self.pos[1] - camera_y < SCREEN_HEIGHT):
-            pygame.draw.circle(screen, self.color, 
-                               (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
-                               self.radius)
-
-    def check_collision(self, ship_pos, ship_radius):
-        return distance(ship_pos, self.pos) < self.radius + ship_radius
 
 # Camera offset
 camera_x = 0
@@ -39,15 +23,43 @@ camera_y = 0
 ship_color = (255, 255, 255)  # White
 collision_time = 0
 
+# Game state
+has_item = False
+mission_complete = False
+game_over = False
+
+# region --- grid ---
+
+GRID_SIZE = 300  # Size of each grid cell
+GRID_COLOR = (0, 100, 0)  # Dark green color for the grid
+
+def draw_grid(screen, camera_x, camera_y):
+    # Vertical lines
+    for x in range(0, WORLD_WIDTH, GRID_SIZE):
+        pygame.draw.line(screen, GRID_COLOR, 
+                         (x - camera_x, 0), 
+                         (x - camera_x, SCREEN_HEIGHT))
+    
+    # Horizontal lines
+    for y in range(0, WORLD_HEIGHT, GRID_SIZE):
+        pygame.draw.line(screen, GRID_COLOR, 
+                         (0, y - camera_y), 
+                         (SCREEN_WIDTH, y - camera_y))
+
+# endregion
+
 # Ship properties
-ship_pos = [WORLD_WIDTH // 2, WORLD_HEIGHT // 2]
+ship_pos = [1700, 3000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 15
+ship_radius = 10
 thrust = 0.05
 drag = 1
-rotation_thrust = 0.1
+rotation_thrust = 0.9
 rotation_fuel_consumption_rate = 0.02
+
+# Ship health
+ship_health = 100
 
 # Thruster states
 front_thruster_on = False
@@ -58,14 +70,60 @@ right_rotation_thruster_on = False
 # Fuel
 fuel = 100
 fuel_consumption_rate = 0.04
+MAX_FUEL = 100
 
-# Create planets
-planets = [
-    Planet(100, 2000, 50, (255, 0, 0)),   # Top-left
-    Planet(2000, 2000, 50, (0, 255, 0)),  # Top-right
-    Planet(100, 100, 50, (0, 0, 255)),    # Bottom-left
-    Planet(2000, 100, 50, (255, 255, 0))  # Bottom-right
-]
+# Space Gun
+class SpaceGun:
+    def __init__(self, x, y):
+        self.pos = [x, y]
+        self.size = 50
+        self.color = (150, 150, 150)
+        self.last_shot_time = 0
+        self.shoot_interval = 1000  # 5 seconds
+        self.bullets = []
+
+    def draw(self, screen, camera_x, camera_y):
+        pygame.draw.rect(screen, self.color, 
+                         (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y), 
+                          self.size, self.size))
+
+    def shoot(self, target_pos):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time > self.shoot_interval:
+            direction = [target_pos[0] - self.pos[0], target_pos[1] - self.pos[1]]
+            length = math.sqrt(direction[0]**2 + direction[1]**2)
+            if length > 0:
+                direction = [direction[0] / length, direction[1] / length]
+            
+            self.bullets.append({
+                'pos': self.pos.copy(),
+                'direction': direction,
+                'speed': 7,
+                'creation_time': current_time
+            })
+            self.last_shot_time = current_time
+
+    def update_bullets(self, ship_pos, ship_radius):
+        current_time = pygame.time.get_ticks()
+        for bullet in self.bullets[:]:
+            bullet['pos'][0] += bullet['direction'][0] * bullet['speed']
+            bullet['pos'][1] += bullet['direction'][1] * bullet['speed']
+            
+            if current_time - bullet['creation_time'] > 20000:  # 20 seconds
+                self.bullets.remove(bullet)
+            elif distance(bullet['pos'], ship_pos) < ship_radius:
+                self.bullets.remove(bullet)
+                return True  # Collision detected
+        return False
+
+    def draw_bullets(self, screen, camera_x, camera_y):
+        for bullet in self.bullets:
+            pygame.draw.circle(screen, (255, 0, 0), 
+                               (int(bullet['pos'][0] - camera_x), int(bullet['pos'][1] - camera_y)), 
+                               5)
+
+# Create space gun
+space_gun = SpaceGun(4000, 4000)
 
 def draw_thruster(pos, is_on):
     color = (0, 0, 255) if is_on else (255, 255, 255)
@@ -102,6 +160,57 @@ def draw_rotation_thruster(pos, is_on, is_left):
     ]
     pygame.draw.polygon(screen, color, points)
 
+class Planet:
+    def __init__(self, x, y, radius, color):
+        self.pos = [x, y]
+        self.radius = radius
+        self.color = color
+
+    def draw(self, screen, camera_x, camera_y):
+        if (self.pos[0] - self.radius - camera_x < SCREEN_WIDTH and
+            self.pos[0] + self.radius - camera_x > 0 and
+            self.pos[1] - self.radius - camera_y < SCREEN_HEIGHT and
+            self.pos[1] + self.radius - camera_y > 0):
+            pygame.draw.circle(screen, self.color, 
+                               (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
+                               self.radius)
+
+    def check_collision(self, ship_pos, ship_radius):
+        return distance(ship_pos, self.pos) < self.radius + ship_radius
+
+class Square:
+    def __init__(self, x, y, size, color, action):
+        self.pos = [x, y]
+        self.size = size
+        self.color = color
+        self.action = action
+
+    def draw(self, screen, camera_x, camera_y):
+        if (0 <= self.pos[0] - camera_x < SCREEN_WIDTH and 
+            0 <= self.pos[1] - camera_y < SCREEN_HEIGHT):
+            pygame.draw.rect(screen, self.color, 
+                             (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y), 
+                              self.size, self.size))
+
+    def check_collision(self, ship_pos, ship_radius):
+        return (self.pos[0] - ship_radius < ship_pos[0] < self.pos[0] + self.size + ship_radius and
+                self.pos[1] - ship_radius < ship_pos[1] < self.pos[1] + self.size + ship_radius)
+
+# Create planets (increased size)
+planets = [
+    Planet(0, 0, 3000, (255, 0, 0)),   # Top-left
+    Planet(7000, 1000, 500, (0, 255, 0)),  # Top-right
+    Planet(1000, 7000, 500, (0, 0, 255)),    # Bottom-left
+    Planet(7000, 7000, 500, (255, 255, 0))  # Bottom-right
+]
+
+# Create squares
+squares = [
+    Square(2800, 50, 100, (0, 255, 255), "refuel"),  # Top-right, refuel
+    Square(2000, 2000, 100, (255, 0, 255), "get_item"),  # bottom-right, get item
+    Square(300, 2000, 50, (255, 165, 0), "complete_mission")  # bottum-left, complete mission
+]
+
 # Game loop
 running = True
 while running:
@@ -109,114 +218,185 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Handle input
-    keys = pygame.key.get_pressed()
-    left_rotation_thruster_on = False
-    right_rotation_thruster_on = False
+    if not game_over:
+        # Handle input
+        keys = pygame.key.get_pressed()
+        left_rotation_thruster_on = False
+        right_rotation_thruster_on = False
 
-    if keys[pygame.K_LEFT] and fuel > 0:
-        ship_angle += rotation_thrust
-        fuel -= rotation_fuel_consumption_rate
-        left_rotation_thruster_on = True
-    if keys[pygame.K_RIGHT] and fuel > 0:
-        ship_angle -= rotation_thrust
-        fuel -= rotation_fuel_consumption_rate
-        right_rotation_thruster_on = True
+        if keys[pygame.K_LEFT] and fuel > 0:
+            ship_angle += rotation_thrust
+            fuel -= rotation_fuel_consumption_rate
+            left_rotation_thruster_on = True
+        if keys[pygame.K_RIGHT] and fuel > 0:
+            ship_angle -= rotation_thrust
+            fuel -= rotation_fuel_consumption_rate
+            right_rotation_thruster_on = True
 
-    front_thruster_on = False
-    rear_thruster_on = False
+        front_thruster_on = False
+        rear_thruster_on = False
 
-    if keys[pygame.K_UP] and fuel > 0:
-        ship_speed[0] += math.cos(math.radians(ship_angle)) * thrust
-        ship_speed[1] -= math.sin(math.radians(ship_angle)) * thrust
-        fuel -= fuel_consumption_rate
-        rear_thruster_on = True
-    if keys[pygame.K_DOWN] and fuel > 0:
-        ship_speed[0] -= math.cos(math.radians(ship_angle)) * thrust
-        ship_speed[1] += math.sin(math.radians(ship_angle)) * thrust
-        fuel -= fuel_consumption_rate
-        front_thruster_on = True
+        if keys[pygame.K_UP] and fuel > 0:
+            ship_speed[0] += math.cos(math.radians(ship_angle)) * thrust
+            ship_speed[1] -= math.sin(math.radians(ship_angle)) * thrust
+            fuel -= fuel_consumption_rate
+            rear_thruster_on = True
+        if keys[pygame.K_DOWN] and fuel > 0:
+            ship_speed[0] -= math.cos(math.radians(ship_angle)) * thrust
+            ship_speed[1] += math.sin(math.radians(ship_angle)) * thrust
+            fuel -= fuel_consumption_rate
+            front_thruster_on = True
 
-    # Ensure fuel doesn't go below 0
-    fuel = max(0, fuel)
+        # Ensure fuel doesn't go below 0
+        fuel = max(0, fuel)
 
-    # Update ship position
-    ship_pos[0] += ship_speed[0]
-    ship_pos[1] += ship_speed[1]
+        # Update ship position
+        new_ship_pos = [
+            ship_pos[0] + ship_speed[0],
+            ship_pos[1] + ship_speed[1]
+        ]
 
-    # Check for collisions
-    for planet in planets:
-        if planet.check_collision(ship_pos, ship_radius):
-            ship_color = (255, 0, 0)  # Red
-            collision_time = pygame.time.get_ticks()
-            break
+        # Check for collisions with planets
+        collision = False
+        current_time = pygame.time.get_ticks()
+        for planet in planets:
+            if planet.check_collision(new_ship_pos, ship_radius):
+                collision = True
+                ship_color = (255, 0, 0)  # Red
+                if collision_time == 0:
+                    collision_time = current_time
+                # Reduce health when colliding with a planet
+                ship_health -= 10 * (current_time - collision_time) / 1000
+                break
 
-    # Reset ship color after 1 second
-    if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
-        ship_color = (255, 255, 255)  # White
+        if not collision:
+            ship_pos = new_ship_pos
+            collision_time = 0
+        else:
+            collision_time = current_time
 
-    # Apply drag
-    ship_speed[0] *= drag
-    ship_speed[1] *= drag
+        # Check for collisions with squares
+        for square in squares:
+            if square.check_collision(ship_pos, ship_radius):
+                if square.action == "refuel":
+                    fuel = MAX_FUEL
+                elif square.action == "get_item":
+                    has_item = True
+                elif square.action == "complete_mission" and has_item:
+                    mission_complete = True
+                    ship_color = (255, 255, 0)  # Yellow
 
-    # Wrap around world
-    ship_pos[0] %= WORLD_WIDTH
-    ship_pos[1] %= WORLD_HEIGHT
+        # Reset ship color after 1 second if it's red
+        if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
+            ship_color = (255, 255, 255)  # White
 
-    # Update camera position
-    camera_x = ship_pos[0] - SCREEN_WIDTH // 2
-    camera_y = ship_pos[1] - SCREEN_HEIGHT // 2
+        # Apply drag
+        ship_speed[0] *= drag
+        ship_speed[1] *= drag
 
-    # Clamp camera position to world boundaries
-    camera_x = max(0, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH))
-    camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
+        # Wrap around world
+        ship_pos[0] %= WORLD_WIDTH
+        ship_pos[1] %= WORLD_HEIGHT
 
-    # Draw everything
-    screen.fill((0, 0, 0))
+        # Update camera position
+        camera_x = ship_pos[0] - SCREEN_WIDTH // 2
+        camera_y = ship_pos[1] - SCREEN_HEIGHT // 2
 
-    # Draw planets
-    for planet in planets:
-        planet.draw(screen, camera_x, camera_y)
+        # Clamp camera position to world boundaries
+        camera_x = max(0, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH))
+        camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
 
-    # Draw ship
-    ship_screen_pos = (int(ship_pos[0] - camera_x), int(ship_pos[1] - camera_y))
-    # Draw the main ship body (white circle)
-    pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
+        # Space gun shooting
+        space_gun.shoot(ship_pos)
+        if space_gun.update_bullets(ship_pos, ship_radius):
+            ship_health -= 15
 
-    # Calculate thruster positions and sizes
-    front_thruster_pos = (
-        int(ship_screen_pos[0] + math.cos(math.radians(ship_angle)) * ship_radius),
-        int(ship_screen_pos[1] - math.sin(math.radians(ship_angle)) * ship_radius)
-    )
-    rear_thruster_pos = (
-        int(ship_screen_pos[0] - math.cos(math.radians(ship_angle)) * ship_radius),
-        int(ship_screen_pos[1] + math.sin(math.radians(ship_angle)) * ship_radius)
-    )
+        # Check if ship health reaches 0
+        if ship_health <= 0:
+            game_over = True
 
-    # Calculate rotation thruster positions
-    left_rotation_thruster_pos = (
-        int(ship_screen_pos[0] + math.cos(math.radians(ship_angle + 90)) * ship_radius),
-        int(ship_screen_pos[1] - math.sin(math.radians(ship_angle + 90)) * ship_radius)
-    )
-    right_rotation_thruster_pos = (
-        int(ship_screen_pos[0] + math.cos(math.radians(ship_angle - 90)) * ship_radius),
-        int(ship_screen_pos[1] - math.sin(math.radians(ship_angle - 90)) * ship_radius)
-    )
+        # Draw everything
+        screen.fill((0, 0, 0))
 
-    # Draw thrusters
-    draw_thruster(front_thruster_pos, front_thruster_on)
-    draw_thruster(rear_thruster_pos, rear_thruster_on)
-    draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
-    draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
+        draw_grid(screen, camera_x, camera_y)
 
-    # Display ship coordinates
-    font = pygame.font.Font(None, 22)
-    coord_text = font.render(f"X: {int(ship_pos[0])}, Y: {int(ship_pos[1])}", True, (255, 255, 255))
-    screen.blit(coord_text, (10, 10))
+        # Draw planets
+        for planet in planets:
+            planet.draw(screen, camera_x, camera_y)
 
-    # Display fuel
-    fuel_text = font.render(f"Fuel: {fuel:.3f}", True, (255, 255, 255))
-    screen.blit(fuel_text, (10, 50))
+        # Draw squares
+        for square in squares:
+            square.draw(screen, camera_x, camera_y)
+
+        # Draw space gun
+        space_gun.draw(screen, camera_x, camera_y)
+        space_gun.draw_bullets(screen, camera_x, camera_y)
+
+        # Draw ship
+        ship_screen_pos = (int(ship_pos[0] - camera_x), int(ship_pos[1] - camera_y))
+        # Draw the main ship body (white circle)
+        pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
+
+        # Calculate thruster positions and sizes
+        front_thruster_pos = (
+            int(ship_screen_pos[0] + math.cos(math.radians(ship_angle)) * ship_radius),
+            int(ship_screen_pos[1] - math.sin(math.radians(ship_angle)) * ship_radius)
+        )
+        rear_thruster_pos = (
+            int(ship_screen_pos[0] - math.cos(math.radians(ship_angle)) * ship_radius),
+            int(ship_screen_pos[1] + math.sin(math.radians(ship_angle)) * ship_radius)
+        )                             
+
+
+         # Calculate rotation thruster positions
+        left_rotation_thruster_pos = (
+            int(ship_screen_pos[0] + math.cos(math.radians(ship_angle + 90)) * ship_radius),
+            int(ship_screen_pos[1] - math.sin(math.radians(ship_angle + 90)) * ship_radius)
+        )
+        right_rotation_thruster_pos = (
+            int(ship_screen_pos[0] + math.cos(math.radians(ship_angle - 90)) * ship_radius),
+            int(ship_screen_pos[1] - math.sin(math.radians(ship_angle - 90)) * ship_radius)
+        )
+
+        # Draw thrusters
+        draw_thruster(front_thruster_pos, front_thruster_on)
+        draw_thruster(rear_thruster_pos, rear_thruster_on)
+        draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
+        draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
+
+        # Display ship coordinates
+        font = pygame.font.Font(None, 22)
+        coord_text = font.render(f"X: {int(ship_pos[0])}, Y: {int(ship_pos[1])}", True, (255, 255, 255))
+        screen.blit(coord_text, (10, 10))
+
+        # Display fuel
+        fuel_text = font.render(f"Fuel: {fuel:.3f}", True, (255, 255, 255))
+        screen.blit(fuel_text, (10, 50))
+
+        # Display item status
+        item_text = font.render("Item: Collected" if has_item else "Item: Not Collected", True, (255, 255, 255))
+        screen.blit(item_text, (10, 90))
+
+        # Display mission status
+        mission_text = font.render("Mission Complete!" if mission_complete else "Mission: In Progress", True, (255, 255, 255))
+        screen.blit(mission_text, (10, 130))
+
+        # Display ship health
+        health_text = font.render(f"Health: {int(ship_health)}", True, (255, 255, 255))
+        screen.blit(health_text, (10, 170))
+
+
+
+    else:
+        # Game over screen
+        screen.fill((0, 0, 0))
+        font = pygame.font.Font(None, 64)
+        game_over_text = font.render("GAME OVER", True, (255, 0, 0))
+        screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, 
+                                     SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2))
+
+
+
 
     pygame.time.Clock().tick(60)  # Limit to 60 FPS
 
