@@ -13,7 +13,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Game")
 
 # World size
-WORLD_WIDTH, WORLD_HEIGHT = 8000, 8000
+WORLD_WIDTH, WORLD_HEIGHT = 500_000, 500_000
 
 # define distance
 def distance(pos1, pos2):
@@ -33,9 +33,12 @@ game_over = False
 
 # endregion
 
+
+
+
 # region --- grid ---
 
-GRID_SIZE = 300  # Size of each grid cell
+GRID_SIZE = 500  # Size of each grid cell
 GRID_COLOR = (0, 100, 0)  # Dark green color for the grid
 
 def draw_grid(screen, camera_x, camera_y):
@@ -53,16 +56,19 @@ def draw_grid(screen, camera_x, camera_y):
 
 # endregion
 
+
+
+
 # region --- Ship properties ---
 # basic properties
-ship_pos = [1700, 3000] 
+ship_pos = [10000, 10000] 
 ship_angle = 0
 ship_speed = [0, 0]
 ship_radius = 10
 thrust = 0.05
 drag = 1
 rotation_thrust = 0.9
-rotation_fuel_consumption_rate = 0.02
+rotation_fuel_consumption_rate = 0.01
 
 # Ship health
 ship_health = 100
@@ -75,7 +81,7 @@ right_rotation_thruster_on = False
 
 # Fuel
 fuel = 100
-fuel_consumption_rate = 0.04
+fuel_consumption_rate = 0.02
 MAX_FUEL = 100
 
 def draw_thruster(pos, is_on):
@@ -115,16 +121,19 @@ def draw_rotation_thruster(pos, is_on, is_left):
 
 # endregion
 
+
+
+
 # region --- Space gun ---
 
 # Space Gun
 class SpaceGun:
     def __init__(self, x, y):
         self.pos = [x, y]
-        self.size = 50
+        self.size = 80
         self.color = (150, 150, 150)
         self.last_shot_time = 0
-        self.shoot_interval = 400
+        self.shoot_interval = 300
         self.bullets = []
 
     def draw(self, screen, camera_x, camera_y):
@@ -143,7 +152,7 @@ class SpaceGun:
             self.bullets.append({
                 'pos': self.pos.copy(),
                 'direction': direction,
-                'speed': 7,
+                'speed': 33,
                 'creation_time': current_time
             })
             self.last_shot_time = current_time
@@ -154,7 +163,7 @@ class SpaceGun:
             bullet['pos'][0] += bullet['direction'][0] * bullet['speed']
             bullet['pos'][1] += bullet['direction'][1] * bullet['speed']
             
-            if current_time - bullet['creation_time'] > 20000:  # 20 seconds
+            if current_time - bullet['creation_time'] > 40000:  # 40 seconds
                 self.bullets.remove(bullet)
             elif distance(bullet['pos'], ship_pos) < ship_radius:
                 self.bullets.remove(bullet)
@@ -168,11 +177,14 @@ class SpaceGun:
                                5)
 
 # Create space gun
-space_gun1 = SpaceGun(3000, 5000)
-space_gun2 = SpaceGun(5000, 3000)
+space_gun1 = SpaceGun(18000, 3000)
+space_gun2 = SpaceGun(30000, 32000)
 
 
 # endregion
+
+
+
 
 # region --- Planets and squares---
 
@@ -214,20 +226,76 @@ class Square:
 
 # Create planets (increased size)
 planets = [
-    Planet(0, 0, 3000, (255, 0, 0)),   # Top-left
-    Planet(7000, 1000, 1000, (0, 255, 0)),  # Top-right
-    Planet(1000, 7000, 1500, (0, 0, 255)),    # Bottom-left
-    Planet(7000, 7000, 500, (255, 255, 0))  # Bottom-right
+    Planet( 90_000, 400_000, 30000, (255, 0, 0)),   
+    Planet(150_000, 170_000, 2000,  (0, 255, 0)), 
+    Planet(200_000, 300_000, 2000,  (0, 255, 0)),  
+    Planet(260_000,  90_000, 6500,  (0, 0, 255)),
+    Planet(330_000, 350_000, 32000, (255, 255, 0)),
+    Planet(340_000, 230_000, 3300,  (255, 100, 255)),
+    Planet(410_000, 270_000, 3300,  (50, 200, 200))
+
 ]
 
 # Create squares
+
+pos_refuel = (5000, 1000)
+pos_item = (5000, 5000)
+pos_complete = (1000, 5000)
+
 squares = [
-    Square(5000, 1000, 100, (0, 255, 255), "refuel"),  # Top-right, refuel
-    Square(5000, 5000, 100, (255, 0, 255), "get_item"),  # bottom-right, get item
-    Square(1000, 5000, 50, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
+    Square(pos_refuel[0], pos_refuel[1], 1000, (0, 255, 255), "refuel"),  # Top-right, refuel
+    Square(pos_item[0], pos_item[1], 1000, (255, 0, 255), "get_item"),  # bottom-right, get item
+    Square(pos_complete[0], pos_complete[1], 1000, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
 ]
 
 # endregion
+
+
+
+
+# region --- Minimap ---
+
+MINIMAP_SIZE = 200  # Size of the minimap (width and height)
+MINIMAP_MARGIN = 20  # Margin from the top-right corner
+MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
+MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
+MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
+MINIMAP_PLANET_COLOR = (255, 0, 0)  # Red for planets
+
+def draw_minimap(screen, ship_pos, planets):
+    # Calculate the position of the minimap
+    minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
+    minimap_y = MINIMAP_MARGIN
+
+    # Draw minimap background
+    pygame.draw.rect(screen, MINIMAP_BACKGROUND_COLOR, 
+                     (minimap_x, minimap_y, MINIMAP_SIZE, MINIMAP_SIZE))
+
+    # Draw minimap border
+    pygame.draw.rect(screen, MINIMAP_BORDER_COLOR, 
+                     (minimap_x, minimap_y, MINIMAP_SIZE, MINIMAP_SIZE), 2)
+
+    # Calculate scaling factors
+    scale_x = MINIMAP_SIZE / WORLD_WIDTH
+    scale_y = MINIMAP_SIZE / WORLD_HEIGHT
+
+    # Draw player's ship
+    ship_minimap_x = int(minimap_x + ship_pos[0] * scale_x)
+    ship_minimap_y = int(minimap_y + ship_pos[1] * scale_y)
+    pygame.draw.circle(screen, MINIMAP_SHIP_COLOR, (ship_minimap_x, ship_minimap_y), 3)
+
+
+    # Draw planets
+    for planet in planets:
+        planet_minimap_x = int(minimap_x + planet.pos[0] * scale_x)
+        planet_minimap_y = int(minimap_y + planet.pos[1] * scale_y)
+        pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), 5)
+
+
+# endregion
+
+
+
 
 # Game loop
 running = True
@@ -425,6 +493,7 @@ while running:
 
         # endregion
 
+        draw_minimap(screen, ship_pos, planets)
 
 
         # region --- displaying ---
@@ -449,6 +518,17 @@ while running:
         # Display ship health
         health_text = font.render(f"Health: {int(ship_health)}", True, (255, 255, 255))
         screen.blit(health_text, (10, 170))
+
+        # Display square coordinates
+        pos_refuel_text = font.render(f"Coordinates Refuel: {int(pos_refuel[0])}, {int(pos_refuel[1])}", True, (255, 255, 255))
+        pos_item_text = font.render(f"Coordinates Item: {int(pos_item[0])}, {int(pos_item[1])}", True, (255, 255, 255))
+        pos_complete_text = font.render(f"Coordinates Destination: {int(pos_complete[0])}, {int(pos_complete[1])}", True, (255, 255, 255))
+        screen.blit(pos_refuel_text, (10, 210))
+        screen.blit(pos_item_text, (10, 230))
+        screen.blit(pos_complete_text, (10, 250))
+
+
+
 
 
         # endregion
