@@ -1,6 +1,11 @@
 import pygame
 import sys
 import math
+import random
+from math import atan2, cos, degrees, sin, sqrt
+sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
+import time
+
 
 # region --- basics, screen, world ---
 
@@ -13,7 +18,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Game")
 
 # World size
-WORLD_WIDTH, WORLD_HEIGHT = 500_000, 500_000
+WORLD_WIDTH, WORLD_HEIGHT = 5_000, 5_000
 
 # define distance
 def distance(pos1, pos2):
@@ -31,7 +36,7 @@ has_item = False
 mission_complete = False
 game_over = False
 
-G = (6.67430e-11)*100000  # Gravitational constant
+G = (6.67430e-11)*1000000  # Gravitational constant
 
 
 # endregion
@@ -40,7 +45,7 @@ G = (6.67430e-11)*100000  # Gravitational constant
 
 # region --- grid ---
 
-GRID_SIZE = 600  # Size of each grid cell
+GRID_SIZE = 300  # Size of each grid cell
 GRID_COLOR = (0, 70, 0)  # Dark green color for the grid
 
 def draw_grid(screen, camera_x, camera_y):
@@ -58,21 +63,173 @@ def draw_grid(screen, camera_x, camera_y):
 
 # endregion
 
+# region --- enemy ships ---
 
+BULLET_SPEED = 10
+ENEMY_SHOOT_RANGE = 700
+ENEMY_ACCELERATION = 0.1
+ENEMY_SHOOT_COOLDOWN = 50  # Adjust this value as needed
+
+# New classes for enemies and projectiles
+class Enemy:
+    def __init__(self, x, y, enemy_type):
+        self.pos = [x, y]
+        self.speed = [0, 0]
+        self.radius = 15
+        self.type = enemy_type  # 'bullet' or 'rocket'
+        self.color = (55, 55, 200) if enemy_type == 'bullet' else (255, 165, 0)
+        self.shoot_cooldown = 0
+        self.action_timer = 4000
+
+    def update(self, ship_pos):
+        dx = ship_pos[0] - self.pos[0]
+        dy = ship_pos[1] - self.pos[1]
+        dist = sqrt(dx**2 + dy**2)
+        
+        # Define cooldown values
+        ROCKET_SHOOT_COOLDOWN = 300
+        BULLET_SHOOT_COOLDOWN = 50
+
+        # Check if the 4-second period has elapsed
+        if self.action_timer <= 0:
+            self.current_action = random.randint(1, 4)
+            self.action_timer = 4000  # Reset timer to 4 seconds maybe
+
+        # Movement logic
+        choice = random.randint(1, 4)
+        if choice == 1:  # Accelerate towards player
+            self.speed[0] += (dx / dist) * ENEMY_ACCELERATION
+            self.speed[1] += (dy / dist) * ENEMY_ACCELERATION
+
+        elif choice == 2:  # Accelerate randomly
+            self.speed[0] += random.uniform(-1, 1) * ENEMY_ACCELERATION*2
+            self.speed[1] += random.uniform(-1, 1) * ENEMY_ACCELERATION*2
+            
+        elif choice == 3:  # Decelerate
+            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION*0.7
+            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.7
+
+        else:
+            pass
+
+        
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+        self.action_timer -= 1
+
+
+        # Shooting logic
+        if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
+            if self.type == 'bullet':
+                self.shoot_cooldown = BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
+                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx))]
+            else:
+                self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
+                return [Rocket(self.pos[0], self.pos[1], ship_pos)]
+        self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
+        return []
+
+    def draw(self, screen, camera_x, camera_y):
+        pygame.draw.circle(screen, self.color, 
+                           (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
+                           self.radius)
+
+class Bullet:
+    def __init__(self, x, y, angle):
+        self.pos = [x, y]
+        self.speed = [BULLET_SPEED * cos(angle), BULLET_SPEED * sin(angle)]
+
+    def update(self):
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+    def draw(self, screen, camera_x, camera_y):
+        pygame.draw.circle(screen, (255, 255, 0), 
+                           (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
+                           3)
+import time
+from math import sqrt
+
+ROCKET_ACCELERATION = 0.1  # Acceleration applied during the 1-second acceleration phase
+
+class Rocket:
+    def __init__(self, x, y, target_pos):
+        self.pos = [x, y]
+        self.target_pos = target_pos
+        self.speed = [0, 0]  # Initial speed is zero
+        self.last_acceleration_time = time.time()
+        self.accelerating = True
+
+    def update(self, ship_pos):
+        current_time = time.time()
+        time_since_last_acceleration = current_time - self.last_acceleration_time
+        
+        # Check if it's time to start accelerating
+        if not self.accelerating and time_since_last_acceleration >= 3:
+            self.accelerating = True
+            self.last_acceleration_time = current_time
+        
+        # Check if the acceleration period should end
+        elif self.accelerating and time_since_last_acceleration >= 1:
+            self.accelerating = False
+            self.last_acceleration_time = current_time
+        
+        # Update the target position to the ship's current position
+        self.target_pos = ship_pos
+        dx = self.target_pos[0] - self.pos[0]
+        dy = self.target_pos[1] - self.pos[1]
+        dist = sqrt(dx**2 + dy**2)
+        
+        if dist != 0:  # Avoid division by zero
+            # Update speed direction towards the player
+            if self.accelerating:
+                # Apply additional acceleration in the direction of the player
+                self.speed[0] += (dx / dist) * ROCKET_ACCELERATION
+                self.speed[1] += (dy / dist) * ROCKET_ACCELERATION
+
+        # Update position based on speed
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+    def draw(self, screen, camera_x, camera_y):
+        pygame.draw.circle(screen, (255, 100, 0), 
+                           (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
+                           5)
+
+# Add these to your global variables
+enemies = []
+enemy_projectiles = []
+
+
+# Spawn enemies
+for _ in range(3):
+    x = random.randint(0, WORLD_WIDTH)
+    y = random.randint(0, WORLD_HEIGHT)
+    enemy_type = random.choice(['bullet', 'rocket'])
+    enemies.append(Enemy(x, y, enemy_type))
+
+
+# endregion
 
 # region --- Ship properties ---
 # basic properties
-ship_pos = [30000, 32000] 
+ship_pos = [3000, 3000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 4
-ship_health = 100
+ship_radius = 7
+ship_health = 10000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
 
+# fighting
+player_bullets = []
+player_gun_cooldown = 0
+player_ammo = 10000
+
 #Thrusters
-thrust = 0.09
-rotation_thrust = 0.9
+thrust = 0.15
+rotation_thrust = 1
 # Fuel
 fuel = 100
 fuel_consumption_rate = 0.01
@@ -133,10 +290,10 @@ def draw_rotation_thruster(pos, is_on, is_left):
 class SpaceGun:
     def __init__(self, x, y):
         self.pos = [x, y]
-        self.size = 80
+        self.size = 40
         self.color = (150, 150, 150)
         self.last_shot_time = 0
-        self.shoot_interval = 300
+        self.shoot_interval = 1200
         self.bullets = []
 
     def draw(self, screen, camera_x, camera_y):
@@ -155,7 +312,7 @@ class SpaceGun:
             self.bullets.append({
                 'pos': self.pos.copy(),
                 'direction': direction,
-                'speed': 33,
+                'speed': 10,
                 'creation_time': current_time
             })
             self.last_shot_time = current_time
@@ -166,7 +323,7 @@ class SpaceGun:
             bullet['pos'][0] += bullet['direction'][0] * bullet['speed']
             bullet['pos'][1] += bullet['direction'][1] * bullet['speed']
             
-            if current_time - bullet['creation_time'] > 40000:  # 40 seconds
+            if current_time - bullet['creation_time'] > 10000:  # 20 seconds
                 self.bullets.remove(bullet)
             elif distance(bullet['pos'], ship_pos) < ship_radius:
                 self.bullets.remove(bullet)
@@ -180,8 +337,9 @@ class SpaceGun:
                                5)
 
 # Create space gun
-space_gun1 = SpaceGun(18000, 3000)
-space_gun2 = SpaceGun(30000, 32000)
+
+space_gun1 = SpaceGun(18000, 35000)
+space_gun2 = SpaceGun(40000, 22000)
 
 
 # endregion
@@ -241,19 +399,29 @@ class Square:
                 self.pos[1] - ship_radius < ship_pos[1] < self.pos[1] + self.size + ship_radius)
 
 # Create planets (increased size)
-planets = [
-    Planet( 30_000,  30_000, 600, (50, 200, 200)),
-    Planet( 33_000,  33_000, 400, (50, 200, 200)),
-    Planet( 90_000, 400_000, 5000, (255, 0, 0)),   
-    Planet(150_000, 170_000, 2000, (0, 255, 0)), 
-    Planet(200_000, 300_000, 5500, (0, 255, 0)),  
-    Planet(260_000,  90_000, 2600, (0, 0, 255)),
-    Planet(330_000, 350_000, 8000, (255, 255, 0)),
-    Planet(340_000, 230_000, 3800, (255, 100, 255)),
-    Planet(410_000, 270_000, 3300, (50, 20, 200)),
-    Planet( 61_000, 210_000, 4200, (50, 140, 100))
-]
 
+'''planets = [
+    Planet(30_000, 30_000, 600, (50, 200, 200)),
+    Planet(33_000, 33_000, 400, (50, 200, 200)),
+    
+    Planet( 9_000, 40_000, 500, (255, 0, 0)),   
+    Planet(15_000, 17_000, 200, (0, 255, 0)), 
+    Planet(20_000, 30_000, 550, (0, 255, 0)),  
+    Planet(26_000,  9_000, 260, (0, 0, 255)),
+    Planet(33_000, 35_000, 800, (255, 255, 0)),
+    Planet(34_000, 23_000, 380, (255, 100, 255)),
+    Planet(41_000, 27_000, 330, (50, 20, 200)),
+    Planet( 3000, 3000, 420, (50, 140, 100))
+]'''
+
+planets = [
+    Planet(4100, 3100, 55, (0, 255, 0)),  
+    Planet(2000, 900, 260, (0, 0, 255)),
+    Planet(3000, 3700, 80, (255, 255, 0)),
+    Planet(3600, 1000, 380, (255, 100, 255)),
+    Planet(1000, 4000, 330, (50, 20, 200)),
+    Planet(2000, 2500, 42, (50, 140, 100))
+]
 
 # Create squares
 
@@ -281,7 +449,7 @@ MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
 MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
 MINIMAP_PLANET_COLOR = (255, 0, 0)  # Red for planets
 
-def draw_minimap(screen, ship_pos, planets):
+def draw_minimap(screen, ship_pos, planets, enemies):
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -308,6 +476,12 @@ def draw_minimap(screen, ship_pos, planets):
         planet_minimap_x = int(minimap_x + planet.pos[0] * scale)
         planet_minimap_y = int(minimap_y + planet.pos[1] * scale)
         pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
+
+    # Draw enemies
+        for enemy in enemies:
+            enemy_minimap_x = int(minimap_x + enemy.pos[0] * scale)
+            enemy_minimap_y = int(minimap_y + enemy.pos[1] * scale)
+            pygame.draw.circle(screen, enemy.color, (enemy_minimap_x, enemy_minimap_y), 2)
 
 
 # endregion
@@ -351,6 +525,18 @@ while running:
             ship_speed[1] += math.sin(math.radians(ship_angle)) * thrust
             fuel -= fuel_consumption_rate
             front_thruster_on = True
+
+
+        # Player shooting
+        if keys[pygame.K_SPACE] and player_gun_cooldown <= 0 and player_ammo > 0:
+            angle = math.radians(-ship_angle)
+            bullet_x = ship_pos[0] + cos(angle) * (ship_radius + 10)
+            bullet_y = ship_pos[1] - sin(angle) * (ship_radius + 10)
+            player_bullets.append(Bullet(bullet_x, bullet_y, angle))
+            player_gun_cooldown = 7
+            player_ammo -= 1
+
+        player_gun_cooldown = max(0, player_gun_cooldown - 1)
 
         # endregion
 
@@ -407,6 +593,44 @@ while running:
         # Apply drag
         ship_speed[0] *= drag
         ship_speed[1] *= drag
+
+
+        # region --- Fighting---
+
+        # Update player bullets
+        for bullet in player_bullets[:]:
+            bullet.update()
+            if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
+                bullet.pos[1] < 0 or bullet.pos[1] > WORLD_HEIGHT):
+                player_bullets.remove(bullet)
+
+        # Update enemies and their projectiles
+        for enemy in enemies[:]:
+            new_projectiles = enemy.update(ship_pos)
+            enemy_projectiles.extend(new_projectiles)
+            
+            # Check collision with player bullets
+            for bullet in player_bullets[:]:
+                if distance(enemy.pos, bullet.pos) < enemy.radius + 3:
+                    enemies.remove(enemy)
+                    player_bullets.remove(bullet)
+                    break
+
+        for projectile in enemy_projectiles[:]:
+            if isinstance(projectile, Rocket):
+                projectile.update(ship_pos)
+            else:
+                projectile.update()
+            
+            if (projectile.pos[0] < 0 or projectile.pos[0] > WORLD_WIDTH or
+                projectile.pos[1] < 0 or projectile.pos[1] > WORLD_HEIGHT):
+                enemy_projectiles.remove(projectile)
+            elif distance(ship_pos, projectile.pos) < ship_radius + 3:
+                ship_health -= 10
+                enemy_projectiles.remove(projectile)
+
+
+        # endregion
 
        # region --- world border, camera ---
 
@@ -518,9 +742,26 @@ while running:
         draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
         draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
 
+        # Draw player bullets
+        for bullet in player_bullets:
+            bullet.draw(screen, camera_x, camera_y)
+
+        # Draw enemies and their projectiles
+        for enemy in enemies:
+            enemy.draw(screen, camera_x, camera_y)
+        for projectile in enemy_projectiles:
+            projectile.draw(screen, camera_x, camera_y)
+
+        # Draw player's gun
+        gun_length = 20
+        gun_end_x = ship_screen_pos[0] + cos(math.radians(ship_angle)) * (ship_radius + gun_length)
+        gun_end_y = ship_screen_pos[1] - sin(math.radians(ship_angle)) * (ship_radius + gun_length)
+        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 3)
+
+
+
         # endregion
 
-        draw_minimap(screen, ship_pos, planets)
 
 
         # region --- displaying ---
@@ -553,11 +794,12 @@ while running:
         screen.blit(pos_refuel_text, (10, 210))
         screen.blit(pos_item_text, (10, 230))
         screen.blit(pos_complete_text, (10, 250))
+        ammo_text = font.render(f"Ammo: {player_ammo}", True, (255, 255, 255))
+        screen.blit(ammo_text, (10, 290))
 
-
-
-
-
+        draw_minimap(screen, ship_pos, planets, enemies)
+            
+        
         # endregion
 
         # Check if ship health reaches 0
