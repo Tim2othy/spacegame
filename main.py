@@ -215,16 +215,16 @@ class Square:
 # Create planets (increased size)
 planets = [
     Planet(0, 0, 3000, (255, 0, 0)),   # Top-left
-    Planet(7000, 1000, 500, (0, 255, 0)),  # Top-right
-    Planet(1000, 7000, 500, (0, 0, 255)),    # Bottom-left
+    Planet(7000, 1000, 1000, (0, 255, 0)),  # Top-right
+    Planet(1000, 7000, 1500, (0, 0, 255)),    # Bottom-left
     Planet(7000, 7000, 500, (255, 255, 0))  # Bottom-right
 ]
 
 # Create squares
 squares = [
-    Square(2800, 50, 100, (0, 255, 255), "refuel"),  # Top-right, refuel
-    Square(2000, 2000, 100, (255, 0, 255), "get_item"),  # bottom-right, get item
-    Square(300, 2000, 50, (255, 165, 0), "complete_mission")  # bottum-left, complete mission
+    Square(5000, 1000, 100, (0, 255, 255), "refuel"),  # Top-right, refuel
+    Square(5000, 5000, 100, (255, 0, 255), "get_item"),  # bottom-right, get item
+    Square(1000, 5000, 50, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
 ]
 
 # endregion
@@ -280,6 +280,8 @@ while running:
 
         ship_screen_pos = (int(ship_pos[0] - camera_x), int(ship_pos[1] - camera_y))
 
+        # region --- collisions ---
+
         # Check for collisions with planets
         collision = False
         current_time = pygame.time.get_ticks()
@@ -310,6 +312,8 @@ while running:
                     mission_complete = True
                     ship_color = (255, 255, 0)  # Yellow
 
+        # endregion
+
         # Reset ship color after 1 second if it's red
         if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
             ship_color = (255, 255, 255)  # White
@@ -318,7 +322,7 @@ while running:
         ship_speed[0] *= drag
         ship_speed[1] *= drag
 
-       # region --- creates the world border ---
+       # region --- world border, camera ---
 
         # Clamp the ship's x position
         if ship_pos[0] < 0:
@@ -332,7 +336,6 @@ while running:
         elif ship_pos[1] > WORLD_HEIGHT:
             ship_pos[1] = WORLD_HEIGHT
 
-        # endregion
 
         # Update camera position
         camera_x = ship_pos[0] - SCREEN_WIDTH // 2
@@ -341,6 +344,12 @@ while running:
         # Clamp camera position to world boundaries
         camera_x = max(0, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH))
         camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
+
+        # endregion
+
+
+
+        # region --- spacegun ---
 
         # Space gun shooting
         space_gun1.shoot(ship_pos)
@@ -353,11 +362,10 @@ while running:
         if space_gun2.update_bullets(ship_pos, ship_radius):
             ship_health -= 15
 
-        # Check if ship health reaches 0
-        if ship_health <= 0:
-            game_over = True
 
+        # endregion
 
+        
 
         # Calculate thruster positions and sizes
         front_thruster_pos = (
@@ -418,6 +426,7 @@ while running:
         # endregion
 
 
+
         # region --- displaying ---
         
         # Display ship coordinates
@@ -443,6 +452,11 @@ while running:
 
 
         # endregion
+
+        # Check if ship health reaches 0
+        if ship_health <= 0:
+            game_over = True
+
     else:
         # Game over screen
         screen.fill((0, 0, 0))
