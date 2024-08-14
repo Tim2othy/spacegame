@@ -31,6 +31,9 @@ has_item = False
 mission_complete = False
 game_over = False
 
+G = (6.67430e-11)*100000  # Gravitational constant
+
+
 # endregion
 
 
@@ -56,11 +59,10 @@ def draw_grid(screen, camera_x, camera_y):
 # endregion
 
 
-G = (6.67430e-11)*1000000  # Gravitational constant
 
 # region --- Ship properties ---
 # basic properties
-ship_pos = [10000, 10000] 
+ship_pos = [30000, 32000] 
 ship_angle = 0
 ship_speed = [0, 0]
 ship_radius = 4
@@ -240,15 +242,16 @@ class Square:
 
 # Create planets (increased size)
 planets = [
-    Planet( 90_000, 400_000, 30000, (255, 0, 0)),   
-    Planet(150_000, 170_000, 2000,  (0, 255, 0)), 
-    Planet(200_000, 300_000, 2000,  (0, 255, 0)),  
-    Planet(260_000,  90_000, 6500,  (0, 0, 255)),
-    Planet(330_000, 350_000, 32000, (255, 255, 0)),
-    Planet(340_000, 230_000, 3300,  (255, 100, 255)),
-    Planet(410_000, 270_000, 3300,  (50, 200, 200)),
-    Planet(11000, 11000, 200,  (50, 200, 200))
-
+    Planet( 30_000,  30_000, 600, (50, 200, 200)),
+    Planet( 33_000,  33_000, 400, (50, 200, 200)),
+    Planet( 90_000, 400_000, 5000, (255, 0, 0)),   
+    Planet(150_000, 170_000, 2000, (0, 255, 0)), 
+    Planet(200_000, 300_000, 5500, (0, 255, 0)),  
+    Planet(260_000,  90_000, 2600, (0, 0, 255)),
+    Planet(330_000, 350_000, 8000, (255, 255, 0)),
+    Planet(340_000, 230_000, 3800, (255, 100, 255)),
+    Planet(410_000, 270_000, 3300, (50, 20, 200)),
+    Planet( 61_000, 210_000, 4200, (50, 140, 100))
 ]
 
 
@@ -271,7 +274,7 @@ squares = [
 
 # region --- Minimap ---
 
-MINIMAP_SIZE = 200  # Size of the minimap (width and height)
+MINIMAP_SIZE = 250  # Size of the minimap (width and height)
 MINIMAP_MARGIN = 20  # Margin from the top-right corner
 MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
 MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
@@ -292,20 +295,19 @@ def draw_minimap(screen, ship_pos, planets):
                      (minimap_x, minimap_y, MINIMAP_SIZE, MINIMAP_SIZE), 2)
 
     # Calculate scaling factors
-    scale_x = MINIMAP_SIZE / WORLD_WIDTH
-    scale_y = MINIMAP_SIZE / WORLD_HEIGHT
+    scale = MINIMAP_SIZE / WORLD_WIDTH
 
     # Draw player's ship
-    ship_minimap_x = int(minimap_x + ship_pos[0] * scale_x)
-    ship_minimap_y = int(minimap_y + ship_pos[1] * scale_y)
-    pygame.draw.circle(screen, MINIMAP_SHIP_COLOR, (ship_minimap_x, ship_minimap_y), 3)
+    ship_minimap_x = int(minimap_x + ship_pos[0] * scale)
+    ship_minimap_y = int(minimap_y + ship_pos[1] * scale)
+    pygame.draw.circle(screen, MINIMAP_SHIP_COLOR, (ship_minimap_x, ship_minimap_y), 2)
 
 
     # Draw planets
     for planet in planets:
-        planet_minimap_x = int(minimap_x + planet.pos[0] * scale_x)
-        planet_minimap_y = int(minimap_y + planet.pos[1] * scale_y)
-        pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), 5)
+        planet_minimap_x = int(minimap_x + planet.pos[0] * scale)
+        planet_minimap_y = int(minimap_y + planet.pos[1] * scale)
+        pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
 
 
 # endregion
