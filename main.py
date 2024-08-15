@@ -85,6 +85,13 @@ class Enemy:
         dx = ship_pos[0] - self.pos[0]
         dy = ship_pos[1] - self.pos[1]
         dist = sqrt(dx**2 + dy**2)
+        force_x, force_y = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
+        self.speed[0] += force_x / 100
+        self.speed[1] += force_y / 100
+        self.check_planet_collision(planets)
+
+
+        
         
         # Define cooldown values
         ROCKET_SHOOT_COOLDOWN = 300
@@ -123,7 +130,7 @@ class Enemy:
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
             if self.type == 'bullet':
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
-                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx))]
+                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self.speed)]
             else:
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
                 return [Rocket(self.pos[0], self.pos[1], ship_pos)]
@@ -134,6 +141,44 @@ class Enemy:
         pygame.draw.circle(screen, self.color, 
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            self.radius)
+    
+    def check_planet_collision(self, planets):
+        for planet in planets:
+            if distance(self.pos, planet.pos) < self.radius + planet.radius:
+                # Calculate normal vector
+                nx = self.pos[0] - planet.pos[0]
+                ny = self.pos[1] - planet.pos[1]
+                norm = math.sqrt(nx*nx + ny*ny)
+                nx /= norm
+                ny /= norm
+
+                # Calculate relative velocity
+                rv_x = self.speed[0]
+                rv_y = self.speed[1]
+            
+                # Calculate velocity component along normal
+                vel_along_normal = rv_x * nx + rv_y * ny
+            
+                # Do not resolve if velocities are separating
+                if vel_along_normal > 0:
+                    return
+            
+                # Calculate restitution (bounciness)
+                restitution = 0.5
+            
+                # Calculate impulse scalar
+                j = -(1 + restitution) * vel_along_normal
+                j /= 1/100 + 1/(4/3 * 3.14 * planet.radius**3)  # Assume enemy mass is 100
+            
+                # Apply impulse
+                self.speed[0] += j * nx / 100
+                self.speed[1] += j * ny / 100
+            
+                # Move enemy outside planet
+                overlap = self.radius + planet.radius - distance(self.pos, planet.pos)
+                self.pos[0] += overlap * nx
+                self.pos[1] += overlap * ny
+
 
 class Bullet:
     def __init__(self, x, y, angle):
@@ -148,8 +193,18 @@ class Bullet:
         pygame.draw.circle(screen, (255, 255, 0), 
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            3)
-import time
-from math import sqrt
+    def __init__(self, x, y, angle, ship_speed):
+        self.pos = [x, y]
+        bullet_speed = BULLET_SPEED + math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
+        self.speed = [bullet_speed * cos(angle) + ship_speed[0], 
+                      bullet_speed * sin(angle) + ship_speed[1]]    
+
+
+def check_bullet_planet_collision(bullet, planets):
+    for planet in planets:
+        if distance(bullet.pos, planet.pos) < planet.radius:
+            return True
+    return False
 
 ROCKET_ACCELERATION = 0.1  # Acceleration applied during the 1-second acceleration phase
 
@@ -160,10 +215,16 @@ class Rocket:
         self.speed = [0, 0]  # Initial speed is zero
         self.last_acceleration_time = time.time()
         self.accelerating = True
+        self.color = (255, 0, 0)
 
     def update(self, ship_pos):
         current_time = time.time()
         time_since_last_acceleration = current_time - self.last_acceleration_time
+
+        if self.accelerating:
+            self.color = (255, 0, 0)  # Red while accelerating
+        else:
+            self.color = (255, 100, 0)  # Orange while not accelerating
         
         # Check if it's time to start accelerating
         if not self.accelerating and time_since_last_acceleration >= 3:
@@ -193,7 +254,7 @@ class Rocket:
         self.pos[1] += self.speed[1]
 
     def draw(self, screen, camera_x, camera_y):
-        pygame.draw.circle(screen, (255, 100, 0), 
+        pygame.draw.circle(screen, self.color, 
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            5)
 
@@ -217,10 +278,13 @@ for _ in range(3):
 ship_pos = [3000, 3000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 7
+ship_radius = 70
 ship_health = 10000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
+REPAIR_RATE = 5
+MAX_SHIP_HEALTH = 1000000
+
 
 # fighting
 player_bullets = []
@@ -346,6 +410,53 @@ space_gun2 = SpaceGun(40000, 22000)
 
 
 
+
+# region --- asteroids
+
+class Asteroid:
+    def __init__(self, x, y, radius):
+        self.pos = [x, y]
+        self.radius = radius
+        self.color = (100, 100, 100)  # Grey color
+        self.speed = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
+        self.mass = 4/3 * math.pi * self.radius**3  # Assuming density of 1
+
+    def draw(self, screen, camera_x, camera_y):
+        if (self.pos[0] - self.radius - camera_x < SCREEN_WIDTH and
+            self.pos[0] + self.radius - camera_x > 0 and
+            self.pos[1] - self.radius - camera_y < SCREEN_HEIGHT and
+            self.pos[1] + self.radius - camera_y > 0):
+            pygame.draw.circle(screen, self.color, 
+                               (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
+                               self.radius)
+
+    def update(self, planets):
+        # Update position based on speed
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+        # Apply gravity from planets
+        for planet in planets:
+            force_x, force_y = planet.calculate_gravity(self.pos, self.mass)
+            self.speed[0] += force_x / self.mass
+            self.speed[1] += force_y / self.mass
+
+    def check_collision(self, ship_pos, ship_radius):
+        return distance(ship_pos, self.pos) < self.radius + ship_radius
+
+# Generate asteroids
+asteroids = []
+for _ in range(20):  # Adjust the number of asteroids as needed
+    x = random.randint(0, WORLD_WIDTH)
+    y = random.randint(0, WORLD_HEIGHT)
+    radius = random.randint(6, 100)
+    asteroids.append(Asteroid(x, y, radius))
+
+# endregion
+
+
+
+
 # region --- Planets and squares---
 
 class Planet:
@@ -437,7 +548,17 @@ squares = [
 
 # endregion
 
-
+def calculate_gravity(pos, mass, planets):
+    total_force_x, total_force_y = 0, 0
+    for planet in planets:
+        dx = planet.pos[0] - pos[0]
+        dy = planet.pos[1] - pos[1]
+        distance_squared = dx**2 + dy**2
+        force_magnitude = G * (4/3 * 3.14 * planet.radius**3) * mass / distance_squared
+        distance = math.sqrt(distance_squared)
+        total_force_x += force_magnitude * dx / distance
+        total_force_y += force_magnitude * dy / distance
+    return total_force_x, total_force_y
 
 
 # region --- Minimap ---
@@ -449,7 +570,7 @@ MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
 MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
 MINIMAP_PLANET_COLOR = (255, 0, 0)  # Red for planets
 
-def draw_minimap(screen, ship_pos, planets, enemies):
+def draw_minimap(screen, ship_pos, planets, enemies, asteroids):
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -478,15 +599,18 @@ def draw_minimap(screen, ship_pos, planets, enemies):
         pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
 
     # Draw enemies
-        for enemy in enemies:
-            enemy_minimap_x = int(minimap_x + enemy.pos[0] * scale)
-            enemy_minimap_y = int(minimap_y + enemy.pos[1] * scale)
-            pygame.draw.circle(screen, enemy.color, (enemy_minimap_x, enemy_minimap_y), 2)
+    for enemy in enemies:
+        enemy_minimap_x = int(minimap_x + enemy.pos[0] * scale)
+        enemy_minimap_y = int(minimap_y + enemy.pos[1] * scale)
+        pygame.draw.circle(screen, enemy.color, (enemy_minimap_x, enemy_minimap_y), 2)
+            
+    for asteroid in asteroids:
+        asteroid_minimap_x = int(minimap_x + asteroid.pos[0] * scale)
+        asteroid_minimap_y = int(minimap_y + asteroid.pos[1] * scale)
+        pygame.draw.circle(screen, asteroid.color, (asteroid_minimap_x, asteroid_minimap_y), max(1, asteroid.radius/scale**(-1)))
 
 
 # endregion
-
-
 
 
 # Game loop
@@ -532,13 +656,19 @@ while running:
             angle = math.radians(-ship_angle)
             bullet_x = ship_pos[0] + cos(angle) * (ship_radius + 10)
             bullet_y = ship_pos[1] - sin(angle) * (ship_radius + 10)
-            player_bullets.append(Bullet(bullet_x, bullet_y, angle))
+            player_bullets.append(Bullet(bullet_x, bullet_y, angle, ship_speed))
             player_gun_cooldown = 7
             player_ammo -= 1
 
-        player_gun_cooldown = max(0, player_gun_cooldown - 1)
+
+        if keys[pygame.K_m] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
+            ship_health = min(ship_health + REPAIR_RATE, MAX_SHIP_HEALTH)
+
 
         # endregion
+
+        player_gun_cooldown = max(0, player_gun_cooldown - 1)
+
 
         # Ensure fuel doesn't go below 0
         fuel = max(0, fuel)
@@ -563,8 +693,13 @@ while running:
                 ship_color = (255, 0, 0)  # Red
                 if collision_time == 0:
                     collision_time = current_time
-                # Reduce health when colliding with a planet
-                ship_health -= 10 * (current_time - collision_time) / 1000
+
+                # Calculate crash intensity based on ship speed
+                crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
+                damage = 1000 * crash_intensity  # Adjust this multiplier as needed
+
+                # Reduce health based on crash intensity
+                ship_health -= damage * (current_time - collision_time) / 1000
                 break
 
         if not collision:
@@ -595,9 +730,31 @@ while running:
         ship_speed[1] *= drag
 
 
+
+
         # region --- Fighting---
 
         # Update player bullets
+
+        for bullet in player_bullets[:]:
+            bullet.update()
+            if check_bullet_planet_collision(bullet, planets):
+                player_bullets.remove(bullet)
+
+        for projectile in enemy_projectiles[:]:
+            if isinstance(projectile, Rocket): 
+                projectile.update(ship_pos)
+            if check_bullet_planet_collision(projectile, planets):
+                enemy_projectiles.remove(projectile)
+
+
+
+
+
+
+
+
+        
         for bullet in player_bullets[:]:
             bullet.update()
             if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
@@ -736,6 +893,8 @@ while running:
         # Draw the main ship body (white circle)
         pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
 
+
+
         # Draw thrusters
         draw_thruster(front_thruster_pos, front_thruster_on)
         draw_thruster(rear_thruster_pos, rear_thruster_on)
@@ -758,7 +917,18 @@ while running:
         gun_end_y = ship_screen_pos[1] - sin(math.radians(ship_angle)) * (ship_radius + gun_length)
         pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 3)
 
+        
+        # In the main game loop, update and draw asteroids
+        for asteroid in asteroids:
+            asteroid.update(planets)
+            asteroid.draw(screen, camera_x, camera_y)
 
+            # Check for collision with ship
+            if asteroid.check_collision(ship_pos, ship_radius):
+                crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
+                damage = 5 * crash_intensity  # Adjust this multiplier as needed
+                ship_health -= damage
+                ship_color = (255, 0, 0)  # Red
 
         # endregion
 
@@ -797,7 +967,7 @@ while running:
         ammo_text = font.render(f"Ammo: {player_ammo}", True, (255, 255, 255))
         screen.blit(ammo_text, (10, 290))
 
-        draw_minimap(screen, ship_pos, planets, enemies)
+        draw_minimap(screen, ship_pos, planets, enemies,asteroids)
             
         
         # endregion
