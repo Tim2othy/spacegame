@@ -250,6 +250,7 @@ class Asteroid:
 
         # Apply gravity from planets
         for planet in planets:
+            planet.draw(screen, camera_x, camera_y)
             force_x, force_y = planet.calculate_gravity(self.pos, self.mass)
             self.speed[0] += force_x / self.mass
             self.speed[1] += force_y / self.mass
@@ -640,6 +641,9 @@ while running:
 
     if not game_over:
 
+        # Draw everything
+        screen.fill((0, 0, 0))
+
         # region --- Handle input ---
         keys = pygame.key.get_pressed()
         left_rotation_thruster_on = False
@@ -688,22 +692,16 @@ while running:
 
 
 
-
         # region --- gravity ---
 
         total_force_x = 0
         total_force_y = 0
-        for planet in planets:
-            force_x, force_y = planet.calculate_gravity(ship_pos, ship_mass)
-            total_force_x += force_x
-            total_force_y += force_y
 
         # Update ship velocity
         ship_speed[0] += total_force_x / ship_mass
         ship_speed[1] += total_force_y / ship_mass
 
         # endregion
-
 
 
 
@@ -840,6 +838,7 @@ while running:
         
 
 
+
         # region --- spacegun ---
 
         # Space gun shooting
@@ -858,31 +857,13 @@ while running:
 
 
 
+
         # region --- collisions ---
 
-        # Check for collisions with planets
         collision = False
         current_time = pygame.time.get_ticks()
-        for planet in planets:
-            if planet.check_collision(new_ship_pos, ship_radius):
-                collision = True
-                ship_color = (255, 0, 0)  # Red
-                if collision_time == 0:
-                    collision_time = current_time
 
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
-                damage = 1000 * crash_intensity  # Adjust this multiplier as needed
 
-                # Reduce health based on crash intensity
-                ship_health -= damage * (current_time - collision_time) / 1000
-                break
-
-        if not collision:
-            ship_pos = new_ship_pos
-            collision_time = 0
-        else:
-            collision_time = current_time
 
         # Check for collisions with squares
         for square in squares:
@@ -899,64 +880,6 @@ while running:
         if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
             ship_color = (255, 255, 255)  # White
 
-        # endregion
-
-
-
-
-        # region --- drawing ---
-
-
-        # Draw everything
-        screen.fill((0, 0, 0))
-
-        draw_grid(screen, camera_x, camera_y)
-
-        # Draw planets
-        for planet in planets:
-            planet.draw(screen, camera_x, camera_y)
-
-        # Draw squares
-        for square in squares:
-            square.draw(screen, camera_x, camera_y)
-
-        # Draw space guns
-        space_gun1.draw(screen, camera_x, camera_y)
-        space_gun1.draw_bullets(screen, camera_x, camera_y)
-        
-        space_gun2.draw(screen, camera_x, camera_y)
-        space_gun2.draw_bullets(screen, camera_x, camera_y)
-
-        # Draw ship
-        
-        # Draw the main ship body (white circle)
-        pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
-
-
-
-        # Draw thrusters
-        draw_thruster(front_thruster_pos, front_thruster_on)
-        draw_thruster(rear_thruster_pos, rear_thruster_on)
-        draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
-        draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
-
-        # Draw player bullets
-        for bullet in player_bullets:
-            bullet.draw(screen, camera_x, camera_y)
-
-        # Draw enemies and their projectiles
-        for enemy in enemies:
-            enemy.draw(screen, camera_x, camera_y)
-        for projectile in enemy_projectiles:
-            projectile.draw(screen, camera_x, camera_y)
-
-        # Draw player's gun
-        gun_length = 20
-        gun_end_x = ship_screen_pos[0] + cos(math.radians(ship_angle)) * (ship_radius + gun_length)
-        gun_end_y = ship_screen_pos[1] - sin(math.radians(ship_angle)) * (ship_radius + gun_length)
-        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 3)
-
-        
         # In the main game loop, update and draw asteroids
         for asteroid in asteroids:
             asteroid.update(planets)
@@ -999,6 +922,97 @@ while running:
             collision_time = current_time
 
 
+
+
+
+
+        # endregion
+
+
+
+
+        # region --- planets ---
+
+        for planet in planets:
+            force_x, force_y = planet.calculate_gravity(ship_pos, ship_mass)
+            total_force_x += force_x
+            total_force_y += force_y
+            
+            if planet.check_collision(new_ship_pos, ship_radius):
+                collision = True
+                ship_color = (255, 0, 0)  # Red
+                if collision_time == 0:
+                    collision_time = current_time
+
+                # Calculate crash intensity based on ship speed
+                crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
+                damage = 1000 * crash_intensity  # Adjust this multiplier as needed
+
+                # Reduce health based on crash intensity
+                ship_health -= damage * (current_time - collision_time) / 1000
+                break
+
+        if not collision:
+            ship_pos = new_ship_pos
+            collision_time = 0
+        else:
+            collision_time = current_time
+
+
+        # endregion
+
+
+
+
+        # region --- drawing ---
+
+
+
+
+        draw_grid(screen, camera_x, camera_y)
+
+
+        # Draw squares
+        for square in squares:
+            square.draw(screen, camera_x, camera_y)
+
+        # Draw space guns
+        space_gun1.draw(screen, camera_x, camera_y)
+        space_gun1.draw_bullets(screen, camera_x, camera_y)
+        
+        space_gun2.draw(screen, camera_x, camera_y)
+        space_gun2.draw_bullets(screen, camera_x, camera_y)
+
+        # Draw ship
+        
+        # Draw the main ship body (white circle)
+        pygame.draw.circle(screen, ship_color, ship_screen_pos, ship_radius)
+
+
+
+        # Draw thrusters
+        draw_thruster(front_thruster_pos, front_thruster_on)
+        draw_thruster(rear_thruster_pos, rear_thruster_on)
+        draw_rotation_thruster(left_rotation_thruster_pos, left_rotation_thruster_on, True)
+        draw_rotation_thruster(right_rotation_thruster_pos, right_rotation_thruster_on, False)
+
+        # Draw player bullets
+        for bullet in player_bullets:
+            bullet.draw(screen, camera_x, camera_y)
+
+        # Draw enemies and their projectiles
+        for enemy in enemies:
+            enemy.draw(screen, camera_x, camera_y)
+        for projectile in enemy_projectiles:
+            projectile.draw(screen, camera_x, camera_y)
+
+        # Draw player's gun
+        gun_length = 20
+        gun_end_x = ship_screen_pos[0] + cos(math.radians(ship_angle)) * (ship_radius + gun_length)
+        gun_end_y = ship_screen_pos[1] - sin(math.radians(ship_angle)) * (ship_radius + gun_length)
+        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 3)
+
+        
 
 
         # endregion
