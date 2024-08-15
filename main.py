@@ -278,7 +278,7 @@ for _ in range(3):
 ship_pos = [3000, 3000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 70
+ship_radius = 15
 ship_health = 10000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
@@ -443,6 +443,8 @@ class Asteroid:
 
     def check_collision(self, ship_pos, ship_radius):
         return distance(ship_pos, self.pos) < self.radius + ship_radius
+    
+    
 
 # Generate asteroids
 asteroids = []
@@ -724,6 +726,7 @@ while running:
         # Reset ship color after 1 second if it's red
         if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
             ship_color = (255, 255, 255)  # White
+        
 
         # Apply drag
         ship_speed[0] *= drag
@@ -924,11 +927,43 @@ while running:
             asteroid.draw(screen, camera_x, camera_y)
 
             # Check for collision with ship
-            if asteroid.check_collision(ship_pos, ship_radius):
+
+            if asteroid.check_collision(new_ship_pos, ship_radius):
+                collision = True
+                ship_color = (255, 0, 0)  # Red
+                if collision_time == 0:
+                    collision_time = current_time
+
+                # Calculate crash intensity based on ship speed
                 crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
                 damage = 5 * crash_intensity  # Adjust this multiplier as needed
+
+                # Reduce health based on crash intensity
                 ship_health -= damage
-                ship_color = (255, 0, 0)  # Red
+
+                # Bounce off the asteroid
+                dx = ship_pos[0] - asteroid.pos[0]
+                dy = ship_pos[1] - asteroid.pos[1]
+                bounce_angle = math.atan2(dy, dx)
+        
+                # Reverse the ship's speed and reduce it (to simulate energy loss)
+                ship_speed[0] = -ship_speed[0] * 0.5
+                ship_speed[1] = -ship_speed[1] * 0.5
+        
+                # Move the ship out of the asteroid
+                ship_pos[0] = asteroid.pos[0] + (asteroid.radius + ship_radius + 1) * math.cos(bounce_angle)
+                ship_pos[1] = asteroid.pos[1] + (asteroid.radius + ship_radius + 1) * math.sin(bounce_angle)
+        
+                break
+
+        if not collision:
+            ship_pos = new_ship_pos
+            collision_time = 0
+        else:
+            collision_time = current_time
+
+
+
 
         # endregion
 
