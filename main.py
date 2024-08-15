@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Game")
 
 # World size
-WORLD_WIDTH, WORLD_HEIGHT = 5_000, 5_000
+WORLD_WIDTH, WORLD_HEIGHT = 6_000, 6_000
 
 # define distance
 def distance(pos1, pos2):
@@ -61,11 +61,11 @@ ship_pos = [3000, 3000]
 ship_angle = 0
 ship_speed = [0, 0]
 ship_radius = 15
-ship_health = 10000
+ship_health = 1000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
 REPAIR_RATE = 5
-MAX_SHIP_HEALTH = 1000000
+MAX_SHIP_HEALTH = 2000
 
 
 # fighting
@@ -174,7 +174,7 @@ class Square:
     def draw(self, screen, camera_x, camera_y):
         if (0 <= self.pos[0] - camera_x < SCREEN_WIDTH and 
             0 <= self.pos[1] - camera_y < SCREEN_HEIGHT):
-            pygame.draw.rect(screen, self.color, 
+            pygame.draw.rect(screen, self.color,
                              (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y), 
                               self.size, self.size))
 
@@ -321,8 +321,8 @@ class Asteroid:
         nx = self.pos[0] - other.pos[0]
         ny = self.pos[1] - other.pos[1]
         norm = math.sqrt(nx*nx + ny*ny)
-        nx /= norm
-        ny /= norm
+        nx /= norm + 0.0003456
+        ny /= norm + 0.0003456
 
         # Calculate relative velocity
         rv_x = self.speed[0]
@@ -336,7 +336,7 @@ class Asteroid:
             return
 
         # Calculate restitution (bounciness)
-        restitution = 0.5
+        restitution = 5
 
         # Calculate impulse scalar
         j = -(1 + restitution) * vel_along_normal
@@ -355,7 +355,7 @@ class Asteroid:
 
 # Generate asteroids
 asteroids = []
-for _ in range(20):  # Adjust the number of asteroids as needed
+for _ in range(60):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     radius = random.randint(6, 100)
@@ -420,7 +420,7 @@ class SpaceGun:
 
 # Create space gun
 
-space_gun1 = SpaceGun(18000, 35000)
+space_gun1 = SpaceGun(30000, 35000)
 space_gun2 = SpaceGun(40000, 22000)
 
 
@@ -431,11 +431,15 @@ space_gun2 = SpaceGun(40000, 22000)
 
 # region --- enemy ships ---
 
-BULLET_SPEED = 10
-ENEMY_SHOOT_RANGE = 700
-ENEMY_ACCELERATION = 0.1
+BULLET_SPEED = 4
+ENEMY_SHOOT_RANGE = 900
+ENEMY_ACCELERATION = 0.6
 ENEMY_SHOOT_COOLDOWN = 50  # Adjust this value as needed
-ROCKET_ACCELERATION = 0.1  # Acceleration applied during the 1-second acceleration phase
+ROCKET_ACCELERATION = 0.04  # Acceleration applied during the 1-second acceleration phase
+
+# Define cooldown values
+ROCKET_SHOOT_COOLDOWN = 2
+BULLET_SHOOT_COOLDOWN = 0.5
 
 
 # New classes for enemies and projectiles
@@ -448,47 +452,43 @@ class Enemy:
         self.speed = [0, 0]
         self.radius = 15
         self.type = enemy_type  # 'bullet' or 'rocket'
-        self.color = (55, 55, 200) if enemy_type == 'bullet' else (255, 165, 0)
+        self.color = (155, 77, 166) if enemy_type == 'bullet' else (255, 165, 0)
         self.shoot_cooldown = 0
-        self.action_timer = 4000
+        self.action_timer =  1*60
 
     def update(self, ship_pos):
         dx = ship_pos[0] - self.pos[0]
         dy = ship_pos[1] - self.pos[1]
         dist = sqrt(dx**2 + dy**2)
+        self.current_action = 6
         force_x, force_y = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
         self.speed[0] += force_x / 100
         self.speed[1] += force_y / 100
         self.check_planet_collision(planets)
-
-
-
-        
-        # Define cooldown values
-        ROCKET_SHOOT_COOLDOWN = 300
-        BULLET_SHOOT_COOLDOWN = 50
+        rand_speed = [0, 0]
 
         # Check if the 4-second period has elapsed
         if self.action_timer <= 0:
             self.current_action = random.randint(1, 4)
-            self.action_timer = 4000  # Reset timer to 4 seconds maybe
+            self.action_timer = 1*60  # Reset timer to 4 seconds maybe
 
-        # Movement logic
-        choice = random.randint(1, 4)
-        if choice == 1:  # Accelerate towards player
-            self.speed[0] += (dx / dist) * ENEMY_ACCELERATION
-            self.speed[1] += (dy / dist) * ENEMY_ACCELERATION
 
-        elif choice == 2:  # Accelerate randomly
-            self.speed[0] += random.uniform(-1, 1) * ENEMY_ACCELERATION*2
-            self.speed[1] += random.uniform(-1, 1) * ENEMY_ACCELERATION*2
+        if self.current_action == 1:  # Accelerate towards player
+            self.speed[0] += (dx / dist) * ENEMY_ACCELERATION*2
+            self.speed[1] += (dy / dist) * ENEMY_ACCELERATION*2
+
+        elif self.current_action == 2:  # Accelerate randomly
+            rand_speed[0] = rand_speed[0] + random.uniform(-1, 1)
+            rand_speed[1] = rand_speed[1] + random.uniform(-1, 1)
             
-        elif choice == 3:  # Decelerate
-            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION*0.7
-            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.7
+            self.speed[0] += rand_speed[0] * ENEMY_ACCELERATION*0.2
+            self.speed[1] += rand_speed[1] * ENEMY_ACCELERATION*0.2
+            
+        elif self.current_action == 3:  # Decelerate
+            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION*0.2
+            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.2
 
-        else:
-            pass
+
 
         
         self.pos[0] += self.speed[0]
@@ -630,7 +630,7 @@ class Rocket:
         time_since_last_acceleration = current_time - self.last_acceleration_time
 
         if self.accelerating:
-            self.color = (255, 0, 0)  # Red while accelerating
+            self.color = (255, 0, 200)  # Red while accelerating
         else:
             self.color = (255, 100, 0)  # Orange while not accelerating
         
