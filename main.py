@@ -64,7 +64,7 @@ ship_radius = 15
 ship_health = 1000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
-REPAIR_RATE = 5
+REPAIR_RATE = 1
 MAX_SHIP_HEALTH = 2000
 
 
