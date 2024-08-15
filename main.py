@@ -341,8 +341,13 @@ BULLET_SPEED = 10
 ENEMY_SHOOT_RANGE = 700
 ENEMY_ACCELERATION = 0.1
 ENEMY_SHOOT_COOLDOWN = 50  # Adjust this value as needed
+ROCKET_ACCELERATION = 0.1  # Acceleration applied during the 1-second acceleration phase
+
 
 # New classes for enemies and projectiles
+
+
+
 class Enemy:
     def __init__(self, x, y, enemy_type):
         self.pos = [x, y]
@@ -478,7 +483,6 @@ def check_bullet_planet_collision(bullet, planets):
             return True
     return False
 
-ROCKET_ACCELERATION = 0.1  # Acceleration applied during the 1-second acceleration phase
 
 class Rocket:
     def __init__(self, x, y, target_pos):
@@ -530,13 +534,15 @@ class Rocket:
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            5)
 
+
+
 # Add these to your global variables
 enemies = []
 enemy_projectiles = []
 
 
 # Spawn enemies
-for _ in range(3):
+for _ in range(10):
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     enemy_type = random.choice(['bullet', 'rocket'])
