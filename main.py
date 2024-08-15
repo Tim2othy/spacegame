@@ -219,6 +219,44 @@ squares = [
     Square(pos_complete[0], pos_complete[1], 1000, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
 ]
 
+def bounce_from_planet(planet):
+    # Calculate normal vector
+    nx = ship_pos[0] - planet.pos[0]
+    ny = ship_pos[1] - planet.pos[1]
+    norm = math.sqrt(nx*nx + ny*ny)
+    nx /= norm
+    ny /= norm
+
+    # Calculate relative velocity
+    rv_x = ship_speed[0]
+    rv_y = ship_speed[1]
+
+    # Calculate velocity component along normal
+    vel_along_normal = rv_x * nx + rv_y * ny
+
+    # Do not resolve if velocities are separating
+    if vel_along_normal > 0:
+        return
+
+    # Calculate restitution (bounciness)
+    restitution = 0.5
+
+    # Calculate impulse scalar
+    j = -(1 + restitution) * vel_along_normal
+    j /= 1/ship_mass + 1/(4/3 * math.pi * planet.radius**3)
+
+    # Apply impulse
+    ship_speed[0] += j * nx / ship_mass
+    ship_speed[1] += j * ny / ship_mass
+
+    # Move ship outside planet
+    overlap = ship_radius + planet.radius - distance(ship_pos, planet.pos)
+    ship_pos[0] += overlap * nx
+    ship_pos[1] += overlap * ny
+
+
+
+
 # endregion
 
 
@@ -248,6 +286,23 @@ class Asteroid:
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
 
+
+
+        # Stop at world border
+        if self.pos[0] - self.radius < 0:
+            self.pos[0] = self.radius
+            self.speed[0] = 0
+        elif self.pos[0] + self.radius > WORLD_WIDTH:
+            self.pos[0] = WORLD_WIDTH - self.radius
+            self.speed[0] = 0
+        if self.pos[1] - self.radius < 0:
+            self.pos[1] = self.radius
+            self.speed[1] = 0
+        elif self.pos[1] + self.radius > WORLD_HEIGHT:
+            self.pos[1] = WORLD_HEIGHT - self.radius
+            self.speed[1] = 0
+
+
         # Apply gravity from planets
         for planet in planets:
             planet.draw(screen, camera_x, camera_y)
@@ -255,8 +310,46 @@ class Asteroid:
             self.speed[0] += force_x / self.mass
             self.speed[1] += force_y / self.mass
 
-    def check_collision(self, ship_pos, ship_radius):
-        return distance(ship_pos, self.pos) < self.radius + ship_radius
+    def check_collision(self, other):
+        if isinstance(other, Asteroid) or isinstance(other, Planet):
+            return distance(self.pos, other.pos) < self.radius + other.radius
+        elif isinstance(other, tuple) or isinstance(other, list):  # For ship position
+            return distance(self.pos, other) < self.radius + ship_radius
+
+    def bounce(self, other):
+        # Calculate normal vector
+        nx = self.pos[0] - other.pos[0]
+        ny = self.pos[1] - other.pos[1]
+        norm = math.sqrt(nx*nx + ny*ny)
+        nx /= norm
+        ny /= norm
+
+        # Calculate relative velocity
+        rv_x = self.speed[0]
+        rv_y = self.speed[1]
+
+        # Calculate velocity component along normal
+        vel_along_normal = rv_x * nx + rv_y * ny
+
+        # Do not resolve if velocities are separating
+        if vel_along_normal > 0:
+            return
+
+        # Calculate restitution (bounciness)
+        restitution = 0.5
+
+        # Calculate impulse scalar
+        j = -(1 + restitution) * vel_along_normal
+        j /= 1/self.mass + 1/(4/3 * math.pi * other.radius**3)
+
+        # Apply impulse
+        self.speed[0] += j * nx / self.mass
+        self.speed[1] += j * ny / self.mass
+
+        # Move asteroid outside other object
+        overlap = self.radius + other.radius - distance(self.pos, other.pos)
+        self.pos[0] += overlap * nx
+        self.pos[1] += overlap * ny
     
     
 
@@ -369,7 +462,7 @@ class Enemy:
         self.check_planet_collision(planets)
 
 
-        
+
         
         # Define cooldown values
         ROCKET_SHOOT_COOLDOWN = 300
@@ -420,6 +513,44 @@ class Enemy:
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            self.radius)
     
+
+    def bounce(self, other):
+        # Calculate normal vector
+        nx = self.pos[0] - other.pos[0]
+        ny = self.pos[1] - other.pos[1]
+        norm = math.sqrt(nx*nx + ny*ny)
+        nx /= norm
+        ny /= norm
+
+        # Calculate relative velocity
+        rv_x = self.speed[0]
+        rv_y = self.speed[1]
+
+        # Calculate velocity component along normal
+        vel_along_normal = rv_x * nx + rv_y * ny
+
+        # Do not resolve if velocities are separating
+        if vel_along_normal > 0:
+            return
+
+        # Calculate restitution (bounciness)
+        restitution = 0.5
+
+        # Calculate impulse scalar
+        j = -(1 + restitution) * vel_along_normal
+        j /= 1/100 + 1/(4/3 * math.pi * other.radius**3)  # Assume enemy mass is 100
+
+        # Apply impulse
+        self.speed[0] += j * nx / 100
+        self.speed[1] += j * ny / 100
+
+        # Move enemy outside other object
+        overlap = self.radius + other.radius - distance(self.pos, other.pos)
+        self.pos[0] += overlap * nx
+        self.pos[1] += overlap * ny
+
+
+
     def check_planet_collision(self, planets):
         for planet in planets:
             if distance(self.pos, planet.pos) < self.radius + planet.radius:
@@ -834,6 +965,12 @@ while running:
         # Ensure fuel doesn't go below 0
         fuel = max(0, fuel)
 
+
+        # Check if ship is touching world border
+        if (ship_pos[0] <= 0 or ship_pos[0] >= WORLD_WIDTH or
+            ship_pos[1] <= 0 or ship_pos[1] >= WORLD_HEIGHT):
+            game_over = True
+
         # endregion
         
 
@@ -857,13 +994,15 @@ while running:
 
 
 
-
         # region --- collisions ---
 
         collision = False
         current_time = pygame.time.get_ticks()
 
-
+        for enemy in enemies:
+            for planet in planets:
+                if distance(enemy.pos, planet.pos) < enemy.radius + planet.radius:
+                    enemy.bounce(planet)
 
         # Check for collisions with squares
         for square in squares:
@@ -887,7 +1026,7 @@ while running:
 
             # Check for collision with ship
 
-            if asteroid.check_collision(new_ship_pos, ship_radius):
+            if asteroid.check_collision(new_ship_pos):
                 collision = True
                 ship_color = (255, 0, 0)  # Red
                 if collision_time == 0:
@@ -923,6 +1062,20 @@ while running:
 
 
 
+        # Check asteroid-asteroid collisions
+        for i, asteroid1 in enumerate(asteroids):
+            for asteroid2 in asteroids[i+1:]:
+                if asteroid1.check_collision(asteroid2):
+                    # Handle collision (implement bouncing in step 2)
+                    asteroid1.bounce(asteroid2)
+                    asteroid2.bounce(asteroid1)
+
+        # Check asteroid-planet collisions
+        for asteroid in asteroids:
+            for planet in planets:
+                if asteroid.check_collision(planet):
+                    # Handle collision (implement bouncing in step 2)
+                    asteroid.bounce(planet)
 
 
 
@@ -938,11 +1091,14 @@ while running:
             total_force_x += force_x
             total_force_y += force_y
             
+            # In the collision detection loop for planets:
             if planet.check_collision(new_ship_pos, ship_radius):
+                bounce_from_planet(planet)
                 collision = True
                 ship_color = (255, 0, 0)  # Red
                 if collision_time == 0:
                     collision_time = current_time
+                # Calculate and apply damage as before
 
                 # Calculate crash intensity based on ship speed
                 crash_intensity = math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
