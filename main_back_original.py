@@ -6,6 +6,9 @@ import time
 from math import atan2, cos, sin, sqrt
 sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
 
+
+
+
 # region --- basics, screen, world ---
 
 # Initialize Pygame

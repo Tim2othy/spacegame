@@ -6,16 +6,16 @@ import time
 from math import atan2, cos, sin, sqrt
 sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
 
+from distance import distance
+
+from grid import draw_grid
+
+from planets import Planet
 
 
 
-# config
-SCREEN_WIDTH = 1700
-SCREEN_HEIGHT = 900
-WORLD_WIDTH = 10000
-WORLD_HEIGHT = 10000
-GRID_SIZE = 300
-GRID_COLOR = (0, 70, 0)
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
+
 
 
 def vec_add(v1, v2):
@@ -41,9 +41,7 @@ pygame.display.set_caption("Space Game")
 
 
 
-# define distance
-def distance(pos1, pos2):
-    return math.sqrt((pos1[0] - pos2[0])**2 + (pos1[1] - pos2[1])**2)
+
 
 # Camera offset
 camera_x = 0
@@ -57,7 +55,6 @@ has_item = False
 mission_complete = False
 game_over = False
 
-G = (0.0006)  # Gravitational constant
 
 def calculate_gravity(pos, mass, planets):
     total_force_x, total_force_y = 0, 0
@@ -202,8 +199,9 @@ class Ship:
         pygame.draw.polygon(screen, color, points)
 
 
-ship = Ship(3000, 3000)
 
+
+ship = Ship(9000, 9000)
 
 
 # Thruster states
@@ -220,38 +218,6 @@ right_rotation_thruster_on = False
 
 
 # region --- Planets and squares---
-
-class Planet:
-    def __init__(self, x, y, radius, color):
-        self.pos = [x, y]
-        self.radius = radius
-        self.color = color
-
-    def draw(self, screen, camera_x, camera_y):
-        if (self.pos[0] - self.radius - camera_x < SCREEN_WIDTH and
-            self.pos[0] + self.radius - camera_x > 0 and
-            self.pos[1] - self.radius - camera_y < SCREEN_HEIGHT and
-            self.pos[1] + self.radius - camera_y > 0):
-            pygame.draw.circle(screen, self.color, 
-                               (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
-                               self.radius)
-
-    def check_collision(self, ship):
-        return distance(ship.pos, self.pos) < self.radius + ship.radius
-    
-
-    def calculate_gravity(self, ship):
-        dx = self.pos[0] - ship.pos[0]
-        dy = self.pos[1] - ship.pos[1]
-        distance_squared = dx**2 + dy**2
-        force_magnitude = G * (4/3 * 3.13 * self.radius**3) * ship.mass / distance_squared
-        
-        # Normalize the direction
-        distance = math.sqrt(distance_squared)
-        force_x = force_magnitude * dx / distance
-        force_y = force_magnitude * dy / distance
-        
-        return force_x, force_y
 
 class Square:
     def __init__(self, x, y, size, color, action):
@@ -274,6 +240,22 @@ class Square:
 # Create planets (increased size)
 
 
+
+planets = [
+    Planet(30_000, 30_000, 600, (50, 200, 200)),
+    Planet(33_000, 33_000, 400, (50, 200, 200)),
+    
+    Planet( 9_000, 10_000,  800, (255, 0, 0)),   
+    Planet(15_000, 17_000, 1100, (0, 255, 0)), 
+    Planet(20_000, 20_000, 1500, (0, 255, 0)),  
+    Planet(26_000,  9_000, 1600, (0, 0, 255)),
+    Planet(13_000, 15_000,  500, (255, 255, 0)),
+    Planet(14_000, 23_000, 1800, (255, 100, 255)),
+    Planet(21_000,  7_000, 1300, (50, 20, 200)),
+    Planet(  8000,   5000,  700, (50, 140, 100))
+]
+
+'''
 planets = [
     Planet(2100, 6800, 450, (0, 255, 0)),  
     Planet(3500, 1600, 250, (0, 0, 255)),
@@ -282,6 +264,7 @@ planets = [
     Planet(7000, 2400, 400, (50, 20, 200)),
     Planet(7800, 5000, 350, (50, 140, 100))
 ]
+'''
 
 # Create squares
 
@@ -290,9 +273,9 @@ pos_item = (5000, 5000)
 pos_complete = (1000, 5000)
 
 squares = [
-    Square(pos_refuel[0], pos_refuel[1], 1000, (0, 255, 255), "refuel"),  # Top-right, refuel
-    Square(pos_item[0], pos_item[1], 1000, (255, 0, 255), "get_item"),  # bottom-right, get item
-    Square(pos_complete[0], pos_complete[1], 1000, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
+    Square(pos_refuel[0], pos_refuel[1], 200, (0, 255, 255), "refuel"),  # Top-right, refuel
+    Square(pos_item[0], pos_item[1], 200, (255, 0, 255), "get_item"),  # bottom-right, get item
+    Square(pos_complete[0], pos_complete[1], 200, (255, 165, 0), "complete_mission")  # bottom-left, complete mission
 ]
 
 def bounce_from_planet(planet):
@@ -494,6 +477,12 @@ class SpaceGun:
                                (int(bullet['pos'][0] - camera_x), int(bullet['pos'][1] - camera_y)), 
                                5)
 
+
+space_gun1 = SpaceGun(5000, 3000)
+space_gun2 = SpaceGun(1500, 7000)
+
+
+
 # Create space gun
 
 # endregion
@@ -503,15 +492,15 @@ class SpaceGun:
 
 # region --- enemy ships ---
 
-BULLET_SPEED = 4
-ENEMY_SHOOT_RANGE = 900
-ENEMY_ACCELERATION = 0.6
+BULLET_SPEED = 7
+ENEMY_SHOOT_RANGE = 1600
+ENEMY_ACCELERATION = 0.006
 ENEMY_SHOOT_COOLDOWN = 50  # Adjust this value as needed
-ROCKET_ACCELERATION = 0.04  # Acceleration applied during the 1-second acceleration phase
+ROCKET_ACCELERATION = 0.03  # Acceleration applied during the 1-second acceleration phase
 
 # Define cooldown values
-ROCKET_SHOOT_COOLDOWN = 2
-BULLET_SHOOT_COOLDOWN = 0.5
+ROCKET_SHOOT_COOLDOWN = 9
+BULLET_SHOOT_COOLDOWN = 4
 
 
 # New classes for enemies and projectiles
@@ -522,7 +511,7 @@ class Enemy:
     def __init__(self, x, y, enemy_type, health=100):
         self.pos = [x, y]
         self.speed = [0, 0]
-        self.radius = 15
+        self.radius = 20
         self.type = enemy_type  # 'bullet' or 'rocket'
         self.color = (155, 77, 166) if enemy_type == 'bullet' else (255, 165, 0)
         self.shoot_cooldown = 0
@@ -563,7 +552,7 @@ class Enemy:
             self.speed = vec_add(self.speed, vec_scale(self.random_direction, ENEMY_ACCELERATION * self.difficulty))
         
         elif self.current_action == 3:  # Decelerate
-            self.speed = vec_add(self.speed, vec_scale([math.copysign(1, self.speed[0]), math.copysign(1, self.speed[1])], -ENEMY_ACCELERATION * 0.2 * self.difficulty))
+            self.speed = vec_add(self.speed, vec_scale([math.copysign(1, self.speed[0]), math.copysign(1, self.speed[1])], -ENEMY_ACCELERATION  * self.difficulty))
         
         elif self.current_action == 4:  # Orbit player
             self.orbit_player(ship)
@@ -887,25 +876,6 @@ def draw_minimap(screen, ship, planets, enemies, asteroids):
 
 
 
-# region --- grid ---
-
-
-
-def draw_grid(screen, camera_x, camera_y):
-    # Vertical lines
-    for x in range(0, WORLD_WIDTH, GRID_SIZE):
-        pygame.draw.line(screen, GRID_COLOR, 
-                         (x - camera_x, 0), 
-                         (x - camera_x, SCREEN_HEIGHT))
-    
-    # Horizontal lines
-    for y in range(0, WORLD_HEIGHT, GRID_SIZE):
-        pygame.draw.line(screen, GRID_COLOR, 
-                         (0, y - camera_y), 
-                         (SCREEN_WIDTH, y - camera_y))
-
-# endregion
-
 
 
 
@@ -1083,6 +1053,43 @@ while running:
         camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
 
         # endregion
+
+
+
+
+
+
+
+
+
+        
+        # Draw space guns
+        space_gun1.draw(screen, camera_x, camera_y)
+        space_gun1.draw_bullets(screen, camera_x, camera_y)
+        
+        space_gun2.draw(screen, camera_x, camera_y)
+        space_gun2.draw_bullets(screen, camera_x, camera_y)
+
+        # Draw ship
+        
+
+
+
+
+
+        
+        # Space gun shooting
+        space_gun1.shoot(ship.pos)
+        if space_gun1.update_bullets(ship):
+            ship.health -= 15
+
+
+         # Space gun shooting
+        space_gun2.shoot(ship.pos)
+        if space_gun2.update_bullets(ship):
+            ship.health -= 15
+
+        
 
 
 
@@ -1338,6 +1345,9 @@ while running:
         screen.blit(pos_complete_text, (10, 250))
         ammo_text = font.render(f"Ammo: {ship.ammo}", True, (255, 255, 255))
         screen.blit(ammo_text, (10, 290))
+        
+        advice_text = font.render("Ignore the squares, just fight the enemies", True, (255, 255, 255))
+        screen.blit(advice_text, (10, 310))
 
         draw_minimap(screen, ship, planets, enemies, asteroids)
         
