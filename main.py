@@ -4,18 +4,15 @@ import math
 import random
 import time
 from math import atan2, cos, sin, sqrt
-sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
+
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
 from distance import distance
-
 from grid import draw_grid
 
 from planets import Planet
 
-
-
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
-
+sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
 
 
 def vec_add(v1, v2):
@@ -26,6 +23,9 @@ def vec_scale(v, scalar):
 
 def vec_length(v):
     return math.sqrt(v[0]**2 + v[1]**2)
+
+
+        # region --- gravity ---
 
 
 
@@ -70,6 +70,9 @@ def calculate_gravity(pos, mass, planets):
 
 
 # endregion
+
+total_force_x = 0
+total_force_y = 0
 
 
 
@@ -425,9 +428,6 @@ for _ in range(20):  # Adjust the number of asteroids as needed
 
 
 
-# region --- Space gun ---
-
-# Space Gun
 class SpaceGun:
     def __init__(self, x, y):
         self.pos = [x, y]
@@ -478,14 +478,9 @@ class SpaceGun:
                                5)
 
 
-space_gun1 = SpaceGun(5000, 3000)
+space_gun1 = SpaceGun(9000, 9000)
 space_gun2 = SpaceGun(1500, 7000)
 
-
-
-# Create space gun
-
-# endregion
 
 
 
@@ -818,9 +813,6 @@ for _ in range(15):
 
 
 
-# region --- collision detection ---
-
-# endregion
 
 # region --- Minimap ---
 
@@ -942,18 +934,6 @@ while running:
         
 
 
-        # region --- gravity ---
-
-        total_force_x = 0
-        total_force_y = 0
-
-        # Update ship velocity
-        ship.speed[0] += total_force_x / ship.mass
-        ship.speed[1] += total_force_y / ship.mass
-
-        # endregion
-
-        
 
 
         # region --- combat player---

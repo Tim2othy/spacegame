@@ -1,7 +1,5 @@
 import pygame
-
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, GRID_SIZE, GRID_COLOR
-
 
 def draw_grid(screen, camera_x, camera_y):
     # Vertical lines

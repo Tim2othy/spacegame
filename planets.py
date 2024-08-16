@@ -1,7 +1,5 @@
 import pygame
-
 import math
-
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
 from distance import distance
 
