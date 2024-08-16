@@ -141,7 +141,7 @@ class Ship:
             angle = math.radians(-self.angle)
             bullet_x = self.pos[0] + math.cos(-angle) * (self.radius + 20)
             bullet_y = self.pos[1] - math.sin(-angle) * (self.radius + 20)
-            self.bullets.append(Bullet(bullet_x, bullet_y, angle, self))
+            self.bullets.append(Bullet(bullet_x, bullet_y, angle, self.speed))
             self.gun_cooldown = 4
             self.ammo -= 1
 
@@ -214,7 +214,6 @@ right_rotation_thruster_on = False
 
 
 # endregion
-
 
 
 
@@ -606,7 +605,7 @@ class Enemy:
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
             if self.type == 'bullet':
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
-                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self)]
+                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self.speed)]
             else:
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
                 return [Rocket(self.pos[0], self.pos[1], ship.pos)]
@@ -909,6 +908,12 @@ def draw_grid(screen, camera_x, camera_y):
 
 
 
+
+# ___________________________ ALL GOOD ________________ 
+
+
+
+
 # Game loop
 running = True
 while running:
@@ -923,7 +928,8 @@ while running:
         draw_grid(screen, camera_x, camera_y)
 
 
-        # region --- Handle input ---
+
+        # region --- Handle input --- # ___________________________ ALL GOOD ________________
 
         front_thruster_on = False
         rear_thruster_on = False
@@ -967,45 +973,13 @@ while running:
 
         # endregion
 
-        
 
         
+        # ___________________________ ALL GOOD above here _______________ 
 
 
-        # region --- gravity ---
+        # region --- combat player--- 
 
-        total_force_x = 0
-        total_force_y = 0
-
-        # Update ship velocity
-        ship.speed[0] += total_force_x / ship.mass
-        ship.speed[1] += total_force_y / ship.mass
-
-        # endregion
-
-        
-
-
-        # region --- combat player---
-
-        # Update player bullets
-
-        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
-
-
-        for bullet in ship.bullets[:]:
-            bullet.update()
-            if check_bullet_planet_collision(bullet, planets):
-                ship.bullets.remove(bullet)
-            if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
-                bullet.pos[1] < 0 or bullet.pos[1] > WORLD_HEIGHT):
-                ship.bullets.remove(bullet)
-
-        # endregion
-
-
-
-        
         # region --- combat enemy---
 
 
@@ -1053,9 +1027,28 @@ while running:
         # endregion
 
 
-        
 
-       # region --- world border, camera ---
+
+        # Update player bullets
+
+        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
+
+
+        for bullet in ship.bullets[:]:
+            bullet.update()
+            if check_bullet_planet_collision(bullet, planets):
+                ship.bullets.remove(bullet)
+            if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
+                bullet.pos[1] < 0 or bullet.pos[1] > WORLD_HEIGHT):
+                ship.bullets.remove(bullet)
+
+        # endregion
+
+
+
+
+
+       # region --- world border, camera --- # ___________________________ ALL GOOD ________________
 
 
         ship_screen_pos = (int(ship.pos[0] - camera_x), int(ship.pos[1] - camera_y))
@@ -1087,7 +1080,7 @@ while running:
 
 
 
-        # region --- moving ship---
+        # region --- moving ship--- # ___________________________ ALL GOOD ________________
 
         # Update ship position
         ship.pos = [
@@ -1130,143 +1123,7 @@ while running:
         
 
 
-
-        # region --- spacegun ---
-
-        # endregion
-
-        '''
-
-        # region --- collisions ---
-
-        collision = False
-        current_time = pygame.time.get_ticks()
-
-        for enemy in enemies:
-            for planet in planets:
-                if distance(enemy.pos, planet.pos) < enemy.radius + planet.radius:
-                    enemy.bounce(planet)
-
-        # Check for collisions with squares
-        for square in squares:
-            if square.check_collision(ship):
-                if square.action == "refuel":
-                    ship.fuel = ship.MAX_FUEL
-                elif square.action == "get_item":
-                    has_item = True
-                elif square.action == "complete_mission" and has_item:
-                    mission_complete = True
-                    ship_color = (255, 255, 0)  # Yellow
-
-        # Reset ship color after 1 second if it's red
-        if ship_color == (255, 0, 0) and pygame.time.get_ticks() - collision_time > 1000:
-            ship_color = (255, 255, 255)  # White
-
-        # In the main game loop, update and draw asteroids
-        for asteroid in asteroids:
-            asteroid.update(planets)
-            asteroid.draw(screen, camera_x, camera_y)
-
-            # Check for collision with ship
-
-            if asteroid.check_collision(ship.pos):
-                collision = True
-                ship_color = (255, 0, 0)  # Red
-                if collision_time == 0:
-                    collision_time = current_time
-
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
-                damage = 5 * crash_intensity  # Adjust this multiplier as needed
-
-                # Reduce health based on crash intensity
-                ship.health -= damage
-
-                # Bounce off the asteroid
-                dx = ship.pos[0] - asteroid.pos[0]
-                dy = ship.pos[1] - asteroid.pos[1]
-                bounce_angle = math.atan2(dy, dx)
-        
-                # Reverse the ship's speed and reduce it (to simulate energy loss)
-                ship.speed[0] = -ship.speed[0] * 0.5
-                ship.speed[1] = -ship.speed[1] * 0.5
-        
-                # Move the ship out of the asteroid
-                ship.pos[0] = asteroid.pos[0] + (asteroid.radius + ship.radius + 1) * math.cos(bounce_angle)
-                ship.pos[1] = asteroid.pos[1] + (asteroid.radius + ship.radius + 1) * math.sin(bounce_angle)
-        
-                break
-
-        if not collision:
-            ship.pos = ship.pos
-            collision_time = 0
-        else:
-            collision_time = current_time
-
-
-
-        # Check asteroid-asteroid collisions
-        for i, asteroid1 in enumerate(asteroids):
-            for asteroid2 in asteroids[i+1:]:
-                if asteroid1.check_collision(asteroid2):
-                    # Handle collision (implement bouncing in step 2)
-                    asteroid1.bounce(asteroid2)
-                    asteroid2.bounce(asteroid1)
-
-        # Check asteroid-planet collisions
-        for asteroid in asteroids:
-            for planet in planets:
-                if asteroid.check_collision(planet):
-                    # Handle collision (implement bouncing in step 2)
-                    asteroid.bounce(planet)
-
-
-
-        # endregion
-    
-    
-        '''
-
-
-        
-
-        # region --- planets ---
-
-        for planet in planets:
-            force_x, force_y = planet.calculate_gravity(ship)
-            total_force_x += force_x
-            total_force_y += force_y
-            
-            # In the collision detection loop for planets:
-            if planet.check_collision(ship):
-                bounce_from_planet(planet)
-                collision = True
-                ship_color = (255, 0, 0)  # Red
-                if collision_time == 0:
-                    collision_time = current_time
-                # Calculate and apply damage as before
-
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
-                damage = 1000 * crash_intensity  # Adjust this multiplier as needed
-
-                # Reduce health based on crash intensity
-                ship.health -= damage * (current_time - collision_time) / 1000
-                break
-        '''
-        if not collision:
-            ship.pos = ship.pos
-            collision_time = 0
-        else:
-            collision_time = current_time
-
-        '''
-        # endregion
-
-        
-
-
-        # region --- drawing ---
+        # region --- drawing --- # ___________________________ ALL GOOD ________________
 
 
 
@@ -1306,7 +1163,8 @@ while running:
 
 
 
-        # region --- displaying ---
+
+        # region --- displaying --- # ___________________________ ALL GOOD ________________
         
         # Display ship coordinates
         font = pygame.font.Font(None, 22)
@@ -1342,6 +1200,12 @@ while running:
         draw_minimap(screen, ship, planets, enemies, asteroids)
         
         # endregion
+
+
+
+    
+
+
 
         # Check if ship health reaches 0
         if ship.health <= 0:
