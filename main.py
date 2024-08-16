@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Game")
 
 # World size
-WORLD_WIDTH, WORLD_HEIGHT = 6_000, 6_000
+WORLD_WIDTH, WORLD_HEIGHT = 10_000, 10_000
 
 # define distance
 def distance(pos1, pos2):
@@ -35,7 +35,7 @@ has_item = False
 mission_complete = False
 game_over = False
 
-G = (6.67430e-11)*1000000  # Gravitational constant
+G = (0.0006)  # Gravitational constant
 
 def calculate_gravity(pos, mass, planets):
     total_force_x, total_force_y = 0, 0
@@ -54,32 +54,31 @@ def calculate_gravity(pos, mass, planets):
 
 
 
-
 # region --- Ship properties ---
 # basic properties
 ship_pos = [3000, 3000] 
 ship_angle = 0
 ship_speed = [0, 0]
-ship_radius = 15
-ship_health = 1000
+ship_radius = 9
+ship_health = 100
 drag = 1
 ship_mass = 1000  # Add mass to the ship
-REPAIR_RATE = 1
-MAX_SHIP_HEALTH = 2000
+REPAIR_RATE = 0.1
+MAX_SHIP_HEALTH = 200
 
 
 # fighting
 player_bullets = []
-player_gun_cooldown = 0
-player_ammo = 10000
+player_gun_cooldown = 3
+player_ammo = 250
 
 #Thrusters
-thrust = 0.15
-rotation_thrust = 1
+thrust = 0.19
+rotation_thrust = 3
 # Fuel
 fuel = 100
-fuel_consumption_rate = 0.01
-rotation_fuel_consumption_rate = 0.01
+fuel_consumption_rate = 0.07
+rotation_fuel_consumption_rate = 0.03
 MAX_FUEL = 100
 
 # Thruster states
@@ -199,12 +198,12 @@ class Square:
 ]'''
 
 planets = [
-    Planet(4100, 3100, 55, (0, 255, 0)),  
-    Planet(2000, 900, 260, (0, 0, 255)),
-    Planet(3000, 3700, 80, (255, 255, 0)),
-    Planet(3600, 1000, 380, (255, 100, 255)),
-    Planet(1000, 4000, 330, (50, 20, 200)),
-    Planet(2000, 2500, 42, (50, 140, 100))
+    Planet(2100, 6800, 450, (0, 255, 0)),  
+    Planet(3500, 1600, 250, (0, 0, 255)),
+    Planet(5000, 3700, 280, (255, 255, 0)),
+    Planet(6000, 8000, 380, (255, 100, 255)),
+    Planet(7000, 2400, 400, (50, 20, 200)),
+    Planet(7800, 5000, 350, (50, 140, 100))
 ]
 
 # Create squares
@@ -239,7 +238,7 @@ def bounce_from_planet(planet):
         return
 
     # Calculate restitution (bounciness)
-    restitution = 0.5
+    restitution = 1
 
     # Calculate impulse scalar
     j = -(1 + restitution) * vel_along_normal
@@ -336,7 +335,7 @@ class Asteroid:
             return
 
         # Calculate restitution (bounciness)
-        restitution = 5
+        restitution = 1
 
         # Calculate impulse scalar
         j = -(1 + restitution) * vel_along_normal
@@ -355,10 +354,10 @@ class Asteroid:
 
 # Generate asteroids
 asteroids = []
-for _ in range(60):  # Adjust the number of asteroids as needed
+for _ in range(20):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
-    radius = random.randint(6, 100)
+    radius = random.randint(15, 80)
     asteroids.append(Asteroid(x, y, radius))
 
 # endregion
@@ -405,7 +404,7 @@ class SpaceGun:
             bullet['pos'][0] += bullet['direction'][0] * bullet['speed']
             bullet['pos'][1] += bullet['direction'][1] * bullet['speed']
             
-            if current_time - bullet['creation_time'] > 10000:  # 20 seconds
+            if current_time - bullet['creation_time'] > 60*9:
                 self.bullets.remove(bullet)
             elif distance(bullet['pos'], ship_pos) < ship_radius:
                 self.bullets.remove(bullet)
@@ -420,8 +419,8 @@ class SpaceGun:
 
 # Create space gun
 
-space_gun1 = SpaceGun(30000, 35000)
-space_gun2 = SpaceGun(40000, 22000)
+space_gun1 = SpaceGun(5000, 3000)
+space_gun2 = SpaceGun(1500, 7000)
 
 
 # endregion
@@ -470,7 +469,7 @@ class Enemy:
         # Check if the 4-second period has elapsed
         if self.action_timer <= 0:
             self.current_action = random.randint(1, 4)
-            self.action_timer = 1*60  # Reset timer to 4 seconds maybe
+            self.action_timer = 0.5*60  # Reset timer to 4 seconds maybe
 
 
         if self.current_action == 1:  # Accelerate towards player
@@ -534,7 +533,7 @@ class Enemy:
             return
 
         # Calculate restitution (bounciness)
-        restitution = 0.5
+        restitution = 1
 
         # Calculate impulse scalar
         j = -(1 + restitution) * vel_along_normal
@@ -573,7 +572,7 @@ class Enemy:
                     return
             
                 # Calculate restitution (bounciness)
-                restitution = 0.5
+                restitution = 1
             
                 # Calculate impulse scalar
                 j = -(1 + restitution) * vel_along_normal
@@ -635,12 +634,12 @@ class Rocket:
             self.color = (255, 100, 0)  # Orange while not accelerating
         
         # Check if it's time to start accelerating
-        if not self.accelerating and time_since_last_acceleration >= 3:
+        if not self.accelerating and time_since_last_acceleration >= 9:
             self.accelerating = True
             self.last_acceleration_time = current_time
         
         # Check if the acceleration period should end
-        elif self.accelerating and time_since_last_acceleration >= 1:
+        elif self.accelerating and time_since_last_acceleration >= 3:
             self.accelerating = False
             self.last_acceleration_time = current_time
         
@@ -674,7 +673,7 @@ enemy_projectiles = []
 
 
 # Spawn enemies
-for _ in range(10):
+for _ in range(15):
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     enemy_type = random.choice(['bullet', 'rocket'])
@@ -774,6 +773,8 @@ while running:
 
         # Draw everything
         screen.fill((0, 0, 0))
+        draw_grid(screen, camera_x, camera_y)
+
 
         # region --- Handle input ---
         keys = pygame.key.get_pressed()
@@ -807,15 +808,18 @@ while running:
         # Player shooting
         if keys[pygame.K_SPACE] and player_gun_cooldown <= 0 and player_ammo > 0:
             angle = math.radians(-ship_angle)
-            bullet_x = ship_pos[0] + cos(angle) * (ship_radius + 10)
-            bullet_y = ship_pos[1] - sin(angle) * (ship_radius + 10)
+            bullet_x = ship_pos[0] + cos(-angle) * (ship_radius+20)
+            bullet_y = ship_pos[1] - sin(-angle) * (ship_radius+20)
             player_bullets.append(Bullet(bullet_x, bullet_y, angle, ship_speed))
-            player_gun_cooldown = 7
+            player_gun_cooldown = 4
             player_ammo -= 1
 
 
         if keys[pygame.K_m] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
             ship_health = min(ship_health + REPAIR_RATE, MAX_SHIP_HEALTH)
+
+        if keys[pygame.K_b] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
+            fuel = min(fuel + REPAIR_RATE, MAX_FUEL)
 
 
         # endregion
@@ -1125,7 +1129,6 @@ while running:
 
 
 
-        draw_grid(screen, camera_x, camera_y)
 
 
         # Draw squares
@@ -1163,10 +1166,10 @@ while running:
             projectile.draw(screen, camera_x, camera_y)
 
         # Draw player's gun
-        gun_length = 20
+        gun_length = 25
         gun_end_x = ship_screen_pos[0] + cos(math.radians(ship_angle)) * (ship_radius + gun_length)
         gun_end_y = ship_screen_pos[1] - sin(math.radians(ship_angle)) * (ship_radius + gun_length)
-        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 3)
+        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 6)
 
         
 
