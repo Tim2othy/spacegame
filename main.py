@@ -382,7 +382,7 @@ class Asteroid:
         # Apply gravity from planets
         for planet in planets:
             planet.draw(screen, camera_x, camera_y)
-            force_x, force_y = planet.calculate_gravity(self.pos, self.mass)
+            force_x, force_y = planet.calculate_gravity(self)
             self.speed[0] += force_x / self.mass
             self.speed[1] += force_y / self.mass
 
@@ -1135,7 +1135,7 @@ while running:
 
         # endregion
 
-        '''
+        
 
         # region --- collisions ---
 
@@ -1225,7 +1225,7 @@ while running:
         # endregion
     
     
-        '''
+        
 
 
         
