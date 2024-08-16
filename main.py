@@ -7,6 +7,16 @@ from math import atan2, cos, sin, sqrt
 sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
 
 
+
+# config
+SCREEN_WIDTH = 1700
+SCREEN_HEIGHT = 900
+WORLD_WIDTH = 10000
+WORLD_HEIGHT = 10000
+GRID_SIZE = 300
+GRID_COLOR = (0, 70, 0)
+
+
 def vec_add(v1, v2):
     return [v1[0] + v2[0], v1[1] + v2[1]]
 
@@ -31,7 +41,56 @@ class GameState:
 game_state = GameState()
 
 
+class Game:
+    def __init__(self):
+        # ... initialization ...
 
+    def run(self):
+        while not self.game_over:
+            self.handle_events()
+            self.update()
+            self.draw()
+            self.clock.tick(60)
+
+    def handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_over = True
+
+    def update(self):
+        self.ship.update()
+        self.handle_input()
+        self.check_collisions()
+        # ... update other game objects ...
+
+    def draw(self):
+        self.screen.fill((0, 0, 0))
+        self.draw_grid()
+        self.ship.draw(self.screen)
+        # ... draw other game objects ...
+        pygame.display.flip()
+
+    # ... other game methods ...
+
+
+class Game:
+    def __init__(self):
+        # ... other initialization ...
+        self.enemies = pygame.sprite.Group()
+        self.bullets = pygame.sprite.Group()
+        self.asteroids = pygame.sprite.Group()
+
+    def update(self):
+        # ... other updates ...
+        self.enemies.update()
+        self.bullets.update()
+        self.asteroids.update()
+
+    def draw(self):
+        # ... other drawing ...
+        self.enemies.draw(self.screen)
+        self.bullets.draw(self.screen)
+        self.asteroids.draw(self.screen)
 
 # region --- basics, screen, world ---
 
@@ -39,12 +98,10 @@ game_state = GameState()
 pygame.init()
 
 # Set up the display
-SCREEN_WIDTH, SCREEN_HEIGHT = 1700, 900
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Game")
 
-# World size
-WORLD_WIDTH, WORLD_HEIGHT = 10_000, 10_000
+
 
 # define distance
 def distance(pos1, pos2):
@@ -86,18 +143,19 @@ def calculate_gravity(pos, mass, planets):
 
 class Ship:
     def __init__(self, x, y):
+
+        # general
         self.pos = [x, y]
-        self.speed = [0, 0]
-        # basic properties
-        self.drag = 1
         self.angle = 0
-        self.health = 100
-        self.fuel = 100
+        self.speed = [0, 0]
         self.radius = 9
-        self.mass = 1000  # Add mass to the ship
+        self.mass = 1000
+
+        self.drag = 1
+
+        self.health = 100
         self.REPAIR_RATE = 0.1
         self.MAX_SHIP_HEALTH = 200
-
 
         # fighting
         self.bullets = []
@@ -107,12 +165,75 @@ class Ship:
         #Thrusters
         self.thrust = 0.19
         self.rotation_thrust = 3
+        self.left_rotation_thruster_on = False
+        self.right_rotation_thruster_on = False
+
         # Fuel
+        self.fuel = 100
         self.fuel_consumption_rate = 0.07
         self.rotation_fuel_consumption_rate = 0.03
         self.MAX_FUEL = 100
 
-        # ... (other ship properties) ...
+
+    def rotate_left(self):
+        if self.fuel > 0:
+            self.angle += self.rotation_thrust
+            self.fuel -= self.rotation_fuel_consumption_rate
+            self.left_rotation_thruster_on = True
+        else:
+            self.left_rotation_thruster_on = False
+
+    def rotate_right(self):
+        if self.fuel > 0:
+            self.angle -= self.rotation_thrust
+            self.fuel -= self.rotation_fuel_consumption_rate
+            self.right_rotation_thruster_on = True
+        else:
+            self.right_rotation_thruster_on = False
+
+    def reset_rotation_thrusters(self):
+        self.left_rotation_thruster_on = False
+        self.right_rotation_thruster_on = False
+
+
+    def forward(self):
+        if self.fuel > 0:
+            self.speed[0] += math.cos(math.radians(self.angle)) * self.thrust
+            self.speed[1] -= math.sin(math.radians(self.angle)) * self.thrust
+            self.fuel -= self.fuel_consumption_rate
+        else:
+            self.left_thruster_on = False
+            self.right_thruster_on = False
+
+
+    
+    def repair_health(self, repair_rate, max_ship_health):
+        self.ship_health = min(self.ship_health + repair_rate, max_ship_health)
+
+    def refuel(self, repair_rate, max_fuel):
+        self.fuel = min(self.fuel + repair_rate, max_fuel)
+
+
+
+    def shoot(self):
+        if self.player_gun_cooldown <= 0 and self.player_ammo > 0:
+            angle = math.radians(-self.ship_angle)
+            bullet_x = self.ship_pos[0] + cos(-angle) * (self.ship_radius + 20)
+            bullet_y = self.ship_pos[1] - sin(-angle) * (self.ship_radius + 20)
+            self.player_bullets.append(Bullet(bullet_x, bullet_y, angle, self.ship_speed))
+            self.player_gun_cooldown = 4
+            self.player_ammo -= 1
+
+
+    def backward(self):
+        if self.fuel > 0:
+            self.speed[0] -= math.cos(math.radians(self.angle)) * self.thrust
+            self.speed[1] += math.sin(math.radians(self.angle)) * self.thrust
+            self.fuel -= self.fuel_consumption_rate
+        else:
+            self.left_thruster_on = False
+            self.right_thruster_on = False
+
 
     def update(self):
         self.pos = vec_add(self.pos, self.speed)
@@ -121,10 +242,13 @@ class Ship:
 
     def draw(self, screen, camera_x, camera_y):
         # ... (drawing logic) ...
+        # 
+        # 
+    
+
+
 
 ship = Ship(3000, 3000)
-
-
 
 
 
@@ -881,8 +1005,7 @@ def draw_minimap(screen, ship_pos, planets, enemies, asteroids):
 
 # region --- grid ---
 
-GRID_SIZE = 300  # Size of each grid cell
-GRID_COLOR = (0, 70, 0)  # Dark green color for the grid
+
 
 def draw_grid(screen, camera_x, camera_y):
     # Vertical lines
@@ -921,45 +1044,35 @@ while game_state.running:
         left_rotation_thruster_on = False
         right_rotation_thruster_on = False
 
-        if keys[pygame.K_LEFT] and fuel > 0:
-            ship_angle += rotation_thrust
-            fuel -= rotation_fuel_consumption_rate
-            left_rotation_thruster_on = True
-        if keys[pygame.K_RIGHT] and fuel > 0:
-            ship_angle -= rotation_thrust
-            fuel -= rotation_fuel_consumption_rate
-            right_rotation_thruster_on = True
+        def handle_input(self):
+            keys = pygame.key.get_pressed()
+            self.ship.reset_rotation_thrusters()
+    
+            if keys[pygame.K_LEFT]:
+                self.ship.rotate_left()
+            if keys[pygame.K_RIGHT]:
+                self.ship.rotate_right()
+            if keys[pygame.K_UP]:
+                self.ship.forward()
+            if keys[pygame.K_DOWN]:
+                self.ship.backward()
+
+            if keys[pygame.K_SPACE]:
+                self.shoot()
+
+            if keys[pygame.K_m] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
+                self.repair_health(self.REPAIR_RATE, self.MAX_SHIP_HEALTH)
+
+            if keys[pygame.K_b] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
+                self.refuel(self.REPAIR_RATE, self.MAX_FUEL)
+
+    
 
         front_thruster_on = False
         rear_thruster_on = False
 
-        if keys[pygame.K_UP] and fuel > 0:
-            ship_speed[0] += math.cos(math.radians(ship_angle)) * thrust
-            ship_speed[1] -= math.sin(math.radians(ship_angle)) * thrust
-            fuel -= fuel_consumption_rate
-            rear_thruster_on = True
-        if keys[pygame.K_DOWN] and fuel > 0:
-            ship_speed[0] -= math.cos(math.radians(ship_angle)) * thrust
-            ship_speed[1] += math.sin(math.radians(ship_angle)) * thrust
-            fuel -= fuel_consumption_rate
-            front_thruster_on = True
 
 
-        # Player shooting
-        if keys[pygame.K_SPACE] and player_gun_cooldown <= 0 and player_ammo > 0:
-            angle = math.radians(-ship_angle)
-            bullet_x = ship_pos[0] + cos(-angle) * (ship_radius+20)
-            bullet_y = ship_pos[1] - sin(-angle) * (ship_radius+20)
-            player_bullets.append(Bullet(bullet_x, bullet_y, angle, ship_speed))
-            player_gun_cooldown = 4
-            player_ammo -= 1
-
-
-        if keys[pygame.K_m] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
-            ship_health = min(ship_health + REPAIR_RATE, MAX_SHIP_HEALTH)
-
-        if keys[pygame.K_b] and not (front_thruster_on or rear_thruster_on or left_rotation_thruster_on or right_rotation_thruster_on):
-            fuel = min(fuel + REPAIR_RATE, MAX_FUEL)
 
 
         # endregion
