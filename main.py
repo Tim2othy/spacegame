@@ -16,6 +16,7 @@ from enemy_info import ENEMY_ACCELERATION, ENEMY_SHOOT_RANGE, BULLET_SPEED, ROCK
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
 from grid import draw_grid
+from collisions import check_bullet_planet_collision, check_bullet_asteroid_collision
 
 from calcu import distance, vec_add, vec_scale, sign
 
@@ -50,7 +51,7 @@ def calculate_gravity(pos, mass, planets):
 
 
 
-ship = Ship(9000, 9000)
+ship = Ship(4000, 4000)
 
 
 
@@ -93,6 +94,18 @@ planets = [
     Planet(21_000,  7_000, 1300, (50, 20, 200)),
     Planet(  8000,   5000,  700, (50, 140, 100))
 ]
+
+
+
+planets = [
+    Planet(2100, 1800, 450, (0, 255, 0)),  
+    Planet(3500, 2600, 250, (0, 0, 255)),
+    Planet(5000, 3700, 280, (255, 255, 0)),
+    Planet(2000, 1000, 380, (255, 100, 255)),
+    Planet(3000, 2400, 400, (50, 20, 200)),
+    Planet(4800, 5000, 350, (50, 140, 100))
+]
+
 
 '''
 planets = [
@@ -553,19 +566,6 @@ class Enemy:
 
 
 
-def check_bullet_planet_collision(bullet, planets):
-    for planet in planets:
-        if distance(bullet.pos, planet.pos) < planet.radius:
-            return True
-    return False
-
-def check_bullet_asteroid_collision(bullet, asteroids):
-    for asteroid in asteroids:
-        if distance(bullet.pos, asteroid.pos) < asteroid.radius:
-            return True
-    return False
-
-
 
 class Rocket:
     def __init__(self, x, y, target_pos):
@@ -729,7 +729,10 @@ while running:
             ship.backward()
         if keys[pygame.K_SPACE]:
             ship.shoot()
-
+        if keys[pygame.K_m] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
+            ship.health = min(ship.MAX_health, ship.health + ship.REPAIR_RATE)
+        if keys[pygame.K_b] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
+            ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
         # Update ship
         ship.update()
 
@@ -1044,16 +1047,17 @@ while running:
                 bounce_from_planet(planet)
                 collision = True
                 ship_color = (255, 0, 0)  # Red
+
+                # Calculate crash intensity based on ship speed
+                crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
+                damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
+
+                # Reduce health based on crash intensity
+                ship.health -= damage * (current_time - collision_time) / 1000
                 if collision_time == 0:
                     collision_time = current_time
                 # Calculate and apply damage as before
 
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
-                damage = 1000 * crash_intensity  # Adjust this multiplier as needed
-
-                # Reduce health based on crash intensity
-                ship.health -= damage * (current_time - collision_time) / 1000
                 break
         
 
