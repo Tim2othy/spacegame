@@ -67,3 +67,10 @@ class Game:
 
 
 
+        elif self.current_action == 7:  # Accelerate randomly
+            self.rand_speed[0] = self.rand_speed[0] + random.uniform(-1, 1)
+            self.rand_speed[1] = self.rand_speed[1] + random.uniform(-1, 1)
+            
+            self.speed[0] += self.rand_speed[0] * ENEMY_ACCELERATION*0.2
+            self.speed[1] += self.rand_speed[1] * ENEMY_ACCELERATION*0.2
+            

@@ -26,7 +26,7 @@ class Ship:
         self.speed = [0, 0]
         self.radius = 9
         self.mass = 1000
-        self.health = 100
+        self.health = 10000
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
         self.MAX_health = 200
@@ -83,8 +83,7 @@ class Ship:
             bullet_y = self.pos[1] - math.sin(-angle) * (self.radius + 20)
             self.bullets.append(Bullet(bullet_x, bullet_y, angle, self))
             self.gun_cooldown = 9
-            self.ammo -= 3
-            print('shoot')
+            self.ammo -= 1
 
     def update(self):
         self.pos[0] += self.speed[0]
