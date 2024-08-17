@@ -4,24 +4,20 @@ import math
 import random
 import time
 import numpy as np
-
 from math import atan2, cos, sin, sqrt
-
-
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
-
-from calcu import distance, vec_add, vec_scale, sign
-from grid import draw_grid
-
-from planets import Planet
 
 from init import screen, camera_x, camera_y, total_force_x, total_force_y, collision_time
 
 from ship import Ship
+from bullet import Bullet
+from planets import Planet
 
 from enemy_info import ENEMY_ACCELERATION, ENEMY_SHOOT_RANGE, BULLET_SPEED, ROCKET_ACCELERATION
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
-from bullet import Bullet
+from grid import draw_grid
+
+from calcu import distance, vec_add, vec_scale, sign
 
 
 # Initialize Pygame
@@ -563,6 +559,13 @@ def check_bullet_planet_collision(bullet, planets):
             return True
     return False
 
+def check_bullet_asteroid_collision(bullet, asteroids):
+    for asteroid in asteroids:
+        if distance(bullet.pos, asteroid.pos) < asteroid.radius:
+            return True
+    return False
+
+
 
 class Rocket:
     def __init__(self, x, y, target_pos):
@@ -735,6 +738,8 @@ while running:
             bullet.update()
             if check_bullet_planet_collision(bullet, planets):
                 ship.bullets.remove(bullet)
+            if check_bullet_asteroid_collision(bullet, asteroids):
+                ship.bullets.remove(bullet)
             if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
                 bullet.pos[1] < 0 or bullet.pos[1] > WORLD_HEIGHT):
                 ship.bullets.remove(bullet)
@@ -751,8 +756,6 @@ while running:
 
         
 
-        
-
 
 
 
@@ -763,13 +766,9 @@ while running:
         ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
 
-        for bullet in ship.bullets[:]:
-            bullet.update()
-            if check_bullet_planet_collision(bullet, planets):
-                ship.bullets.remove(bullet)
-            if (bullet.pos[0] < 0 or bullet.pos[0] > WORLD_WIDTH or
-                bullet.pos[1] < 0 or bullet.pos[1] > WORLD_HEIGHT):
-                ship.bullets.remove(bullet)
+
+
+
 
         # endregion
 
@@ -784,6 +783,7 @@ while running:
         for enemy in enemies:
             new_projectiles = enemy.update(ship, planets, enemies)
             enemy_projectiles.extend(new_projectiles)
+
 
 
 
@@ -1142,6 +1142,10 @@ while running:
         draw_minimap(screen, ship, planets, enemies, asteroids)
         
         # endregion
+
+
+
+
 
         # Check if ship health reaches 0
         if ship.health <= 0:
