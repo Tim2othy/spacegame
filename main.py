@@ -624,7 +624,7 @@ MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
 MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
 MINIMAP_PLANET_COLOR = (255, 0, 0)  # Red for planets
 
-def draw_minimap(screen, ship, planets, enemies, asteroids):
+def draw_minimap(screen, ship, planets, asteroids):
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -651,13 +651,13 @@ def draw_minimap(screen, ship, planets, enemies, asteroids):
         planet_minimap_x = int(minimap_x + planet.pos[0] * scale)
         planet_minimap_y = int(minimap_y + planet.pos[1] * scale)
         pygame.draw.circle(screen, planet.color, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
-
+    
     # Draw enemies
     for enemy in enemies:
         enemy_minimap_x = int(minimap_x + enemy.pos[0] * scale)
         enemy_minimap_y = int(minimap_y + enemy.pos[1] * scale)
         pygame.draw.circle(screen, enemy.color, (enemy_minimap_x, enemy_minimap_y), 2)
-            
+    
     for asteroid in asteroids:
         asteroid_minimap_x = int(minimap_x + asteroid.pos[0] * scale)
         asteroid_minimap_y = int(minimap_y + asteroid.pos[1] * scale)
@@ -716,6 +716,8 @@ while running:
 
         # Update player bullets
         for bullet in ship.bullets[:]:
+            bullet.draw(screen, camera_x, camera_y)
+
             bullet.update()
             if check_bullet_planet_collision(bullet, planets):
                 ship.bullets.remove(bullet)
@@ -727,8 +729,6 @@ while running:
 
         # Draw ship and bullets
         ship.draw(screen, camera_x, camera_y)
-        for bullet in ship.bullets:
-            bullet.draw(screen, camera_x, camera_y)
 
 
 
@@ -803,7 +803,7 @@ while running:
 
         # endregion
 
-
+        
         
 
        # region --- world border, camera ---
@@ -912,7 +912,21 @@ while running:
         # endregion
         
 
+        
+        # Draw enemies and their projectiles
+        for enemy in enemies:
+            enemy.draw(screen, camera_x, camera_y)
 
+
+            for planet in planets:
+                if distance(enemy.pos, planet.pos) < enemy.radius + planet.radius:
+                    enemy.bounce(planet)
+
+
+
+        for projectile in enemy_projectiles:
+            projectile.draw(screen, camera_x, camera_y)
+        
 
 
         # region --- collisions ---
@@ -920,10 +934,7 @@ while running:
         collision = False
         current_time = pygame.time.get_ticks()
 
-        for enemy in enemies:
-            for planet in planets:
-                if distance(enemy.pos, planet.pos) < enemy.radius + planet.radius:
-                    enemy.bounce(planet)
+
 
         # Check for collisions with squares
         for square in squares:
@@ -1050,17 +1061,6 @@ while running:
         pygame.draw.circle(screen, ship_color, ship_screen_pos, ship.radius)
 
 
-
-        # Draw player bullets
-        for bullet in ship.bullets:
-            bullet.draw(screen, camera_x, camera_y)
-
-        # Draw enemies and their projectiles
-        for enemy in enemies:
-            enemy.draw(screen, camera_x, camera_y)
-        for projectile in enemy_projectiles:
-            projectile.draw(screen, camera_x, camera_y)
-
         # Draw player's gun
         gun_length = 25
         gun_end_x = ship_screen_pos[0] + cos(math.radians(ship.angle)) * (ship.radius + gun_length)
@@ -1111,7 +1111,7 @@ while running:
         advice_text = font.render("Ignore the squares, just fight the enemies", True, (255, 255, 255))
         screen.blit(advice_text, (10, 310))
 
-        draw_minimap(screen, ship, planets, enemies, asteroids)
+        draw_minimap(screen, ship, planets, asteroids)
         
         # endregion
 
