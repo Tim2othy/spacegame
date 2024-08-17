@@ -21,7 +21,7 @@ from calcu import distance
 from planets import Planet
 
 
-
+from bullet import Bullet
 
 
 
