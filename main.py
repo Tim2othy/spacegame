@@ -51,7 +51,7 @@ def calculate_gravity(pos, mass, planets):
 
 
 
-ship = Ship(4000, 4000)
+ship = Ship(5000, 5000)
 
 
 
@@ -82,41 +82,19 @@ class Square:
 
 
 planets = [
-    Planet(30_000, 30_000, 600, (50, 200, 200)),
-    Planet(33_000, 33_000, 400, (50, 200, 200)),
-    
-    Planet( 9_000, 10_000,  800, (255, 0, 0)),   
-    Planet(15_000, 17_000, 1100, (0, 255, 0)), 
-    Planet(20_000, 20_000, 1500, (0, 255, 0)),  
-    Planet(26_000,  9_000, 1600, (0, 0, 255)),
-    Planet(13_000, 15_000,  500, (255, 255, 0)),
-    Planet(14_000, 23_000, 1800, (255, 100, 255)),
-    Planet(21_000,  7_000, 1300, (50, 20, 200)),
-    Planet(  8000,   5000,  700, (50, 140, 100))
+    Planet(  300, 1300, 400, ( 50, 200, 200)),
+    Planet(  800, 6700, 300, (177,   0,   0)), 
+    Planet( 3000,  900, 200, (  0, 255,   0)),
+    Planet( 3400, 5300, 400, (  0,   0, 255)),
+    Planet( 5100, 1800, 450, (  0,  75, 222)),  
+    Planet( 7000, 3700, 280, (255,   0, 155)),
+    Planet( 7000, 9000, 380, (255, 100,   0)),
+    Planet( 7000,  400, 100, ( 27, 111, 200)),
+    Planet( 9000, 3700, 280, (255, 155,   0)),
+    Planet( 9000, 8000, 380, (144, 100, 255)),
+    Planet( 9800, 6400, 400, ( 50,  88,  88)),
 ]
 
-
-
-planets = [
-    Planet(2100, 1800, 450, (0, 255, 0)),  
-    Planet(3500, 2600, 250, (0, 0, 255)),
-    Planet(5000, 3700, 280, (255, 255, 0)),
-    Planet(2000, 1000, 380, (255, 100, 255)),
-    Planet(3000, 2400, 400, (50, 20, 200)),
-    Planet(4800, 5000, 350, (50, 140, 100))
-]
-
-
-'''
-planets = [
-    Planet(2100, 6800, 450, (0, 255, 0)),  
-    Planet(3500, 1600, 250, (0, 0, 255)),
-    Planet(5000, 3700, 280, (255, 255, 0)),
-    Planet(6000, 8000, 380, (255, 100, 255)),
-    Planet(7000, 2400, 400, (50, 20, 200)),
-    Planet(7800, 5000, 350, (50, 140, 100))
-]
-'''
 
 # Create squares
 
@@ -266,16 +244,16 @@ class Asteroid:
 
 # Generate asteroids
 asteroids = []
-for _ in range(20):  # Adjust the number of asteroids as needed
+for _ in range(5):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
-    radius = random.randint(15, 80)
+    radius = random.randint(40, 120)
     asteroids.append(Asteroid(x, y, radius))
 
 # endregion
 
 
-
+'''
 
 class SpaceGun:
     def __init__(self, x, y):
@@ -330,7 +308,7 @@ class SpaceGun:
 space_gun1 = SpaceGun(9000, 9000)
 space_gun2 = SpaceGun(1500, 7000)
 
-
+'''
 
 
 
@@ -672,7 +650,7 @@ def draw_minimap(screen, ship, planets, enemies, asteroids):
     for planet in planets:
         planet_minimap_x = int(minimap_x + planet.pos[0] * scale)
         planet_minimap_y = int(minimap_y + planet.pos[1] * scale)
-        pygame.draw.circle(screen, MINIMAP_PLANET_COLOR, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
+        pygame.draw.circle(screen, planet.color, (planet_minimap_x, planet_minimap_y), max(1, planet.radius/scale**(-1)))
 
     # Draw enemies
     for enemy in enemies:
@@ -865,7 +843,7 @@ while running:
 
 
 
-        
+        '''
         # Draw space guns
         space_gun1.draw(screen, camera_x, camera_y)
         space_gun1.draw_bullets(screen, camera_x, camera_y)
@@ -873,12 +851,7 @@ while running:
         space_gun2.draw(screen, camera_x, camera_y)
         space_gun2.draw_bullets(screen, camera_x, camera_y)
 
-        # Draw ship
-        
-
-
-
-
+     
 
         
         # Space gun shooting
@@ -892,7 +865,7 @@ while running:
         if space_gun2.update_bullets(ship):
             ship.health -= 15
 
-        
+        '''
 
 
 
@@ -1068,11 +1041,6 @@ while running:
 
 
         # region --- drawing ---
-
-
-
-
-
 
         # Draw squares
         for square in squares:

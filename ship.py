@@ -4,13 +4,6 @@ import random
 
 
 
-
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
-
-
-
-from init import screen, camera_x, camera_y, total_force_x, total_force_y, collision_time
-
 import numpy as np
 
 
@@ -89,8 +82,9 @@ class Ship:
             bullet_x = self.pos[0] + math.cos(-angle) * (self.radius + 20)
             bullet_y = self.pos[1] - math.sin(-angle) * (self.radius + 20)
             self.bullets.append(Bullet(bullet_x, bullet_y, angle, self))
-            self.gun_cooldown = 4
-            self.ammo -= 1
+            self.gun_cooldown = 9
+            self.ammo -= 3
+            print('shoot')
 
     def update(self):
         self.pos[0] += self.speed[0]
