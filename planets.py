@@ -1,7 +1,9 @@
 import pygame
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
-from distance import distance
+from calcu import distance
+from init import screen
+
 
 class Planet:
     def __init__(self, x, y, radius, color):

@@ -3,30 +3,17 @@ import sys
 import math
 import random
 import time
+import numpy as np
+
 from math import atan2, cos, sin, sqrt
+
 
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
-from distance import distance
+from calcu import distance, vec_add, vec_scale, sign
 from grid import draw_grid
 
 from planets import Planet
-
-sign = lambda x: (1 if x > 0 else -1 if x < 0 else 0)
-
-
-def vec_add(v1, v2):
-    return [v1[0] + v2[0], v1[1] + v2[1]]
-
-def vec_scale(v, scalar):
-    return [v[0] * scalar, v[1] * scalar]
-
-def vec_length(v):
-    return math.sqrt(v[0]**2 + v[1]**2)
-
-
-        # region --- gravity ---
-
 
 
 
@@ -46,6 +33,11 @@ pygame.display.set_caption("Space Game")
 # Camera offset
 camera_x = 0
 camera_y = 0
+
+total_force_x = 0
+total_force_y = 0
+
+
 
 ship_color = (255, 255, 255)  # White
 collision_time = 0
@@ -69,10 +61,8 @@ def calculate_gravity(pos, mass, planets):
     return total_force_x, total_force_y
 
 
-# endregion
 
-total_force_x = 0
-total_force_y = 0
+# endregion
 
 
 
@@ -205,16 +195,6 @@ class Ship:
 
 
 ship = Ship(9000, 9000)
-
-
-# Thruster states
-front_thruster_on = False
-rear_thruster_on = False
-left_rotation_thruster_on = False
-right_rotation_thruster_on = False
-
-
-# endregion
 
 
 
@@ -718,7 +698,7 @@ class Enemy:
                 self.pos[1] += overlap * ny
 
 
-''''''
+
 
 class Bullet:
     def __init__(self, x, y, angle, ship):
@@ -1118,11 +1098,6 @@ while running:
 
 
 
-        # region --- spacegun ---
-
-        # endregion
-
-        
 
         # region --- collisions ---
 
@@ -1240,14 +1215,9 @@ while running:
                 # Reduce health based on crash intensity
                 ship.health -= damage * (current_time - collision_time) / 1000
                 break
-        '''
-        if not collision:
-            ship.pos = ship.pos
-            collision_time = 0
-        else:
-            collision_time = current_time
+        
 
-        '''
+        
         # endregion
 
         
