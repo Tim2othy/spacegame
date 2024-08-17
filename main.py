@@ -99,7 +99,7 @@ planets = [
 # Create squares
 
 pos_refuel = (5000, 1000)
-pos_item = (5000, 5000)
+pos_item = (3000, 5000)
 pos_complete = (1000, 5000)
 
 squares = [
@@ -253,15 +253,13 @@ for _ in range(5):  # Adjust the number of asteroids as needed
 # endregion
 
 
-'''
-
-class SpaceGun:
+class Spacegun:
     def __init__(self, x, y):
         self.pos = [x, y]
-        self.size = 40
-        self.color = (150, 150, 150)
+        self.size = 60
+        self.color = (150, 233, 50)
         self.last_shot_time = 0
-        self.shoot_interval = 1200
+        self.shoot_interval = 12
         self.bullets = []
 
     def draw(self, screen, camera_x, camera_y):
@@ -280,7 +278,7 @@ class SpaceGun:
             self.bullets.append({
                 'pos': self.pos.copy(),
                 'direction': direction,
-                'speed': 10,
+                'speed': 30,
                 'creation_time': current_time
             })
             self.last_shot_time = current_time
@@ -291,7 +289,7 @@ class SpaceGun:
             bullet['pos'][0] += bullet['direction'][0] * bullet['speed']
             bullet['pos'][1] += bullet['direction'][1] * bullet['speed']
             
-            if current_time - bullet['creation_time'] > 60*9:
+            if current_time - bullet['creation_time'] > 4000:
                 self.bullets.remove(bullet)
             elif distance(bullet['pos'], ship.pos) < ship.radius:
                 self.bullets.remove(bullet)
@@ -305,10 +303,12 @@ class SpaceGun:
                                5)
 
 
-space_gun1 = SpaceGun(9000, 9000)
-space_gun2 = SpaceGun(1500, 7000)
 
-'''
+spaceguns = [
+    Spacegun(9000, 9000),
+    Spacegun(2000, 6000), 
+    Spacegun(5000, 2000)
+]
 
 
 
@@ -622,7 +622,6 @@ MINIMAP_MARGIN = 20  # Margin from the top-right corner
 MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
 MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
 MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
-MINIMAP_PLANET_COLOR = (255, 0, 0)  # Red for planets
 
 def draw_minimap(screen, ship, planets, asteroids):
     # Calculate the position of the minimap
@@ -662,6 +661,12 @@ def draw_minimap(screen, ship, planets, asteroids):
         asteroid_minimap_x = int(minimap_x + asteroid.pos[0] * scale)
         asteroid_minimap_y = int(minimap_y + asteroid.pos[1] * scale)
         pygame.draw.circle(screen, asteroid.color, (asteroid_minimap_x, asteroid_minimap_y), max(1, asteroid.radius/scale**(-1)))
+
+
+    for spacegun in spaceguns:
+        spacegun_minimap_x = int(minimap_x + spacegun.pos[0] * scale)
+        spacegun_minimap_y = int(minimap_y + spacegun.pos[1] * scale)
+        pygame.draw.circle(screen, spacegun.color, (spacegun_minimap_x, spacegun_minimap_y), 2)
 
 
 # endregion
@@ -735,7 +740,18 @@ while running:
 
         # endregion
 
-        
+
+
+
+
+
+        # Draw space guns and their bullets
+        for spacegun in spaceguns:
+            spacegun.draw(screen, camera_x, camera_y)
+            spacegun.draw_bullets(screen, camera_x, camera_y)
+            spacegun.shoot(ship.pos)
+            if spacegun.update_bullets(ship):
+                ship.health -= 15
 
 
 
@@ -841,31 +857,6 @@ while running:
 
 
 
-
-
-        '''
-        # Draw space guns
-        space_gun1.draw(screen, camera_x, camera_y)
-        space_gun1.draw_bullets(screen, camera_x, camera_y)
-        
-        space_gun2.draw(screen, camera_x, camera_y)
-        space_gun2.draw_bullets(screen, camera_x, camera_y)
-
-     
-
-        
-        # Space gun shooting
-        space_gun1.shoot(ship.pos)
-        if space_gun1.update_bullets(ship):
-            ship.health -= 15
-
-
-         # Space gun shooting
-        space_gun2.shoot(ship.pos)
-        if space_gun2.update_bullets(ship):
-            ship.health -= 15
-
-        '''
 
 
 
