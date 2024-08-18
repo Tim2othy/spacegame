@@ -184,10 +184,14 @@ class Asteroid:
             self.speed[1] += force_y / self.mass
 
     def check_collision(self, other):
+        # TODO: This should be split up into two different methods, one for
+        # positions, one for celestial bodies
         if isinstance(other, Asteroid) or isinstance(other, Planet):
             return distance(self.pos, other.pos) < self.radius + other.radius
-        elif isinstance(other, tuple) or isinstance(other, list):  # For ship position
+        elif isinstance(np.array([0.0,0.0]), np.ndarray):  # For ship position
             return distance(self.pos, other) < self.radius + ship.radius
+        else:
+            raise Exception("This method only handles collision-checks against Asteroids, Planets, and positions.")
 
     def bounce(self, other):
         # Calculate normal vector
