@@ -4,7 +4,7 @@ import math
 import random
 import time
 import numpy as np
-from math import atan2, cos, sin, sqrt
+from math import atan2, sqrt
 
 from init import screen, camera_x, camera_y, total_force_x, total_force_y, collision_time
 
