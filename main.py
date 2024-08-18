@@ -86,7 +86,6 @@ planets = [
     Planet(  800, 6700, 300, (177,   0,   0)), 
     Planet( 3000,  900, 200, (  0, 255,   0)),
     Planet( 3400, 5300, 400, (  0,   0, 255)),
-    Planet( 5100, 1800, 450, (  0,  75, 222)),  
     Planet( 7000, 3700, 280, (255,   0, 155)),
     Planet( 7000, 9000, 380, (255, 100,   0)),
     Planet( 7000,  400, 100, ( 27, 111, 200)),
@@ -240,11 +239,12 @@ class Asteroid:
         self.pos[0] += overlap * nx
         self.pos[1] += overlap * ny
     
-    
+
+
 
 # Generate asteroids
 asteroids = []
-for _ in range(5):  # Adjust the number of asteroids as needed
+for _ in range(10):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     radius = random.randint(40, 120)
@@ -254,14 +254,13 @@ for _ in range(5):  # Adjust the number of asteroids as needed
 
 
 
-
 # region --- space guns ---
 
 class Spacegun:
     def __init__(self, x, y):
         self.pos = [x, y]
-        self.size = 20
-        self.color = (150, 233, 50)
+        self.size = 40
+        self.color = ( 50, 50, 100)
         self.last_shot_time = 60
         self.shoot_interval = 300
         self.bullets = []
@@ -553,7 +552,7 @@ enemy_projectiles = []
 
 
 # Spawn enemies
-for _ in range(15):
+for _ in range(0):
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     enemy_type = random.choice(['bullet', 'rocket'])
@@ -573,7 +572,7 @@ MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
 MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
 MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
 
-def draw_minimap(screen, ship, planets, asteroids):
+def draw_minimap():
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -616,7 +615,7 @@ def draw_minimap(screen, ship, planets, asteroids):
     for spacegun in spaceguns:
         spacegun_minimap_x = int(minimap_x + spacegun.pos[0] * scale)
         spacegun_minimap_y = int(minimap_y + spacegun.pos[1] * scale)
-        pygame.draw.circle(screen, spacegun.color, (spacegun_minimap_x, spacegun_minimap_y), 2)
+        pygame.draw.rect(screen, spacegun.color, (spacegun_minimap_x, spacegun_minimap_y, max(7, spacegun.size*scale), max(7,spacegun.size*scale)))
 
 
 # endregion
@@ -1024,7 +1023,7 @@ while running:
         advice_text = font.render("Ignore the squares, just fight the enemies", True, (255, 255, 255))
         screen.blit(advice_text, (10, 310))
 
-        draw_minimap(screen, ship, planets, asteroids)
+        draw_minimap()
         
         # endregion
 
