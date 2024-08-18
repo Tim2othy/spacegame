@@ -1,17 +1,5 @@
 # Current Problems
 
-1. Weird if 0 asteroids
-
-    for some reason:
-
-    for _ in range(0):
-        x = random.randint(0, WORLD_WIDTH)
-        y = random.randint(0, WORLD_HEIGHT)
-        radius = random.randint(40, 120)
-        asteroids.append(Asteroid(x, y, radius))
-
-    If 0 asteroids are created the planets are invisible, but minimap and collision detection still work.
-    [SOLVED BY COMMIT bf4b5466d10b2132bd50f7b20e1b4834d3915072]
 
 2. Laggy enemies
 
@@ -105,3 +93,20 @@ Teile den Code mehr auf. Anstatt diese #regions zu verwenden, lege für jede Kla
 6. Vielleicht wäre es cool, wenn die Kamera weiter rauszoomt, wenn sich das Schiff schneller bewegt.
 
 
+
+
+
+# History
+
+1. Weird if 0 asteroids
+
+    for some reason:
+
+    for _ in range(0):
+        x = random.randint(0, WORLD_WIDTH)
+        y = random.randint(0, WORLD_HEIGHT)
+        radius = random.randint(40, 120)
+        asteroids.append(Asteroid(x, y, radius))
+
+    If 0 asteroids are created the planets are invisible, but minimap and collision detection still work.
+    [SOLVED BY COMMIT bf4b5466d10b2132bd50f7b20e1b4834d3915072]

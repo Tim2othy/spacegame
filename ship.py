@@ -10,7 +10,7 @@ class Ship:
         self.angle = 0
         self.speed = Vector2(0, 0)
         self.radius = 9
-        self.mass = 1000.0
+        self.mass = 100.0
         self.health = 10000.0
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2

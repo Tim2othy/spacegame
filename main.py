@@ -242,6 +242,8 @@ class Asteroid:
         # shouldn't this impulse also affect the way that `other`
         # is deflected?
 
+        # Answer: Yes this should be added in.
+
         # TODO: The pygame.math module already has methods for normal-vector
         # calculation
 
@@ -417,10 +419,10 @@ class Enemy:
         self.speed += force / 100
         self.check_planet_collision(planets)
 
-        # Check if the 4-second period has elapsed
+        # Check if period has elapsed
         if self.action_timer <= 0:
             self.current_action = random.randint(1, 4)
-            self.action_timer = 0.5 * 60  # Reset timer to 4 seconds (240 frames)
+            self.action_timer = 0.5 * 60  # Reset timer to seconds
 
         if self.current_action == 1:  # Accelerate towards player
             self.speed += delta * ENEMY_ACCELERATION * 2 / dist
@@ -477,6 +479,10 @@ class Enemy:
         # TODO: Should we at some point have `mass` as an attribute of `enemy`?
         mass = 100
 
+        # Answer:
+        # not sure if mass is realy something we need in the game, I don't think we need to make the physics too complicated, but not sure yet. 
+        # I guess you can create pretty realistic gravity without mass just having all enemies affected by the same force.
+
         # Calculate normal vector
         delta = self.pos - other.pos
         delta_magnitude = delta.magnitude()
@@ -504,7 +510,9 @@ class Enemy:
     def check_planet_collision(self, planets: list[Planet]):
         for planet in planets:
             # TODO: Couldn't this if-condition just be part of `bounce`?
-            # Should it be?
+            # Should it be? 
+
+            # Probably
             if self.pos.distance_to(planet.pos) < self.radius + planet.radius:
                 self.bounce(planet)
 
@@ -523,9 +531,9 @@ class Rocket:
         time_since_last_acceleration = current_time - self.last_acceleration_time
 
         if self.accelerating:
-            self.color = (255, 0, 200)  # Red while accelerating
+            self.color = (255, 0, 200)  # one color while accelerating
         else:
-            self.color = (255, 100, 0)  # Orange while not accelerating
+            self.color = (255, 100, 0)  # different color not accelerating
 
         # Check if it's time to start accelerating
         if not self.accelerating and time_since_last_acceleration >= 9:
@@ -919,7 +927,7 @@ while running:
                 dy = ship.pos[1] - asteroid.pos[1]
                 bounce_angle = math.atan2(dy, dx)
 
-                # Reverse the ship's speed and reduce it (to simulate energy loss)
+                # Reverse the ship's speed and reduce it
                 ship.speed[0] = -ship.speed[0] * 0.5
                 ship.speed[1] = -ship.speed[1] * 0.5
 
@@ -970,6 +978,9 @@ while running:
         # sure we only collide with at most one planet per frame. Once verified
         # that multiple collisions per frame don't cause any bugs, that variable
         # can be removed.
+
+        # Did I put that there? No Idea what it's doing.
+        
         collided_with_any_planets = False
         for planet in planets:
             planet.draw(screen, camera_pos)
