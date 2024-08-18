@@ -8,8 +8,7 @@ pygame.display.set_caption("Space Game")
 
 
 # Camera offset
-camera_x = 0
-camera_y = 0
+camera_pos = pygame.math.Vector2(0, 0)
 
 total_force_x = 0
 total_force_y = 0

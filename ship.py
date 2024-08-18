@@ -9,11 +9,11 @@ class Ship:
         self.angle = 0
         self.speed = Vector2(0, 0)
         self.radius = 9
-        self.mass = 1000
-        self.health = 10000
+        self.mass = 1000.0
+        self.health = 10000.0
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
-        self.MAX_health = 200
+        self.MAX_health = 200.0
         self.bullets: list[Bullet] = []
         self.gun_cooldown = 3
         self.pos = Vector2(0, 0)
@@ -25,10 +25,10 @@ class Ship:
         self.right_rotation_thruster_on = False
         self.front_thruster_on = False
         self.rear_thruster_on = False
-        self.fuel = 100
+        self.fuel = 100.0
         self.fuel_consumption_rate = 0.07
         self.rotation_fuel_consumption_rate = 0.03
-        self.MAX_FUEL = 100
+        self.MAX_FUEL = 100.0
 
     def rotate_left(self):
         if self.fuel > 0:

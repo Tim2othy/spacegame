@@ -9,8 +9,7 @@ from math import atan2, sqrt
 
 from init import (
     screen,
-    camera_x,
-    camera_y,
+    camera_pos,
     total_force_x,
     total_force_y,
     collision_time,
@@ -554,7 +553,7 @@ class Rocket:
 
 
 # Add these to your global variables
-enemies = []
+enemies: list[Enemy] = []
 enemy_projectiles = []
 
 
@@ -661,7 +660,7 @@ while running:
     if not game_over:
         # Draw everything
         screen.fill((0, 0, 0))
-        draw_grid(screen, camera_x, camera_y)
+        draw_grid(screen, camera_pos)
 
         # region --- Handle input ---
 
@@ -699,7 +698,7 @@ while running:
 
         # Update player bullets
         for bullet in ship.bullets[:]:
-            bullet.draw(screen, camera_x, camera_y)
+            bullet.draw(screen, camera_pos)
 
             bullet.update()
             if check_bullet_planet_collision(bullet, planets):
@@ -715,7 +714,7 @@ while running:
                 ship.bullets.remove(bullet)
 
         # Draw ship and bullets
-        ship.draw(screen, camera_x, camera_y)
+        ship.draw(screen, camera_pos)
 
         # endregion
 
@@ -723,8 +722,8 @@ while running:
 
         # Draw space guns and their bullets
         for spacegun in spaceguns:
-            spacegun.draw(screen, camera_x, camera_y)
-            spacegun.draw_bullets(screen, camera_x, camera_y)
+            spacegun.draw(screen, camera_pos)
+            spacegun.draw_bullets(screen, camera_pos)
             spacegun.shoot(ship.pos)
             if spacegun.update_bullets(ship):
                 ship.health -= 15
