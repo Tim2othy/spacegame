@@ -2,8 +2,12 @@ import pygame
 from pygame.math import Vector2
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
-from ship import Ship
-from main import Asteroid  # Uh oh
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ship import Ship
+    from main import Asteroid  # Uh oh
 
 
 class Planet:

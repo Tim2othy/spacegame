@@ -2,7 +2,11 @@ import pygame
 from pygame.math import Vector2
 from pygame import Color
 import math
-from bullet import Bullet
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bullet import Bullet
 
 class Ship:
     def __init__(self, x: float, y: float):
