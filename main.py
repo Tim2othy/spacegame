@@ -21,6 +21,8 @@ from collisions import check_bullet_planet_collision, check_bullet_asteroid_coll
 from calcu import distance, vec_add, vec_scale, sign
 
 
+
+
 # Initialize Pygame
 pygame.init()
 
@@ -244,7 +246,7 @@ class Asteroid:
 
 # Generate asteroids
 asteroids = []
-for _ in range(10):  # Adjust the number of asteroids as needed
+for _ in range(5):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     radius = random.randint(40, 120)
@@ -384,13 +386,7 @@ class Enemy:
         self.action_timer -= 1
 
 
-        # Check collision with player bullets
-        for bullet in ship.bullets[:]:
-            if distance(enemy.pos, bullet.pos) < enemy.radius + 3:
-                self.health -= 10
-                ship.bullets.remove(bullet)
 
-            return []
 
         # Shooting logic
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
@@ -402,11 +398,6 @@ class Enemy:
                 return [Rocket(self.pos[0], self.pos[1], ship.pos)]
         self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
         return []
-
-    def generate_random_speed(self):
-        self.rand_speed = [random.uniform(-1, 1), random.uniform(-1, 1)]
-
-
 
     def draw(self, screen, camera_x, camera_y):
         pygame.draw.circle(screen, self.color, 
@@ -448,7 +439,6 @@ class Enemy:
         overlap = self.radius + other.radius - distance(self.pos, other.pos)
         self.pos[0] += overlap * nx
         self.pos[1] += overlap * ny
-
 
 
     def check_planet_collision(self, planets):
@@ -642,15 +632,13 @@ while running:
 
         # region --- Handle input ---
 
-        front_thruster_on = False
-        rear_thruster_on = False
+
 
 
 
 
         # Handle input
         keys = pygame.key.get_pressed()
-        ship.reset_rotation_thrusters()
         if keys[pygame.K_LEFT]:
             ship.rotate_left()
         if keys[pygame.K_RIGHT]:
@@ -969,28 +957,12 @@ while running:
 
         
 
-
-        # region --- drawing ---
-
         # Draw squares
         for square in squares:
             square.draw(screen, camera_x, camera_y)
 
-        # Draw the main ship body (white circle)
-        pygame.draw.circle(screen, ship_color, ship_screen_pos, ship.radius)
 
-
-        # Draw player's gun
-        gun_length = 25
-        gun_end_x = ship_screen_pos[0] + cos(math.radians(ship.angle)) * (ship.radius + gun_length)
-        gun_end_y = ship_screen_pos[1] - sin(math.radians(ship.angle)) * (ship.radius + gun_length)
-        pygame.draw.line(screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 6)
-
-        
-
-
-        # endregion
-
+    
 
 
 

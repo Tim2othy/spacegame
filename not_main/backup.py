@@ -56,7 +56,7 @@ def calculate_gravity(pos, mass, planets):
 
 # region --- Ship properties ---
 # basic properties
-ship_pos = [3000, 3000] 
+ship_pos = [5000, 5000] 
 ship_angle = 0
 ship_speed = [0, 0]
 ship_radius = 9
@@ -354,7 +354,7 @@ class Asteroid:
 
 # Generate asteroids
 asteroids = []
-for _ in range(20):  # Adjust the number of asteroids as needed
+for _ in range(5):  # Adjust the number of asteroids as needed
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     radius = random.randint(15, 80)
@@ -548,7 +548,6 @@ class Enemy:
         self.pos[1] += overlap * ny
 
 
-
     def check_planet_collision(self, planets):
         for planet in planets:
             if distance(self.pos, planet.pos) < self.radius + planet.radius:
@@ -591,8 +590,10 @@ class Bullet:
     def __init__(self, x, y, angle, ship_speed):
         self.pos = [x, y]
         bullet_speed = BULLET_SPEED + math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
-        self.speed = [bullet_speed * cos(angle) + ship_speed[0], 
-                      bullet_speed * sin(angle) + ship_speed[1]]  
+        self.speed = [
+            bullet_speed * cos(angle) + ship_speed[0], 
+            bullet_speed * sin(angle) + ship_speed[1]
+            ]  
     def update(self):
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]

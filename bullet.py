@@ -15,7 +15,7 @@ class Bullet:
         self.speed = [
             bullet_speed * math.cos(angle) + ship.speed[0]+ ship.speed[0],
             bullet_speed * math.sin(angle) + ship.speed[1]+ ship.speed[1]
-        ]
+            ]
     def update(self):
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
