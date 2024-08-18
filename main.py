@@ -3,7 +3,6 @@ import sys
 import math
 import random
 import time
-import numpy as np
 from math import atan2, sqrt
 
 from init import (

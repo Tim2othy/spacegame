@@ -1,10 +1,5 @@
 import pygame
 import math
-
-
-import numpy as np
-
-
 from bullet import Bullet
 
 

@@ -2,7 +2,6 @@ import pygame
 import math
 from enemy_info import BULLET_SPEED
 from ship import Ship
-import numpy as np
 
 class Bullet:
     def __init__(self, x: float, y: float, angle: float, ship: Ship):
