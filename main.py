@@ -40,16 +40,15 @@ ship = Ship(5000, 5000)
 
 
 def calculate_gravity(pos, mass, planets):
-    total_force_x, total_force_y = 0, 0
+    total_force = np.array([0.0,0.0])
     for planet in planets:
-        dx = planet.pos[0] - pos[0]
-        dy = planet.pos[1] - pos[1]
-        distance_squared = dx**2 + dy**2
-        force_magnitude = G * (4/3 * 3.14 * planet.radius**3) * mass / distance_squared
-        distance = math.sqrt(distance_squared)
-        total_force_x += force_magnitude * dx / distance
-        total_force_y += force_magnitude * dy / distance
-    return total_force_x, total_force_y
+        delta = planet.pos - pos
+        distance_squared = np.sum(delta**2)
+        if distance_squared > 0:
+            distance = np.sqrt(distance_squared)
+            force_magnitude = G * (4/3 * 3.14 * planet.radius**3) * mass / distance_squared
+            total_force += delta * force_magnitude / distance
+    return total_force
 
 
 # endregion
