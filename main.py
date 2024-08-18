@@ -18,7 +18,7 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 from grid import draw_grid
 from collisions import check_bullet_planet_collision, check_bullet_asteroid_collision
 
-from calcu import distance, vec_add, vec_scale, sign
+from calcu import distance, sign
 
 
 
