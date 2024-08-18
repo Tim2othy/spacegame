@@ -176,28 +176,28 @@ def bounce_from_planet(planet: Planet):
 
 # TODO: Eventually make Asteroid and Planet subclasses of a shared class
 class Asteroid:
-    def __init__(self, x, y, radius):
-        self.pos = np.array([x, y])
+    def __init__(self, x: float, y: float, radius: float):
+        self.pos = Vector2(x, y)
         self.radius = radius
         self.color = (100, 100, 100)  # Grey color
-        self.speed = np.array([random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)])
+        self.speed = Vector2(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
         self.mass = 4 / 3 * math.pi * self.radius**3  # Assuming density of 1
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         if (
-            self.pos[0] - self.radius - camera_x < SCREEN_WIDTH
-            and self.pos[0] + self.radius - camera_x > 0
-            and self.pos[1] - self.radius - camera_y < SCREEN_HEIGHT
-            and self.pos[1] + self.radius - camera_y > 0
+            self.pos[0] - self.radius - camera_pos.x < SCREEN_WIDTH
+            and self.pos[0] + self.radius - camera_pos.x > 0
+            and self.pos[1] - self.radius - camera_pos.y < SCREEN_HEIGHT
+            and self.pos[1] + self.radius - camera_pos.y > 0
         ):
             pygame.draw.circle(
                 screen,
                 self.color,
-                (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)),
+                self.pos - camera_pos,
                 self.radius,
             )
 
-    def update(self, planets):
+    def update(self, planets: list[Planet]):
         # Update position based on speed
         # TODO: This should definitely incorporate ∆t
         self.pos += self.speed
@@ -218,31 +218,32 @@ class Asteroid:
 
         # Apply gravity from planets
         for planet in planets:
-            force_x, force_y = planet.calculate_gravity(self)
-            self.speed[0] += force_x / self.mass
-            self.speed[1] += force_y / self.mass
+            force = planet.calculate_gravity(self)
+            self.speed += force / self.mass
 
-    def check_collision(self, other):
+    def check_collision(self, other: "Asteroid | Planet | Vector2"):
         # TODO: This should be split up into two different methods, one for
         # positions, one for celestial bodies
         if isinstance(other, Asteroid) or isinstance(other, Planet):
-            return distance(self.pos, other.pos) < self.radius + other.radius
-        elif isinstance(np.array([0.0, 0.0]), np.ndarray):  # For ship position
-            return distance(self.pos, other) < self.radius + ship.radius
+            return self.pos.distance_to(other.pos) < self.radius + other.radius
         else:
-            raise Exception(
-                "This method only handles collision-checks against Asteroids, Planets, and positions."
-            )
+            # other is instance of Vector2
+            return self.pos.distance_to(other) < self.radius + ship.radius
 
-    def bounce(self, other):
+    # TODO: Disgusting union-type, we should create a superclass of Asteroid and Planet
+    def bounce(self, other: "Asteroid | Planet"):
         # TODO: Because `self` (an Asteroid) moves as well,
         # shouldn't this impulse also affect the way that `other`
         # is deflected?
 
+        # TODO: The pygame.math module already has methods for normal-vector
+        # calculation
+
         # Calculate normal vector
         delta = self.pos - other.pos
-        normal_vector = delta / np.linalg.norm(delta)
-        self_speed_along_normal = self.speed @ normal_vector
+        delta_magnitude = delta.magnitude()
+        normal_vector = delta / delta_magnitude
+        self_speed_along_normal = self.speed.dot(normal_vector)
 
         # Do not resolve if velocities are separating
         if self_speed_along_normal > 0:
@@ -258,8 +259,8 @@ class Asteroid:
         # Apply impulse
         self.speed += normal_vector * j / self.mass
 
-        # Move self outside asteroid
-        overlap = self.radius + other.radius - distance(self.pos, other.pos)
+        # Move self outside other
+        overlap = self.radius + other.radius - delta_magnitude
         self.pos += normal_vector * overlap
 
 
