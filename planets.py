@@ -1,13 +1,16 @@
 import pygame
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
-from calcu import distance
 from init import screen
+import numpy as np
+
+def distance(v,w):
+    return np.linalg.norm(v-w)
 
 
 class Planet:
     def __init__(self, x, y, radius, color):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         self.radius = radius
         self.color = color
 

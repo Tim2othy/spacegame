@@ -11,8 +11,8 @@ from ship import Ship
 from bullet import Bullet
 from planets import Planet
 
-
-from calcu import distance, vec_add, vec_scale, sign
+def distance(v,w):
+    return np.linalg.norm(v-w)
 
 
 def check_bullet_planet_collision(bullet, planets):

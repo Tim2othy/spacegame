@@ -10,7 +10,7 @@ import numpy as np
 
 class Bullet:
     def __init__(self, x, y, angle, ship):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         bullet_speed = BULLET_SPEED + math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
         self.speed = [
             bullet_speed * math.cos(angle) + ship.speed[0]+ ship.speed[0],

@@ -6,11 +6,6 @@ import random
 
 import numpy as np
 
-
-
-
-from calcu import distance
-
 from planets import Planet
 
 
@@ -23,7 +18,7 @@ from bullet import Bullet
 class Ship:
     def __init__(self, x, y):
         self.angle = 0
-        self.speed = [0, 0]
+        self.speed = np.array([0, 0])
         self.radius = 9
         self.mass = 1000
         self.health = 10000
@@ -32,7 +27,7 @@ class Ship:
         self.MAX_health = 200
         self.bullets = []
         self.gun_cooldown = 3
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
 
         self.ammo = 250
         self.thrust = 0.19

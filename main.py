@@ -18,10 +18,8 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 from grid import draw_grid
 from collisions import check_bullet_planet_collision, check_bullet_asteroid_collision
 
-from calcu import distance, sign
-
-
-
+def distance(v,w):
+    return np.linalg.norm(v-w)
 
 # Initialize Pygame
 pygame.init()
@@ -63,7 +61,7 @@ def calculate_gravity(pos, mass, planets):
 
 class Square:
     def __init__(self, x, y, size, color, action):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         self.size = size
         self.color = color
         self.action = action
@@ -156,10 +154,10 @@ def bounce_from_planet(planet):
 
 class Asteroid:
     def __init__(self, x, y, radius):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         self.radius = radius
         self.color = (100, 100, 100)  # Grey color
-        self.speed = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
+        self.speed = np.array([random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)])
         self.mass = 4/3 * math.pi * self.radius**3  # Assuming density of 1
 
     def draw(self, screen, camera_x, camera_y):
@@ -260,7 +258,7 @@ for _ in range(5):  # Adjust the number of asteroids as needed
 
 class Spacegun:
     def __init__(self, x, y):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         self.size = 40
         self.color = ( 50, 50, 100)
         self.last_shot_time = 60
@@ -334,8 +332,8 @@ BULLET_SHOOT_COOLDOWN = 0.5
 
 class Enemy:
     def __init__(self, x, y, enemy_type, health=100):
-        self.pos = [x, y]
-        self.speed = [0, 0]
+        self.pos = np.array([x, y])
+        self.speed = np.array([0, 0])
         self.radius = 15
         self.type = enemy_type  # 'bullet' or 'rocket'
         self.color = (155, 77, 166) if enemy_type == 'bullet' else (255, 165, 0)
@@ -373,8 +371,8 @@ class Enemy:
             self.speed[1] += rand_speed[1] * ENEMY_ACCELERATION*0.2
             
         elif self.current_action == 3:  # Decelerate
-            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION*0.2
-            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.2
+            self.speed[0] -= np.sign(self.speed[0]) * ENEMY_ACCELERATION*0.2
+            self.speed[1] -= np.sign(self.speed[1]) * ENEMY_ACCELERATION*0.2
 
 
 
@@ -486,9 +484,9 @@ class Enemy:
 
 class Rocket:
     def __init__(self, x, y, target_pos):
-        self.pos = [x, y]
+        self.pos = np.array([x, y])
         self.target_pos = target_pos
-        self.speed = [0, 0]  # Initial speed is zero
+        self.speed = np.array([0, 0])  # Initial speed is zero
         self.last_acceleration_time = time.time()
         self.accelerating = True
         self.color = (255, 0, 0)

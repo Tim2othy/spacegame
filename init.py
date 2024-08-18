@@ -6,7 +6,6 @@ import numpy as np
 
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
-from calcu import distance, vec_add, vec_scale, sign
 from grid import draw_grid
 
 
