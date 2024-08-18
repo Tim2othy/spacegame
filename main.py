@@ -179,7 +179,6 @@ class Asteroid:
 
         # Apply gravity from planets
         for planet in planets:
-            planet.draw(screen, camera_x, camera_y)
             force_x, force_y = planet.calculate_gravity(self)
             self.speed[0] += force_x / self.mass
             self.speed[1] += force_y / self.mass
@@ -912,28 +911,43 @@ while running:
 
         # region --- planets ---
 
+        # TODO: The variable "collided_with_any_planets" should probably be
+        # removed at some point. In an earlier version of the code, the loop
+        # "for planet in planets" immediately "break"ed whenever any planet
+        # Collided with the ship. However, this means we won't be drawing
+        # the other planets, nor applying their gravity to `ship`.
+        # So I removed the "break"-statement in the collision-check, but
+        # I didn't know why the break-statement was there in the first
+        # place. Did multiple planet-collisions on the same frame cause any
+        # bugs? Hence, `collided_with_any_planets` was introduced, to make
+        # sure we only collide with at most one planet per frame. Once verified
+        # that multiple collisions per frame don't cause any bugs, that variable
+        # can be removed.
+        collided_with_any_planets = False
         for planet in planets:
+            planet.draw(screen, camera_x, camera_y)
             force_x, force_y = planet.calculate_gravity(ship)
             total_force_x += force_x
             total_force_y += force_y
             
-            # In the collision detection loop for planets:
-            if planet.check_collision(ship):
-                bounce_from_planet(planet)
-                collision = True
-                ship_color = (255, 0, 0)  # Red
+            if not collided_with_any_planets:
+                # In the collision detection loop for planets:
+                if planet.check_collision(ship):
+                    bounce_from_planet(planet)
+                    collision = True
+                    collided_with_any_planets = True
+                    ship_color = (255, 0, 0)  # Red
 
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
-                damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
+                    # Calculate crash intensity based on ship speed
+                    crash_intensity = math.sqrt(ship.speed[0]**2 + ship.speed[1]**2)
+                    damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
 
-                # Reduce health based on crash intensity
-                ship.health -= damage * (current_time - collision_time) / 1000
-                if collision_time == 0:
-                    collision_time = current_time
-                # Calculate and apply damage as before
+                    # Reduce health based on crash intensity
+                    ship.health -= damage * (current_time - collision_time) / 1000
+                    if collision_time == 0:
+                        collision_time = current_time
+                    # Calculate and apply damage as before
 
-                break
         
 
         
