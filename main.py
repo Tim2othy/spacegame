@@ -1,4 +1,5 @@
 import pygame
+from pygame.math import Vector2
 import sys
 import math
 import random
@@ -26,9 +27,6 @@ from enemy_info import (
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
 from grid import draw_grid
-from collisions import check_bullet_planet_collision, check_bullet_asteroid_collision
-from vec import Vec, new_vec, distance
-
 
 # Initialize Pygame
 pygame.init()
@@ -48,16 +46,16 @@ ship = Ship(5000, 5000)
 # region --- calc gravity---
 
 
-def calculate_gravity(pos, mass, planets):
-    total_force = np.array([0.0, 0.0])
+def calculate_gravity(pos: Vector2, mass: float, planets: list[Planet]):
+    total_force = Vector2(0, 0)
     for planet in planets:
         delta = planet.pos - pos
-        distance_squared = np.sum(delta**2)
+        distance_squared = delta.magnitude_squared()
         if distance_squared > 0:
-            distance = np.sqrt(distance_squared)
             force_magnitude = (
                 G * (4 / 3 * 3.14 * planet.radius**3) * mass / distance_squared
             )
+            distance = math.sqrt(distance_squared)
             total_force += delta * force_magnitude / distance
     return total_force
 
