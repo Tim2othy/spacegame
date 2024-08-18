@@ -1,21 +1,22 @@
 import pygame
+from pygame.math import Vector2
+from pygame import Color
 import math
 from bullet import Bullet
 
-
 class Ship:
-    def __init__(self, x, y):
+    def __init__(self, x: float, y: float):
         self.angle = 0
-        self.speed = np.array([0, 0])
+        self.speed = Vector2(0, 0)
         self.radius = 9
         self.mass = 1000
         self.health = 10000
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
         self.MAX_health = 200
-        self.bullets = []
+        self.bullets: list[Bullet] = []
         self.gun_cooldown = 3
-        self.pos = np.array([x, y])
+        self.pos = Vector2(0, 0)
 
         self.ammo = 250
         self.thrust = 0.19
@@ -79,79 +80,77 @@ class Ship:
         self.gun_cooldown = max(0, self.gun_cooldown - 1)
         self.fuel = max(0, self.fuel)
 
-    def draw(self, screen, camera_x, camera_y):
-        ship_screen_pos = (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y))
-        pygame.draw.circle(screen, (255, 255, 255), ship_screen_pos, self.radius)
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
+        ship_relative_pos = self.pos - camera_pos
+        pygame.draw.circle(screen, (255, 255, 255), ship_relative_pos, self.radius)
 
         # Draw gun
         gun_length = 25
-        gun_end_x = ship_screen_pos[0] + math.cos(math.radians(self.angle)) * (
+        gun_end_x = ship_relative_pos[0] + math.cos(math.radians(self.angle)) * (
             self.radius + gun_length
         )
-        gun_end_y = ship_screen_pos[1] - math.sin(math.radians(self.angle)) * (
+        gun_end_y = ship_relative_pos[1] - math.sin(math.radians(self.angle)) * (
             self.radius + gun_length
         )
         pygame.draw.line(
-            screen, (200, 200, 200), ship_screen_pos, (gun_end_x, gun_end_y), 6
+            screen, (200, 200, 200), ship_relative_pos, (gun_end_x, gun_end_y), 6
         )
 
         # Draw thrusters
         self.draw_thruster(
             screen,
-            ship_screen_pos,
+            ship_relative_pos,
             angle_offset=0,
             is_active=self.front_thruster_on,
             is_rotation=False,
         )  # Front thruster
         self.draw_thruster(
             screen,
-            ship_screen_pos,
+            ship_relative_pos,
             angle_offset=180,
             is_active=self.rear_thruster_on,
             is_rotation=False,
         )  # Rear thruster
         self.draw_thruster(
             screen,
-            ship_screen_pos,
+            ship_relative_pos,
             angle_offset=90,
             is_active=self.left_rotation_thruster_on,
             is_rotation=True,
         )  # Left rotation thruster
         self.draw_thruster(
             screen,
-            ship_screen_pos,
+            ship_relative_pos,
             angle_offset=-90,
             is_active=self.right_rotation_thruster_on,
             is_rotation=True,
         )  # Right rotation thruster
 
     def draw_thruster(
-        self, screen, ship_screen_pos, angle_offset, is_active, is_rotation=False
+        self,
+        screen: pygame.Surface,
+        ship_screen_pos: Vector2,
+        angle_offset: float,
+        is_active: bool,
+        is_rotation: bool = False,
     ):
-        thruster_pos = (
-            int(
-                ship_screen_pos[0]
-                + math.cos(math.radians(self.angle + angle_offset)) * self.radius
-            ),
-            int(
-                ship_screen_pos[1]
-                - math.sin(math.radians(self.angle + angle_offset)) * self.radius
-            ),
+        thruster_pos = Vector2(
+            ship_screen_pos[0]
+            + math.cos(math.radians(self.angle + angle_offset)) * self.radius,
+            ship_screen_pos[1]
+            - math.sin(math.radians(self.angle + angle_offset)) * self.radius,
         )
 
-        if is_rotation == True:
-            color = (
-                (0, 255, 255) if is_active == True else (255, 255, 255)
-            )  # Cyan for rotation thrusters
-
-        else:
-            color = (
-                (0, 0, 255) if is_active == True else (255, 255, 255)
-            )  # Blue for front/rear thrusters
-
+        color = Color(("cyan" if is_rotation else "blue") if is_active else "white")
         self.draw_thruster_shape(screen, thruster_pos, color, self.angle + angle_offset)
 
-    def draw_thruster_shape(self, screen, pos, color, angle):
+    def draw_thruster_shape(
+        self,
+        screen: pygame.Surface,
+        pos: Vector2,
+        color: pygame.Color,
+        angle: float,
+    ):
         thruster_width = 5
         thruster_height = 10
         points = [
