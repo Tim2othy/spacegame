@@ -270,20 +270,20 @@ class Asteroid:
 
 def check_bullet_planet_collision(bullet: Bullet, planets: list[Planet]):
     for planet in planets:
-        if distance(bullet.pos, planet.pos) < planet.radius:
+        if bullet.pos.distance_to(planet.pos) < planet.radius:
             return True
     return False
 
 
 def check_bullet_asteroid_collision(bullet: Bullet, asteroids: list[Asteroid]):
     for asteroid in asteroids:
-        if distance(bullet.pos, asteroid.pos) < asteroid.radius:
+        if bullet.pos.distance_to(asteroid.pos) < asteroid.radius:
             return True
     return False
 
 
 # Generate asteroids
-asteroids = []
+asteroids: list[Asteroid] = []
 for _ in range(5):  # Adjust the number of asteroids as needed
     x = random.uniform(0, WORLD_WIDTH)
     y = random.uniform(0, WORLD_HEIGHT)
@@ -297,34 +297,37 @@ for _ in range(5):  # Adjust the number of asteroids as needed
 
 
 class Spacegun:
-    def __init__(self, x, y):
-        self.pos = np.array([x, y])
+    def __init__(self, x: float, y: float):
+        self.pos = Vector2(x, y)
         self.size = 40
         self.color = (50, 50, 100)
         self.last_shot_time = 60
         self.shoot_interval = 300
-        self.bullets = []
+        self.bullets: list[object] = []
+        # TODO: The "object" type is super-unspecific.
+        # `self.bullets` *should* be a `list[Bullet]`, but
+        # currently the `Bullet` class does not implement the
+        # features that Spacegun wants, and so Spacegun uses
+        # a dictionary instead of a `Bullet`. Once Spacegun
+        # uses a proper `Bullet`, this should have
+        # its type changed to `list[Bullet]`.
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         pygame.draw.rect(
             screen,
             self.color,
-            (
-                int(self.pos[0] - camera_x),
-                int(self.pos[1] - camera_y),
-                self.size,
-                self.size,
-            ),
+            (self.pos - camera_pos, (self.size, self.size)),
         )
 
-    def shoot(self, target_pos):
+    def shoot(self, target_pos: Vector2):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot_time > self.shoot_interval:
-            direction = [target_pos[0] - self.pos[0], target_pos[1] - self.pos[1]]
-            length = math.sqrt(direction[0] ** 2 + direction[1] ** 2)
+            direction = target_pos - self.pos
+            length = direction.magnitude()
             if length > 0:
-                direction = [direction[0] / length, direction[1] / length]
+                direction /= length
 
+            # TODO: Do we really want to append even if direction is the zero-vector?
             self.bullets.append(
                 {
                     "pos": self.pos.copy(),
@@ -335,7 +338,7 @@ class Spacegun:
             )
             self.last_shot_time = current_time
 
-    def update_bullets(self, ship):
+    def update_bullets(self, ship: Ship):
         current_time = pygame.time.get_ticks()
         for bullet in self.bullets[:]:
             bullet["pos"][0] += bullet["direction"][0] * bullet["speed"]
@@ -343,17 +346,17 @@ class Spacegun:
 
             if current_time - bullet["creation_time"] > 4000:
                 self.bullets.remove(bullet)
-            elif distance(bullet["pos"], ship.pos) < ship.radius:
+            elif bullet["pos"].distance_to(ship.pos) < ship.radius:
                 self.bullets.remove(bullet)
                 return True  # Collision detected
         return False
 
-    def draw_bullets(self, screen, camera_x, camera_y):
+    def draw_bullets(self, screen: pygame.Surface, camera_pos: Vector2):
         for bullet in self.bullets:
             pygame.draw.circle(
                 screen,
                 (255, 0, 0),
-                (int(bullet["pos"][0] - camera_x), int(bullet["pos"][1] - camera_y)),
+                (bullet["pos"] - camera_pos),
                 5,
             )
 
