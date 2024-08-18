@@ -323,8 +323,8 @@ spaceguns = [
 
 
 # Define cooldown values
-ROCKET_SHOOT_COOLDOWN = 9
-BULLET_SHOOT_COOLDOWN = 4
+ROCKET_SHOOT_COOLDOWN = 2
+BULLET_SHOOT_COOLDOWN = 0.5
 
 
 # New classes for enemies and projectiles
@@ -335,66 +335,44 @@ class Enemy:
     def __init__(self, x, y, enemy_type, health=100):
         self.pos = [x, y]
         self.speed = [0, 0]
-        self.radius = 20
+        self.radius = 15
         self.type = enemy_type  # 'bullet' or 'rocket'
         self.color = (155, 77, 166) if enemy_type == 'bullet' else (255, 165, 0)
         self.shoot_cooldown = 0
-        self.current_action = 6
-        self.action_timer = 0
+        self.action_timer = 1*60
+
         self.random_direction = None
-        self.orbit_angle = 0
-        self.difficulty = 1.0
-        self.rand_speed = [0, 0]
         self.health = health
 
     def update(self, ship, planets, other_enemies):
         dx = ship.pos[0] - self.pos[0]
         dy = ship.pos[1] - self.pos[1]
         dist = sqrt(dx**2 + dy**2)
-
-        # Apply gravitational forces
+        self.current_action = 6
         force_x, force_y = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
         self.speed[0] += force_x / 100
         self.speed[1] += force_y / 100
         self.check_planet_collision(planets)
+        rand_speed = [0, 0]
 
 
         # Check if the 4-second period has elapsed
         if self.action_timer <= 0:
-            self.choose_action(ship.pos, other_enemies)
-            self.action_timer = 4 * 60  # Reset timer to 4 seconds (240 frames)
+            self.current_action = random.randint(1, 8)
+            self.action_timer = 0.5 * 60  # Reset timer to 4 seconds (240 frames)
 
-
-        # Execute current action
         if self.current_action == 1:  # Accelerate towards player
-            self.speed = vec_add(self.speed, vec_scale([dx/dist, dy/dist], ENEMY_ACCELERATION * self.difficulty))
-        
-        elif self.current_action == 2:  # Accelerate randomly
-            if not self.random_direction:
-                angle = random.uniform(0, 2 * math.pi)
-                self.random_direction = [math.cos(angle), math.sin(angle)]
-            self.speed = vec_add(self.speed, vec_scale(self.random_direction, ENEMY_ACCELERATION * self.difficulty))
-        
-        elif self.current_action == 3:  # Decelerate
-            self.speed = vec_add(self.speed, vec_scale([math.copysign(1, self.speed[0]), math.copysign(1, self.speed[1])], -ENEMY_ACCELERATION  * self.difficulty))
-        
-        elif self.current_action == 4:  # Orbit player
-            self.orbit_player(ship)
-        
-        elif self.current_action == 5:  # Evasive maneuvers
-            self.evade(ship)
-        
-        elif self.current_action == 6:  # Formation flying
-            self.fly_formation(other_enemies)
+            self.speed[0] += (dx / dist) * ENEMY_ACCELERATION*2
+            self.speed[1] += (dy / dist) * ENEMY_ACCELERATION*2
 
-        elif self.current_action == 7:  # Accelerate randomly
-            self.rand_speed[0] = self.rand_speed[0] + random.uniform(-1, 1)
-            self.rand_speed[1] = self.rand_speed[1] + random.uniform(-1, 1)
+        elif self.current_action == 2:  # Accelerate randomly
+            rand_speed[0] = rand_speed[0] + random.uniform(-1, 1)
+            rand_speed[1] = rand_speed[1] + random.uniform(-1, 1)
             
-            self.speed[0] += self.rand_speed[0] * ENEMY_ACCELERATION*0.2
-            self.speed[1] += self.rand_speed[1] * ENEMY_ACCELERATION*0.2
+            self.speed[0] += rand_speed[0] * ENEMY_ACCELERATION*0.2
+            self.speed[1] += rand_speed[1] * ENEMY_ACCELERATION*0.2
             
-        elif self.current_action == 8:  # Decelerate
+        elif self.current_action == 3:  # Decelerate
             self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION*0.2
             self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.2
 
@@ -430,47 +408,12 @@ class Enemy:
         self.rand_speed = [random.uniform(-1, 1), random.uniform(-1, 1)]
 
 
-    def choose_action(self, ship, other_enemies):
-        # Implement a more sophisticated action selection here
-        # This could include checking distances, player's weapon status, etc.
-        self.current_action = random.randint(1, 8)
-        self.random_direction = None  # Reset random direction when changing actions
-
-    def orbit_player(self, ship):
-        orbit_distance = 200  # Adjust as needed
-        self.orbit_angle += 0.02  # Adjust for orbit speed
-        target_x = ship.pos[0] + math.cos(self.orbit_angle) * orbit_distance
-        target_y = ship.pos[1] + math.sin(self.orbit_angle) * orbit_distance
-        dx = target_x - self.pos[0]
-        dy = target_y - self.pos[1]
-        dist = math.sqrt(dx**2 + dy**2)
-        self.speed = vec_add(self.speed, vec_scale([dx/dist, dy/dist], ENEMY_ACCELERATION * self.difficulty))
-
-    def evade(self, ship):
-        dx = self.pos[0] - ship.pos[0]
-        dy = self.pos[1] - ship.pos[1]
-        dist = math.sqrt(dx**2 + dy**2)
-        self.speed = vec_add(self.speed, vec_scale([dx/dist, dy/dist], ENEMY_ACCELERATION * 1.5 * self.difficulty))
 
     def draw(self, screen, camera_x, camera_y):
         pygame.draw.circle(screen, self.color, 
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            self.radius)
     
-    def fly_formation(self, other_enemies):
-        if not other_enemies:
-            return
-        # Simple V formation
-        leader = other_enemies[0]
-        index = other_enemies.index(self)
-        offset = 50 * (index + 1)
-        target_x = leader.pos[0] - offset
-        target_y = leader.pos[1] + offset
-        dx = target_x - self.pos[0]
-        dy = target_y - self.pos[1]
-        dist = math.sqrt(dx**2 + dy**2)
-        self.speed = vec_add(self.speed, vec_scale([dx/dist, dy/dist], ENEMY_ACCELERATION * self.difficulty))
-
 
     def bounce(self, other):
         # Calculate normal vector
@@ -760,15 +703,13 @@ while running:
         # endregion
 
 
+        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
         
         # region --- combat ---
 
 
-        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
-
-        enemies = [enemy for enemy in enemies if enemy.health > 0]
 
         for enemy in enemies:
             new_projectiles = enemy.update(ship, planets, enemies)
@@ -790,13 +731,10 @@ while running:
                     break
 
         for projectile in enemy_projectiles[:]:
-            if isinstance(projectile, Rocket): 
-                projectile.update(ship)
+
             if check_bullet_planet_collision(projectile, planets):
                 enemy_projectiles.remove(projectile)
 
-
-        for projectile in enemy_projectiles[:]:
             if isinstance(projectile, Rocket):
                 projectile.update(ship)
             else:

@@ -471,7 +471,6 @@ class Enemy:
             self.current_action = random.randint(1, 4)
             self.action_timer = 0.5*60  # Reset timer to 4 seconds maybe
 
-
         if self.current_action == 1:  # Accelerate towards player
             self.speed[0] += (dx / dist) * ENEMY_ACCELERATION*2
             self.speed[1] += (dy / dist) * ENEMY_ACCELERATION*2
@@ -832,9 +831,6 @@ while running:
         total_force_x = 0
         total_force_y = 0
 
-        # Update ship velocity
-        ship_speed[0] += total_force_x / ship_mass
-        ship_speed[1] += total_force_y / ship_mass
 
         # endregion
 
@@ -876,13 +872,10 @@ while running:
                     break
 
         for projectile in enemy_projectiles[:]:
-            if isinstance(projectile, Rocket): 
-                projectile.update(ship_pos)
+
             if check_bullet_planet_collision(projectile, planets):
                 enemy_projectiles.remove(projectile)
 
-
-        for projectile in enemy_projectiles[:]:
             if isinstance(projectile, Rocket):
                 projectile.update(ship_pos)
             else:
