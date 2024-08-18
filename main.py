@@ -195,38 +195,27 @@ class Asteroid:
 
     def bounce(self, other):
         # Calculate normal vector
-        nx = self.pos[0] - other.pos[0]
-        ny = self.pos[1] - other.pos[1]
-        norm = math.sqrt(nx*nx + ny*ny)
-        nx /= norm + 0.0003456
-        ny /= norm + 0.0003456
-
-        # Calculate relative velocity
-        rv_x = self.speed[0]
-        rv_y = self.speed[1]
-
-        # Calculate velocity component along normal
-        vel_along_normal = rv_x * nx + rv_y * ny
+        delta = self.pos - other.pos
+        normal_vector = delta / np.linalg.norm(delta)
+        self_speed_along_normal = self.speed @ normal_vector
 
         # Do not resolve if velocities are separating
-        if vel_along_normal > 0:
+        if self_speed_along_normal > 0:
             return
 
         # Calculate restitution (bounciness)
         restitution = 1
 
         # Calculate impulse scalar
-        j = -(1 + restitution) * vel_along_normal
+        j = -(1 + restitution) * self_speed_along_normal
         j /= 1/self.mass + 1/(4/3 * math.pi * other.radius**3)
 
         # Apply impulse
-        self.speed[0] += j * nx / self.mass
-        self.speed[1] += j * ny / self.mass
+        self.speed += normal_vector * j / self.mass
 
-        # Move asteroid outside other object
+        # Move self outside asteroid
         overlap = self.radius + other.radius - distance(self.pos, other.pos)
-        self.pos[0] += overlap * nx
-        self.pos[1] += overlap * ny
+        self.pos += normal_vector * overlap
     
 
 
