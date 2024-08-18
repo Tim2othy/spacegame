@@ -9,7 +9,7 @@ from config import (
 )
 
 
-def draw_grid(screen, camera_x, camera_y):
+def draw_grid(screen: pygame.Surface, camera_x: float, camera_y: float):
     # Vertical lines
     for x in range(0, WORLD_WIDTH, GRID_SIZE):
         pygame.draw.line(
