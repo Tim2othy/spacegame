@@ -43,6 +43,10 @@ game_over = False
 
 ship = Ship(5000, 5000)
 
+# I can't *believe* that math doesn't have a sign-function
+def sign(x: int | float):
+    return math.copysign(1, x)
+
 
 # region --- calc gravity---
 
@@ -139,6 +143,7 @@ squares = [
 ]
 
 
+# TODO: We should just have one single bounce-method for all kinds of celestial bodies
 def bounce_from_planet(planet: Planet):
     # TODO: The pygame.math module already has methods for normal-vector
     # calculation
@@ -356,7 +361,7 @@ class Spacegun:
             pygame.draw.circle(
                 screen,
                 (255, 0, 0),
-                (bullet["pos"] - camera_pos),
+                bullet["pos"] - camera_pos,
                 5,
             )
 
@@ -378,9 +383,11 @@ BULLET_SHOOT_COOLDOWN = 0.5
 
 
 class Enemy:
-    def __init__(self, x, y, enemy_type, health=100):
-        self.pos = np.array([x, y])
-        self.speed = np.array([0, 0])
+    # TODO: Rather than an enemy_type:str parameter, have an Enemy-class,
+    # with BulletEnemy and RocketEnemy as sub-classes
+    def __init__(self, x: float, y: float, enemy_type: str, health: int = 100):
+        self.pos = Vector2(x, y)
+        self.speed = Vector2(0, 0)
         self.radius = 15
         self.type = enemy_type  # 'bullet' or 'rocket'
         self.color = (155, 77, 166) if enemy_type == "bullet" else (255, 165, 0)
@@ -389,18 +396,16 @@ class Enemy:
 
         self.health = health
 
-    def update(self, ship, planets, other_enemies):
-        dx = ship.pos[0] - self.pos[0]
-        dy = ship.pos[1] - self.pos[1]
-        dist = sqrt(dx**2 + dy**2)
+    # TODO: Add return-type to this function
+    def update(self, ship: Ship, planets: list[Planet]):
+        delta = ship.pos - self.pos
+        dist = delta.magnitude()
+        # TODO: Rather than storing an int for current_action, store some enum. See:
+        # https://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
         self.current_action = 6
-        force_x, force_y = calculate_gravity(
-            self.pos, 100, planets
-        )  # Assume enemy mass is 100
-        self.speed[0] += force_x / 100
-        self.speed[1] += force_y / 100
+        force = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
+        self.speed += force / 100
         self.check_planet_collision(planets)
-        rand_speed = [0, 0]
 
         # Check if the 4-second period has elapsed
         if self.action_timer <= 0:
@@ -412,15 +417,14 @@ class Enemy:
             self.speed[1] += (dy / dist) * ENEMY_ACCELERATION * 2
 
         elif self.current_action == 2:  # Accelerate randomly
-            rand_speed[0] = rand_speed[0] + random.uniform(-1, 1)
-            rand_speed[1] = rand_speed[1] + random.uniform(-1, 1)
+            rand_speed = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
 
             self.speed[0] += rand_speed[0] * ENEMY_ACCELERATION * 0.2
             self.speed[1] += rand_speed[1] * ENEMY_ACCELERATION * 0.2
 
         elif self.current_action == 3:  # Decelerate
-            self.speed[0] -= np.sign(self.speed[0]) * ENEMY_ACCELERATION * 0.2
-            self.speed[1] -= np.sign(self.speed[1]) * ENEMY_ACCELERATION * 0.2
+            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION * 0.2
+            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION * 0.2
 
         # Update position
         self.pos[0] += self.speed[0]
@@ -431,101 +435,68 @@ class Enemy:
         # Shooting logic
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
             if self.type == "bullet":
-                self.shoot_cooldown = (
-                    BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
-                )
+                # Set cooldown for bullet enemy
+                self.shoot_cooldown = BULLET_SHOOT_COOLDOWN
+                # TODO: `self` is not of type `Ship`. Perhaps `Enemy` should be subclass of `Ship`?
                 return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self)]
             else:
-                self.shoot_cooldown = (
-                    ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
-                )
+                # Set cooldown for rocket enemy
+                self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
                 return [Rocket(self.pos[0], self.pos[1], ship.pos)]
         self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
         return []
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         pygame.draw.circle(
             screen,
             self.color,
-            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)),
+            self.pos - camera_pos,
             self.radius,
         )
 
-    def bounce(self, other):
+    # TODO: Disgusting union-type, we should create a superclass of Asteroid and Planet
+    def bounce(self, other: Asteroid | Planet):
+        # TODO: Because `self` (an Asteroid) moves as well,
+        # shouldn't this impulse also affect the way that `other`
+        # is deflected?
+
+        # TODO: The pygame.math module already has methods for normal-vector
+        # calculation
+
+        # Assume enemy's mass is 100
+        # TODO: Should we at some point have `mass` as an attribute of `enemy`?
+        mass = 100
+
         # Calculate normal vector
-        nx = self.pos[0] - other.pos[0]
-        ny = self.pos[1] - other.pos[1]
-        norm = math.sqrt(nx * nx + ny * ny)
-        nx /= norm
-        ny /= norm
-
-        # Calculate relative velocity
-        rv_x = self.speed[0]
-        rv_y = self.speed[1]
-
-        # Calculate velocity component along normal
-        vel_along_normal = rv_x * nx + rv_y * ny
+        delta = self.pos - other.pos
+        delta_magnitude = delta.magnitude()
+        normal_vector = delta / delta_magnitude
+        self_speed_along_normal = self.speed.dot(normal_vector)
 
         # Do not resolve if velocities are separating
-        if vel_along_normal > 0:
+        if self_speed_along_normal > 0:
             return
 
         # Calculate restitution (bounciness)
         restitution = 1
 
         # Calculate impulse scalar
-        j = -(1 + restitution) * vel_along_normal
-        j /= 1 / 100 + 1 / (
-            4 / 3 * math.pi * other.radius**3
-        )  # Assume enemy mass is 100
+        j = -(1 + restitution) * self_speed_along_normal
+        j /= 1 / mass + 1 / (4 / 3 * math.pi * other.radius**3)
 
         # Apply impulse
-        self.speed[0] += j * nx / 100
-        self.speed[1] += j * ny / 100
+        self.speed += normal_vector * j / mass
 
-        # Move enemy outside other object
-        overlap = self.radius + other.radius - distance(self.pos, other.pos)
-        self.pos[0] += overlap * nx
-        self.pos[1] += overlap * ny
+        # Move self outside other
+        overlap = self.radius + other.radius - delta_magnitude
+        self.pos += normal_vector * overlap
 
-    def check_planet_collision(self, planets):
+    def check_planet_collision(self, planets: list[Planet]):
         for planet in planets:
-            if distance(self.pos, planet.pos) < self.radius + planet.radius:
-                # Calculate normal vector
-                nx = self.pos[0] - planet.pos[0]
-                ny = self.pos[1] - planet.pos[1]
-                norm = math.sqrt(nx * nx + ny * ny)
-                nx /= norm
-                ny /= norm
-
-                # Calculate relative velocity
-                rv_x = self.speed[0]
-                rv_y = self.speed[1]
-
-                # Calculate velocity component along normal
-                vel_along_normal = rv_x * nx + rv_y * ny
-
-                # Do not resolve if velocities are separating
-                if vel_along_normal > 0:
-                    return
-
-                # Calculate restitution (bounciness)
-                restitution = 1
-
-                # Calculate impulse scalar
-                j = -(1 + restitution) * vel_along_normal
-                j /= 1 / 100 + 1 / (
-                    4 / 3 * 3.14 * planet.radius**3
-                )  # Assume enemy mass is 100
-
-                # Apply impulse
-                self.speed[0] += j * nx / 100
-                self.speed[1] += j * ny / 100
-
-                # Move enemy outside planet
-                overlap = self.radius + planet.radius - distance(self.pos, planet.pos)
-                self.pos[0] += overlap * nx
-                self.pos[1] += overlap * ny
+            # TODO: Couldn't this if-condition just be part of `bounce`?
+            # Should it be?
+            if self.pos.distance_to(planet.pos) < self.radius + planet.radius:
+                self.bounce(planet)
 
 
 class Rocket:
