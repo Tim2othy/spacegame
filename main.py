@@ -500,15 +500,15 @@ class Enemy:
 
 
 class Rocket:
-    def __init__(self, x, y, target_pos):
-        self.pos = np.array([x, y])
+    def __init__(self, x: float, y: float, target_pos: Vector2):
+        self.pos = Vector2(x, y)
         self.target_pos = target_pos
-        self.speed = np.array([0, 0])  # Initial speed is zero
+        self.speed = Vector2(0, 0)  # Initial speed is zero
         self.last_acceleration_time = time.time()
         self.accelerating = True
         self.color = (255, 0, 0)
 
-    def update(self, ship):
+    def update(self, ship: Ship):
         current_time = time.time()
         time_since_last_acceleration = current_time - self.last_acceleration_time
 
@@ -544,11 +544,11 @@ class Rocket:
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         pygame.draw.circle(
             screen,
             self.color,
-            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)),
+            self.pos - camera_pos,
             5,
         )
 
