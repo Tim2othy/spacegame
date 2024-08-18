@@ -262,6 +262,24 @@ class Asteroid:
         self.pos += normal_vector * overlap
 
 
+# TODO: These two methods will eventually be merged into the superclass of
+# Asteroid and Planet
+
+
+def check_bullet_planet_collision(bullet: Bullet, planets: list[Planet]):
+    for planet in planets:
+        if distance(bullet.pos, planet.pos) < planet.radius:
+            return True
+    return False
+
+
+def check_bullet_asteroid_collision(bullet: Bullet, asteroids: list[Asteroid]):
+    for asteroid in asteroids:
+        if distance(bullet.pos, asteroid.pos) < asteroid.radius:
+            return True
+    return False
+
+
 # Generate asteroids
 asteroids = []
 for _ in range(5):  # Adjust the number of asteroids as needed
