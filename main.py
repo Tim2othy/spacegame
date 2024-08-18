@@ -108,38 +108,27 @@ squares = [
 
 def bounce_from_planet(planet):
     # Calculate normal vector
-    nx = ship.pos[0] - planet.pos[0]
-    ny = ship.pos[1] - planet.pos[1]
-    norm = math.sqrt(nx*nx + ny*ny)
-    nx /= norm
-    ny /= norm
-
-    # Calculate relative velocity
-    rv_x = ship.speed[0]
-    rv_y = ship.speed[1]
-
-    # Calculate velocity component along normal
-    vel_along_normal = rv_x * nx + rv_y * ny
+    delta = ship.pos - planet.pos
+    normal_vector = delta / np.linalg.norm(delta)
+    ship_speed_along_normal = ship.speed @ normal_vector
 
     # Do not resolve if velocities are separating
-    if vel_along_normal > 0:
+    if ship_speed_along_normal > 0:
         return
 
     # Calculate restitution (bounciness)
     restitution = 1
 
     # Calculate impulse scalar
-    j = -(1 + restitution) * vel_along_normal
+    j = -(1 + restitution) * ship_speed_along_normal
     j /= 1/ship.mass + 1/(4/3 * math.pi * planet.radius**3)
 
     # Apply impulse
-    ship.speed[0] += j * nx / ship.mass
-    ship.speed[1] += j * ny / ship.mass
+    ship.speed += normal_vector * j / ship.mass
 
     # Move ship outside planet
     overlap = ship.radius + planet.radius - distance(ship.pos, planet.pos)
-    ship.pos[0] += overlap * nx
-    ship.pos[1] += overlap * ny
+    ship.pos += normal_vector * overlap
 
 
 
