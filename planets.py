@@ -37,6 +37,8 @@ class Planet:
     def calculate_gravity(self, ship: Ship) -> Vector2:
         delta = self.pos - ship.pos
         distance_squared = delta.magnitude_squared()
+        # TODO: Here (and everywhere else where we divide by a magnitude) we must
+        # check for -- and eliminate -- the case where distance_squared==0.
         force_magnitude = (
             G * (4 / 3 * 3.13 * self.radius**3) * ship.mass / distance_squared
         )
