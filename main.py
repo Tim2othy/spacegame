@@ -230,9 +230,9 @@ class Asteroid:
 # Generate asteroids
 asteroids = []
 for _ in range(5):  # Adjust the number of asteroids as needed
-    x = random.randint(0, WORLD_WIDTH)
-    y = random.randint(0, WORLD_HEIGHT)
-    radius = random.randint(40, 120)
+    x = random.uniform(0, WORLD_WIDTH)
+    y = random.uniform(0, WORLD_HEIGHT)
+    radius = random.uniform(40, 120)
     asteroids.append(Asteroid(x, y, radius))
 
 # endregion
