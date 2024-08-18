@@ -159,10 +159,8 @@ class Asteroid:
 
     def update(self, planets):
         # Update position based on speed
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
-
-
+        # TODO: This should definitely incorporate ∆t
+        self.pos += self.speed
 
         # Stop at world border
         if self.pos[0] - self.radius < 0:
