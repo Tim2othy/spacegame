@@ -270,18 +270,24 @@ class Asteroid:
 
 # TODO: These two methods will eventually be merged into the superclass of
 # Asteroid and Planet
+# TODO: Neither of these should have a type-union "Bullet | Rocket" in their
+# arguments. Instead, there should be a superclass of Bullet and Rocket, say,
+# `Projectile`, and that's the type of its argument
 
 
-def check_bullet_planet_collision(bullet: Bullet, planets: list[Planet]):
+def check_projectile_planet_collision(
+    projectile: "Bullet | Rocket", planets: list[Planet]
+):
     for planet in planets:
-        if bullet.pos.distance_to(planet.pos) < planet.radius:
+        if projectile.pos.distance_to(planet.pos) < planet.radius:
             return True
     return False
 
-
-def check_bullet_asteroid_collision(bullet: Bullet, asteroids: list[Asteroid]):
+def check_projectile_asteroid_collision(
+    projectile: "Bullet | Rocket", asteroids: list[Asteroid]
+):
     for asteroid in asteroids:
-        if bullet.pos.distance_to(asteroid.pos) < asteroid.radius:
+        if projectile.pos.distance_to(asteroid.pos) < asteroid.radius:
             return True
     return False
 
@@ -396,7 +402,9 @@ class Enemy:
         self.health = health
 
     # TODO: Add return-type to this function
-    def update(self, ship: Ship, planets: list[Planet]):
+    def update(
+        self, ship: Ship, planets: list[Planet]
+    ) -> "list[Rocket] | list[Bullet]":
         delta = ship.pos - self.pos
         dist = delta.magnitude()
         # TODO: Rather than storing an int for current_action, store some enum. See:
@@ -554,7 +562,7 @@ class Rocket:
 
 # Add these to your global variables
 enemies: list[Enemy] = []
-enemy_projectiles = []
+enemy_projectiles: list[Rocket | Bullet] = []
 
 
 # Spawn enemies
@@ -701,9 +709,9 @@ while running:
             bullet.draw(screen, camera_pos)
 
             bullet.update()
-            if check_bullet_planet_collision(bullet, planets):
+            if check_projectile_planet_collision(bullet, planets):
                 ship.bullets.remove(bullet)
-            if check_bullet_asteroid_collision(bullet, asteroids):
+            if check_projectile_asteroid_collision(bullet, asteroids):
                 ship.bullets.remove(bullet)
             if (
                 bullet.pos[0] < 0
@@ -733,23 +741,23 @@ while running:
         # region --- combat ---
 
         for enemy in enemies:
-            new_projectiles = enemy.update(ship, planets, enemies)
+            new_projectiles = enemy.update(ship, planets)
             enemy_projectiles.extend(new_projectiles)
 
         # Update enemies and their projectiles
         for enemy in enemies[:]:
-            new_projectiles = enemy.update(ship, planets, enemies)
+            new_projectiles = enemy.update(ship, planets)
             enemy_projectiles.extend(new_projectiles)
 
             # Check collision with player bullets
             for bullet in ship.bullets[:]:
-                if distance(enemy.pos, bullet.pos) < enemy.radius + 3:
+                if enemy.pos.distance_to(bullet.pos) < enemy.radius + 3:
                     enemies.remove(enemy)
                     ship.bullets.remove(bullet)
                     break
 
         for projectile in enemy_projectiles[:]:
-            if check_bullet_planet_collision(projectile, planets):
+            if check_projectile_planet_collision(projectile, planets):
                 enemy_projectiles.remove(projectile)
 
             if isinstance(projectile, Rocket):
@@ -764,20 +772,20 @@ while running:
                 or projectile.pos[1] > WORLD_HEIGHT
             ):
                 enemy_projectiles.remove(projectile)
-            elif distance(ship.pos, projectile.pos) < ship.radius + 3:
+            elif ship.pos.distance_to(projectile.pos) < ship.radius + 3:
                 ship.health -= 10
                 enemy_projectiles.remove(projectile)
 
         # Draw enemies and their projectiles
         for enemy in enemies:
-            enemy.draw(screen, camera_x, camera_y)
+            enemy.draw(screen, camera_pos)
 
             for planet in planets:
-                if distance(enemy.pos, planet.pos) < enemy.radius + planet.radius:
+                if enemy.pos.distance_to(planet.pos) < enemy.radius + planet.radius:
                     enemy.bounce(planet)
 
         for projectile in enemy_projectiles:
-            projectile.draw(screen, camera_x, camera_y)
+            projectile.draw(screen, camera_pos)
 
         ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
@@ -785,7 +793,7 @@ while running:
 
         # region --- world border, camera ---
 
-        ship_screen_pos = (int(ship.pos[0] - camera_x), int(ship.pos[1] - camera_y))
+        ship_screen_pos = ship.pos - camera_pos
 
         # Clamp the ship's x position
         if ship.pos[0] < 0:
@@ -812,7 +820,7 @@ while running:
         # region --- moving ship---
 
         # Update ship position
-        ship.pos = [ship.pos[0] + ship.speed[0], ship.pos[1] + ship.speed[1]]
+        ship.pos += ship.speed
 
         # Calculate thruster positions and sizes
         front_thruster_pos = (
@@ -886,7 +894,7 @@ while running:
         # In the main game loop, update and draw asteroids
         for asteroid in asteroids:
             asteroid.update(planets)
-            asteroid.draw(screen, camera_x, camera_y)
+            asteroid.draw(screen, camera_pos)
 
             # Check for collision with ship
 
@@ -961,7 +969,7 @@ while running:
         # can be removed.
         collided_with_any_planets = False
         for planet in planets:
-            planet.draw(screen, camera_x, camera_y)
+            planet.draw(screen, camera_pos)
             force_x, force_y = planet.calculate_gravity(ship)
             total_force_x += force_x
             total_force_y += force_y
@@ -988,7 +996,7 @@ while running:
 
         # Draw squares
         for square in squares:
-            square.draw(screen, camera_x, camera_y)
+            square.draw(screen, camera_pos)
 
         # region --- displaying ---
 
