@@ -195,6 +195,10 @@ class Asteroid:
             raise Exception("This method only handles collision-checks against Asteroids, Planets, and positions.")
 
     def bounce(self, other):
+        # TODO: Because `self` (an Asteroid) moves as well,
+        # shouldn't this impulse also affect the way that `other`
+        # is deflected?
+
         # Calculate normal vector
         delta = self.pos - other.pos
         normal_vector = delta / np.linalg.norm(delta)
