@@ -60,7 +60,7 @@ ship_pos = [3000, 3000]
 ship_angle = 0
 ship_speed = [0, 0]
 ship_radius = 9
-ship_health = 100
+ship_health = 10000
 drag = 1
 ship_mass = 1000  # Add mass to the ship
 REPAIR_RATE = 0.1
@@ -487,7 +487,7 @@ class Enemy:
             self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION*0.2
 
 
-
+        
         
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
@@ -1206,6 +1206,10 @@ while running:
         screen.blit(ammo_text, (10, 290))
 
         draw_minimap(screen, ship_pos, planets, enemies,asteroids)
+
+        
+        lag_text3 = font.render(f'enemy_projectiles: {len(enemy_projectiles[:])}', True, (255, 255, 255))
+        screen.blit(lag_text3, (10, 370))
             
         
         # endregion

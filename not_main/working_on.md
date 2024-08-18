@@ -18,7 +18,7 @@
 
     find out what change caused this, it used to not be like this
 
-
+3. thrusters not blue while being used 
 
 # Improve code itself
 

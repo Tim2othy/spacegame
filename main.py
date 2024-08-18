@@ -82,16 +82,16 @@ class Square:
 
 
 planets = [
-    Planet(  300, 1300, 400, ( 50, 200, 200)),
-    Planet(  800, 6700, 300, (177,   0,   0)), 
-    Planet( 3000,  900, 200, (  0, 255,   0)),
-    Planet( 3400, 5300, 400, (  0,   0, 255)),
-    Planet( 7000, 3700, 280, (255,   0, 155)),
-    Planet( 7000, 9000, 380, (255, 100,   0)),
-    Planet( 7000,  400, 100, ( 27, 111, 200)),
-    Planet( 9000, 3700, 280, (255, 155,   0)),
-    Planet( 9000, 8000, 380, (144, 100, 255)),
-    Planet( 9800, 6400, 400, ( 50,  88,  88)),
+    Planet(  700, 1300, 400, ( 50, 200, 200)),
+    Planet( 1800, 6700, 370, (177,   0,   0)), 
+    Planet( 2300,  900, 280, (  0, 255,   0)),
+    Planet( 3400, 5300, 420, (  0,   0, 255)),
+    Planet( 4000, 3700, 280, (255,   0, 155)),
+    Planet( 5000, 9000, 380, (255, 100,   0)),
+    Planet( 6000,  400, 350, ( 27, 111, 200)),
+    Planet( 7000, 3700, 280, (255, 155,   0)),
+    Planet( 8500, 8000, 380, (144, 100, 255)),
+    Planet( 9200, 4400, 440, ( 50,  88,  88)),
 ]
 
 
@@ -331,7 +331,7 @@ BULLET_SHOOT_COOLDOWN = 0.5
 
 
 class Enemy:
-    def __init__(self, x, y, enemy_type, health=100):
+    def __init__(self, x, y, enemy_type):
         self.pos = [x, y]
         self.speed = [0, 0]
         self.radius = 15
@@ -340,8 +340,6 @@ class Enemy:
         self.shoot_cooldown = 0
         self.action_timer = 1*60
 
-        self.random_direction = None
-        self.health = health
 
     def update(self, ship, planets, other_enemies):
         dx = ship.pos[0] - self.pos[0]
@@ -357,7 +355,7 @@ class Enemy:
 
         # Check if the 4-second period has elapsed
         if self.action_timer <= 0:
-            self.current_action = random.randint(1, 8)
+            self.current_action = random.randint(1, 4)
             self.action_timer = 0.5 * 60  # Reset timer to 4 seconds (240 frames)
 
         if self.current_action == 1:  # Accelerate towards player
@@ -379,32 +377,25 @@ class Enemy:
 
         
         # Update position
-        self.pos = vec_add(self.pos, self.speed)
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
 
         self.action_timer -= 1
 
 
-        # Check collision with player bullets
-        for bullet in ship.bullets[:]:
-            if distance(enemy.pos, bullet.pos) < enemy.radius + 3:
-                self.health -= 10
-                ship.bullets.remove(bullet)
 
-            return []
 
         # Shooting logic
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
             if self.type == 'bullet':
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
-                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self)]
+                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self.speed)]
             else:
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
                 return [Rocket(self.pos[0], self.pos[1], ship.pos)]
         self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
         return []
 
-    def generate_random_speed(self):
-        self.rand_speed = [random.uniform(-1, 1), random.uniform(-1, 1)]
 
 
 
@@ -493,7 +484,7 @@ class Enemy:
 
 
 
-
+'''
 class Rocket:
     def __init__(self, x, y, target_pos):
         self.pos = [x, y]
@@ -544,7 +535,7 @@ class Rocket:
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            5)
 
-
+'''
 
 # Add these to your global variables
 enemies = []
@@ -552,11 +543,15 @@ enemy_projectiles = []
 
 
 # Spawn enemies
-for _ in range(0):
+for _ in range(1):
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     enemy_type = random.choice(['bullet', 'rocket'])
     enemies.append(Enemy(x, y, enemy_type))
+
+
+
+
 
 
 # endregion
@@ -661,6 +656,8 @@ while running:
             ship.health = min(ship.MAX_health, ship.health + ship.REPAIR_RATE)
         if keys[pygame.K_b] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
             ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
+
+
         # Update ship
         ship.update()
 
@@ -702,7 +699,6 @@ while running:
         # endregion
 
 
-        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
         
         # region --- combat ---
@@ -762,6 +758,8 @@ while running:
         for projectile in enemy_projectiles:
             projectile.draw(screen, camera_x, camera_y)
         
+        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
+
 
         # endregion
 
@@ -1022,6 +1020,22 @@ while running:
         
         advice_text = font.render("Ignore the squares, just fight the enemies", True, (255, 255, 255))
         screen.blit(advice_text, (10, 310))
+
+        lag_text1 = font.render(f'ship.bullets: {len(ship.bullets[:])}', True, (255, 255, 255))
+        screen.blit(lag_text1, (10, 330))
+
+        lag_text2 = font.render(f'enemies: {len(enemies[:])}', True, (255, 255, 255))
+        screen.blit(lag_text2, (10, 350))
+
+        lag_text3 = font.render(f'enemy_projectiles: {len(enemy_projectiles[:])}', True, (255, 255, 255))
+        screen.blit(lag_text3, (10, 370))
+
+
+
+
+
+
+
 
         draw_minimap()
         

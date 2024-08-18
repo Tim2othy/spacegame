@@ -31,7 +31,7 @@ class Ship:
         self.REFUEL_RATE = 0.2
         self.MAX_health = 200
         self.bullets = []
-        self.gun_cooldown = 0
+        self.gun_cooldown = 3
         self.pos = [x, y]
 
         self.ammo = 250
