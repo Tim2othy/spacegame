@@ -331,7 +331,7 @@ BULLET_SHOOT_COOLDOWN = 0.5
 
 
 class Enemy:
-    def __init__(self, x, y, enemy_type):
+    def __init__(self, x, y, enemy_type, health=100):
         self.pos = [x, y]
         self.speed = [0, 0]
         self.radius = 15
@@ -340,6 +340,7 @@ class Enemy:
         self.shoot_cooldown = 0
         self.action_timer = 1*60
 
+        self.health = health
 
     def update(self, ship, planets, other_enemies):
         dx = ship.pos[0] - self.pos[0]
@@ -383,19 +384,27 @@ class Enemy:
         self.action_timer -= 1
 
 
+        # Check collision with player bullets
+        for bullet in ship.bullets[:]:
+            if distance(enemy.pos, bullet.pos) < enemy.radius + 3:
+                self.health -= 10
+                ship.bullets.remove(bullet)
 
+            return []
 
         # Shooting logic
         if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
             if self.type == 'bullet':
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN  # Set cooldown for bullet enemy
-                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self.speed)]
+                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self)]
             else:
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN  # Set cooldown for rocket enemy
                 return [Rocket(self.pos[0], self.pos[1], ship.pos)]
         self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
         return []
 
+    def generate_random_speed(self):
+        self.rand_speed = [random.uniform(-1, 1), random.uniform(-1, 1)]
 
 
 
@@ -484,7 +493,7 @@ class Enemy:
 
 
 
-'''
+
 class Rocket:
     def __init__(self, x, y, target_pos):
         self.pos = [x, y]
@@ -535,7 +544,7 @@ class Rocket:
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            5)
 
-'''
+
 
 # Add these to your global variables
 enemies = []
@@ -543,7 +552,7 @@ enemy_projectiles = []
 
 
 # Spawn enemies
-for _ in range(1):
+for _ in range(15):
     x = random.randint(0, WORLD_WIDTH)
     y = random.randint(0, WORLD_HEIGHT)
     enemy_type = random.choice(['bullet', 'rocket'])

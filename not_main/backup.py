@@ -588,10 +588,11 @@ class Enemy:
 
 
 class Bullet:
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle, ship_speed):
         self.pos = [x, y]
-        self.speed = [BULLET_SPEED * cos(angle), BULLET_SPEED * sin(angle)]
-
+        bullet_speed = BULLET_SPEED + math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
+        self.speed = [bullet_speed * cos(angle) + ship_speed[0], 
+                      bullet_speed * sin(angle) + ship_speed[1]]  
     def update(self):
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
@@ -600,11 +601,7 @@ class Bullet:
         pygame.draw.circle(screen, (255, 255, 0), 
                            (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
                            3)
-    def __init__(self, x, y, angle, ship_speed):
-        self.pos = [x, y]
-        bullet_speed = BULLET_SPEED + math.sqrt(ship_speed[0]**2 + ship_speed[1]**2)
-        self.speed = [bullet_speed * cos(angle) + ship_speed[0], 
-                      bullet_speed * sin(angle) + ship_speed[1]]    
+  
 
 
 def check_bullet_planet_collision(bullet, planets):
