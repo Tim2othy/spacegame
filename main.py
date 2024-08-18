@@ -28,10 +28,7 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
 from grid import draw_grid
 from collisions import check_bullet_planet_collision, check_bullet_asteroid_collision
-
-
-def distance(v, w):
-    return np.linalg.norm(v - w)
+from vec import Vec, new_vec, distance
 
 
 # Initialize Pygame
