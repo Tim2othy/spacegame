@@ -1,13 +1,9 @@
-from __future__ import annotations
 import pygame
 from pygame.math import Vector2
 from pygame import Color
 import math
+from bullet import Bullet
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from bullet import Bullet
 
 class Ship:
     def __init__(self, x: float, y: float):
@@ -21,7 +17,7 @@ class Ship:
         self.MAX_health = 200.0
         self.bullets: list[Bullet] = []
         self.gun_cooldown = 3
-        self.pos = Vector2(0, 0)
+        self.pos = Vector2(x, y)
 
         self.ammo = 250
         self.thrust = 0.19

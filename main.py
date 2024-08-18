@@ -6,7 +6,7 @@ import sys
 import math
 import random
 import time
-from math import atan2, sqrt
+from math import sqrt
 
 from init import (
     screen,
@@ -42,6 +42,7 @@ game_over = False
 
 
 ship = Ship(5000, 5000)
+
 
 # I can't *believe* that math doesn't have a sign-function
 def sign(x: int | float):
@@ -284,6 +285,7 @@ def check_projectile_planet_collision(
             return True
     return False
 
+
 def check_projectile_asteroid_collision(
     projectile: "Bullet | Rocket", asteroids: list[Asteroid]
 ):
@@ -421,18 +423,14 @@ class Enemy:
             self.action_timer = 0.5 * 60  # Reset timer to 4 seconds (240 frames)
 
         if self.current_action == 1:  # Accelerate towards player
-            self.speed[0] += (dx / dist) * ENEMY_ACCELERATION * 2
-            self.speed[1] += (dy / dist) * ENEMY_ACCELERATION * 2
+            self.speed += delta * ENEMY_ACCELERATION * 2 / dist
 
         elif self.current_action == 2:  # Accelerate randomly
             rand_speed = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
-
-            self.speed[0] += rand_speed[0] * ENEMY_ACCELERATION * 0.2
-            self.speed[1] += rand_speed[1] * ENEMY_ACCELERATION * 0.2
+            self.speed += rand_speed * ENEMY_ACCELERATION * 0.2
 
         elif self.current_action == 3:  # Decelerate
-            self.speed[0] -= sign(self.speed[0]) * ENEMY_ACCELERATION * 0.2
-            self.speed[1] -= sign(self.speed[1]) * ENEMY_ACCELERATION * 0.2
+            self.speed.move_towards_ip(Vector2(0, 0), ENEMY_ACCELERATION * 0.2)
 
         # Update position
         self.pos[0] += self.speed[0]
@@ -446,7 +444,11 @@ class Enemy:
                 # Set cooldown for bullet enemy
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN
                 # TODO: `self` is not of type `Ship`. Perhaps `Enemy` should be subclass of `Ship`?
-                return [Bullet(self.pos[0], self.pos[1], atan2(dy, dx), self)]
+                return [
+                    Bullet(
+                        self.pos[0], self.pos[1], delta.angle_to(Vector2(1, 0)), self
+                    )
+                ]
             else:
                 # Set cooldown for rocket enemy
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
@@ -811,10 +813,10 @@ while running:
         # Update camera position
         camera_x = ship.pos[0] - SCREEN_WIDTH // 2
         camera_y = ship.pos[1] - SCREEN_HEIGHT // 2
-
         # Clamp camera position to world boundaries
         camera_x = max(0, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH))
         camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
+        camera_pos = Vector2(camera_x, camera_y)
 
         # endregion
 
