@@ -2,12 +2,7 @@ import pygame
 import math
 
 
-from enemy_info import (
-    ENEMY_ACCELERATION,
-    ENEMY_SHOOT_RANGE,
-    BULLET_SPEED,
-    ROCKET_ACCELERATION,
-)
+from enemy_info import BULLET_SPEED
 
 
 import numpy as np

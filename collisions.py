@@ -1,15 +1,4 @@
-import pygame
-import sys
-import math
-import random
-import time
 import numpy as np
-from math import atan2, cos, sin, sqrt
-
-
-from ship import Ship
-from bullet import Bullet
-from planets import Planet
 
 
 def distance(v, w):

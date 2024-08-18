@@ -1,11 +1,8 @@
 import pygame
 import math
-import random
 
 
 import numpy as np
-
-from planets import Planet
 
 
 from bullet import Bullet

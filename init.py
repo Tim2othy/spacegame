@@ -1,11 +1,7 @@
 import pygame
 
-import numpy as np
 
-
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
-
-from grid import draw_grid
+from config import SCREEN_WIDTH, SCREEN_HEIGHT
 
 
 # Set up the display

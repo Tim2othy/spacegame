@@ -22,7 +22,6 @@ from planets import Planet
 from enemy_info import (
     ENEMY_ACCELERATION,
     ENEMY_SHOOT_RANGE,
-    BULLET_SPEED,
     ROCKET_ACCELERATION,
 )
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G

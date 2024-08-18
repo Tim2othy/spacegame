@@ -1,7 +1,6 @@
 import pygame
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
-from init import screen
 import numpy as np
 
 
