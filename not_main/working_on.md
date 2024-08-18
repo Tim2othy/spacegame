@@ -11,6 +11,7 @@
         asteroids.append(Asteroid(x, y, radius))
 
     If 0 asteroids are created the planets are invisible, but minimap and collision detection still work.
+    [SOLVED BY COMMIT bf4b5466d10b2132bd50f7b20e1b4834d3915072]
 
 2. Laggy enemies
 

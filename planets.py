@@ -1,38 +1,59 @@
+from __future__ import annotations
 import pygame
+from pygame.math import Vector2
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
-from calcu import distance
-from init import screen
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ship import Ship
+    from main import Asteroid  # Uh oh
 
 
 class Planet:
-    def __init__(self, x, y, radius, color):
-        self.pos = [x, y]
+    def __init__(self, x: float, y: float, radius: float, color: pygame.Color):
+        self.pos = Vector2(x, y)
         self.radius = radius
         self.color = color
 
-    def draw(self, screen, camera_x, camera_y):
-        if (self.pos[0] - self.radius - camera_x < SCREEN_WIDTH and
-            self.pos[0] + self.radius - camera_x > 0 and
-            self.pos[1] - self.radius - camera_y < SCREEN_HEIGHT and
-            self.pos[1] + self.radius - camera_y > 0):
-            pygame.draw.circle(screen, self.color, 
-                               (int(self.pos[0] - camera_x), int(self.pos[1] - camera_y)), 
-                               self.radius)
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
+        if (
+            self.pos[0] - self.radius - camera_pos.x < SCREEN_WIDTH
+            and self.pos[0] + self.radius - camera_pos.x > 0
+            and self.pos[1] - self.radius - camera_pos.y < SCREEN_HEIGHT
+            and self.pos[1] + self.radius - camera_pos.y > 0
+        ):
+            pygame.draw.circle(
+                screen,
+                self.color,
+                self.pos - camera_pos,
+                self.radius,
+            )
 
-    def check_collision(self, ship):
-        return distance(ship.pos, self.pos) < self.radius + ship.radius
-    
+    def check_collision(self, ship: Ship) -> bool:
+        # TODO: Checks like these can almost always be made faster by squaring both sides:
+        # Instead of checking:
+        #     dist(v,w) < r,
+        # it's usually faster to check:
+        #     dist_squared(v,w) < r**2,
+        # which is equivalent if r is non-negative. This is more performant, because
+        # we avoid a costly sqrt-calculation.
+        return ship.pos.distance_to(self.pos) < self.radius + ship.radius
 
-    def calculate_gravity(self, ship):
-        dx = self.pos[0] - ship.pos[0]
-        dy = self.pos[1] - ship.pos[1]
-        distance_squared = dx**2 + dy**2
-        force_magnitude = G * (4/3 * 3.13 * self.radius**3) * ship.mass / distance_squared
-        
+    # TODO: This union-type (`Ship | Asteroid`) is really disgusting.
+    # We should create a proper superclass of everything that has position and mass.
+    def calculate_gravity(self, body: Ship | Asteroid) -> Vector2:
+        delta = self.pos - body.pos
+        distance_squared = delta.magnitude_squared()
+        # TODO: Here (and everywhere else where we divide by a magnitude) we must
+        # check for -- and eliminate -- the case where distance_squared==0.
+        force_magnitude = (
+            G * (4 / 3 * 3.13 * self.radius**3) * body.mass / distance_squared
+        )
+
         # Normalize the direction
         distance = math.sqrt(distance_squared)
-        force_x = force_magnitude * dx / distance
-        force_y = force_magnitude * dy / distance
-        
-        return force_x, force_y
+        force = delta * force_magnitude / distance
+
+        return force
