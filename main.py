@@ -140,6 +140,7 @@ def bounce_from_planet(planet):
 
 # region --- asteroids
 
+# TODO: Eventually make Asteroid and Planet subclasses of a shared class
 class Asteroid:
     def __init__(self, x, y, radius):
         self.pos = np.array([x, y])
