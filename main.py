@@ -31,7 +31,7 @@ from grid import draw_grid
 # Initialize Pygame
 pygame.init()
 
-ship_color = (255, 255, 255)  # White
+ship_color = Color("white")
 collision_time = 0
 
 # Game state
@@ -70,9 +70,7 @@ class Square:
     # TODO: It's probably better to create different subclasses for Square that have different
     # inherent actions associated with them, rather than have an `action` parameter for
     # creation here.
-    def __init__(
-        self, x: float, y: float, size: float, color: pygame.Color, action: str
-    ):
+    def __init__(self, x: float, y: float, size: float, color: Color, action: str):
         self.pos = Vector2(x, y)
         self.size = size
         self.color = color
@@ -108,16 +106,16 @@ class Square:
 
 
 planets = [
-    Planet(700, 1300, 400, (50, 200, 200)),
-    Planet(1800, 6700, 370, (177, 0, 0)),
-    Planet(2300, 900, 280, (0, 255, 0)),
-    Planet(3400, 5300, 420, (0, 0, 255)),
-    Planet(4000, 3700, 280, (255, 0, 155)),
-    Planet(5000, 9000, 380, (255, 100, 0)),
-    Planet(6000, 400, 350, (27, 111, 200)),
-    Planet(7000, 3700, 280, (255, 155, 0)),
-    Planet(8500, 8000, 380, (144, 100, 255)),
-    Planet(9200, 4400, 440, (50, 88, 88)),
+    Planet(700, 1300, 400, Color("turquoise")),
+    Planet(1800, 6700, 370, Color("darkred")),
+    Planet(2300, 900, 280, Color("green")),
+    Planet(3400, 5300, 420, Color("blue")),
+    Planet(4000, 3700, 280, Color("deeppink")),
+    Planet(5000, 9000, 380, Color("darkorange")),
+    Planet(6000, 400, 350, Color("royalblue")),
+    Planet(7000, 3700, 280, Color("orange")),
+    Planet(8500, 8000, 380, Color("mediumpurple")),
+    Planet(9200, 4400, 440, Color("darkslategray")),
 ]
 
 
