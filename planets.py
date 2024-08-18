@@ -3,6 +3,8 @@ from pygame.math import Vector2
 import math
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, G
 from ship import Ship
+from main import Asteroid  # Uh oh
+
 
 class Planet:
     def __init__(self, x: float, y: float, radius: float, color: pygame.Color):
@@ -34,13 +36,15 @@ class Planet:
         # we avoid a costly sqrt-calculation.
         return ship.pos.distance_to(self.pos) < self.radius + ship.radius
 
-    def calculate_gravity(self, ship: Ship) -> Vector2:
-        delta = self.pos - ship.pos
+    # TODO: This union-type (`Ship | Asteroid`) is really disgusting.
+    # We should create a proper superclass of everything that has position and mass.
+    def calculate_gravity(self, body: Ship | Asteroid) -> Vector2:
+        delta = self.pos - body.pos
         distance_squared = delta.magnitude_squared()
         # TODO: Here (and everywhere else where we divide by a magnitude) we must
         # check for -- and eliminate -- the case where distance_squared==0.
         force_magnitude = (
-            G * (4 / 3 * 3.13 * self.radius**3) * ship.mass / distance_squared
+            G * (4 / 3 * 3.13 * self.radius**3) * body.mass / distance_squared
         )
 
         # Normalize the direction
