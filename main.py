@@ -67,36 +67,40 @@ def calculate_gravity(pos: Vector2, mass: float, planets: list[Planet]):
 
 
 class Square:
-    def __init__(self, x, y, size, color, action):
-        self.pos = np.array([x, y])
+    # TODO: It's probably better to create different subclasses for Square that have different
+    # inherent actions associated with them, rather than have an `action` parameter for
+    # creation here.
+    def __init__(
+        self, x: float, y: float, size: float, color: pygame.Color, action: str
+    ):
+        self.pos = Vector2(x, y)
         self.size = size
         self.color = color
         self.action = action
 
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         if (
-            0 <= self.pos[0] - camera_x < SCREEN_WIDTH
-            and 0 <= self.pos[1] - camera_y < SCREEN_HEIGHT
+            0 <= self.pos[0] - camera_pos.x < SCREEN_WIDTH
+            and 0 <= self.pos[1] - camera_pos.y < SCREEN_HEIGHT
         ):
             pygame.draw.rect(
                 screen,
                 self.color,
                 (
-                    int(self.pos[0] - camera_x),
-                    int(self.pos[1] - camera_y),
-                    self.size,
-                    self.size,
+                    self.pos - camera_pos,
+                    (
+                        self.size,
+                        self.size,
+                    ),
                 ),
             )
 
-    def check_collision(self, ship):
+    def check_collision(self, ship: Ship):
         return (
-            self.pos[0] - ship.radius
-            < ship.pos[0]
-            < self.pos[0] + self.size + ship.radius
-            and self.pos[1] - ship.radius
-            < ship.pos[1]
-            < self.pos[1] + self.size + ship.radius
+            self.pos.x - ship.radius < ship.pos.x < self.pos.x + self.size + ship.radius
+            and self.pos.y - ship.radius
+            < ship.pos.y
+            < self.pos.y + self.size + ship.radius
         )
 
 
