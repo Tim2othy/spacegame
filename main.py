@@ -1,5 +1,6 @@
 import pygame
 from pygame.math import Vector2
+from pygame import Color
 import sys
 import math
 import random
@@ -127,22 +128,26 @@ pos_complete = (1000, 5000)
 
 squares = [
     Square(
-        pos_refuel[0], pos_refuel[1], 200, (0, 255, 255), "refuel"
+        pos_refuel[0], pos_refuel[1], 200, Color("cyan"), "refuel"
     ),  # Top-right, refuel
     Square(
-        pos_item[0], pos_item[1], 200, (255, 0, 255), "get_item"
+        pos_item[0], pos_item[1], 200, Color("purple"), "get_item"
     ),  # bottom-right, get item
     Square(
-        pos_complete[0], pos_complete[1], 200, (255, 165, 0), "complete_mission"
+        pos_complete[0], pos_complete[1], 200, Color("orange"), "complete_mission"
     ),  # bottom-left, complete mission
 ]
 
 
-def bounce_from_planet(planet):
+def bounce_from_planet(planet: Planet):
+    # TODO: The pygame.math module already has methods for normal-vector
+    # calculation
+
     # Calculate normal vector
     delta = ship.pos - planet.pos
-    normal_vector = delta / np.linalg.norm(delta)
-    ship_speed_along_normal = ship.speed @ normal_vector
+    delta_magnitude = delta.magnitude()
+    normal_vector = delta / delta_magnitude
+    ship_speed_along_normal = ship.speed.dot(normal_vector)
 
     # Do not resolve if velocities are separating
     if ship_speed_along_normal > 0:
@@ -159,7 +164,7 @@ def bounce_from_planet(planet):
     ship.speed += normal_vector * j / ship.mass
 
     # Move ship outside planet
-    overlap = ship.radius + planet.radius - distance(ship.pos, planet.pos)
+    overlap = ship.radius + planet.radius - delta_magnitude
     ship.pos += normal_vector * overlap
 
 
