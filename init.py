@@ -11,5 +11,3 @@ pygame.display.set_caption("Space Game")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 camera = Camera(pygame.math.Vector2(0, 0), 1.0, screen)
-
-collision_time = 0  # TODO: Should be an attribute of some class-instance

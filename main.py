@@ -10,7 +10,6 @@ from collections.abc import Sequence
 
 from init import (
     camera,
-    collision_time,
 )
 
 from ship import Ship
