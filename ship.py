@@ -29,16 +29,16 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         self.gun_cooldown = 3
 
-        self.ammo = 250
-        self.thrust = 50 * self.mass
-        self.rotation_thrust = 100
+        self.ammo: int = 250
+        self.thrust = 100 * self.mass
+        self.rotation_thrust = 150
         self.thruster_rot_left = False
         self.thruster_rot_right = False
         self.thruster_backward = False
         self.thruster_forward = False
         self.fuel = 100.0
         self.fuel_consumption_rate = 0.07
-        self.rotation_fuel_consumption_rate = 0.03
+        self.fuel_rot_consumption_rate = 0.03
         self.MAX_FUEL = 100.0
 
     def get_faced_direction(self):
@@ -57,23 +57,25 @@ class Ship(Disk):
             self.ammo -= 1
 
     def step(self, dt: float):
-        if self.thruster_rot_left:
-            self.angle += self.rotation_thrust * dt
-        if self.thruster_rot_right:
-            self.angle -= self.rotation_thrust * dt
+        if self.fuel > 0:
+            if self.thruster_rot_left:
+                self.fuel = max(0, self.fuel - dt * self.fuel_rot_consumption_rate)
+                self.angle += self.rotation_thrust * dt
+            if self.thruster_rot_right:
+                self.fuel = max(0, self.fuel - dt * self.fuel_rot_consumption_rate)
+                self.angle -= self.rotation_thrust * dt
 
-        forward = self.get_faced_direction()
-        if self.thruster_forward:
-            self.apply_force(forward * self.thrust, dt)
-        if self.thruster_backward:
-            self.apply_force(-forward * self.thrust, dt)
+            forward = self.get_faced_direction()
+            if self.thruster_forward:
+                self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
+                self.apply_force(forward * self.thrust, dt)
+            if self.thruster_backward:
+                self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
+                self.apply_force(-forward * self.thrust, dt)
 
         super().step(dt)
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
-
-        # TODO: This is unnecessary, move to only the fuel-modification places.
-        self.fuel = max(0, self.fuel)
 
     def draw(self, camera: Camera):
         forward = self.get_faced_direction()
