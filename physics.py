@@ -125,7 +125,7 @@ class Planet(Disk):
 
 
 class Asteroid(Disk):
-    """A disk that doesn't exert gravitational force."""
+    """A gray disk that doesn't exert gravitational force."""
 
     def __init__(
         self,
@@ -133,9 +133,8 @@ class Asteroid(Disk):
         speed: Vector2,
         density: float,
         radius: float,
-        color: pygame.Color,
     ):
-        super().__init__(pos, speed, density, radius, color)
+        super().__init__(pos, speed, density, radius, pygame.Color("gray"))
 
     # TODO: Re-implement that the Asteroids stopped at the world-border.
     # Or should they wrap instead? Should *all* PhysicalObjects wrap?
