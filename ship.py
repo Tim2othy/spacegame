@@ -55,8 +55,8 @@ class Ship(Disk):
 
     def forward(self):
         if self.fuel > 0:
-            self.speed[0] += math.cos(math.radians(self.angle)) * self.thrust
-            self.speed[1] -= math.sin(math.radians(self.angle)) * self.thrust
+            self.vel[0] += math.cos(math.radians(self.angle)) * self.thrust
+            self.vel[1] -= math.sin(math.radians(self.angle)) * self.thrust
             self.fuel -= self.fuel_consumption_rate
             self.rear_thruster_on = True
         else:
@@ -64,8 +64,8 @@ class Ship(Disk):
 
     def backward(self):
         if self.fuel > 0:
-            self.speed[0] -= math.cos(math.radians(self.angle)) * self.thrust
-            self.speed[1] += math.sin(math.radians(self.angle)) * self.thrust
+            self.vel[0] -= math.cos(math.radians(self.angle)) * self.thrust
+            self.vel[1] += math.sin(math.radians(self.angle)) * self.thrust
             self.fuel -= self.fuel_consumption_rate
             self.front_thruster_on = True
         else:
@@ -73,16 +73,16 @@ class Ship(Disk):
 
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
-            normalized_vel = self.speed.normalize()
+            normalized_vel = self.vel.normalize()
             bullet_pos = self.pos + normalized_vel * self.radius
-            bullet_vel = self.speed + normalized_vel * BULLET_SPEED
+            bullet_vel = self.vel + normalized_vel * BULLET_SPEED
             self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
             self.gun_cooldown = 9
             self.ammo -= 1
 
     def update(self):
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
+        self.pos[0] += self.vel[0]
+        self.pos[1] += self.vel[1]
 
         self.gun_cooldown = max(0, self.gun_cooldown - 1)
         self.fuel = max(0, self.fuel)
