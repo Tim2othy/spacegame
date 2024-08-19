@@ -1,5 +1,8 @@
 import pygame
+import pygame.camera
 from pygame.math import Vector2
+from pygame import draw
+from camera import Camera
 
 
 class PhysicalObject:
@@ -15,8 +18,8 @@ class PhysicalObject:
 
     def add_impulse(self, impulse: Vector2):
         self.speed += impulse / self.mass
-    
-    def draw(self, surface: pygame.Surface):
+
+    def draw(self, camera: Camera):
         pass
 
 
@@ -35,4 +38,7 @@ class Disk(PhysicalObject):
         self.radius = radius
         self.color = color
 
-    def draw
+    def draw(self, camera: Camera):
+        center = camera.world_to_camera(self.pos)
+        radius = self.radius * camera.zoom
+        draw.circle(camera.surface, self.color, center, radius)
