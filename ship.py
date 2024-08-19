@@ -88,12 +88,15 @@ class Ship(Disk):
         self.fuel = max(0, self.fuel)
 
     def draw(self, camera: Camera):
-        normalized_vel = self.vel.normalize()
+        # TODO: Why doesn't Vector2.from_polar() work?
+        forward_direction: Vector2 = Vector2(math.cos(self.angle), math.sin(self.angle))
 
         ship_screen_pos = camera.world_to_camera(self.pos)
 
         # Draw gun
-        gun_end = camera.world_to_camera(self.pos + normalized_vel * GUNBARREL_LENGTH)
+        gun_end = camera.world_to_camera(
+            self.pos + forward_direction * GUNBARREL_LENGTH
+        )
         pygame.draw.line(
             camera.surface,
             Color("blue"),
