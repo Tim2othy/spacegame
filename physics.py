@@ -128,35 +128,6 @@ class Disk(PhysicalObject):
             return None
 
 
-class Planet(Disk):
-    """A stationary disk."""
-
-    def __init__(
-        self,
-        pos: Vector2,
-        density: float,
-        radius: float,
-        color: pygame.Color,
-    ):
-        super().__init__(pos, Vector2(0, 0), density, radius, color)
-
-
-class Asteroid(Disk):
-    """A gray disk that doesn't exert gravitational force."""
-
-    def __init__(
-        self,
-        pos: Vector2,
-        vel: Vector2,
-        density: float,
-        radius: float,
-    ):
-        super().__init__(pos, vel, density, radius, pygame.Color("gray"))
-
-    # TODO: Re-implement that the Asteroids stopped at the world-border.
-    # Or should they wrap instead? Should *all* PhysicalObjects wrap?
-
-
 # TODO: Probably move to some other module.
 # Should the celestial bodies be moved somewhere else, too?
 class Bullet(PhysicalObject):
