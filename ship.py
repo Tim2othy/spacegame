@@ -2,8 +2,10 @@ import pygame
 from pygame.math import Vector2
 from pygame import Color
 import math
-from bullet import Bullet
+from physics import Bullet
 
+# TODO: Move constant somewhere else
+BULLET_SPEED = 6
 
 class Ship:
     def __init__(self, x: float, y: float):
@@ -69,10 +71,10 @@ class Ship:
 
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
-            angle = math.radians(-self.angle)
-            bullet_x = self.pos[0] + math.cos(-angle) * (self.radius + 20)
-            bullet_y = self.pos[1] - math.sin(-angle) * (self.radius + 20)
-            self.bullets.append(Bullet(bullet_x, bullet_y, angle, self))
+            normalized_vel = self.speed.normalize()
+            bullet_pos = self.pos + normalized_vel * self.radius
+            bullet_vel = self.speed + normalized_vel * BULLET_SPEED
+            self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
             self.gun_cooldown = 9
             self.ammo -= 1
 
