@@ -260,10 +260,11 @@ while running:
                 elif square.action == "complete_mission" and has_item:
                     mission_complete = True
                     ship_color = (255, 255, 0)  # Yellow
-
         # Draw squares
         for square in squares:
             square.draw(camera.surface, camera.pos)
+
+        universe.draw(camera)
 
         # Display ship coordinates
         font = pygame.font.Font(None, 22)
