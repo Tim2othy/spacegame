@@ -26,7 +26,7 @@ class Ship(Disk):
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
         self.MAX_health = 200.0
-        self.bullets: list[Bullet] = []
+        self.projectiles: list[Bullet] = []
         self.gun_cooldown = 3
 
         self.ammo = 250
@@ -52,7 +52,7 @@ class Ship(Disk):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.bullets.append(Bullet(bullet_pos, bullet_vel, self.color))
+            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.25
             self.ammo -= 1
 
@@ -247,11 +247,11 @@ class BulletEnemy(Ship):
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
-        self.current_action: BulletEnemy.Action
+        self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
         self.thrust = 100
         self.shoot_cooldown = shoot_cooldown
-        self.bullets: list[Bullet] = []
+        self.projectiles: list[Bullet] = []
 
     def step(self, dt: float):
         # TODO: Enemies should be affected by gravity and collisions, this
@@ -308,6 +308,6 @@ class RocketEnemy(BulletEnemy):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.bullets.append(Rocket(bullet_pos, bullet_vel, self.color))
+            self.projectiles.append(Rocket(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.25
             self.ammo -= 1
