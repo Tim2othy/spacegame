@@ -3,6 +3,7 @@ import pygame.camera
 from pygame.math import Vector2
 from pygame import draw
 from camera import Camera
+import math
 
 
 class PhysicalObject:
@@ -30,10 +31,11 @@ class Disk(PhysicalObject):
         self,
         pos: Vector2,
         speed: Vector2,
-        mass: float,
+        density: float,
         radius: float,
         color: pygame.Color,
     ):
+        mass = self.radius**3 * math.pi * 4 / 3
         super().__init__(pos, speed, mass)
         self.radius = radius
         self.color = color
@@ -49,3 +51,36 @@ class Disk(PhysicalObject):
 
     def intersects_disk(self, disk: "Disk") -> bool:
         return disk.pos.magnitude_squared() < (self.radius + disk.radius) ** 2
+
+    def bounce_off_of_disk(self, disk: "Disk"):
+        """Bounce `self` off of `disk`, if the two intersect."""
+
+        # TODO: The impulse of `disk` should also affect the way
+        # that self is reflected.
+        # TODO: The pygame.math module already has methods for normal-vector
+        # calculation
+
+        if self.intersects_disk(disk):
+            # Calculate normal vector
+            delta = self.pos - disk.pos
+            delta_magnitude = delta.magnitude()
+            normal_vector = delta / delta_magnitude
+            self_speed_along_normal = self.speed.dot(normal_vector)
+
+            # Do not resolve if velocities are separating
+            if self_speed_along_normal > 0:
+                return
+
+            # Calculate restitution (bounciness)
+            restitution = 1
+
+            # Calculate impulse scalar
+            j = -(1 + restitution) * self_speed_along_normal
+            j /= 1 / self.mass + 1 / disk.mass
+
+            # Apply impulse
+            self.speed += normal_vector * j / self.mass
+
+            # Move self outside other
+            overlap = self.radius + disk.radius - delta_magnitude
+            self.pos += normal_vector * overlap
