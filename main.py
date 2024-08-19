@@ -356,7 +356,7 @@ class Enemy:
         mass = 100
 
         # Answer:
-        # not sure if mass is realy something we need in the game, I don't think we need to make the physics too complicated, but not sure yet. 
+        # not sure if mass is realy something we need in the game, I don't think we need to make the physics too complicated, but not sure yet.
         # I guess you can create pretty realistic gravity without mass just having all enemies affected by the same force.
 
         # Calculate normal vector
@@ -386,7 +386,7 @@ class Enemy:
     def check_planet_collision(self, planets: list[Planet]):
         for planet in planets:
             # TODO: Couldn't this if-condition just be part of `bounce`?
-            # Should it be? 
+            # Should it be?
 
             # Probably
             if self.pos.distance_to(planet.pos) < self.radius + planet.radius:
@@ -551,13 +551,16 @@ def draw_minimap():
 
 # Game loop
 running = True
+clock = pygame.time.Clock()
 while running:
+    dt = clock.tick()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     if not game_over:
-        camera.start_drawing_new_frame()
+        camera._drawing_new_frame()
         # TODO: reimplement drawing the grid
 
         # region --- Handle input ---
@@ -599,10 +602,14 @@ while running:
             bullet.draw(screen, camera_pos)
 
             bullet.update()
-            if check_projectile_planet_collision(bullet, planets):
+            if any(
+                map(lambda planet: planet.intersects_point(bullet.pos), planets)
+            ) or any(
+                map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
+            ):
                 ship.bullets.remove(bullet)
-            if check_projectile_asteroid_collision(bullet, asteroids):
-                ship.bullets.remove(bullet)
+                continue
+
             if (
                 bullet.pos[0] < 0
                 or bullet.pos[0] > WORLD_WIDTH
@@ -615,10 +622,10 @@ while running:
 
         # TODO: For now I just tried out using a sprite for the first time for the ship. Will still have to be heavily modified of course, but not now other stuff is more important
         # If the sprite causes some problem it's easy to remove the method from the class, and go back to how it was before.
-        
+
         ship.draw(screen, camera_pos)
-        
-        ship.draw_with_image(screen, camera_pos) # It's too late now to start learning typehints i'll do that later.
+
+        ship.draw_with_image(screen, camera_pos)
 
         # endregion
 
@@ -655,11 +662,16 @@ while running:
         for projectile in enemy_projectiles[:]:
             if check_projectile_planet_collision(projectile, planets):
                 enemy_projectiles.remove(projectile)
-
             if isinstance(projectile, Rocket):
                 projectile.update(ship)
             else:
                 projectile.update()
+
+            ) or any(
+                map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
+            ):
+                enemy_projectiles.remove(projectile)
+                continue  # TODO: Is this `continue` here wrong?
 
             if (
                 projectile.pos[0] < 0
@@ -762,6 +774,9 @@ while running:
         for asteroid in asteroids:
             asteroid.update(planets)
             asteroid.draw(screen, camera_pos)
+            asteroid.apply_gravitational_forces(planets, dt)
+            asteroid.step(dt)
+            asteroid.draw(screen, camera)
 
             # Check for collision with ship
 
@@ -943,7 +958,7 @@ while running:
 
         draw_minimap()
 
-
+        # draw_minimap()
 
         # endregion
 
@@ -967,9 +982,6 @@ while running:
     # In your main game loop
 
 
-
-
-    pygame.time.Clock().tick(60)
 
     pygame.display.flip()
 
