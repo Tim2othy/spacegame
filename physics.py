@@ -97,8 +97,10 @@ class Disk(PhysicalObject):
             self_vel_along_normal = self.vel.dot(normal_vector)
 
             # Do not resolve if velocities are separating
+            # TODO: What does this mean? And is `False`
+            # the correct return-value here?
             if self_vel_along_normal > 0:
-                return
+                return False
 
             # Calculate restitution (bounciness)
             restitution = 1
@@ -113,6 +115,9 @@ class Disk(PhysicalObject):
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
+            return True
+        else:
+            return False
 
 
 class Planet(Disk):
