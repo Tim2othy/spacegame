@@ -109,16 +109,16 @@ class Square:
 
 
 planets = [
-    Planet(700, 1300, 400, Color("turquoise")),
-    Planet(1800, 6700, 370, Color("darkred")),
-    Planet(2300, 900, 280, Color("green")),
-    Planet(3400, 5300, 420, Color("blue")),
-    Planet(4000, 3700, 280, Color("deeppink")),
-    Planet(5000, 9000, 380, Color("darkorange")),
-    Planet(6000, 400, 350, Color("royalblue")),
-    Planet(7000, 3700, 280, Color("orange")),
-    Planet(8500, 8000, 380, Color("mediumpurple")),
-    Planet(9200, 4400, 440, Color("darkslategray")),
+    Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
+    Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
+    Planet(Vector2(2300, 900), 1, 280, Color("green")),
+    Planet(Vector2(3400, 5300), 1, 420, Color("blue")),
+    Planet(Vector2(4000, 3700), 1, 280, Color("deeppink")),
+    Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
+    Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
+    Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
+    Planet(Vector2(8500, 8000), 1, 380, Color("mediumpurple")),
+    Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
 ]
 
 
@@ -176,10 +176,10 @@ def bounce_from_planet(planet: Planet):
 # Generate asteroids
 asteroids: list[Asteroid] = []
 for _ in range(5):  # Adjust the number of asteroids as needed
-    x = random.uniform(0, WORLD_WIDTH)
-    y = random.uniform(0, WORLD_HEIGHT)
+    pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    speed = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
-    asteroids.append(Asteroid(x, y, radius))
+    asteroids.append(Asteroid(pos, speed, 1, radius))
 
 # endregion
 
