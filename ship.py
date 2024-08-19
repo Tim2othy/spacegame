@@ -85,10 +85,10 @@ class Ship:
     
     def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         ship_relative_pos = self.pos - camera_pos
-        pygame.draw.circle(screen, (255, 255, 255), ship_relative_pos, self.radius)
+        pygame.draw.circle(screen, Color("gray"), ship_relative_pos, self.radius)
 
         # Draw gun
-        gun_length = 25
+        gun_length = 35
         gun_end_x = ship_relative_pos[0] + math.cos(math.radians(self.angle)) * (
             self.radius + gun_length
         )
@@ -96,7 +96,7 @@ class Ship:
             self.radius + gun_length
         )
         pygame.draw.line(
-            screen, (200, 200, 200), ship_relative_pos, (gun_end_x, gun_end_y), 6
+            screen, (Color("blue")), ship_relative_pos, (gun_end_x, gun_end_y), 7
         )
 
         # Draw thrusters
@@ -145,7 +145,7 @@ class Ship:
             - math.sin(math.radians(self.angle + angle_offset)) * self.radius,
         )
 
-        color = Color(("cyan" if is_rotation else "blue") if is_active else "white")
+        color = Color(("red" if is_rotation else "orange") if is_active else "white")
         self.draw_thruster_shape(screen, thruster_pos, color, self.angle + angle_offset)
 
     def draw_thruster_shape(
@@ -155,7 +155,7 @@ class Ship:
         color: pygame.Color,
         angle: float,
     ):
-        thruster_width = 20
+        thruster_width = 10
         thruster_height = 20
         points = [
             (
