@@ -33,6 +33,7 @@ class Ship(Disk):
         self.right_rotation_thruster_on = False
         self.front_thruster_on = False
         self.rear_thruster_on = False
+        self.thrust = 50 * self.mass
         self.fuel = 100.0
         self.fuel_consumption_rate = 0.07
         self.rotation_fuel_consumption_rate = 0.03
@@ -71,6 +72,11 @@ class Ship(Disk):
             self.front_thruster_on = True
         else:
             self.front_thruster_on = False
+    def get_faced_direction(self):
+        # TODO: Why doesn't Vector2.from_polar() work?
+        return Vector2(
+            math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
+        )
 
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
