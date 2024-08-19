@@ -1,7 +1,5 @@
 # Code Hygiene
 - Minimap class?
-- Noch mehr zu classen machen
-- Remove Regions
 - Add docstrings where reasonable
 
 
