@@ -439,7 +439,7 @@ def draw_minimap():
 running = True
 clock = pygame.time.Clock()
 while running:
-    dt = clock.tick()
+    dt = clock.tick() / 1000
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
