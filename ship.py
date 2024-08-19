@@ -37,8 +37,6 @@ class Ship(Disk):
         self.rotation_fuel_consumption_rate = 0.03
         self.MAX_FUEL = 100.0
 
-        self.load_image('ship_sprite.png')
-
     def rotate_left(self):
         if self.fuel > 0:
             self.angle += self.rotation_thrust
@@ -193,6 +191,8 @@ class Ship(Disk):
         pygame.draw.polygon(screen, color, points)
 
     # TODO: Either revive or delete this code at some point
+    # If reviving, add `self.load_image('ship_sprite.png')` back
+    # to the Ship.__init__ method.
     """
     def load_image(self, image_path: str):
         
