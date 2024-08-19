@@ -139,3 +139,21 @@ class Asteroid(Disk):
 
     # TODO: Re-implement that the Asteroids stopped at the world-border.
     # Or should they wrap instead? Should *all* PhysicalObjects wrap?
+
+
+# TODO: Probably move to some other module.
+# Should the celestial bodies be moved somewhere else, too?
+class Bullet(PhysicalObject):
+    """A triangular bullet."""
+
+    def __init__(self, pos: Vector2, vel: Vector2, color: pygame.Color):
+        super().__init__(pos, vel, 1.0)
+        self.color = color
+
+    def draw(self, camera: Camera):
+        points = [
+            self.pos + 0.2 * self.vel,
+            self.pos + 0.1 * self.vel.rotate(150),
+            self.pos + 0.1 * self.vel.rotate(-150),
+        ]
+        pygame.draw.polygon(camera.surface, self.color, points)
