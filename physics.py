@@ -11,3 +11,6 @@ class PhysicalObject:
 
     def update(self, dt: float):
         self.pos += dt * self.speed
+
+    def add_impulse(self, impulse: Vector2):
+        self.speed += impulse / self.mass
