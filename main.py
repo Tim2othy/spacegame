@@ -733,7 +733,13 @@ while running:
                 ship.bullets.remove(bullet)
 
         # Draw ship and bullets
+
+        # TODO: For now I just tried out using a sprite for the first time for the ship. Will still have to be heavily modified of course, but not now other stuff is more important
+        # If the sprite causes some problem it's easy to remove the method from the class, and go back to how it was before.
+        '''
         ship.draw(screen, camera_pos)
+        '''
+        ship.draw_with_image(screen, camera_pos) # It's too late now to start learning typehints i'll do that later.
 
         # endregion
 
@@ -834,36 +840,7 @@ while running:
         ship.pos += ship.speed
 
         # Calculate thruster positions and sizes
-        front_thruster_pos = (
-            int(ship_screen_pos[0] + math.cos(math.radians(ship.angle)) * ship.radius),
-            int(ship_screen_pos[1] - math.sin(math.radians(ship.angle)) * ship.radius),
-        )
-        rear_thruster_pos = (
-            int(ship_screen_pos[0] - math.cos(math.radians(ship.angle)) * ship.radius),
-            int(ship_screen_pos[1] + math.sin(math.radians(ship.angle)) * ship.radius),
-        )
 
-        # Calculate rotation thruster positions
-        left_rotation_thruster_pos = (
-            int(
-                ship_screen_pos[0]
-                + math.cos(math.radians(ship.angle + 90)) * ship.radius
-            ),
-            int(
-                ship_screen_pos[1]
-                - math.sin(math.radians(ship.angle + 90)) * ship.radius
-            ),
-        )
-        right_rotation_thruster_pos = (
-            int(
-                ship_screen_pos[0]
-                + math.cos(math.radians(ship.angle - 90)) * ship.radius
-            ),
-            int(
-                ship_screen_pos[1]
-                - math.sin(math.radians(ship.angle - 90)) * ship.radius
-            ),
-        )
 
         # Ensure fuel doesn't go below 0
         ship.fuel = max(0, ship.fuel)
@@ -980,7 +957,7 @@ while running:
         # can be removed.
 
         # Did I put that there? No Idea what it's doing.
-        
+
         collided_with_any_planets = False
         for planet in planets:
             planet.draw(screen, camera_pos)
@@ -1087,6 +1064,8 @@ while running:
 
         draw_minimap()
 
+
+
         # endregion
 
         # Check if ship health reaches 0
@@ -1105,6 +1084,11 @@ while running:
                 SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2,
             ),
         )
+
+    # In your main game loop
+
+
+
 
     pygame.time.Clock().tick(60)
 

@@ -10,7 +10,7 @@ class Ship:
         self.angle = 0
         self.speed = Vector2(0, 0)
         self.radius = 9
-        self.mass = 100.0
+        self.mass = 1000.0
         self.health = 10000.0
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
@@ -30,6 +30,8 @@ class Ship:
         self.fuel_consumption_rate = 0.07
         self.rotation_fuel_consumption_rate = 0.03
         self.MAX_FUEL = 100.0
+
+        self.load_image('ship_sprite.png')
 
     def rotate_left(self):
         if self.fuel > 0:
@@ -80,7 +82,7 @@ class Ship:
 
         self.gun_cooldown = max(0, self.gun_cooldown - 1)
         self.fuel = max(0, self.fuel)
-
+    
     def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         ship_relative_pos = self.pos - camera_pos
         pygame.draw.circle(screen, (255, 255, 255), ship_relative_pos, self.radius)
@@ -127,6 +129,7 @@ class Ship:
             is_rotation=True,
         )  # Right rotation thruster
 
+
     def draw_thruster(
         self,
         screen: pygame.Surface,
@@ -152,8 +155,8 @@ class Ship:
         color: pygame.Color,
         angle: float,
     ):
-        thruster_width = 5
-        thruster_height = 10
+        thruster_width = 20
+        thruster_height = 20
         points = [
             (
                 pos[0] - math.sin(math.radians(angle)) * thruster_width / 2,
@@ -181,3 +184,27 @@ class Ship:
             ),
         ]
         pygame.draw.polygon(screen, color, points)
+
+
+
+    def load_image(self, image_path: str):
+        
+        #Load and prepare the ship image.
+        #param image_path: Path to the ship image file
+        
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 28))  # Resize 
+        self.original_image = self.image  # Store the original image for rotation
+
+    def draw_with_image(self, screen: pygame.Surface, camera_pos: Vector2): # TODO is this type hinting ???
+        ship_relative_pos = self.pos - camera_pos # TODO should all be done using vectors
+            
+        # Rotate the image
+        rotated_image = pygame.transform.rotate(self.original_image, self.angle)
+        
+        # Get the rect of the rotated image and set its center
+        rect = rotated_image.get_rect()
+        rect.center = ship_relative_pos
+            
+        # Draw the rotated image
+        screen.blit(rotated_image, rect)
