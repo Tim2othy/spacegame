@@ -2,24 +2,28 @@ import pygame
 from pygame.math import Vector2
 from pygame import Color
 import math
-from physics import Bullet
+from physics import Disk, Bullet
+from camera import Camera
+
 
 # TODO: Move constant somewhere else
 BULLET_SPEED = 6
+GUNBARREL_LENGTH = 32
+GUNBARREL_WIDTH = 8
 
-class Ship:
-    def __init__(self, x: float, y: float):
+class Ship(Disk):
+    def __init__(
+        self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
+    ):
+        super().__init__(pos, vel, density, size, color)
+        self.size = size
         self.angle = 0
-        self.speed = Vector2(0, 0)
-        self.radius = 9
-        self.mass = 1000.0
         self.health = 10000.0
         self.REPAIR_RATE = 0.1
         self.REFUEL_RATE = 0.2
         self.MAX_health = 200.0
         self.bullets: list[Bullet] = []
         self.gun_cooldown = 3
-        self.pos = Vector2(x, y)
 
         self.ammo = 250
         self.thrust = 0.19
@@ -84,53 +88,54 @@ class Ship:
 
         self.gun_cooldown = max(0, self.gun_cooldown - 1)
         self.fuel = max(0, self.fuel)
-    
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        ship_relative_pos = self.pos - camera_pos
-        pygame.draw.circle(screen, Color("gray"), ship_relative_pos, self.radius)
+
+    def draw(self, camera: Camera):
+        normalized_vel = self.vel.normalize()
+
+        ship_screen_pos = camera.world_to_camera(self.pos)
 
         # Draw gun
-        gun_length = 35
-        gun_end_x = ship_relative_pos[0] + math.cos(math.radians(self.angle)) * (
-            self.radius + gun_length
-        )
-        gun_end_y = ship_relative_pos[1] - math.sin(math.radians(self.angle)) * (
-            self.radius + gun_length
-        )
+        gun_end = camera.world_to_camera(self.pos + normalized_vel * GUNBARREL_LENGTH)
         pygame.draw.line(
-            screen, (Color("blue")), ship_relative_pos, (gun_end_x, gun_end_y), 7
+            camera.surface,
+            Color("blue"),
+            ship_screen_pos,
+            gun_end,
+            GUNBARREL_WIDTH,
         )
 
+        # TODO: Probably overhaul Thruster-drawing at some point
         # Draw thrusters
         self.draw_thruster(
-            screen,
-            ship_relative_pos,
+            camera.surface,
+            ship_screen_pos,
             angle_offset=0,
             is_active=self.front_thruster_on,
             is_rotation=False,
         )  # Front thruster
         self.draw_thruster(
-            screen,
-            ship_relative_pos,
+            camera.surface,
+            ship_screen_pos,
             angle_offset=180,
             is_active=self.rear_thruster_on,
             is_rotation=False,
         )  # Rear thruster
         self.draw_thruster(
-            screen,
-            ship_relative_pos,
+            camera.surface,
+            ship_screen_pos,
             angle_offset=90,
             is_active=self.left_rotation_thruster_on,
             is_rotation=True,
         )  # Left rotation thruster
         self.draw_thruster(
-            screen,
-            ship_relative_pos,
+            camera.surface,
+            ship_screen_pos,
             angle_offset=-90,
             is_active=self.right_rotation_thruster_on,
             is_rotation=True,
         )  # Right rotation thruster
 
+        super().draw(camera)  # Draw circular body ("hitbox")
 
     def draw_thruster(
         self,
