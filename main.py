@@ -592,30 +592,6 @@ while running:
 
         ship_screen_pos = ship.pos - camera.pos
 
-        # Clamp the ship's x position
-        if ship.pos[0] < 0:
-            ship.pos[0] = 0
-        elif ship.pos[0] > WORLD_WIDTH:
-            ship.pos[0] = WORLD_WIDTH
-
-        # Clamp the ship's y position
-        if ship.pos[1] < 0:
-            ship.pos[1] = 0
-        elif ship.pos[1] > WORLD_HEIGHT:
-            ship.pos[1] = WORLD_HEIGHT
-
-        # Update camera position
-        camera_x = ship.pos[0]
-        camera_y = ship.pos[1]
-        # Clamp camera position to world boundaries
-        camera_x = max(
-            SCREEN_WIDTH // 2, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH // 2)
-        )
-        camera_y = max(
-            SCREEN_HEIGHT // 2, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
-        )
-        camera.pos = Vector2(camera_x, camera_y)
-
         # endregion
 
         # region --- moving ship---
@@ -635,6 +611,18 @@ while running:
             or ship.pos[1] >= WORLD_HEIGHT
         ):
             game_over = True
+
+        # Update camera position
+        camera_x = ship.pos[0]
+        camera_y = ship.pos[1]
+        # Clamp camera position to world boundaries
+        camera_x = max(
+            SCREEN_WIDTH // 2, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH // 2)
+        )
+        camera_y = max(
+            SCREEN_HEIGHT // 2, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
+        )
+        camera.pos = Vector2(camera_x, camera_y)
 
         # endregion
 
@@ -661,7 +649,7 @@ while running:
         ):
             ship_color = (255, 255, 255)  # White
 
-        # In the main game loop, update and draw asteroids
+        # Collide with planets
         disks: Sequence[Disk] = asteroids + planets
         for disk in disks:
             # Check for collision with ship
@@ -672,7 +660,13 @@ while running:
                 if collision_time == 0:
                     collision_time = current_time
 
-                damage = 5 * bounce
+                # TODO: Adjust this to taste.
+                # Also, should we really cast a sqrt here?
+                # Check the bounce_off_of_disk method please,
+                # I don't understand its code, but it decides
+                # what value to return for the impact-intensity,
+                # i.e. the bounce-variable.
+                damage = math.sqrt(bounce) / 500
                 ship.health -= damage
                 break
 
