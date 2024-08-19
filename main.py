@@ -675,91 +675,46 @@ while running:
             ship_color = (255, 255, 255)  # White
 
         # In the main game loop, update and draw asteroids
-        for asteroid in asteroids:
-            asteroid.apply_gravitational_forces(planets, dt)
-            asteroid.step(dt)
-            asteroid.draw(camera)
-
+        disks: Sequence[Disk] = asteroids + planets
+        for disk in disks:
             # Check for collision with ship
-
-            if asteroid.intersects_point(ship.pos):
+            bounce = ship.bounce_off_of_disk(disk)
+            if bounce is not None:
                 collision = True
-                ship_color = (255, 0, 0)  # Red
+                ship_color = Color("red")
                 if collision_time == 0:
                     collision_time = current_time
 
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0] ** 2 + ship.speed[1] ** 2)
-                damage = 5 * crash_intensity  # Adjust this multiplier as needed
-
-                # Reduce health based on crash intensity
+                damage = 5 * bounce
                 ship.health -= damage
-
-                # Bounce off the asteroid
-                dx = ship.pos[0] - asteroid.pos[0]
-                dy = ship.pos[1] - asteroid.pos[1]
-                bounce_angle = math.atan2(dy, dx)
-
-                # Reverse the ship's speed and reduce it
-                ship.speed[0] = -ship.speed[0] * 0.5
-                ship.speed[1] = -ship.speed[1] * 0.5
-
-                # Move the ship out of the asteroid
-                ship.pos[0] = asteroid.pos[0] + (
-                    asteroid.radius + ship.radius + 1
-                ) * math.cos(bounce_angle)
-                ship.pos[1] = asteroid.pos[1] + (
-                    asteroid.radius + ship.radius + 1
-                ) * math.sin(bounce_angle)
-
                 break
 
         if not collision:
-            ship.pos = ship.pos
             collision_time = 0
         else:
             collision_time = current_time
 
-        # Check asteroid-asteroid collisions
-        for i, asteroid1 in enumerate(asteroids):
-            for asteroid2 in asteroids[i + 1 :]:
-                asteroid1.bounce_off_of_disk(asteroid2)
-                # TODO: We can't have asteroid2 bounce off of asteroid1
-                # meaningfully, because asteroid1 already bounced off of
-                # asteroid2. Instead of these two lines, we should have
-                # a new method on disks, like bounce_off_of_each_other,
-                # which will be non-trivially different from bounce_off_of_disk
-                asteroid2.bounce_off_of_disk(asteroid1)
-
-        # Check asteroid-planet collisions
-        for asteroid in asteroids:
+        for ix, asteroid in enumerate(asteroids):
+            asteroid.apply_gravitational_forces(planets, dt)
+            asteroid.step(dt)
             for planet in planets:
                 asteroid.bounce_off_of_disk(planet)
+            for other_asteroid in asteroids[ix + 1 :]:
+                asteroid.bounce_off_of_disk(other_asteroid)
+                # TODO: We can't have other_asteroid bounce off of asteroid
+                # meaningfully, because asteroid already bounced off of
+                # other_asteroid. Instead of these two lines, we should have
+                # a new method on disks, like bounce_off_of_each_other,
+                # which will be non-trivially different from bounce_off_of_disk
+                other_asteroid.bounce_off_of_disk(asteroid)
+            asteroid.draw(camera)
 
         # endregion
 
         # region --- planets ---
 
-        ship.
         for planet in planets:
-            planet.draw(screen, camera_pos)
-
-            # In the collision detection loop for planets:
-            if ship.bounce_off_of_disk(planet):
-            if planet.check_collision(ship):
-                bounce_from_planet(planet)
-                collision = True
-                ship_color = (255, 0, 0)  # Red
-
-                # Calculate crash intensity based on ship speed
-                crash_intensity = math.sqrt(ship.speed[0] ** 2 + ship.speed[1] ** 2)
-                damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
-
-                # Reduce health based on crash intensity
-                ship.health -= damage * (current_time - collision_time) / 1000
-                if collision_time == 0:
-                    collision_time = current_time
-                # Calculate and apply damage as before
+            planet.draw(camera)
 
         # endregion
 
