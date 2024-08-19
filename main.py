@@ -6,6 +6,7 @@ import sys
 import math
 import random
 from physics import Asteroid, Planet, Bullet, Rocket, Disk
+from camera import Camera
 from collections.abc import Sequence
 
 from init import (
@@ -160,14 +161,7 @@ class Spacegun:
         self.color = (50, 50, 100)
         self.last_shot_time = 60
         self.shoot_interval = 300
-        self.bullets: list[object] = []
-        # TODO: The "object" type is super-unspecific.
-        # `self.bullets` *should* be a `list[Bullet]`, but
-        # currently the `Bullet` class does not implement the
-        # features that Spacegun wants, and so Spacegun uses
-        # a dictionary instead of a `Bullet`. Once Spacegun
-        # uses a proper `Bullet`, this should have
-        # its type changed to `list[Bullet]`.
+        self.bullets: list[Bullet] = []
 
     def draw(self, screen: pygame.Surface, camera_pos: Vector2):
         pygame.draw.rect(
@@ -185,37 +179,23 @@ class Spacegun:
                 direction /= length
 
             # TODO: Do we really want to append even if direction is the zero-vector?
-            self.bullets.append(
-                {
-                    "pos": self.pos.copy(),
-                    "direction": direction,
-                    "speed": 7,
-                    "creation_time": current_time,
-                }
-            )
+            self.bullets.append(Bullet(self.pos, direction, Color("orange")))
             self.last_shot_time = current_time
 
-    def update_bullets(self, ship: Ship):
-        current_time = pygame.time.get_ticks()
+    def update_bullets(self, ship: Ship) -> bool:
         for bullet in self.bullets[:]:
-            bullet["pos"][0] += bullet["direction"][0] * bullet["speed"]
-            bullet["pos"][1] += bullet["direction"][1] * bullet["speed"]
-
-            if current_time - bullet["creation_time"] > 4000:
-                self.bullets.remove(bullet)
-            elif bullet["pos"].distance_to(ship.pos) < ship.radius:
+            bullet.step(dt)
+            # TODO: reimplement that old bullets get destroyed.
+            # Or perhaps we limit the size of the bullets-array,
+            # and always throw out the oldest ones?
+            if ship.intersects_point(bullet.pos):
                 self.bullets.remove(bullet)
                 return True  # Collision detected
         return False
 
-    def draw_bullets(self, screen: pygame.Surface, camera_pos: Vector2):
+    def draw_bullets(self, camera: Camera):
         for bullet in self.bullets:
-            pygame.draw.circle(
-                screen,
-                (255, 0, 0),
-                bullet["pos"] - camera_pos,
-                5,
-            )
+            bullet.draw(camera)
 
 
 spaceguns = [Spacegun(9000, 9000), Spacegun(2000, 6000), Spacegun(5000, 2000)]
@@ -286,11 +266,7 @@ class Enemy:
                 # Set cooldown for bullet enemy
                 self.shoot_cooldown = BULLET_SHOOT_COOLDOWN
                 # TODO: `self` is not of type `Ship`. Perhaps `Enemy` should be subclass of `Ship`?
-                return [
-                    Bullet(
-                        self.pos[0], self.pos[1], delta.angle_to(Vector2(1, 0)), self
-                    )
-                ]
+                return [Bullet(self.pos, self.speed, Color("orange"))]
             else:
                 # Set cooldown for rocket enemy
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
@@ -538,7 +514,7 @@ while running:
         # Draw space guns and their bullets
         for spacegun in spaceguns:
             spacegun.draw(camera.surface, camera.pos)
-            spacegun.draw_bullets(camera.surface, camera.pos)
+            spacegun.draw_bullets(camera)
             spacegun.shoot(ship.pos)
             if spacegun.update_bullets(ship):
                 ship.health -= 15
@@ -567,9 +543,12 @@ while running:
             projectile.step(dt)
 
             if any(
-                map(lambda planet: planet.intersects_point(bullet.pos), planets)
+                map(lambda planet: planet.intersects_point(projectile.pos), planets)
             ) or any(
-                map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
+                map(
+                    lambda asteroid: asteroid.intersects_point(projectile.pos),
+                    asteroids,
+                )
             ):
                 enemy_projectiles.remove(projectile)
                 continue  # TODO: Is this `continue` here wrong?
