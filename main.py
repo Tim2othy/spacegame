@@ -5,8 +5,7 @@ from pygame import Color
 import sys
 import math
 import random
-from physics import Asteroid, Planet, Disk, Bullet
-from camera import Camera
+from physics import Asteroid, Planet, Disk
 from collections.abc import Sequence
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
@@ -147,53 +146,6 @@ for _ in range(5):  # Adjust the number of asteroids as needed
 
 
 # region --- space guns ---
-
-
-class Spacegun:
-    def __init__(self, x: float, y: float):
-        self.pos = Vector2(x, y)
-        self.size = 40
-        self.color = (50, 50, 100)
-        self.last_shot_time = 60
-        self.shoot_interval = 300
-        self.bullets: list[Bullet] = []
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        pygame.draw.rect(
-            screen,
-            self.color,
-            (self.pos - camera_pos, (self.size, self.size)),
-        )
-
-    def shoot(self, target_pos: Vector2):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot_time > self.shoot_interval:
-            direction = target_pos - self.pos
-            length = direction.magnitude()
-            if length > 0:
-                direction /= length
-
-            # TODO: Do we really want to append even if direction is the zero-vector?
-            self.bullets.append(Bullet(self.pos, direction, Color("orange")))
-            self.last_shot_time = current_time
-
-    def update_bullets(self, ship: Ship) -> bool:
-        for bullet in self.bullets:
-            bullet.step(dt)
-            # TODO: reimplement that old bullets get destroyed.
-            # Or perhaps we limit the size of the bullets-array,
-            # and always throw out the oldest ones?
-            if ship.intersects_point(bullet.pos):
-                self.bullets.remove(bullet)
-                return True  # Collision detected
-        return False
-
-    def draw_bullets(self, camera: Camera):
-        for bullet in self.bullets:
-            bullet.draw(camera)
-
-
-spaceguns = [Spacegun(9000, 9000), Spacegun(2000, 6000), Spacegun(5000, 2000)]
 
 # endregion
 
@@ -390,14 +342,6 @@ while running:
         # endregion
 
         # region --- Draw spacegun---
-
-        # Draw space guns and their bullets
-        for spacegun in spaceguns:
-            spacegun.draw(camera.surface, camera.pos)
-            spacegun.draw_bullets(camera)
-            spacegun.shoot(ship.pos)
-            if spacegun.update_bullets(ship):
-                ship.health -= 15
 
         # endregion
 

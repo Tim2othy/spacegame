@@ -311,3 +311,50 @@ class RocketEnemy(BulletEnemy):
             self.projectiles.append(Rocket(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.25
             self.ammo -= 1
+
+
+# TODO: Revive spaceguns, or decide they're not worth reviving
+"""
+class Spacegun:
+    def __init__(self, x: float, y: float):
+        self.pos = Vector2(x, y)
+        self.size = 40
+        self.color = (50, 50, 100)
+        self.last_shot_time = 60
+        self.shoot_interval = 300
+        self.bullets: list[Bullet] = []
+
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
+        pygame.draw.rect(
+            screen,
+            self.color,
+            (self.pos - camera_pos, (self.size, self.size)),
+        )
+
+    def shoot(self, target_pos: Vector2):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time > self.shoot_interval:
+            direction = target_pos - self.pos
+            length = direction.magnitude()
+            if length > 0:
+                direction /= length
+
+            # TODO: Do we really want to append even if direction is the zero-vector?
+            self.bullets.append(Bullet(self.pos, direction, Color("orange")))
+            self.last_shot_time = current_time
+
+    def update_bullets(self, ship: Ship) -> bool:
+        for bullet in self.bullets:
+            bullet.step(dt)
+            # TODO: reimplement that old bullets get destroyed.
+            # Or perhaps we limit the size of the bullets-array,
+            # and always throw out the oldest ones?
+            if ship.intersects_point(bullet.pos):
+                self.bullets.remove(bullet)
+                return True  # Collision detected
+        return False
+
+    def draw_bullets(self, camera: Camera):
+        for bullet in self.bullets:
+            bullet.draw(camera)
+"""
