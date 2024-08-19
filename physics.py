@@ -1,10 +1,11 @@
+import pygame
 from pygame.math import Vector2
 
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic speed, and constant nonzero mass."""
 
-    def __init__(self, pos: Vector2, speed: Vector2 = Vector2(0, 0), mass: float = 1):
+    def __init__(self, pos: Vector2, speed: Vector2, mass: float):
         self.pos = pos
         self.mass = mass
         self.speed = speed
@@ -14,3 +15,24 @@ class PhysicalObject:
 
     def add_impulse(self, impulse: Vector2):
         self.speed += impulse / self.mass
+    
+    def draw(self, surface: pygame.Surface):
+        pass
+
+
+class Disk(PhysicalObject):
+    """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
+
+    def __init__(
+        self,
+        pos: Vector2,
+        speed: Vector2,
+        mass: float,
+        radius: float,
+        color: pygame.Color,
+    ):
+        super().__init__(pos, speed, mass)
+        self.radius = radius
+        self.color = color
+
+    def draw
