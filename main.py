@@ -71,11 +71,19 @@ class Square:
             < ship.pos.y
             < self.pos.y + self.size + ship.radius
         )
+# Create squares
+pos_refuel = (5000, 1000)
+pos_item = (3000, 5000)
+pos_complete = (1000, 5000)
+
+squares = [
+    Square(pos_refuel[0], pos_refuel[1], 200, Color("cyan"), "refuel"),
+    Square(pos_item[0], pos_item[1], 200, Color("purple"), "get_item"),
+    Square(pos_complete[0], pos_complete[1], 200, Color("orange"), "complete_mission"),
+]
 
 
-# Create planets (increased size)
-
-
+# Create planets
 planets = [
     Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
     Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
@@ -89,26 +97,6 @@ planets = [
     Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
 ]
 
-
-# Create squares
-
-pos_refuel = (5000, 1000)
-pos_item = (3000, 5000)
-pos_complete = (1000, 5000)
-
-squares = [
-    Square(
-        pos_refuel[0], pos_refuel[1], 200, Color("cyan"), "refuel"
-    ),  # Top-right, refuel
-    Square(
-        pos_item[0], pos_item[1], 200, Color("purple"), "get_item"
-    ),  # bottom-right, get item
-    Square(
-        pos_complete[0], pos_complete[1], 200, Color("orange"), "complete_mission"
-    ),  # bottom-left, complete mission
-]
-
-
 # Generate asteroids
 asteroids: list[Asteroid] = []
 for _ in range(5):  # Adjust the number of asteroids as needed
@@ -117,13 +105,8 @@ for _ in range(5):  # Adjust the number of asteroids as needed
     radius = random.uniform(40, 120)
     asteroids.append(Asteroid(pos, speed, 1, radius))
 
-# New classes for enemies and projectiles
-
-
-# Add these to your global variables
+# Generate enemies
 enemies: list[BulletEnemy] = []
-
-# Spawn enemies
 for _ in range(16):
     pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
     if random.random() > 0.5:
@@ -132,17 +115,18 @@ for _ in range(16):
         enemies.append(RocketEnemy(pos, Vector2(0, 0), ship))
 
 
-MINIMAP_SIZE = 250  # Size of the minimap (width and height)
-MINIMAP_MARGIN = 20  # Margin from the top-right corner
-MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
-MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
-MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
-
-
 def draw_minimap():
     # TODO: Reimplement this with another instance of the Camera class :)
+    # Or maybe we even need specialised draw-methods for every PhysicalObject
+    # we want to draw?
     pass
     """
+    MINIMAP_SIZE = 250  # Size of the minimap (width and height)
+    MINIMAP_MARGIN = 20  # Margin from the top-right corner
+    MINIMAP_BORDER_COLOR = (150, 150, 150)  # Light gray border
+    MINIMAP_BACKGROUND_COLOR = (30, 30, 30)  # Dark gray background
+    MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
+    
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -244,30 +228,47 @@ while running:
         ship.thruster_backward = keys[pygame.K_DOWN]
         if keys[pygame.K_SPACE]:
             ship.shoot()
-        if (
-            keys[pygame.K_m]
-            and not keys[pygame.K_LEFT]
-            and not keys[pygame.K_RIGHT]
-            and not keys[pygame.K_UP]
-            and not keys[pygame.K_DOWN]
-        ):
+
+        # TODO: Have the next two be methods of Ship class, and also respect dt
+        if keys[pygame.K_m]:
             ship.health = min(ship.MAX_health, ship.health + ship.REPAIR_RATE)
-        if (
-            keys[pygame.K_b]
-            and not keys[pygame.K_LEFT]
-            and not keys[pygame.K_RIGHT]
-            and not keys[pygame.K_UP]
-            and not keys[pygame.K_DOWN]
-        ):
+        if keys[pygame.K_b]:
             ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
 
-        # Update ship
         ship.step(dt)
+        # Check if ship is touching world border
+        if (
+            ship.pos[0] <= 0
+            or ship.pos[0] >= WORLD_WIDTH
+            or ship.pos[1] <= 0
+            or ship.pos[1] >= WORLD_HEIGHT
+        ):
+            game_over = True
+        # Check if ship health reaches 0
+        if ship.health <= 0:
+            game_over = True
+            # Collide with planets
+        disks: Sequence[Disk] = asteroids + planets
+        for disk in disks:
+            # Check for collision with ship
+            bounce = ship.bounce_off_of_disk(disk)
+            if bounce is not None:
+                collision = True
+                ship_color = Color("red")
 
-        # Update player bullets
+                # TODO: Adjust this to taste.
+                # Also, should we really cast a sqrt here?
+                # Check the bounce_off_of_disk method please,
+                # I don't understand its code, but it decides
+                # what value to return for the impact-intensity,
+                # i.e. the bounce-variable.
+                damage = math.sqrt(bounce) / 500
+                ship.health -= damage
+                break
+        ship.draw(camera)
+
         for bullet in ship.projectiles:
             bullet.draw(camera)
-
             bullet.step(dt)
             if any(
                 map(lambda planet: planet.intersects_point(bullet.pos), planets)
@@ -285,9 +286,6 @@ while running:
             ):
                 ship.projectiles.remove(bullet)
 
-        # Draw ship and bullets
-        ship.draw(camera)
-
         for enemy in enemies:
             new_projectiles = enemy.step(dt)
 
@@ -297,6 +295,11 @@ while running:
                     enemies.remove(enemy)
                     ship.projectiles.remove(bullet)
                     break
+
+            for planet in planets:
+                enemy.bounce_off_of_disk(planet)
+
+            enemy.draw(camera)
 
             for projectile in enemy.projectiles:
                 projectile.step(dt)
@@ -325,50 +328,15 @@ while running:
                     enemy.projectiles.remove(projectile)
                     continue
 
-        # Draw enemies and their projectiles
-        for enemy in enemies:
-            enemy.draw(camera)
-
-            for planet in planets:
-                enemy.bounce_off_of_disk(planet)
-
-            for projectile in enemy.projectiles:
                 projectile.draw(camera)
 
-        ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
-
-        ship_screen_pos = ship.pos - camera.pos
-
-        # Calculate thruster positions and sizes
-
-        # Ensure fuel doesn't go below 0
-        # TODO: Move into wherever we update fuel
-        ship.fuel = max(0, ship.fuel)
-
-        ship.step(dt)
-        # Check if ship is touching world border
-        if (
-            ship.pos[0] <= 0
-            or ship.pos[0] >= WORLD_WIDTH
-            or ship.pos[1] <= 0
-            or ship.pos[1] >= WORLD_HEIGHT
-        ):
-            game_over = True
-
-        # Update camera position
-        camera_x = ship.pos[0]
-        camera_y = ship.pos[1]
-        # Clamp camera position to world boundaries
         camera_x = max(
-            SCREEN_WIDTH // 2, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH // 2)
+            SCREEN_WIDTH // 2, min(ship.pos.x, WORLD_WIDTH - SCREEN_WIDTH // 2)
         )
         camera_y = max(
-            SCREEN_HEIGHT // 2, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
+            SCREEN_HEIGHT // 2, min(ship.pos.y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
         )
         camera.pos = Vector2(camera_x, camera_y)
-
-        collision = False
-        current_time = pygame.time.get_ticks()
 
         # Check for collisions with squares
         for square in squares:
@@ -380,39 +348,6 @@ while running:
                 elif square.action == "complete_mission" and has_item:
                     mission_complete = True
                     ship_color = (255, 255, 0)  # Yellow
-
-        # Reset ship color after 1 second if it's red
-        if (
-            ship_color == (255, 0, 0)
-            and pygame.time.get_ticks() - collision_time > 1000
-        ):
-            ship_color = (255, 255, 255)  # White
-
-        # Collide with planets
-        disks: Sequence[Disk] = asteroids + planets
-        for disk in disks:
-            # Check for collision with ship
-            bounce = ship.bounce_off_of_disk(disk)
-            if bounce is not None:
-                collision = True
-                ship_color = Color("red")
-                if collision_time == 0:
-                    collision_time = current_time
-
-                # TODO: Adjust this to taste.
-                # Also, should we really cast a sqrt here?
-                # Check the bounce_off_of_disk method please,
-                # I don't understand its code, but it decides
-                # what value to return for the impact-intensity,
-                # i.e. the bounce-variable.
-                damage = math.sqrt(bounce) / 500
-                ship.health -= damage
-                break
-
-        if not collision:
-            collision_time = 0
-        else:
-            collision_time = current_time
 
         for ix, asteroid in enumerate(asteroids):
             asteroid.apply_gravitational_forces(planets, dt)
@@ -442,11 +377,9 @@ while running:
             f"X: {int(ship.pos[0])}, Y: {int(ship.pos[1])}", True, Color("white")
         )
         camera.surface.blit(coord_text, (10, 10))
-
         # Display fuel
         fuel_text = font.render(f"Fuel: {ship.fuel:.3f}", True, Color("white"))
         camera.surface.blit(fuel_text, (10, 50))
-
         # Display item status
         item_text = font.render(
             "Item: Collected" if has_item else "Item: Not Collected",
@@ -454,7 +387,6 @@ while running:
             Color("white"),
         )
         camera.surface.blit(item_text, (10, 90))
-
         # Display mission status
         mission_text = font.render(
             "Mission Complete!" if mission_complete else "Mission: In Progress",
@@ -462,11 +394,9 @@ while running:
             (255, 255, 255),
         )
         camera.surface.blit(mission_text, (10, 130))
-
         # Display ship health
         health_text = font.render(f"Health: {int(ship.health)}", True, (255, 255, 255))
         camera.surface.blit(health_text, (10, 170))
-
         # Display square coordinates
         pos_refuel_text = font.render(
             f"Coordinates Refuel: {int(pos_refuel[0])}, {int(pos_refuel[1])}",
@@ -488,32 +418,22 @@ while running:
         camera.surface.blit(pos_complete_text, (10, 250))
         ammo_text = font.render(f"Ammo: {ship.ammo}", True, (255, 255, 255))
         camera.surface.blit(ammo_text, (10, 290))
-
         advice_text = font.render(
             "Ignore the squares, just fight the enemies", True, (255, 255, 255)
         )
         camera.surface.blit(advice_text, (10, 310))
-
         lag_text1 = font.render(
             f"ship.bullets: {len(ship.projectiles)}", True, (255, 255, 255)
         )
         camera.surface.blit(lag_text1, (10, 330))
-
         lag_text2 = font.render(f"enemies: {len(enemies)}", True, (255, 255, 255))
         camera.surface.blit(lag_text2, (10, 350))
-
         lag_text3 = font.render(
             f"enemy_projectiles: {sum(map(lambda e: len(enemy.projectiles), enemies))}",
             True,
             (255, 255, 255),
         )
         camera.surface.blit(lag_text3, (10, 370))
-
-        # draw_minimap()
-
-        # Check if ship health reaches 0
-        if ship.health <= 0:
-            game_over = True
 
     else:
         # Game over screen
