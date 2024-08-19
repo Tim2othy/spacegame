@@ -5,17 +5,13 @@ from pygame import Color
 import sys
 import math
 import random
-from physics import Asteroid, Planet, Disk
-from collections.abc import Sequence
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
+from universe import Universe, Planet, Asteroid
 
 # Initialize Pygame
 pygame.init()
-
-ship_color = Color("white")
-collision_time = 0
 
 # Game state
 has_item = False
@@ -23,12 +19,42 @@ mission_complete = False
 game_over = False
 
 
-ship = Ship(
+# Create planets
+planets = [
+    Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
+    Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
+    Planet(Vector2(2300, 900), 1, 280, Color("green")),
+    Planet(Vector2(3400, 5300), 1, 420, Color("blue")),
+    Planet(Vector2(4000, 3700), 1, 280, Color("deeppink")),
+    Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
+    Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
+    Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
+    Planet(Vector2(8500, 8000), 1, 380, Color("mediumpurple")),
+    Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
+]
+
+player_ship = Ship(
     Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
     Vector2(0, 0),
     1,
     10,
     Color("turquoise"),
+)
+asteroids: list[Asteroid] = []
+for _ in range(5):
+    pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    speed = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    radius = random.uniform(40, 120)
+    asteroids.append(Asteroid(pos, speed, 1, radius))
+enemy_ships: list[BulletEnemy] = []
+for _ in range(16):
+    pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
+    if random.random() > 0.5:
+        enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))
+    else:
+        enemy_ships.append(RocketEnemy(pos, Vector2(0, 0), player_ship))
+universe = Universe(
+    Vector2(WORLD_WIDTH, WORLD_HEIGHT), planets, asteroids, player_ship, enemy_ships
 )
 
 
@@ -71,6 +97,8 @@ class Square:
             < ship.pos.y
             < self.pos.y + self.size + ship.radius
         )
+
+
 # Create squares
 pos_refuel = (5000, 1000)
 pos_item = (3000, 5000)
@@ -81,38 +109,6 @@ squares = [
     Square(pos_item[0], pos_item[1], 200, Color("purple"), "get_item"),
     Square(pos_complete[0], pos_complete[1], 200, Color("orange"), "complete_mission"),
 ]
-
-
-# Create planets
-planets = [
-    Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
-    Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
-    Planet(Vector2(2300, 900), 1, 280, Color("green")),
-    Planet(Vector2(3400, 5300), 1, 420, Color("blue")),
-    Planet(Vector2(4000, 3700), 1, 280, Color("deeppink")),
-    Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
-    Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
-    Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
-    Planet(Vector2(8500, 8000), 1, 380, Color("mediumpurple")),
-    Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
-]
-
-# Generate asteroids
-asteroids: list[Asteroid] = []
-for _ in range(5):  # Adjust the number of asteroids as needed
-    pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
-    speed = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
-    radius = random.uniform(40, 120)
-    asteroids.append(Asteroid(pos, speed, 1, radius))
-
-# Generate enemies
-enemies: list[BulletEnemy] = []
-for _ in range(16):
-    pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
-    if random.random() > 0.5:
-        enemies.append(BulletEnemy(pos, Vector2(0, 0), ship))
-    else:
-        enemies.append(RocketEnemy(pos, Vector2(0, 0), ship))
 
 
 def draw_minimap():
@@ -211,6 +207,8 @@ while running:
         camera.start_drawing_new_frame()
         # TODO: reimplement drawing the grid
 
+        ship = universe.player_ship
+
         # Handle input
         keys = pygame.key.get_pressed()
 
@@ -235,100 +233,14 @@ while running:
         if keys[pygame.K_b]:
             ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
 
-        ship.step(dt)
+        universe.step(dt)
+
         # Check if ship is touching world border
-        if (
-            ship.pos[0] <= 0
-            or ship.pos[0] >= WORLD_WIDTH
-            or ship.pos[1] <= 0
-            or ship.pos[1] >= WORLD_HEIGHT
-        ):
+        if not universe.contains_point(ship.pos):
             game_over = True
-        # Check if ship health reaches 0
         if ship.health <= 0:
             game_over = True
             # Collide with planets
-        disks: Sequence[Disk] = asteroids + planets
-        for disk in disks:
-            # Check for collision with ship
-            bounce = ship.bounce_off_of_disk(disk)
-            if bounce is not None:
-                collision = True
-                ship_color = Color("red")
-
-                # TODO: Adjust this to taste.
-                # Also, should we really cast a sqrt here?
-                # Check the bounce_off_of_disk method please,
-                # I don't understand its code, but it decides
-                # what value to return for the impact-intensity,
-                # i.e. the bounce-variable.
-                damage = math.sqrt(bounce) / 500
-                ship.health -= damage
-                break
-        ship.draw(camera)
-
-        for bullet in ship.projectiles:
-            bullet.draw(camera)
-            bullet.step(dt)
-            if any(
-                map(lambda planet: planet.intersects_point(bullet.pos), planets)
-            ) or any(
-                map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
-            ):
-                ship.projectiles.remove(bullet)
-                continue
-
-            if (
-                bullet.pos[0] < 0
-                or bullet.pos[0] > WORLD_WIDTH
-                or bullet.pos[1] < 0
-                or bullet.pos[1] > WORLD_HEIGHT
-            ):
-                ship.projectiles.remove(bullet)
-
-        for enemy in enemies:
-            new_projectiles = enemy.step(dt)
-
-            # Check collision with player bullets
-            for bullet in ship.projectiles:
-                if enemy.intersects_point(bullet.pos):
-                    enemies.remove(enemy)
-                    ship.projectiles.remove(bullet)
-                    break
-
-            for planet in planets:
-                enemy.bounce_off_of_disk(planet)
-
-            enemy.draw(camera)
-
-            for projectile in enemy.projectiles:
-                projectile.step(dt)
-
-                if any(
-                    map(lambda planet: planet.intersects_point(projectile.pos), planets)
-                ) or any(
-                    map(
-                        lambda asteroid: asteroid.intersects_point(projectile.pos),
-                        asteroids,
-                    )
-                ):
-                    enemy.projectiles.remove(projectile)
-                    continue
-
-                if (
-                    projectile.pos[0] < 0
-                    or projectile.pos[0] > WORLD_WIDTH
-                    or projectile.pos[1] < 0
-                    or projectile.pos[1] > WORLD_HEIGHT
-                ):
-                    enemy.projectiles.remove(projectile)
-                    continue
-                if ship.pos.distance_to(projectile.pos) < ship.radius + 3:
-                    ship.health -= 10
-                    enemy.projectiles.remove(projectile)
-                    continue
-
-                projectile.draw(camera)
 
         camera_x = max(
             SCREEN_WIDTH // 2, min(ship.pos.x, WORLD_WIDTH - SCREEN_WIDTH // 2)
@@ -348,24 +260,6 @@ while running:
                 elif square.action == "complete_mission" and has_item:
                     mission_complete = True
                     ship_color = (255, 255, 0)  # Yellow
-
-        for ix, asteroid in enumerate(asteroids):
-            asteroid.apply_gravitational_forces(planets, dt)
-            asteroid.step(dt)
-            for planet in planets:
-                asteroid.bounce_off_of_disk(planet)
-            for other_asteroid in asteroids[ix + 1 :]:
-                asteroid.bounce_off_of_disk(other_asteroid)
-                # TODO: We can't have other_asteroid bounce off of asteroid
-                # meaningfully, because asteroid already bounced off of
-                # other_asteroid. Instead of these two lines, we should have
-                # a new method on disks, like bounce_off_of_each_other,
-                # which will be non-trivially different from bounce_off_of_disk
-                other_asteroid.bounce_off_of_disk(asteroid)
-            asteroid.draw(camera)
-
-        for planet in planets:
-            planet.draw(camera)
 
         # Draw squares
         for square in squares:
@@ -426,10 +320,10 @@ while running:
             f"ship.bullets: {len(ship.projectiles)}", True, (255, 255, 255)
         )
         camera.surface.blit(lag_text1, (10, 330))
-        lag_text2 = font.render(f"enemies: {len(enemies)}", True, (255, 255, 255))
+        lag_text2 = font.render(f"enemies: {len(enemy_ships)}", True, (255, 255, 255))
         camera.surface.blit(lag_text2, (10, 350))
         lag_text3 = font.render(
-            f"enemy_projectiles: {sum(map(lambda e: len(enemy.projectiles), enemies))}",
+            f"enemy_projectiles: {sum(map(lambda e: len(e.projectiles), universe.enemy_ships))}",
             True,
             (255, 255, 255),
         )

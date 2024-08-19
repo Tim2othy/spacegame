@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 import pygame
 import pygame.camera
 from pygame.math import Vector2
@@ -38,14 +37,6 @@ class PhysicalObject:
         force = normalised_delta * force_magnitude
 
         return force
-
-    def apply_gravitational_forces(
-        self, gravity_objects: "Sequence[PhysicalObject]", dt: float
-    ):
-        force_sum = Vector2(0, 0)
-        for pobj in gravity_objects:
-            force_sum += self.gravitational_force(pobj)
-        self.apply_force(force_sum, dt)
 
     def draw(self, camera: Camera):
         pass
