@@ -5,9 +5,8 @@ from pygame import Color
 import sys
 import math
 import random
-import time
-from math import sqrt
-from physics import Asteroid, Planet
+from physics import Asteroid, Planet, Bullet, Rocket
+from collections.abc import Sequence
 
 from init import (
     camera,
@@ -15,16 +14,12 @@ from init import (
 )
 
 from ship import Ship
-from bullet import Bullet
 
 from enemy_info import (
     ENEMY_ACCELERATION,
     ENEMY_SHOOT_RANGE,
-    ROCKET_ACCELERATION,
 )
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
-
-from grid import draw_grid
 
 # Initialize Pygame
 pygame.init()
@@ -283,9 +278,7 @@ class Enemy:
         self.health = health
 
     # TODO: Add return-type to this function
-    def update(
-        self, ship: Ship, planets: list[Planet]
-    ) -> "list[Rocket] | list[Bullet]":
+    def update(self, ship: Ship, planets: list[Planet]) -> "Sequence[Bullet]":
         delta = ship.pos - self.pos
         dist = delta.magnitude()
         # TODO: Rather than storing an int for current_action, store some enum. See:
@@ -330,7 +323,7 @@ class Enemy:
             else:
                 # Set cooldown for rocket enemy
                 self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
-                return [Rocket(self.pos[0], self.pos[1], ship.pos)]
+                return [Rocket(self.pos, self.speed * 2, Color("red"))]
         self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
         return []
 
@@ -393,63 +386,9 @@ class Enemy:
                 self.bounce(planet)
 
 
-class Rocket:
-    def __init__(self, x: float, y: float, target_pos: Vector2):
-        self.pos = Vector2(x, y)
-        self.target_pos = target_pos
-        self.speed = Vector2(0, 0)  # Initial speed is zero
-        self.last_acceleration_time = time.time()
-        self.accelerating = True
-        self.color = (255, 0, 0)
-
-    def update(self, ship: Ship):
-        current_time = time.time()
-        time_since_last_acceleration = current_time - self.last_acceleration_time
-
-        if self.accelerating:
-            self.color = (255, 0, 200)  # one color while accelerating
-        else:
-            self.color = (255, 100, 0)  # different color not accelerating
-
-        # Check if it's time to start accelerating
-        if not self.accelerating and time_since_last_acceleration >= 9:
-            self.accelerating = True
-            self.last_acceleration_time = current_time
-
-        # Check if the acceleration period should end
-        elif self.accelerating and time_since_last_acceleration >= 3:
-            self.accelerating = False
-            self.last_acceleration_time = current_time
-
-        # Update the target position to the ship's current position
-        self.target_pos = ship.pos
-        dx = self.target_pos[0] - self.pos[0]
-        dy = self.target_pos[1] - self.pos[1]
-        dist = sqrt(dx**2 + dy**2)
-
-        if dist != 0:  # Avoid division by zero
-            # Update speed direction towards the player
-            if self.accelerating:
-                # Apply additional acceleration in the direction of the player
-                self.speed[0] += (dx / dist) * ROCKET_ACCELERATION
-                self.speed[1] += (dy / dist) * ROCKET_ACCELERATION
-
-        # Update position based on speed
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        pygame.draw.circle(
-            screen,
-            self.color,
-            self.pos - camera_pos,
-            5,
-        )
-
-
 # Add these to your global variables
 enemies: list[Enemy] = []
-enemy_projectiles: list[Rocket | Bullet] = []
+enemy_projectiles: list[Bullet] = []
 
 
 # Spawn enemies
@@ -560,7 +499,7 @@ while running:
             running = False
 
     if not game_over:
-        camera._drawing_new_frame()
+        camera.start_drawing_new_frame()
         # TODO: reimplement drawing the grid
 
         # region --- Handle input ---
@@ -599,9 +538,9 @@ while running:
 
         # Update player bullets
         for bullet in ship.bullets[:]:
-            bullet.draw(screen, camera_pos)
+            bullet.draw(camera)
 
-            bullet.update()
+            bullet.step(dt)
             if any(
                 map(lambda planet: planet.intersects_point(bullet.pos), planets)
             ) or any(
@@ -623,9 +562,8 @@ while running:
         # TODO: For now I just tried out using a sprite for the first time for the ship. Will still have to be heavily modified of course, but not now other stuff is more important
         # If the sprite causes some problem it's easy to remove the method from the class, and go back to how it was before.
 
-        ship.draw(screen, camera_pos)
-
-        ship.draw_with_image(screen, camera_pos)
+        ship.draw(camera.surface, camera.pos)
+        ship.draw_with_image(camera.surface, camera.pos)
 
         # endregion
 
@@ -633,8 +571,8 @@ while running:
 
         # Draw space guns and their bullets
         for spacegun in spaceguns:
-            spacegun.draw(screen, camera_pos)
-            spacegun.draw_bullets(screen, camera_pos)
+            spacegun.draw(camera.surface, camera.pos)
+            spacegun.draw_bullets(camera.surface, camera.pos)
             spacegun.shoot(ship.pos)
             if spacegun.update_bullets(ship):
                 ship.health -= 15
@@ -660,13 +598,10 @@ while running:
                     break
 
         for projectile in enemy_projectiles[:]:
-            if check_projectile_planet_collision(projectile, planets):
-                enemy_projectiles.remove(projectile)
-            if isinstance(projectile, Rocket):
-                projectile.update(ship)
-            else:
-                projectile.update()
+            projectile.step(dt)
 
+            if any(
+                map(lambda planet: planet.intersects_point(bullet.pos), planets)
             ) or any(
                 map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
             ):
@@ -686,14 +621,14 @@ while running:
 
         # Draw enemies and their projectiles
         for enemy in enemies:
-            enemy.draw(screen, camera_pos)
+            enemy.draw(camera.surface, camera.pos)
 
             for planet in planets:
                 if enemy.pos.distance_to(planet.pos) < enemy.radius + planet.radius:
                     enemy.bounce(planet)
 
         for projectile in enemy_projectiles:
-            projectile.draw(screen, camera_pos)
+            projectile.draw(camera)
 
         ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
@@ -701,7 +636,7 @@ while running:
 
         # region --- world border, camera ---
 
-        ship_screen_pos = ship.pos - camera_pos
+        ship_screen_pos = ship.pos - camera.pos
 
         # Clamp the ship's x position
         if ship.pos[0] < 0:
@@ -731,7 +666,6 @@ while running:
         ship.pos += ship.speed
 
         # Calculate thruster positions and sizes
-
 
         # Ensure fuel doesn't go below 0
         ship.fuel = max(0, ship.fuel)
@@ -772,15 +706,13 @@ while running:
 
         # In the main game loop, update and draw asteroids
         for asteroid in asteroids:
-            asteroid.update(planets)
-            asteroid.draw(screen, camera_pos)
             asteroid.apply_gravitational_forces(planets, dt)
             asteroid.step(dt)
-            asteroid.draw(screen, camera)
+            asteroid.draw(camera)
 
             # Check for collision with ship
 
-            if asteroid.check_collision(ship.pos):
+            if asteroid.intersects_point(ship.pos):
                 collision = True
                 ship_color = (255, 0, 0)  # Red
                 if collision_time == 0:
@@ -821,61 +753,43 @@ while running:
         # Check asteroid-asteroid collisions
         for i, asteroid1 in enumerate(asteroids):
             for asteroid2 in asteroids[i + 1 :]:
-                if asteroid1.check_collision(asteroid2):
-                    # Handle collision (implement bouncing in step 2)
-                    asteroid1.bounce(asteroid2)
-                    asteroid2.bounce(asteroid1)
+                asteroid1.bounce_off_of_disk(asteroid2)
+                # TODO: We can't have asteroid2 bounce off of asteroid1
+                # meaningfully, because asteroid1 already bounced off of
+                # asteroid2. Instead of these two lines, we should have
+                # a new method on disks, like bounce_off_of_each_other,
+                # which will be non-trivially different from bounce_off_of_disk
+                asteroid2.bounce_off_of_disk(asteroid1)
 
         # Check asteroid-planet collisions
         for asteroid in asteroids:
             for planet in planets:
-                if asteroid.check_collision(planet):
-                    # Handle collision (implement bouncing in step 2)
-                    asteroid.bounce(planet)
+                asteroid.bounce_off_of_disk(planet)
 
         # endregion
 
         # region --- planets ---
 
-        # TODO: The variable "collided_with_any_planets" should probably be
-        # removed at some point. In an earlier version of the code, the loop
-        # "for planet in planets" immediately "break"ed whenever any planet
-        # Collided with the ship. However, this means we won't be drawing
-        # the other planets, nor applying their gravity to `ship`.
-        # So I removed the "break"-statement in the collision-check, but
-        # I didn't know why the break-statement was there in the first
-        # place. Did multiple planet-collisions on the same frame cause any
-        # bugs? Hence, `collided_with_any_planets` was introduced, to make
-        # sure we only collide with at most one planet per frame. Once verified
-        # that multiple collisions per frame don't cause any bugs, that variable
-        # can be removed.
-
-        # Did I put that there? No Idea what it's doing.
-
-        collided_with_any_planets = False
+        ship.
         for planet in planets:
             planet.draw(screen, camera_pos)
-            force_x, force_y = planet.calculate_gravity(ship)
-            total_force_x += force_x
-            total_force_y += force_y
 
-            if not collided_with_any_planets:
-                # In the collision detection loop for planets:
-                if planet.check_collision(ship):
-                    bounce_from_planet(planet)
-                    collision = True
-                    collided_with_any_planets = True
-                    ship_color = (255, 0, 0)  # Red
+            # In the collision detection loop for planets:
+            if ship.bounce_off_of_disk(planet):
+            if planet.check_collision(ship):
+                bounce_from_planet(planet)
+                collision = True
+                ship_color = (255, 0, 0)  # Red
 
-                    # Calculate crash intensity based on ship speed
-                    crash_intensity = math.sqrt(ship.speed[0] ** 2 + ship.speed[1] ** 2)
-                    damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
+                # Calculate crash intensity based on ship speed
+                crash_intensity = math.sqrt(ship.speed[0] ** 2 + ship.speed[1] ** 2)
+                damage = 0.5 * crash_intensity  # Adjust this multiplier as needed
 
-                    # Reduce health based on crash intensity
-                    ship.health -= damage * (current_time - collision_time) / 1000
-                    if collision_time == 0:
-                        collision_time = current_time
-                    # Calculate and apply damage as before
+                # Reduce health based on crash intensity
+                ship.health -= damage * (current_time - collision_time) / 1000
+                if collision_time == 0:
+                    collision_time = current_time
+                # Calculate and apply damage as before
 
         # endregion
 
@@ -956,8 +870,6 @@ while running:
         )
         screen.blit(lag_text3, (10, 370))
 
-        draw_minimap()
-
         # draw_minimap()
 
         # endregion
@@ -980,8 +892,6 @@ while running:
         )
 
     # In your main game loop
-
-
 
     pygame.display.flip()
 
