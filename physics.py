@@ -170,9 +170,9 @@ class Bullet(PhysicalObject):
         points = [
             camera.world_to_camera(point)
             for point in [
-                self.pos + 0.2 * forward,
-                self.pos + 0.1 * forward.rotate(150),
-                self.pos + 0.1 * forward.rotate(-150),
+                self.pos + 5 * forward,
+                self.pos + 2 * forward.rotate(150),
+                self.pos + 2 * forward.rotate(-150),
             ]
         ]
         pygame.draw.polygon(camera.surface, self.color, points)

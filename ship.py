@@ -7,7 +7,7 @@ from camera import Camera
 
 
 # TODO: Move constant somewhere else
-BULLET_SPEED = 100
+BULLET_SPEED = 500
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 
