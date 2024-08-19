@@ -7,6 +7,7 @@ import math
 
 GRAVITATIONAL_CONSTANT = 0.0006
 
+
 class PhysicalObject:
     """A physical object with dynamic position, dynamic speed, and constant nonzero mass."""
 

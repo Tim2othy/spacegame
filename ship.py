@@ -11,6 +11,7 @@ BULLET_SPEED = 6
 GUNBARREL_LENGTH = 32
 GUNBARREL_WIDTH = 8
 
+
 class Ship(Disk):
     def __init__(
         self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
