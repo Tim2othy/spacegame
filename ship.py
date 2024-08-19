@@ -7,7 +7,7 @@ from camera import Camera
 
 
 # TODO: Move constant somewhere else
-BULLET_SPEED = 6
+BULLET_SPEED = 100
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 
@@ -47,7 +47,7 @@ class Ship(Disk):
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius
+            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
             self.gun_cooldown = 0.25
@@ -66,7 +66,6 @@ class Ship(Disk):
             self.apply_force(-forward * self.thrust, dt)
 
         super().step(dt)
-        print(self.pos, self.vel)
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 

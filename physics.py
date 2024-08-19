@@ -166,12 +166,13 @@ class Bullet(PhysicalObject):
         self.color = color
 
     def draw(self, camera: Camera):
+        forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
         points = [
             camera.world_to_camera(point)
             for point in [
-                self.pos + 0.2 * self.vel,
-                self.pos + 0.1 * self.vel.rotate(150),
-                self.pos + 0.1 * self.vel.rotate(-150),
+                self.pos + 0.2 * forward,
+                self.pos + 0.1 * forward.rotate(150),
+                self.pos + 0.1 * forward.rotate(-150),
             ]
         ]
         pygame.draw.polygon(camera.surface, self.color, points)
