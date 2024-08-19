@@ -78,8 +78,11 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: "Disk") -> bool:
         return disk.pos.magnitude_squared() < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk"):
-        """Bounce `self` off of `disk`, if the two intersect."""
+    def bounce_off_of_disk(self, disk: "Disk") -> bool:
+        """
+        Bounce `self` off of `disk`, iff the two intersect.
+        Returns true if bounce occurred, false otherwise.
+        """
 
         # TODO: The impulse of `disk` should also affect the way
         # that self is reflected.
@@ -160,3 +163,65 @@ class Bullet(PhysicalObject):
             ]
         ]
         pygame.draw.polygon(camera.surface, self.color, points)
+
+
+class Rocket(Bullet):
+    def __init__(self, pos: Vector2, vel: Vector2, color: pygame.Color):
+        super().__init__(pos, vel, color)
+
+    # TODO: Reimplement the below code, once I understand what it does.
+    # For now, Rockets are synonymous to Bullets.
+    # If re-implementing this, also check all calls to the constructor so that
+    # they do what you'd like them to do.
+    """
+        self.pos = Vector2(x, y)
+        self.target_pos = target_pos
+        self.speed = Vector2(0, 0)  # Initial speed is zero
+        self.last_acceleration_time = time.time()
+        self.accelerating = True
+        self.color = (255, 0, 0)
+
+    def update(self, ship: Ship):
+        current_time = time.time()
+        time_since_last_acceleration = current_time - self.last_acceleration_time
+
+        if self.accelerating:
+            self.color = (255, 0, 200)  # one color while accelerating
+        else:
+            self.color = (255, 100, 0)  # different color not accelerating
+
+        # Check if it's time to start accelerating
+        if not self.accelerating and time_since_last_acceleration >= 9:
+            self.accelerating = True
+            self.last_acceleration_time = current_time
+
+        # Check if the acceleration period should end
+        elif self.accelerating and time_since_last_acceleration >= 3:
+            self.accelerating = False
+            self.last_acceleration_time = current_time
+
+        # Update the target position to the ship's current position
+        self.target_pos = ship.pos
+        dx = self.target_pos[0] - self.pos[0]
+        dy = self.target_pos[1] - self.pos[1]
+        dist = sqrt(dx**2 + dy**2)
+
+        if dist != 0:  # Avoid division by zero
+            # Update speed direction towards the player
+            if self.accelerating:
+                # Apply additional acceleration in the direction of the player
+                self.speed[0] += (dx / dist) * ROCKET_ACCELERATION
+                self.speed[1] += (dy / dist) * ROCKET_ACCELERATION
+
+        # Update position based on speed
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
+        pygame.draw.circle(
+            screen,
+            self.color,
+            self.pos - camera_pos,
+            5,
+        )
+    """
