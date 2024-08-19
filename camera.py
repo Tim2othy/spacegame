@@ -21,3 +21,6 @@ class Camera:
         width, height = self.surface.get_size()
         center = Vector2(width / 2, height / 2)
         return (vec - self.pos) * self.zoom + center
+
+    def start_drawing_new_frame(self):
+        self.surface.fill(pygame.Color("black"))
