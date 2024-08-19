@@ -33,7 +33,9 @@ mission_complete = False
 game_over = False
 
 
-ship = Ship(5000, 5000)
+ship = Ship(
+    Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2), Vector2(0, 0), 1, 10, Color("turquoise")
+)
 
 
 # I can't *believe* that math doesn't have a sign-function
