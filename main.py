@@ -558,12 +558,7 @@ while running:
                 ship.bullets.remove(bullet)
 
         # Draw ship and bullets
-
-        # TODO: For now I just tried out using a sprite for the first time for the ship. Will still have to be heavily modified of course, but not now other stuff is more important
-        # If the sprite causes some problem it's easy to remove the method from the class, and go back to how it was before.
-
-        ship.draw(camera.surface, camera.pos)
-        ship.draw_with_image(camera.surface, camera.pos)
+        ship.draw(camera)
 
         # endregion
 
