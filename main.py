@@ -618,12 +618,16 @@ while running:
             ship.pos[1] = WORLD_HEIGHT
 
         # Update camera position
-        camera_x = ship.pos[0] - SCREEN_WIDTH // 2
-        camera_y = ship.pos[1] - SCREEN_HEIGHT // 2
+        camera_x = ship.pos[0]
+        camera_y = ship.pos[1]
         # Clamp camera position to world boundaries
-        camera_x = max(0, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH))
-        camera_y = max(0, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT))
-        camera_pos = Vector2(camera_x, camera_y)
+        camera_x = max(
+            SCREEN_WIDTH // 2, min(camera_x, WORLD_WIDTH - SCREEN_WIDTH // 2)
+        )
+        camera_y = max(
+            SCREEN_HEIGHT // 2, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
+        )
+        camera.pos = Vector2(camera_x, camera_y)
 
         # endregion
 
