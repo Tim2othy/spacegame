@@ -677,9 +677,8 @@ while running:
             running = False
 
     if not game_over:
-        # Draw everything
-        screen.fill((0, 0, 0))
-        draw_grid(screen, camera_pos)
+        camera.start_drawing_new_frame()
+        # TODO: reimplement drawing the grid
 
         # region --- Handle input ---
 
