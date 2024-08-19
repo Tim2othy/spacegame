@@ -138,36 +138,6 @@ squares = [
 ]
 
 
-# TODO: We should just have one single bounce-method for all kinds of celestial bodies
-def bounce_from_planet(planet: Planet):
-    # TODO: The pygame.math module already has methods for normal-vector
-    # calculation
-
-    # Calculate normal vector
-    delta = ship.pos - planet.pos
-    delta_magnitude = delta.magnitude()
-    normal_vector = delta / delta_magnitude
-    ship_speed_along_normal = ship.speed.dot(normal_vector)
-
-    # Do not resolve if velocities are separating
-    if ship_speed_along_normal > 0:
-        return
-
-    # Calculate restitution (bounciness)
-    restitution = 1
-
-    # Calculate impulse scalar
-    j = -(1 + restitution) * ship_speed_along_normal
-    j /= 1 / ship.mass + 1 / (4 / 3 * math.pi * planet.radius**3)
-
-    # Apply impulse
-    ship.speed += normal_vector * j / ship.mass
-
-    # Move ship outside planet
-    overlap = ship.radius + planet.radius - delta_magnitude
-    ship.pos += normal_vector * overlap
-
-
 # endregion
 
 # Generate asteroids
