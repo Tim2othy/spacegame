@@ -2,8 +2,11 @@ import pygame
 from pygame.math import Vector2
 from pygame import Color
 import math
-from physics import Disk, Bullet
+from physics import Disk, Bullet, Rocket
 from camera import Camera
+from enum import Enum
+from enemy_info import ENEMY_SHOOT_RANGE
+import random
 
 
 # TODO: Move constant somewhere else
@@ -49,7 +52,7 @@ class Ship(Disk):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
+            self.bullets.append(Bullet(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.25
             self.ammo -= 1
 
@@ -287,19 +290,24 @@ class BulletEnemy(Ship):
             self.shoot()
             self.time_until_next_shot = self.shoot_cooldown
 
+class RocketEnemy(BulletEnemy):
+    """An enemy ship shooting rockets, targeting a specific other ship."""
 
-        self.action_timer -= 1
+    def __init__(
+        self,
+        pos: Vector2,
+        vel: Vector2,
+        target_ship: Ship,
+        shoot_cooldown: float = 0.5,
+        color: Color = Color("plum4"),
+    ):
+        super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
-        # Shooting logic
-        if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
-            if self.type == "bullet":
-                # Set cooldown for bullet enemy
-                self.shoot_cooldown = BULLET_SHOOT_COOLDOWN
-                # TODO: `self` is not of type `Ship`. Perhaps `Enemy` should be subclass of `Ship`?
-                return [Bullet(self.pos, self.speed, Color("orange"))]
-            else:
-                # Set cooldown for rocket enemy
-                self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
-                return [Rocket(self.pos, self.speed * 2, Color("red"))]
-        self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
-        return []
+    def shoot(self):
+        if self.gun_cooldown <= 0 and self.ammo > 0:
+            forward = self.get_faced_direction()
+            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
+            bullet_vel = self.vel + forward * BULLET_SPEED
+            self.bullets.append(Rocket(bullet_pos, bullet_vel, self.color))
+            self.gun_cooldown = 0.25
+            self.ammo -= 1
