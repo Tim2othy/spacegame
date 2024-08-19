@@ -61,7 +61,7 @@ class Disk(PhysicalObject):
         radius: float,
         color: pygame.Color,
     ):
-        mass = self.radius**3 * math.pi * 4 / 3
+        mass = radius**3 * math.pi * 4 / 3
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = color
@@ -78,10 +78,10 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: "Disk") -> bool:
         return disk.pos.magnitude_squared() < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk") -> bool:
+    def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """
         Bounce `self` off of `disk`, iff the two intersect.
-        Returns true if bounce occurred, false otherwise.
+        Returns severity of the impact if it occurred, None otherwise.
         """
 
         # TODO: The impulse of `disk` should also affect the way
@@ -100,10 +100,16 @@ class Disk(PhysicalObject):
             # TODO: What does this mean? And is `False`
             # the correct return-value here?
             if self_vel_along_normal > 0:
-                return False
+                return None
 
             # Calculate restitution (bounciness)
             restitution = 1
+
+            # TODO: In the original ship-crash-method,
+            # bounciness (don't ask me what that corresponds to, here)
+            # was multiplied by 0.5, for sake of energy-loss. This
+            # should probably be implemented here, to, but I do not
+            # understand this code.
 
             # Calculate impulse scalar
             j = -(1 + restitution) * self_vel_along_normal
@@ -115,9 +121,9 @@ class Disk(PhysicalObject):
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return True
+            return j  # TODO: Is this correct???
         else:
-            return False
+            return None
 
 
 class Planet(Disk):
