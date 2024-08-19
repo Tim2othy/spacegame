@@ -8,8 +8,8 @@ from camera import Camera
 
 # TODO: Move constant somewhere else
 BULLET_SPEED = 6
-GUNBARREL_LENGTH = 32
-GUNBARREL_WIDTH = 8
+GUNBARREL_LENGTH = 3  # relative to radius
+GUNBARREL_WIDTH = 0.5  # relative to radius
 
 
 class Ship(Disk):
@@ -27,51 +27,17 @@ class Ship(Disk):
         self.gun_cooldown = 3
 
         self.ammo = 250
-        self.thrust = 0.19
-        self.rotation_thrust = 3
-        self.left_rotation_thruster_on = False
-        self.right_rotation_thruster_on = False
-        self.front_thruster_on = False
-        self.rear_thruster_on = False
         self.thrust = 50 * self.mass
+        self.rotation_thrust = 100
+        self.thruster_rot_left = False
+        self.thruster_rot_right = False
+        self.thruster_backward = False
+        self.thruster_forward = False
         self.fuel = 100.0
         self.fuel_consumption_rate = 0.07
         self.rotation_fuel_consumption_rate = 0.03
         self.MAX_FUEL = 100.0
 
-    def rotate_left(self):
-        if self.fuel > 0:
-            self.angle += self.rotation_thrust
-            self.fuel -= self.rotation_fuel_consumption_rate
-            self.left_rotation_thruster_on = True
-        else:
-            self.left_rotation_thruster_on = False
-
-    def rotate_right(self):
-        if self.fuel > 0:
-            self.angle -= self.rotation_thrust
-            self.fuel -= self.rotation_fuel_consumption_rate
-            self.right_rotation_thruster_on = True
-        else:
-            self.right_rotation_thruster_on = False
-
-    def forward(self):
-        if self.fuel > 0:
-            self.vel[0] += math.cos(math.radians(self.angle)) * self.thrust
-            self.vel[1] -= math.sin(math.radians(self.angle)) * self.thrust
-            self.fuel -= self.fuel_consumption_rate
-            self.rear_thruster_on = True
-        else:
-            self.rear_thruster_on = False
-
-    def backward(self):
-        if self.fuel > 0:
-            self.vel[0] -= math.cos(math.radians(self.angle)) * self.thrust
-            self.vel[1] += math.sin(math.radians(self.angle)) * self.thrust
-            self.fuel -= self.fuel_consumption_rate
-            self.front_thruster_on = True
-        else:
-            self.front_thruster_on = False
     def get_faced_direction(self):
         # TODO: Why doesn't Vector2.from_polar() work?
         return Vector2(
@@ -80,15 +46,27 @@ class Ship(Disk):
 
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
-            normalized_vel = self.vel.normalize()
-            bullet_pos = self.pos + normalized_vel * self.radius
-            bullet_vel = self.vel + normalized_vel * BULLET_SPEED
+            forward = self.get_faced_direction()
+            bullet_pos = self.pos + forward * self.radius
+            bullet_vel = self.vel + forward * BULLET_SPEED
             self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
             self.gun_cooldown = 0.25
             self.ammo -= 1
 
     def step(self, dt: float):
-        super()
+        if self.thruster_rot_left:
+            self.angle += self.rotation_thrust * dt
+        if self.thruster_rot_right:
+            self.angle -= self.rotation_thrust * dt
+
+        forward = self.get_faced_direction()
+        if self.thruster_forward:
+            self.apply_force(forward * self.thrust, dt)
+        if self.thruster_backward:
+            self.apply_force(-forward * self.thrust, dt)
+
+        super().step(dt)
+        print(self.pos, self.vel)
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
@@ -96,110 +74,130 @@ class Ship(Disk):
         self.fuel = max(0, self.fuel)
 
     def draw(self, camera: Camera):
-        # TODO: Why doesn't Vector2.from_polar() work?
-        forward_direction: Vector2 = Vector2(math.cos(self.angle), math.sin(self.angle))
+        forward = self.get_faced_direction()
+        right = pygame.math.Vector2(-forward.y, forward.x)
+        left = -right
+        backward = -forward
 
+        darker_color = Color(self.color)
+        darker_color.r = darker_color.r // 2
+        darker_color.g = darker_color.g // 2
+        darker_color.b = darker_color.b // 2
         ship_screen_pos = camera.world_to_camera(self.pos)
 
-        # Draw gun
+        # TODO: Especially the backward-thruster is super ugly
+        # thruster_backward (active)
+        if self.thruster_backward:
+            pygame.draw.polygon(
+                camera.surface,
+                Color("red"),
+                [
+                    camera.world_to_camera(self.pos + self.radius * p)
+                    for p in [forward * 2, left * 1.25, right * 1.25]
+                ],
+            )
+
+        # "For his neutral special, he wields a gun"
         gun_end = camera.world_to_camera(
-            self.pos + forward_direction * GUNBARREL_LENGTH
+            self.pos + forward * self.radius * GUNBARREL_LENGTH
         )
         pygame.draw.line(
             camera.surface,
             Color("blue"),
             ship_screen_pos,
             gun_end,
-            GUNBARREL_WIDTH,
+            int(GUNBARREL_WIDTH * self.radius),
         )
 
-        # TODO: Probably overhaul Thruster-drawing at some point
-        # Draw thrusters
-        self.draw_thruster(
+        # thruster_rot_left (material)
+        pygame.draw.polygon(
             camera.surface,
-            ship_screen_pos,
-            angle_offset=0,
-            is_active=self.front_thruster_on,
-            is_rotation=False,
-        )  # Front thruster
-        self.draw_thruster(
+            darker_color,
+            [
+                camera.world_to_camera(self.pos + self.radius * p)
+                for p in [
+                    0.7 * left + 0.7 * forward,
+                    0.5 * left + 0.5 * backward,
+                    2.0 * left + 1.0 * backward,
+                ]
+            ],
+        )
+        # thruster_rot_left (active)
+        if self.thruster_rot_left:
+            pygame.draw.polygon(
+                camera.surface,
+                Color("yellow"),
+                [
+                    camera.world_to_camera(self.pos + self.radius * p)
+                    for p in [
+                        1.5 * left + 1.25 * backward,
+                        0.5 * left + 0.5 * backward,
+                        2.0 * left + 1.0 * backward,
+                    ]
+                ],
+            )
+
+        # thruster_rot_right (material)
+        pygame.draw.polygon(
             camera.surface,
-            ship_screen_pos,
-            angle_offset=180,
-            is_active=self.rear_thruster_on,
-            is_rotation=False,
-        )  # Rear thruster
-        self.draw_thruster(
+            darker_color,
+            [
+                camera.world_to_camera(self.pos + self.radius * p)
+                for p in [
+                    0.7 * right + 0.7 * forward,
+                    0.5 * right + 0.5 * backward,
+                    2.0 * right + 1.0 * backward,
+                ]
+            ],
+        )
+        # thruster_rot_right (active)
+        if self.thruster_rot_right:
+            pygame.draw.polygon(
+                camera.surface,
+                Color("yellow"),
+                [
+                    camera.world_to_camera(self.pos + self.radius * p)
+                    for p in [
+                        1.5 * right + 1.25 * backward,
+                        0.5 * right + 0.5 * backward,
+                        2.0 * right + 1.0 * backward,
+                    ]
+                ],
+            )
+
+        # thruster_forward (flame)
+        if self.thruster_forward:
+            pygame.draw.polygon(
+                camera.surface,
+                Color("orange"),
+                [
+                    camera.world_to_camera(self.pos + self.radius * p)
+                    for p in [
+                        0.7 * left + 0.7 * backward,
+                        0.5 * left + 1.5 * backward,
+                        1.25 * backward,
+                        0.5 * right + 1.5 * backward,
+                        0.7 * right + 0.7 * backward,
+                    ]
+                ],
+            )
+        # thruster_forward (material)
+        pygame.draw.polygon(
             camera.surface,
-            ship_screen_pos,
-            angle_offset=90,
-            is_active=self.left_rotation_thruster_on,
-            is_rotation=True,
-        )  # Left rotation thruster
-        self.draw_thruster(
-            camera.surface,
-            ship_screen_pos,
-            angle_offset=-90,
-            is_active=self.right_rotation_thruster_on,
-            is_rotation=True,
-        )  # Right rotation thruster
+            darker_color,
+            [
+                camera.world_to_camera(self.pos + self.radius * p)
+                for p in [
+                    0.7 * left + 0.7 * backward,
+                    0.5 * left + 1.25 * backward,
+                    1.0 * backward,
+                    0.5 * right + 1.25 * backward,
+                    0.7 * right + 0.7 * backward,
+                ]
+            ],
+        )
 
         super().draw(camera)  # Draw circular body ("hitbox")
-
-    def draw_thruster(
-        self,
-        screen: pygame.Surface,
-        ship_screen_pos: Vector2,
-        angle_offset: float,
-        is_active: bool,
-        is_rotation: bool = False,
-    ):
-        thruster_pos = Vector2(
-            ship_screen_pos[0]
-            + math.cos(math.radians(self.angle + angle_offset)) * self.radius,
-            ship_screen_pos[1]
-            - math.sin(math.radians(self.angle + angle_offset)) * self.radius,
-        )
-
-        color = Color(("red" if is_rotation else "orange") if is_active else "white")
-        self.draw_thruster_shape(screen, thruster_pos, color, self.angle + angle_offset)
-
-    def draw_thruster_shape(
-        self,
-        screen: pygame.Surface,
-        pos: Vector2,
-        color: pygame.Color,
-        angle: float,
-    ):
-        thruster_width = 10
-        thruster_height = 20
-        points = [
-            (
-                pos[0] - math.sin(math.radians(angle)) * thruster_width / 2,
-                pos[1] - math.cos(math.radians(angle)) * thruster_width / 2,
-            ),
-            (
-                pos[0] + math.sin(math.radians(angle)) * thruster_width / 2,
-                pos[1] + math.cos(math.radians(angle)) * thruster_width / 2,
-            ),
-            (
-                pos[0]
-                + math.sin(math.radians(angle)) * thruster_width / 2
-                + math.cos(math.radians(angle)) * thruster_height,
-                pos[1]
-                + math.cos(math.radians(angle)) * thruster_width / 2
-                - math.sin(math.radians(angle)) * thruster_height,
-            ),
-            (
-                pos[0]
-                - math.sin(math.radians(angle)) * thruster_width / 2
-                + math.cos(math.radians(angle)) * thruster_height,
-                pos[1]
-                - math.cos(math.radians(angle)) * thruster_width / 2
-                - math.sin(math.radians(angle)) * thruster_height,
-            ),
-        ]
-        pygame.draw.polygon(screen, color, points)
 
     # TODO: Either revive or delete this code at some point
     # If reviving, add `self.load_image('ship_sprite.png')` back
