@@ -192,8 +192,8 @@ class Ship(Disk):
         ]
         pygame.draw.polygon(screen, color, points)
 
-
-
+    # TODO: Either revive or delete this code at some point
+    """
     def load_image(self, image_path: str):
         
         #Load and prepare the ship image.
@@ -215,3 +215,4 @@ class Ship(Disk):
             
         # Draw the rotated image
         screen.blit(rotated_image, rect)
+    """
