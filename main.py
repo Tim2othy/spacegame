@@ -43,9 +43,9 @@ player_ship = Ship(
 asteroids: list[Asteroid] = []
 for _ in range(5):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
-    speed = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
-    asteroids.append(Asteroid(pos, speed, 1, radius))
+    asteroids.append(Asteroid(pos, vel, 1, radius))
 enemy_ships: list[BulletEnemy] = []
 for _ in range(16):
     pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))

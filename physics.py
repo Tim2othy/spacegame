@@ -8,13 +8,12 @@ GRAVITATIONAL_CONSTANT = 0.0006
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic speed, and constant nonzero mass."""
+    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
 
     def __init__(self, pos: Vector2, vel: Vector2, mass: float):
         self.pos = pos
         self.mass = mass
         self.vel = vel
-        # TODO: Attribute `vel` was renamed from `speed`. GREP for any remnants of `speed`.
 
     def step(self, dt: float):
         self.pos += dt * self.vel
