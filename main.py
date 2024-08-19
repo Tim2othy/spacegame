@@ -9,7 +9,7 @@ from physics import Asteroid, Planet, Disk
 from collections.abc import Sequence
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
 
 # Initialize Pygame
 pygame.init()
@@ -35,29 +35,6 @@ ship = Ship(
 # I can't *believe* that math doesn't have a sign-function
 def sign(x: int | float):
     return math.copysign(1, x)
-
-
-# region --- calc gravity---
-
-
-def calculate_gravity(pos: Vector2, mass: float, planets: list[Planet]):
-    total_force = Vector2(0, 0)
-    for planet in planets:
-        delta = planet.pos - pos
-        distance_squared = delta.magnitude_squared()
-        if distance_squared > 0:
-            force_magnitude = (
-                G * (4 / 3 * 3.14 * planet.radius**3) * mass / distance_squared
-            )
-            distance = math.sqrt(distance_squared)
-            total_force += delta * force_magnitude / distance
-    return total_force
-
-
-# endregion
-
-
-# region --- Planets and squares---
 
 
 class Square:
@@ -132,8 +109,6 @@ squares = [
 ]
 
 
-# endregion
-
 # Generate asteroids
 asteroids: list[Asteroid] = []
 for _ in range(5):  # Adjust the number of asteroids as needed
@@ -141,22 +116,6 @@ for _ in range(5):  # Adjust the number of asteroids as needed
     speed = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
     asteroids.append(Asteroid(pos, speed, 1, radius))
-
-# endregion
-
-
-# region --- space guns ---
-
-# endregion
-
-
-# region --- enemy ships ---
-
-
-# Define cooldown values
-ROCKET_SHOOT_COOLDOWN = 2
-BULLET_SHOOT_COOLDOWN = 0.5
-
 
 # New classes for enemies and projectiles
 
@@ -172,11 +131,6 @@ for _ in range(16):
     else:
         enemies.append(RocketEnemy(pos, Vector2(0, 0), ship))
 
-
-# endregion
-
-
-# region --- Minimap ---
 
 MINIMAP_SIZE = 250  # Size of the minimap (width and height)
 MINIMAP_MARGIN = 20  # Margin from the top-right corner
@@ -259,9 +213,6 @@ def draw_minimap():
     """
 
 
-# endregion
-
-
 # Game loop
 running = True
 clock = pygame.time.Clock()
@@ -275,8 +226,6 @@ while running:
     if not game_over:
         camera.start_drawing_new_frame()
         # TODO: reimplement drawing the grid
-
-        # region --- Handle input ---
 
         # Handle input
         keys = pygame.key.get_pressed()
@@ -339,14 +288,6 @@ while running:
         # Draw ship and bullets
         ship.draw(camera)
 
-        # endregion
-
-        # region --- Draw spacegun---
-
-        # endregion
-
-        # region --- combat ---
-
         for enemy in enemies:
             new_projectiles = enemy.step(dt)
 
@@ -396,15 +337,7 @@ while running:
 
         ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
-        # endregion
-
-        # region --- world border, camera ---
-
         ship_screen_pos = ship.pos - camera.pos
-
-        # endregion
-
-        # region --- moving ship---
 
         # Calculate thruster positions and sizes
 
@@ -433,10 +366,6 @@ while running:
             SCREEN_HEIGHT // 2, min(camera_y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
         )
         camera.pos = Vector2(camera_x, camera_y)
-
-        # endregion
-
-        # region --- collisions ---
 
         collision = False
         current_time = pygame.time.get_ticks()
@@ -500,20 +429,12 @@ while running:
                 other_asteroid.bounce_off_of_disk(asteroid)
             asteroid.draw(camera)
 
-        # endregion
-
-        # region --- planets ---
-
         for planet in planets:
             planet.draw(camera)
-
-        # endregion
 
         # Draw squares
         for square in squares:
             square.draw(camera.surface, camera.pos)
-
-        # region --- displaying ---
 
         # Display ship coordinates
         font = pygame.font.Font(None, 22)
@@ -589,8 +510,6 @@ while running:
         camera.surface.blit(lag_text3, (10, 370))
 
         # draw_minimap()
-
-        # endregion
 
         # Check if ship health reaches 0
         if ship.health <= 0:
