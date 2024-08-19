@@ -29,10 +29,8 @@ class PhysicalObject:
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
-
-        # Normalize the direction
-        distance = math.sqrt(dist_squared)
-        force = delta * force_magnitude / distance
+        normalised_delta = delta / math.sqrt(dist_squared)
+        force = normalised_delta * force_magnitude
 
         return force
 
@@ -100,3 +98,30 @@ class Disk(PhysicalObject):
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
+
+
+class Planet(Disk):
+    """A stationary disk."""
+
+    def __init__(
+        self,
+        pos: Vector2,
+        density: float,
+        radius: float,
+        color: pygame.Color,
+    ):
+        super().__init__(pos, Vector2(0, 0), density, radius, color)
+
+
+class Asteroid(Disk):
+    """A disk that doesn't exert gravitational force."""
+
+    def __init__(
+        self,
+        pos: Vector2,
+        speed: Vector2,
+        density: float,
+        radius: float,
+        color: pygame.Color,
+    ):
+        super().__init__(pos, speed, density, radius, color)
