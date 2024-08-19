@@ -8,3 +8,6 @@ class PhysicalObject:
         self.pos = pos
         self.mass = mass
         self.speed = speed
+
+    def update(self, dt: float):
+        self.pos += dt * self.speed
