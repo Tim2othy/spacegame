@@ -224,3 +224,57 @@ class Ship(Disk):
         # Draw the rotated image
         screen.blit(rotated_image, rect)
     """
+
+class BulletEnemy(Ship):
+    def __init__(self, pos: Vector2, vel: Vector2):
+        super().__init__(pos, vel, 1, 8, Color("purple"))
+        self.shoot_cooldown = 0
+        self.action_timer = 1 * 60
+
+        self.health = 100
+
+    # TODO: Add return-type to this function
+    def step(self, dt: float) -> "Sequence[Bullet]":
+        delta = ship.pos - self.pos
+        dist = delta.magnitude()
+        # TODO: Rather than storing an int for current_action, store some enum. See:
+        # https://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
+        self.current_action = 6
+        force = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
+        self.speed += force / 100
+        self.check_planet_collision(planets)
+
+        # Check if period has elapsed
+        if self.action_timer <= 0:
+            self.current_action = random.randint(1, 4)
+            self.action_timer = 0.5 * 60  # Reset timer to seconds
+
+        if self.current_action == 1:  # Accelerate towards player
+            self.speed += delta * ENEMY_ACCELERATION * 2 / dist
+
+        elif self.current_action == 2:  # Accelerate randomly
+            rand_speed = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+            self.speed += rand_speed * ENEMY_ACCELERATION * 0.2
+
+        elif self.current_action == 3:  # Decelerate
+            self.speed.move_towards_ip(Vector2(0, 0), ENEMY_ACCELERATION * 0.2)
+
+        # Update position
+        self.pos[0] += self.speed[0]
+        self.pos[1] += self.speed[1]
+
+        self.action_timer -= 1
+
+        # Shooting logic
+        if dist < ENEMY_SHOOT_RANGE and self.shoot_cooldown <= 0:
+            if self.type == "bullet":
+                # Set cooldown for bullet enemy
+                self.shoot_cooldown = BULLET_SHOOT_COOLDOWN
+                # TODO: `self` is not of type `Ship`. Perhaps `Enemy` should be subclass of `Ship`?
+                return [Bullet(self.pos, self.speed, Color("orange"))]
+            else:
+                # Set cooldown for rocket enemy
+                self.shoot_cooldown = ROCKET_SHOOT_COOLDOWN
+                return [Rocket(self.pos, self.speed * 2, Color("red"))]
+        self.shoot_cooldown = max(0, self.shoot_cooldown - 1)
+        return []
