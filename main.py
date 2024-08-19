@@ -473,6 +473,9 @@ MINIMAP_SHIP_COLOR = (0, 255, 0)  # Green for the player's ship
 
 
 def draw_minimap():
+    # TODO: Reimplement this with another instance of the Camera class :)
+    pass
+    """
     # Calculate the position of the minimap
     minimap_x = SCREEN_WIDTH - MINIMAP_SIZE - MINIMAP_MARGIN
     minimap_y = MINIMAP_MARGIN
@@ -540,6 +543,7 @@ def draw_minimap():
                 max(7, spacegun.size * scale),
             ),
         )
+    """
 
 
 # endregion
