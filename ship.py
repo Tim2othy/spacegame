@@ -226,42 +226,67 @@ class Ship(Disk):
     """
 
 class BulletEnemy(Ship):
-    def __init__(self, pos: Vector2, vel: Vector2):
-        super().__init__(pos, vel, 1, 8, Color("purple"))
-        self.shoot_cooldown = 0
-        self.action_timer = 1 * 60
+    """An enemy ship, targeting a specific other ship."""
 
+    Action = Enum(
+        "Action", ["accelerate_to_player", "accelerate_randomly", "decelerate"]
+    )
+
+    def __init__(
+        self,
+        pos: Vector2,
+        vel: Vector2,
+        target_ship: Ship,
+        shoot_cooldown: float = 0.25,
+        color: Color = Color("purple"),
+    ):
+        super().__init__(pos, vel, 1, 8, color)
+        self.time_until_next_shot = 0
+        self.action_timer = 6
         self.health = 100
+        self.current_action: BulletEnemy.Action
+        self.target_ship = target_ship
+        self.thrust = 100
+        self.shoot_cooldown = shoot_cooldown
+        self.bullets: list[Bullet] = []
 
-    # TODO: Add return-type to this function
-    def step(self, dt: float) -> "Sequence[Bullet]":
-        delta = ship.pos - self.pos
-        dist = delta.magnitude()
-        # TODO: Rather than storing an int for current_action, store some enum. See:
-        # https://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
-        self.current_action = 6
-        force = calculate_gravity(self.pos, 100, planets)  # Assume enemy mass is 100
-        self.speed += force / 100
-        self.check_planet_collision(planets)
+    def step(self, dt: float):
+        # TODO: Enemies should be affected by gravity and collisions, this
+        # must be added back into the main-loop (or applied into some
+        # superclass step-function)
 
-        # Check if period has elapsed
+        self.action_timer -= dt
         if self.action_timer <= 0:
-            self.current_action = random.randint(1, 4)
-            self.action_timer = 0.5 * 60  # Reset timer to seconds
+            self.current_action = random.choice(list(BulletEnemy.Action))
+            self.action_timer = 6
 
-        if self.current_action == 1:  # Accelerate towards player
-            self.speed += delta * ENEMY_ACCELERATION * 2 / dist
+        delta_target_ship = self.target_ship.pos - self.pos
 
-        elif self.current_action == 2:  # Accelerate randomly
-            rand_speed = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
-            self.speed += rand_speed * ENEMY_ACCELERATION * 0.2
+        force_direction: Vector2
+        match self.current_action:
+            case BulletEnemy.Action.accelerate_to_player:
+                force_direction = delta_target_ship
+            case BulletEnemy.Action.accelerate_randomly:
+                # TODO: Almost certainly, these accelerations will cancel each other out,
+                # and the ship will not experience significant change in speed
+                force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+            case BulletEnemy.Action.decelerate:
+                force_direction = -self.vel
+        force = force_direction * self.thrust / force_direction.magnitude()
+        self.apply_force(force, dt)
 
-        elif self.current_action == 3:  # Decelerate
-            self.speed.move_towards_ip(Vector2(0, 0), ENEMY_ACCELERATION * 0.2)
+        super().step(dt)
+        self.angle = math.atan2(self.vel.y, self.vel.x)
 
-        # Update position
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
+        # Shooting logic
+        self.time_until_next_shot -= 1
+        if (
+            delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2
+            and self.time_until_next_shot <= 0
+        ):
+            self.shoot()
+            self.time_until_next_shot = self.shoot_cooldown
+
 
         self.action_timer -= 1
 
