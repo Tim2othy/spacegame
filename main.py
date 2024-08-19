@@ -5,20 +5,11 @@ from pygame import Color
 import sys
 import math
 import random
-from physics import Asteroid, Planet, Bullet, Rocket, Disk
+from physics import Asteroid, Planet, Disk, Bullet
 from camera import Camera
 from collections.abc import Sequence
-
-from init import (
-    camera,
-)
-
-from ship import Ship
-
-from enemy_info import (
-    ENEMY_ACCELERATION,
-    ENEMY_SHOOT_RANGE,
-)
+from ship import Ship, BulletEnemy, RocketEnemy
+from init import camera
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT, G
 
 # Initialize Pygame
@@ -187,7 +178,7 @@ class Spacegun:
             self.last_shot_time = current_time
 
     def update_bullets(self, ship: Ship) -> bool:
-        for bullet in self.bullets[:]:
+        for bullet in self.bullets:
             bullet.step(dt)
             # TODO: reimplement that old bullets get destroyed.
             # Or perhaps we limit the size of the bullets-array,
@@ -219,16 +210,15 @@ BULLET_SHOOT_COOLDOWN = 0.5
 
 
 # Add these to your global variables
-enemies: list[Enemy] = []
-enemy_projectiles: list[Bullet] = []
-
+enemies: list[BulletEnemy] = []
 
 # Spawn enemies
-for _ in range(15):
-    x = random.randint(0, WORLD_WIDTH)
-    y = random.randint(0, WORLD_HEIGHT)
-    enemy_type = random.choice(["bullet", "rocket"])
-    enemies.append(Enemy(x, y, enemy_type))
+for _ in range(16):
+    pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
+    if random.random() > 0.5:
+        enemies.append(BulletEnemy(pos, Vector2(0, 0), ship))
+    else:
+        enemies.append(RocketEnemy(pos, Vector2(0, 0), ship))
 
 
 # endregion
@@ -374,7 +364,7 @@ while running:
         ship.step(dt)
 
         # Update player bullets
-        for bullet in ship.bullets[:]:
+        for bullet in ship.projectiles:
             bullet.draw(camera)
 
             bullet.step(dt)
@@ -383,7 +373,7 @@ while running:
             ) or any(
                 map(lambda asteroid: asteroid.intersects_point(bullet.pos), asteroids)
             ):
-                ship.bullets.remove(bullet)
+                ship.projectiles.remove(bullet)
                 continue
 
             if (
@@ -392,7 +382,7 @@ while running:
                 or bullet.pos[1] < 0
                 or bullet.pos[1] > WORLD_HEIGHT
             ):
-                ship.bullets.remove(bullet)
+                ship.projectiles.remove(bullet)
 
         # Draw ship and bullets
         ship.draw(camera)
@@ -414,56 +404,51 @@ while running:
         # region --- combat ---
 
         for enemy in enemies:
-            new_projectiles = enemy.update(ship, planets)
-            enemy_projectiles.extend(new_projectiles)
-
-        # Update enemies and their projectiles
-        for enemy in enemies[:]:
-            new_projectiles = enemy.update(ship, planets)
-            enemy_projectiles.extend(new_projectiles)
+            new_projectiles = enemy.step(dt)
 
             # Check collision with player bullets
-            for bullet in ship.bullets[:]:
-                if enemy.pos.distance_to(bullet.pos) < enemy.radius + 3:
+            for bullet in ship.projectiles:
+                if enemy.intersects_point(bullet.pos):
                     enemies.remove(enemy)
-                    ship.bullets.remove(bullet)
+                    ship.projectiles.remove(bullet)
                     break
 
-        for projectile in enemy_projectiles[:]:
-            projectile.step(dt)
+            for projectile in enemy.projectiles:
+                projectile.step(dt)
 
-            if any(
-                map(lambda planet: planet.intersects_point(projectile.pos), planets)
-            ) or any(
-                map(
-                    lambda asteroid: asteroid.intersects_point(projectile.pos),
-                    asteroids,
-                )
-            ):
-                enemy_projectiles.remove(projectile)
-                continue  # TODO: Is this `continue` here wrong?
+                if any(
+                    map(lambda planet: planet.intersects_point(projectile.pos), planets)
+                ) or any(
+                    map(
+                        lambda asteroid: asteroid.intersects_point(projectile.pos),
+                        asteroids,
+                    )
+                ):
+                    enemy.projectiles.remove(projectile)
+                    continue
 
-            if (
-                projectile.pos[0] < 0
-                or projectile.pos[0] > WORLD_WIDTH
-                or projectile.pos[1] < 0
-                or projectile.pos[1] > WORLD_HEIGHT
-            ):
-                enemy_projectiles.remove(projectile)
-            elif ship.pos.distance_to(projectile.pos) < ship.radius + 3:
-                ship.health -= 10
-                enemy_projectiles.remove(projectile)
+                if (
+                    projectile.pos[0] < 0
+                    or projectile.pos[0] > WORLD_WIDTH
+                    or projectile.pos[1] < 0
+                    or projectile.pos[1] > WORLD_HEIGHT
+                ):
+                    enemy.projectiles.remove(projectile)
+                    continue
+                if ship.pos.distance_to(projectile.pos) < ship.radius + 3:
+                    ship.health -= 10
+                    enemy.projectiles.remove(projectile)
+                    continue
 
         # Draw enemies and their projectiles
         for enemy in enemies:
-            enemy.draw(camera.surface, camera.pos)
+            enemy.draw(camera)
 
             for planet in planets:
-                if enemy.pos.distance_to(planet.pos) < enemy.radius + planet.radius:
-                    enemy.bounce(planet)
+                enemy.bounce_off_of_disk(planet)
 
-        for projectile in enemy_projectiles:
-            projectile.draw(camera)
+            for projectile in enemy.projectiles:
+                projectile.draw(camera)
 
         ship.gun_cooldown = max(0, ship.gun_cooldown - 1)
 
@@ -645,15 +630,17 @@ while running:
         camera.surface.blit(advice_text, (10, 310))
 
         lag_text1 = font.render(
-            f"ship.bullets: {len(ship.bullets[:])}", True, (255, 255, 255)
+            f"ship.bullets: {len(ship.projectiles)}", True, (255, 255, 255)
         )
         camera.surface.blit(lag_text1, (10, 330))
 
-        lag_text2 = font.render(f"enemies: {len(enemies[:])}", True, (255, 255, 255))
+        lag_text2 = font.render(f"enemies: {len(enemies)}", True, (255, 255, 255))
         camera.surface.blit(lag_text2, (10, 350))
 
         lag_text3 = font.render(
-            f"enemy_projectiles: {len(enemy_projectiles[:])}", True, (255, 255, 255)
+            f"enemy_projectiles: {sum(map(lambda e: len(enemy.projectiles), enemies))}",
+            True,
+            (255, 255, 255),
         )
         camera.surface.blit(lag_text3, (10, 370))
 
