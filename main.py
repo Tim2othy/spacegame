@@ -34,7 +34,11 @@ game_over = False
 
 
 ship = Ship(
-    Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2), Vector2(0, 0), 1, 10, Color("turquoise")
+    Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    Vector2(0, 0),
+    1,
+    10,
+    Color("turquoise"),
 )
 
 
@@ -453,14 +457,19 @@ while running:
 
         # Handle input
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
-            ship.rotate_left()
-        if keys[pygame.K_RIGHT]:
-            ship.rotate_right()
-        if keys[pygame.K_UP]:
-            ship.forward()
-        if keys[pygame.K_DOWN]:
-            ship.backward()
+
+        # Look.
+        # You might say that having the RIGHT key
+        # activate the LEFT thruster must be some kind
+        # of sign error.
+        # My excuse? Well, "thruster_rot_left" might
+        # mean "the thruster that rotates the ship left",
+        # OR it might mean "the thruster on the left side".
+        # So yes, please just ignore that, it'll be okay :)
+        ship.thruster_rot_left = keys[pygame.K_RIGHT]
+        ship.thruster_rot_right = keys[pygame.K_LEFT]
+        ship.thruster_forward = keys[pygame.K_UP]
+        ship.thruster_backward = keys[pygame.K_DOWN]
         if keys[pygame.K_SPACE]:
             ship.shoot()
         if (
