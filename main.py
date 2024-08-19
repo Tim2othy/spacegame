@@ -633,14 +633,13 @@ while running:
 
         # region --- moving ship---
 
-        # Update ship position
-        ship.pos += ship.speed
-
         # Calculate thruster positions and sizes
 
         # Ensure fuel doesn't go below 0
+        # TODO: Move into wherever we update fuel
         ship.fuel = max(0, ship.fuel)
 
+        ship.step(dt)
         # Check if ship is touching world border
         if (
             ship.pos[0] <= 0
