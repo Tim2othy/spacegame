@@ -15,11 +15,14 @@ class PhysicalObject:
         self.mass = mass
         self.speed = speed
 
-    def update(self, dt: float):
+    def step(self, dt: float):
         self.pos += dt * self.speed
 
     def add_impulse(self, impulse: Vector2):
         self.speed += impulse / self.mass
+
+    def apply_force(self, force: Vector2, dt: float):
+        self.add_impulse(force * dt)
 
     def gravitational_force(self, pobj: "PhysicalObject") -> Vector2:
         """Returns the gravitational force between `self` and `pobj` that affects `self`."""
@@ -33,6 +36,14 @@ class PhysicalObject:
         force = normalised_delta * force_magnitude
 
         return force
+
+    def apply_gravitational_forces(
+        self, gravity_objects: "list[PhysicalObject]", dt: float
+    ):
+        force_sum = Vector2(0, 0)
+        for pobj in gravity_objects:
+            force_sum += self.gravitational_force(pobj)
+        self.apply_force(force_sum, dt)
 
     def draw(self, camera: Camera):
         pass
@@ -125,3 +136,6 @@ class Asteroid(Disk):
         color: pygame.Color,
     ):
         super().__init__(pos, speed, density, radius, color)
+
+    # TODO: Re-implement that the Asteroids stopped at the world-border.
+    # Or should they wrap instead? Should *all* PhysicalObjects wrap?
