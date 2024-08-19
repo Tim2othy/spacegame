@@ -7,18 +7,15 @@ import math
 import random
 import time
 from math import sqrt
+from physics import Asteroid, Planet
 
 from init import (
-    screen,
-    camera_pos,
-    total_force_x,
-    total_force_y,
+    camera,
     collision_time,
 )
 
 from ship import Ship
 from bullet import Bullet
-from planets import Planet
 
 from enemy_info import (
     ENEMY_ACCELERATION,
@@ -175,127 +172,6 @@ def bounce_from_planet(planet: Planet):
 
 
 # endregion
-
-
-# region --- asteroids
-
-
-# TODO: Eventually make Asteroid and Planet subclasses of a shared class
-class Asteroid:
-    def __init__(self, x: float, y: float, radius: float):
-        self.pos = Vector2(x, y)
-        self.radius = radius
-        self.color = (100, 100, 100)  # Grey color
-        self.speed = Vector2(random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5))
-        self.mass = 4 / 3 * math.pi * self.radius**3  # Assuming density of 1
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        if (
-            self.pos[0] - self.radius - camera_pos.x < SCREEN_WIDTH
-            and self.pos[0] + self.radius - camera_pos.x > 0
-            and self.pos[1] - self.radius - camera_pos.y < SCREEN_HEIGHT
-            and self.pos[1] + self.radius - camera_pos.y > 0
-        ):
-            pygame.draw.circle(
-                screen,
-                self.color,
-                self.pos - camera_pos,
-                self.radius,
-            )
-
-    def update(self, planets: list[Planet]):
-        # Update position based on speed
-        # TODO: This should definitely incorporate ∆t
-        self.pos += self.speed
-
-        # Stop at world border
-        if self.pos[0] - self.radius < 0:
-            self.pos[0] = self.radius
-            self.speed[0] = 0
-        elif self.pos[0] + self.radius > WORLD_WIDTH:
-            self.pos[0] = WORLD_WIDTH - self.radius
-            self.speed[0] = 0
-        if self.pos[1] - self.radius < 0:
-            self.pos[1] = self.radius
-            self.speed[1] = 0
-        elif self.pos[1] + self.radius > WORLD_HEIGHT:
-            self.pos[1] = WORLD_HEIGHT - self.radius
-            self.speed[1] = 0
-
-        # Apply gravity from planets
-        for planet in planets:
-            force = planet.calculate_gravity(self)
-            self.speed += force / self.mass
-
-    def check_collision(self, other: "Asteroid | Planet | Vector2"):
-        # TODO: This should be split up into two different methods, one for
-        # positions, one for celestial bodies
-        if isinstance(other, Asteroid) or isinstance(other, Planet):
-            return self.pos.distance_to(other.pos) < self.radius + other.radius
-        else:
-            # other is instance of Vector2
-            return self.pos.distance_to(other) < self.radius + ship.radius
-
-    # TODO: Disgusting union-type, we should create a superclass of Asteroid and Planet
-    def bounce(self, other: "Asteroid | Planet"):
-        # TODO: Because `self` (an Asteroid) moves as well,
-        # shouldn't this impulse also affect the way that `other`
-        # is deflected?
-
-        # Answer: Yes this should be added in.
-
-        # TODO: The pygame.math module already has methods for normal-vector
-        # calculation
-
-        # Calculate normal vector
-        delta = self.pos - other.pos
-        delta_magnitude = delta.magnitude()
-        normal_vector = delta / delta_magnitude
-        self_speed_along_normal = self.speed.dot(normal_vector)
-
-        # Do not resolve if velocities are separating
-        if self_speed_along_normal > 0:
-            return
-
-        # Calculate restitution (bounciness)
-        restitution = 1
-
-        # Calculate impulse scalar
-        j = -(1 + restitution) * self_speed_along_normal
-        j /= 1 / self.mass + 1 / (4 / 3 * math.pi * other.radius**3)
-
-        # Apply impulse
-        self.speed += normal_vector * j / self.mass
-
-        # Move self outside other
-        overlap = self.radius + other.radius - delta_magnitude
-        self.pos += normal_vector * overlap
-
-
-# TODO: These two methods will eventually be merged into the superclass of
-# Asteroid and Planet
-# TODO: Neither of these should have a type-union "Bullet | Rocket" in their
-# arguments. Instead, there should be a superclass of Bullet and Rocket, say,
-# `Projectile`, and that's the type of its argument
-
-
-def check_projectile_planet_collision(
-    projectile: "Bullet | Rocket", planets: list[Planet]
-):
-    for planet in planets:
-        if projectile.pos.distance_to(planet.pos) < planet.radius:
-            return True
-    return False
-
-
-def check_projectile_asteroid_collision(
-    projectile: "Bullet | Rocket", asteroids: list[Asteroid]
-):
-    for asteroid in asteroids:
-        if projectile.pos.distance_to(asteroid.pos) < asteroid.radius:
-            return True
-    return False
-
 
 # Generate asteroids
 asteroids: list[Asteroid] = []
