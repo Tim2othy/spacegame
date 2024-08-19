@@ -5,6 +5,7 @@ from pygame import draw
 from camera import Camera
 import math
 
+GRAVITATIONAL_CONSTANT = 0.0006
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic speed, and constant nonzero mass."""
@@ -19,6 +20,21 @@ class PhysicalObject:
 
     def add_impulse(self, impulse: Vector2):
         self.speed += impulse / self.mass
+
+    def gravitational_force(self, pobj: "PhysicalObject") -> Vector2:
+        """Returns the gravitational force between `self` and `pobj` that affects `self`."""
+
+        # TODO: Here (and everywhere else where we divide by a magnitude) we must
+        # check for -- and eliminate -- the case where distance_squared==0.
+        delta = pobj.pos - self.pos  # point from `self` to `pobj`
+        dist_squared = delta.magnitude_squared()
+        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+
+        # Normalize the direction
+        distance = math.sqrt(dist_squared)
+        force = delta * force_magnitude / distance
+
+        return force
 
     def draw(self, camera: Camera):
         pass
