@@ -78,14 +78,15 @@ class Ship(Disk):
             bullet_pos = self.pos + normalized_vel * self.radius
             bullet_vel = self.vel + normalized_vel * BULLET_SPEED
             self.bullets.append(Bullet(bullet_pos, bullet_vel, pygame.Color("blue")))
-            self.gun_cooldown = 9
+            self.gun_cooldown = 0.25
             self.ammo -= 1
 
-    def update(self):
-        self.pos[0] += self.vel[0]
-        self.pos[1] += self.vel[1]
+    def step(self, dt: float):
+        super()
 
-        self.gun_cooldown = max(0, self.gun_cooldown - 1)
+        self.gun_cooldown = max(0, self.gun_cooldown - dt)
+
+        # TODO: This is unnecessary, move to only the fuel-modification places.
         self.fuel = max(0, self.fuel)
 
     def draw(self, camera: Camera):

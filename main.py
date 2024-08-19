@@ -481,7 +481,7 @@ while running:
             ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
 
         # Update ship
-        ship.update()
+        ship.step(dt)
 
         # Update player bullets
         for bullet in ship.bullets[:]:
