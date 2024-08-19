@@ -37,8 +37,15 @@ class Disk(PhysicalObject):
         super().__init__(pos, speed, mass)
         self.radius = radius
         self.color = color
+        self._radius_squared = radius**2
 
     def draw(self, camera: Camera):
         center = camera.world_to_camera(self.pos)
         radius = self.radius * camera.zoom
         draw.circle(camera.surface, self.color, center, radius)
+
+    def intersects_point(self, vec: Vector2) -> bool:
+        return vec.magnitude_squared() < self._radius_squared
+
+    def intersects_disk(self, disk: "Disk") -> bool:
+        return disk.pos.magnitude_squared() < (self.radius + disk.radius) ** 2
