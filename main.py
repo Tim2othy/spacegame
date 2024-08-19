@@ -5,7 +5,7 @@ from pygame import Color
 import sys
 import math
 import random
-from physics import Asteroid, Planet, Bullet, Rocket
+from physics import Asteroid, Planet, Bullet, Rocket, Disk
 from collections.abc import Sequence
 
 from init import (
@@ -720,28 +720,28 @@ while running:
 
         # Draw squares
         for square in squares:
-            square.draw(screen, camera_pos)
+            square.draw(camera.surface, camera.pos)
 
         # region --- displaying ---
 
         # Display ship coordinates
         font = pygame.font.Font(None, 22)
         coord_text = font.render(
-            f"X: {int(ship.pos[0])}, Y: {int(ship.pos[1])}", True, (255, 255, 255)
+            f"X: {int(ship.pos[0])}, Y: {int(ship.pos[1])}", True, Color("white")
         )
-        screen.blit(coord_text, (10, 10))
+        camera.surface.blit(coord_text, (10, 10))
 
         # Display fuel
-        fuel_text = font.render(f"Fuel: {ship.fuel:.3f}", True, (255, 255, 255))
-        screen.blit(fuel_text, (10, 50))
+        fuel_text = font.render(f"Fuel: {ship.fuel:.3f}", True, Color("white"))
+        camera.surface.blit(fuel_text, (10, 50))
 
         # Display item status
         item_text = font.render(
             "Item: Collected" if has_item else "Item: Not Collected",
             True,
-            (255, 255, 255),
+            Color("white"),
         )
-        screen.blit(item_text, (10, 90))
+        camera.surface.blit(item_text, (10, 90))
 
         # Display mission status
         mission_text = font.render(
@@ -749,11 +749,11 @@ while running:
             True,
             (255, 255, 255),
         )
-        screen.blit(mission_text, (10, 130))
+        camera.surface.blit(mission_text, (10, 130))
 
         # Display ship health
         health_text = font.render(f"Health: {int(ship.health)}", True, (255, 255, 255))
-        screen.blit(health_text, (10, 170))
+        camera.surface.blit(health_text, (10, 170))
 
         # Display square coordinates
         pos_refuel_text = font.render(
@@ -771,29 +771,29 @@ while running:
             True,
             (255, 255, 255),
         )
-        screen.blit(pos_refuel_text, (10, 210))
-        screen.blit(pos_item_text, (10, 230))
-        screen.blit(pos_complete_text, (10, 250))
+        camera.surface.blit(pos_refuel_text, (10, 210))
+        camera.surface.blit(pos_item_text, (10, 230))
+        camera.surface.blit(pos_complete_text, (10, 250))
         ammo_text = font.render(f"Ammo: {ship.ammo}", True, (255, 255, 255))
-        screen.blit(ammo_text, (10, 290))
+        camera.surface.blit(ammo_text, (10, 290))
 
         advice_text = font.render(
             "Ignore the squares, just fight the enemies", True, (255, 255, 255)
         )
-        screen.blit(advice_text, (10, 310))
+        camera.surface.blit(advice_text, (10, 310))
 
         lag_text1 = font.render(
             f"ship.bullets: {len(ship.bullets[:])}", True, (255, 255, 255)
         )
-        screen.blit(lag_text1, (10, 330))
+        camera.surface.blit(lag_text1, (10, 330))
 
         lag_text2 = font.render(f"enemies: {len(enemies[:])}", True, (255, 255, 255))
-        screen.blit(lag_text2, (10, 350))
+        camera.surface.blit(lag_text2, (10, 350))
 
         lag_text3 = font.render(
             f"enemy_projectiles: {len(enemy_projectiles[:])}", True, (255, 255, 255)
         )
-        screen.blit(lag_text3, (10, 370))
+        camera.surface.blit(lag_text3, (10, 370))
 
         # draw_minimap()
 
@@ -805,10 +805,10 @@ while running:
 
     else:
         # Game over screen
-        screen.fill((0, 0, 0))
+        camera.start_drawing_new_frame()
         font = pygame.font.Font(None, 64)
         game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-        screen.blit(
+        camera.surface.blit(
             game_over_text,
             (
                 SCREEN_WIDTH // 2 - game_over_text.get_width() // 2,
