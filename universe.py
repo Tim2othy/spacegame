@@ -35,6 +35,23 @@ class Asteroid(Disk):
     # TODO: Re-implement that the Asteroids stopped at the world-border.
     # Or should they wrap instead? Should *all* PhysicalObjects wrap?
 
+class Rect:
+    """
+    A rectangle, given by its top_left and bottom_right corners.
+
+    Must satisfy top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
+    """
+
+    def __init__(self, top_left: Vector2, bottom_right: Vector2, color: pygame.Color):
+        self.top_left = top_left
+        self.bottom_right = bottom_right
+
+    def intersects_point(self, vec: Vector2):
+        return (
+            self.top_left.x <= vec.x <= self.bottom_right.x
+            and self.top_left.y <= vec.y <= self.bottom_right.y
+        )
+
 
 class Universe:
     """
