@@ -22,7 +22,7 @@ class Planet(Disk):
 
 
 class Asteroid(Disk):
-    """A gray disk that doesn't exert gravitational force."""
+    """A gray disk that doesn't exert gravitational force, and isn't stationary."""
 
     def __init__(
         self,

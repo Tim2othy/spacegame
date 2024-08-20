@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ship import Ship
 
-GRAVITATIONAL_CONSTANT = 0.0006
+GRAVITATIONAL_CONSTANT = 3
 
 
 class PhysicalObject:

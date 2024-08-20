@@ -24,12 +24,12 @@ planets = [
     Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
     Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
     Planet(Vector2(2300, 900), 1, 280, Color("green")),
-    Planet(Vector2(3400, 5300), 1, 420, Color("blue")),
-    Planet(Vector2(4000, 3700), 1, 280, Color("deeppink")),
+    Planet(Vector2(3700, 5300), 1, 420, Color("deeppink")),
+    Planet(Vector2(4200, 3700), 1, 280, Color("mediumpurple")),
     Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
     Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
     Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
-    Planet(Vector2(8500, 8000), 1, 380, Color("mediumpurple")),
+    Planet(Vector2(8500, 8000), 1, 380, Color("yellow")),
     Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
 ]
 
@@ -47,7 +47,7 @@ areas: list[Area] = [
 ]
 
 asteroids: list[Asteroid] = []
-for _ in range(15):
+for _ in range(80):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
@@ -208,6 +208,7 @@ while running:
         camera.draw_text("GAME OVER", None, font, Color("red"))
     else:
         # TODO: reimplement drawing the grid
+        # This was done, right?
 
         # Handle input
         keys = pygame.key.get_pressed()

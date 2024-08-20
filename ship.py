@@ -5,7 +5,6 @@ import math
 from physics import Disk, Bullet, Rocket
 from camera import Camera
 from enum import Enum
-from enemy_info import ENEMY_SHOOT_RANGE
 import random
 
 
@@ -13,6 +12,7 @@ import random
 BULLET_SPEED = 500
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
+ENEMY_SHOOT_RANGE = 9000
 
 
 class Ship(Disk):
