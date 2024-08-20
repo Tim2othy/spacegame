@@ -194,76 +194,41 @@ def draw_minimap():
     """
 
 
-# Game loop
 running = True
 clock = pygame.time.Clock()
 while running:
     dt = clock.tick() / 1000
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    if not game_over:
-        camera.start_drawing_new_frame()
+    camera.start_drawing_new_frame()
+    if game_over:
+        font = pygame.font.Font(None, 64)
+        camera.draw_text("GAME OVER", None, font, Color("red"))
+    else:
         # TODO: reimplement drawing the grid
-
-        ship = universe.player_ship
 
         # Handle input
         keys = pygame.key.get_pressed()
-
-        # Look.
-        # You might say that having the RIGHT key
-        # activate the LEFT thruster must be some kind
-        # of sign error.
-        # My excuse? Well, "thruster_rot_left" might
-        # mean "the thruster that rotates the ship left",
-        # OR it might mean "the thruster on the left side".
-        # So yes, please just ignore that, it'll be okay :)
-        ship.thruster_rot_left = keys[pygame.K_RIGHT]
-        ship.thruster_rot_right = keys[pygame.K_LEFT]
-        ship.thruster_forward = keys[pygame.K_UP]
-        ship.thruster_backward = keys[pygame.K_DOWN]
+        player_ship.thruster_rot_left = keys[pygame.K_RIGHT]
+        player_ship.thruster_rot_right = keys[pygame.K_LEFT]
+        player_ship.thruster_forward = keys[pygame.K_UP]
+        player_ship.thruster_backward = keys[pygame.K_DOWN]
         if keys[pygame.K_SPACE]:
-            ship.shoot()
-
-        # TODO: Have the next two be methods of Ship class, and also respect dt
-        if keys[pygame.K_m]:
-            ship.health = min(ship.MAX_health, ship.health + ship.REPAIR_RATE)
-        if keys[pygame.K_b]:
-            ship.fuel = min(ship.MAX_FUEL, ship.fuel + ship.REFUEL_RATE)
+            player_ship.shoot()
 
         universe.step(dt)
 
-        # Check if ship is touching world border
-        if not universe.contains_point(ship.pos):
+        if not universe.contains_point(player_ship.pos) or player_ship.health <= 0:
             game_over = True
-        if ship.health <= 0:
-            game_over = True
-            # Collide with planets
-
-        camera.smoothly_focus_points([ship.pos, ship.pos + 1 * ship.vel], 500, dt)
+        camera.smoothly_focus_points(
+            [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
+        )
 
         universe.draw(camera)
 
-    else:
-        # Game over screen
-        camera.start_drawing_new_frame()
-        font = pygame.font.Font(None, 64)
-        game_over_text = font.render("GAME OVER", True, (255, 0, 0))
-        camera.surface.blit(
-            game_over_text,
-            (
-                SCREEN_WIDTH // 2 - game_over_text.get_width() // 2,
-                SCREEN_HEIGHT // 2 - game_over_text.get_height() // 2,
-            ),
-        )
-
-    # In your main game loop
-
     pygame.display.flip()
 
-# Quit the game
 pygame.quit()
 sys.exit()
