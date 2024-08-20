@@ -51,7 +51,8 @@ class Camera:
             points (list[Vector2]): The points to focus on
             buff (float): The padding around the points
         """
-        minx, miny, maxx, maxy = 0, 0, 0, 0
+        minx = miny = float("inf")
+        maxx = maxy = float("-inf")
         for point in points:
             minx = min(minx, point.x)
             maxx = max(maxx, point.x)
@@ -64,7 +65,10 @@ class Camera:
         buffed_width = buffed_size.x
         buffed_height = buffed_size.y
         ratio = buffed_width / buffed_height
-        desired_ratio = self.surface.get_width() / self.surface.get_height()
+
+        surface_width = self.surface.get_width()
+        surface_height = self.surface.get_height()
+        desired_ratio = surface_width / surface_height
 
         if ratio > desired_ratio:
             # Increase height
@@ -75,13 +79,12 @@ class Camera:
         else:
             # Increase width
             target_width = buffed_height * desired_ratio
-            addy = Vector2((target_width - buffed_width) / 2)
+            addy = Vector2((target_width - buffed_width) / 2, 0)
             buffed_tl -= addy
             buffed_br += addy
 
         new_center = (buffed_tl + buffed_br) / 2
-        # TODO: Is this correct?
-        new_zoom = buffed_br.x - buffed_tl.x
+        new_zoom = surface_width / (buffed_br.x - buffed_tl.x)
 
         self.smoothly_transition_to(new_center, new_zoom, dt, transition_time)
 
