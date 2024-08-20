@@ -110,12 +110,14 @@ class Universe:
         planets: list[Planet],
         asteroids: list[Asteroid],
         player_ship: Ship,
+        areas: list[Area],
         enemy_ships: list[BulletEnemy],
     ):
         self.size = size
         self.planets = planets
         self.asteroids = asteroids
         self.player_ship = player_ship
+        self.areas = areas
         self.enemy_ships = enemy_ships
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject):
@@ -174,8 +176,14 @@ class Universe:
         for asteroid in self.asteroids:
             asteroid.step(dt)
 
+        # Physics
         self.apply_gravity(dt)
         self.apply_bounce()
+
+        # Areas
+        for area in self.areas:
+            if area.intersects_point(self.player_ship.pos):
+                area.event(self.player_ship)
 
         # Collide bullets:
         for projectile in self.player_ship.projectiles:
@@ -202,6 +210,8 @@ class Universe:
                     continue
 
     def draw(self, camera: Camera):
+        for area in self.areas:
+            area.draw(camera)
         for asteroid in self.asteroids:
             asteroid.draw(camera)
         for planet in self.planets:
