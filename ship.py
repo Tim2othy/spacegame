@@ -206,6 +206,9 @@ class Ship(Disk):
 
         super().draw(camera)  # Draw circular body ("hitbox")
 
+        for projectile in self.projectiles:
+            projectile.draw(camera)
+
     # TODO: Either revive or delete this code at some point
     # If reviving, add `self.load_image('ship_sprite.png')` back
     # to the Ship.__init__ method.

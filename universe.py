@@ -148,10 +148,6 @@ class Universe:
             planet.draw(camera)
         for ship in self.enemy_ships:
             ship.draw(camera)
-            for projectile in ship.projectiles:
-                projectile.draw(camera)
-        for projectile in self.player_ship.projectiles:
-            projectile.draw(camera)
         self.player_ship.draw(camera)
 
     def contains_point(self, vec: Vector2):
