@@ -54,16 +54,11 @@ class Camera:
             points (list[Vector2]): The points to focus on
             buff (float): The padding around the points
         """
-        minx = miny = float("inf")
-        maxx = maxy = float("-inf")
-        for point in points:
-            minx = min(minx, point.x)
-            maxx = max(maxx, point.x)
-            miny = min(miny, point.y)
-            maxy = max(maxy, point.y)
+        (enclosing_tl, enclosing_tr) = self._get_enclosing_rect(points)
 
-        buffed_tl = Vector2(minx - buff, miny - buff)
-        buffed_br = Vector2(maxx + buff, maxy + buff)
+        buff_offset = Vector2(buff, buff)
+        buffed_tl = enclosing_tl - buff_offset
+        buffed_br = enclosing_tr + buff_offset
         buffed_size = buffed_br - buffed_tl
         buffed_width = buffed_size.x
         buffed_height = buffed_size.y
@@ -90,6 +85,19 @@ class Camera:
         new_zoom = surface_width / (buffed_br.x - buffed_tl.x)
 
         self.smoothly_transition_to(new_center, new_zoom, dt, transition_time)
+
+    def _get_enclosing_rect(self, points: list[Vector2]) -> tuple[Vector2, Vector2]:
+        """Gets the smallest rectangle enclosing all points
+        Returns top-left and bottom-right coordinate of rect.
+        """
+        minx = miny = float("inf")
+        maxx = maxy = float("-inf")
+        for point in points:
+            minx = min(minx, point.x)
+            maxx = max(maxx, point.x)
+            miny = min(miny, point.y)
+            maxy = max(maxy, point.y)
+        return (Vector2(minx, miny), Vector2(maxx, maxy))
 
     def _rectangle_intersects_screen(
         self, top_left: Vector2, bottom_right: Vector2
