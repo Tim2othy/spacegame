@@ -64,11 +64,10 @@ class Disk(PhysicalObject):
         pygame.draw.circle(camera.surface, self.color, center, radius)
 
     def intersects_point(self, vec: Vector2) -> bool:
-        return (vec - self.pos).magnitude_squared() < self._radius_squared
+        return self.pos.distance_squared_to(vec) < self._radius_squared
 
     def intersects_disk(self, disk: "Disk") -> bool:
-        dist = (disk.pos - self.pos).magnitude_squared()
-        return dist < (self.radius + disk.radius) ** 2
+        return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
     def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """
