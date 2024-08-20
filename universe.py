@@ -211,6 +211,7 @@ class Universe:
                     continue
 
     def draw(self, camera: Camera):
+        self.draw_grid(camera)
         for area in self.areas:
             area.draw(camera)
         for asteroid in self.asteroids:
@@ -248,6 +249,18 @@ class Universe:
         texty(f"{enemy_projectile_count} enemy projectiles")
 
         del self.text_vertical_offset
+
+    def draw_grid(self, camera: Camera):
+        grid_color = Color("darkgreen")
+        gridline_spacing = 500
+        width = self.size.x
+        height = self.size.y
+
+        for x in range(0, int(width + 1), gridline_spacing):
+            camera.draw_hairline(grid_color, Vector2(x, 0), Vector2(x, height))
+
+        for y in range(0, int(height + 1), gridline_spacing):
+            camera.draw_hairline(grid_color, Vector2(0, y), Vector2(width, y))
 
     def contains_point(self, vec: Vector2):
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
