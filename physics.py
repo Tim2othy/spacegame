@@ -59,9 +59,7 @@ class Disk(PhysicalObject):
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera):
-        center = camera.world_to_camera(self.pos)
-        radius = self.radius * camera.zoom
-        pygame.draw.circle(camera.surface, self.color, center, radius)
+        camera.draw_circle(self.color, self.pos, self.radius)
 
     def intersects_point(self, vec: Vector2) -> bool:
         return self.pos.distance_squared_to(vec) < self._radius_squared
@@ -128,15 +126,14 @@ class Bullet(PhysicalObject):
 
     def draw(self, camera: Camera):
         forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
-        points = [
-            camera.world_to_camera(point)
-            for point in [
+        camera.draw_polygon(
+            self.color,
+            [
                 self.pos + 5 * forward,
                 self.pos + 2 * forward.rotate(150),
                 self.pos + 2 * forward.rotate(-150),
-            ]
-        ]
-        pygame.draw.polygon(camera.surface, self.color, points)
+            ],
+        )
 
 
 class Rocket(Bullet):
