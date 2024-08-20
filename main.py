@@ -242,13 +242,7 @@ while running:
             game_over = True
             # Collide with planets
 
-        camera_x = max(
-            SCREEN_WIDTH // 2, min(ship.pos.x, WORLD_WIDTH - SCREEN_WIDTH // 2)
-        )
-        camera_y = max(
-            SCREEN_HEIGHT // 2, min(ship.pos.y, WORLD_HEIGHT - SCREEN_HEIGHT // 2)
-        )
-        camera.pos = Vector2(camera_x, camera_y)
+        camera.smoothly_focus_points([ship.pos, ship.pos + 1 * ship.vel], 500, dt)
 
         # Check for collisions with squares
         for square in squares:
