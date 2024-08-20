@@ -23,8 +23,7 @@
 
 
 # Future Ideas
-- Add more advanced features (weapons, upgrades, etc.)
 - Implement multiple levels or procedural generation
-- Add more complex game mechanics (missions, story elements)
+- Add missions
 - Make Neural net / RL AI that's pretty clever
 - Make it a coop game that two people play at the same time

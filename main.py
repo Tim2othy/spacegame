@@ -47,7 +47,7 @@ areas: list[Area] = [
 ]
 
 asteroids: list[Asteroid] = []
-for _ in range(5):
+for _ in range(15):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
