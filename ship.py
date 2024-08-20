@@ -31,7 +31,7 @@ class Ship(Disk):
         self.has_trophy = True
 
         self.ammo: int = 250
-        self.thrust = 100 * self.mass
+        self.thrust = 500 * self.mass
         self.rotation_thrust = 150
         self.thruster_rot_left = False
         self.thruster_rot_right = False
