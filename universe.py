@@ -252,20 +252,15 @@ class Universe:
 
     def draw_grid(self, camera: Camera):
         grid_color = Color("darkgreen")
-        gridline_thickness = 0.5
         gridline_spacing = 500
         width = self.size.x
         height = self.size.y
 
         for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_line(
-                grid_color, Vector2(x, 0), Vector2(x, height), gridline_thickness
-            )
+            camera.draw_hairline(grid_color, Vector2(x, 0), Vector2(x, height))
 
         for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_line(
-                grid_color, Vector2(0, y), Vector2(width, y), gridline_thickness
-            )
+            camera.draw_hairline(grid_color, Vector2(0, y), Vector2(width, y))
 
     def contains_point(self, vec: Vector2):
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
