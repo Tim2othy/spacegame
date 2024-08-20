@@ -172,6 +172,14 @@ class Camera:
                 self.surface, (ttop_left, tbottom_right - ttop_left), color
             )
 
-    def draw_text(self, text: str, pos: Vector2, font: pygame.font.Font, color: Color):
+    def draw_text(
+        self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
+    ):
+        """Draw text on screen, at pos `pos`. If `pos` is `None`, centers text."""
         rendered = font.render(text, True, color)
+        if pos is None:
+            width, height = self.surface.get_size()
+            pos = Vector2(
+                (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2
+            )
         self.surface.blit(rendered, pos)
