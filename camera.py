@@ -91,6 +91,23 @@ class Camera:
 
         self.smoothly_transition_to(new_center, new_zoom, dt, transition_time)
 
+    def _rectangle_intersects_screen(
+        self, top_left: Vector2, bottom_right: Vector2
+    ) -> bool:
+        """Determines whether the rectangle intersects screen.
+        Assumes that top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
+        """
+        (width, height) = self.surface.get_size()
+        offset = Vector2(width, height) / 2
+        own_top_left = self.pos - offset
+        own_bottom_right = self.pos + offset
+        return (
+            own_top_left.x <= bottom_right.x
+            and own_bottom_right.x >= top_left.x
+            and own_top_left.y >= bottom_right.y
+            and own_bottom_right.y <= top_left.y
+        )
+
     def world_to_camera(self, vec: Vector2) -> Vector2:
         """Transforms a worldspace-vector to its position on the camera's screen."""
         width, height = self.surface.get_size()
