@@ -7,8 +7,9 @@ import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
+from camera import Camera
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
-from universe import Universe, Planet, Asteroid
+from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
 # Initialize Pygame
 pygame.init()
@@ -40,12 +41,19 @@ player_ship = Ship(
     10,
     Color("turquoise"),
 )
+
+areas: list[Area] = [
+    RefuelArea(Vector2(5000, 1000), Vector2(5200, 1200)),
+    TrophyArea(Vector2(3000, 5000), Vector2(3200, 5200)),
+]
+
 asteroids: list[Asteroid] = []
 for _ in range(5):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     radius = random.uniform(40, 120)
     asteroids.append(Asteroid(pos, vel, 1, radius))
+
 enemy_ships: list[BulletEnemy] = []
 for _ in range(16):
     pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
@@ -53,8 +61,14 @@ for _ in range(16):
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))
     else:
         enemy_ships.append(RocketEnemy(pos, Vector2(0, 0), player_ship))
+
 universe = Universe(
-    Vector2(WORLD_WIDTH, WORLD_HEIGHT), planets, asteroids, player_ship, enemy_ships
+    Vector2(WORLD_WIDTH, WORLD_HEIGHT),
+    planets,
+    asteroids,
+    player_ship,
+    areas,
+    enemy_ships,
 )
 
 
@@ -97,18 +111,6 @@ class Square:
             < ship.pos.y
             < self.pos.y + self.size + ship.radius
         )
-
-
-# Create squares
-pos_refuel = (5000, 1000)
-pos_item = (3000, 5000)
-pos_complete = (1000, 5000)
-
-squares = [
-    Square(pos_refuel[0], pos_refuel[1], 200, Color("cyan"), "refuel"),
-    Square(pos_item[0], pos_item[1], 200, Color("purple"), "get_item"),
-    Square(pos_complete[0], pos_complete[1], 200, Color("orange"), "complete_mission"),
-]
 
 
 def draw_minimap():
@@ -243,20 +245,6 @@ while running:
             # Collide with planets
 
         camera.smoothly_focus_points([ship.pos, ship.pos + 1 * ship.vel], 500, dt)
-
-        # Check for collisions with squares
-        for square in squares:
-            if square.check_collision(ship):
-                if square.action == "refuel":
-                    ship.fuel = ship.MAX_FUEL
-                elif square.action == "get_item":
-                    has_item = True
-                elif square.action == "complete_mission" and has_item:
-                    mission_complete = True
-                    ship_color = (255, 255, 0)  # Yellow
-        # Draw squares
-        for square in squares:
-            square.draw(camera.surface, camera.pos)
 
         universe.draw(camera)
 
