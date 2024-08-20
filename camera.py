@@ -121,9 +121,13 @@ class Camera:
         ccenter, cradius = self.world_to_camera(center), radius * self.zoom
         # ??? Why only ints?
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
-        # TODO: Don't draw if off-screen
-        pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
-        pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
+
+        # soft check for circle-screen-intersection:
+        offset = Vector2(radius, radius)
+        tl, br = ccenter - offset, ccenter + offset
+        if self._rectangle_intersects_screen(tl, br):
+            pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
+            pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
     def draw_polygon(self, color: Color, points: list[Vector2]):
         cpoints = [self.world_to_camera(p) for p in points]
