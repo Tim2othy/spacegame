@@ -171,3 +171,7 @@ class Camera:
             pygame.gfxdraw.box(
                 self.surface, (ttop_left, tbottom_right - ttop_left), color
             )
+
+    def draw_text(self, text: str, pos: Vector2, font: pygame.font.Font, color: Color):
+        rendered = font.render(text, True, color)
+        self.surface.blit(rendered, pos)
