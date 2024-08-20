@@ -73,6 +73,17 @@ class Area(Rect):
         pass
 
 
+class RefuelArea(Area):
+    def __init__(
+        self,
+        top_left: Vector2,
+        bottom_right: Vector2,
+    ):
+        super().__init__(top_left, bottom_right, pygame.Color("yellow"), "Refuel")
+    
+    def event(self, ship: Ship):
+        ship.fuel = ship.MAX_FUEL
+
 class Universe:
     """
     A collection of celestial objects, forming a Universe.
