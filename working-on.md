@@ -28,4 +28,3 @@
 - Add more complex game mechanics (missions, story elements)
 - Make Neural net / RL AI that's pretty clever
 - Make it a coop game that two people play at the same time
-- Vielleicht wäre es cool, wenn die Kamera weiter rauszoomt, wenn sich das Schiff schneller bewegt.
