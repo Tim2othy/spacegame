@@ -108,7 +108,7 @@ class Camera:
         pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
     def draw_polygon(self, color: Color, points: list[Vector2]):
-        cpoints = list(map(self.world_to_camera, points))
+        cpoints = [self.world_to_camera(p) for p in points]
         pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
         pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
