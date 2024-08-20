@@ -56,6 +56,22 @@ class Rect:
     def draw(self, camera: Camera):
         camera.draw_rect(self.color, self.top_left, self.bottom_right)
 
+class Area(Rect):
+    """A rectangular area that triggers an event for a ship."""
+
+    def __init__(
+        self,
+        top_left: Vector2,
+        bottom_right: Vector2,
+        color: pygame.Color,
+        caption: str,
+    ):
+        super().__init__(top_left, bottom_right, color)
+        self.caption = str
+    
+    def event(self, ship: Ship):
+        pass
+
 
 class Universe:
     """
