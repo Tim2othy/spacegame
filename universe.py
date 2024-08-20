@@ -1,6 +1,7 @@
 import math
 import pygame
 import pygame.camera
+from pygame import Color
 from pygame.math import Vector2
 from physics import Disk, PhysicalObject
 from ship import Ship, BulletEnemy
@@ -15,7 +16,7 @@ class Planet(Disk):
         pos: Vector2,
         density: float,
         radius: float,
-        color: pygame.Color,
+        color: Color,
     ):
         super().__init__(pos, Vector2(0, 0), density, radius, color)
 
@@ -30,7 +31,7 @@ class Asteroid(Disk):
         density: float,
         radius: float,
     ):
-        super().__init__(pos, vel, density, radius, pygame.Color("gray"))
+        super().__init__(pos, vel, density, radius, Color("gray"))
 
     # TODO: Re-implement that the Asteroids stopped at the world-border.
     # Or should they wrap instead? Should *all* PhysicalObjects wrap?
@@ -42,7 +43,7 @@ class Rect:
     Must satisfy top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
     """
 
-    def __init__(self, top_left: Vector2, bottom_right: Vector2, color: pygame.Color):
+    def __init__(self, top_left: Vector2, bottom_right: Vector2, color: Color):
         self.top_left = top_left
         self.bottom_right = bottom_right
         self.color = color
@@ -63,7 +64,7 @@ class Area(Rect):
         self,
         top_left: Vector2,
         bottom_right: Vector2,
-        color: pygame.Color,
+        color: Color,
         caption: str,
     ):
         super().__init__(top_left, bottom_right, color)
@@ -79,7 +80,7 @@ class RefuelArea(Area):
         top_left: Vector2,
         bottom_right: Vector2,
     ):
-        super().__init__(top_left, bottom_right, pygame.Color("yellow"), "Refuel")
+        super().__init__(top_left, bottom_right, Color("yellow"), "Refuel")
     
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
@@ -90,7 +91,7 @@ class TrophyArea(Area):
         top_left: Vector2,
         bottom_right: Vector2,
     ):
-        super().__init__(top_left, bottom_right, pygame.Color("gold"), "Trophy")
+        super().__init__(top_left, bottom_right, Color("gold"), "Trophy")
 
     def event(self, ship: Ship):
         ship.has_trophy = True
@@ -219,6 +220,34 @@ class Universe:
         for ship in self.enemy_ships:
             ship.draw(camera)
         self.player_ship.draw(camera)
+        self.draw_text(camera)
+
+    def draw_text(self, camera: Camera):
+        font_size = 32
+        font = pygame.font.Font(None, font_size)
+
+        self.text_vertical_offset = 10
+
+        def texty(text: str | None = None):
+            if text is not None:
+                camera.draw_text(
+                    text, Vector2(10, self.text_vertical_offset), font, Color("white")
+                )
+            self.text_vertical_offset += 1.0 * font_size
+
+        ship = self.player_ship
+        texty(f"({int(ship.pos.x)}, {int(ship.pos.y)})")
+        texty(f"Remaining Fuel: {ship.fuel:.3f}")
+        texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
+        texty(f"Health: {ship.health}")
+        texty(f"Ammunition: {ship.ammo}")
+        for area in self.areas:
+            f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
+        texty(f"{len(ship.projectiles)} projectiles from you")
+        enemy_projectile_count = sum([len(e.projectiles) for e in self.enemy_ships])
+        texty(f"{enemy_projectile_count} enemy projectiles")
+
+        del self.text_vertical_offset
 
     def contains_point(self, vec: Vector2):
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y

@@ -7,7 +7,6 @@ import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
-from camera import Camera
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
@@ -247,30 +246,6 @@ while running:
         camera.smoothly_focus_points([ship.pos, ship.pos + 1 * ship.vel], 500, dt)
 
         universe.draw(camera)
-
-        text_vertical_offset = 10
-        font_size = 32
-        font = pygame.font.Font(None, font_size)
-
-        def texty(text: str | None = None, color: Color = Color((255, 255, 255, 128))):
-            global text_vertical_offset
-
-            if text is not None:
-                # TODO: Externalise part of this into Camera-class
-                rendered = font.render(text, True, color)
-                camera.surface.blit(rendered, (10, text_vertical_offset))
-            text_vertical_offset += 1.0 * font_size
-
-        texty(f"({int(ship.pos[0])}, {int(ship.pos[1])})")
-        texty(f"Remaining Fuel: {ship.fuel:.3f}")
-        texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
-        texty(f"Health: {ship.health}")
-        texty(f"Ammunition: {ship.ammo}")
-        for area in areas:
-            f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
-        texty(f"{len(ship.projectiles)} projectiles from you")
-        enemy_projectile_count = sum([len(e.projectiles) for e in universe.enemy_ships])
-        texty(f"{enemy_projectile_count} enemy projectiles")
 
     else:
         # Game over screen
