@@ -1,5 +1,7 @@
 import pygame
+import pygame.gfxdraw
 from pygame.math import Vector2
+from pygame import Color
 
 
 class Camera:
@@ -96,4 +98,29 @@ class Camera:
         return (vec - self.pos) * self.zoom + center
 
     def start_drawing_new_frame(self):
-        self.surface.fill(pygame.Color("black"))
+        self.surface.fill(Color("black"))
+
+    def draw_circle(self, color: Color, center: Vector2, radius: float):
+        ccenter, cradius = self.world_to_camera(center), radius * self.zoom
+        # ??? Why only ints?
+        x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
+        pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
+        pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
+
+    def draw_polygon(self, color: Color, points: list[Vector2]):
+        cpoints = list(map(self.world_to_camera, points))
+        pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
+        pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
+
+    def draw_line(self, color: Color, start: Vector2, end: Vector2, width: float):
+        delta = end - start
+        if delta == Vector2(0, 0):
+            return
+        orthogonal = Vector2(-delta.y, delta.x).normalize() * width / 2
+        points = [
+            start + orthogonal,
+            end + orthogonal,
+            end - orthogonal,
+            start - orthogonal,
+        ]
+        self.draw_polygon(color, points)
