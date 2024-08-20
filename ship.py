@@ -217,16 +217,16 @@ class BulletEnemy(Ship):
         pos: Vector2,
         vel: Vector2,
         target_ship: Ship,
-        shoot_cooldown: float = 0.25,
+        shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
     ):
         super().__init__(pos, vel, 1, 8, color)
+        self.thrust /= 2
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
-        self.thrust = 100
         self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
 
@@ -256,7 +256,7 @@ class BulletEnemy(Ship):
         self.apply_force(force, dt)
 
         super().step(dt)
-        self.angle = math.atan2(self.vel.y, self.vel.x)
+        self.angle = math.degrees(math.atan2(self.vel.y, self.vel.x))
 
         # Shooting logic
         self.time_until_next_shot -= 1
@@ -276,7 +276,7 @@ class RocketEnemy(BulletEnemy):
         vel: Vector2,
         target_ship: Ship,
         shoot_cooldown: float = 0.5,
-        color: Color = Color("plum4"),
+        color: Color = Color("red"),
     ):
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
@@ -285,7 +285,9 @@ class RocketEnemy(BulletEnemy):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(Rocket(bullet_pos, bullet_vel, self.color))
+            self.projectiles.append(
+                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship)
+            )
             self.gun_cooldown = 0.25
             self.ammo -= 1
 
