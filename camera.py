@@ -17,7 +17,11 @@ class Camera:
         self.surface = surface
 
     def smoothly_transition_to(
-        self, new_pos: Vector2, new_zoom: float, dt: float, transition_time: float
+        self,
+        new_pos: Vector2,
+        new_zoom: float,
+        dt: float,
+        transition_time: float = 0.25,
     ):
         """Smoothly transition the camera view to a new pos and zoom.
 
@@ -33,6 +37,53 @@ class Camera:
         new_zoomy = Vector2(new_zoom, 0)
         dist = abs(self.zoom - new_zoom)
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
+
+    def smoothly_focus_points(
+        self,
+        points: list[Vector2],
+        buff: float,
+        dt: float,
+        transition_time: float = 0.25,
+    ):
+        """Focus camera smoothly on a list of points.
+
+        Args:
+            points (list[Vector2]): The points to focus on
+            buff (float): The padding around the points
+        """
+        minx, miny, maxx, maxy = 0, 0, 0, 0
+        for point in points:
+            minx = min(minx, point.x)
+            maxx = max(maxx, point.x)
+            miny = min(miny, point.y)
+            maxy = max(maxy, point.y)
+
+        buffed_tl = Vector2(minx - buff, miny - buff)
+        buffed_br = Vector2(maxx + buff, maxy + buff)
+        buffed_size = buffed_br - buffed_tl
+        buffed_width = buffed_size.x
+        buffed_height = buffed_size.y
+        ratio = buffed_width / buffed_height
+        desired_ratio = self.surface.get_width() / self.surface.get_height()
+
+        if ratio > desired_ratio:
+            # Increase height
+            target_height = buffed_width / desired_ratio
+            addy = Vector2(0, (target_height - buffed_height) / 2)
+            buffed_tl -= addy
+            buffed_br += addy
+        else:
+            # Increase width
+            target_width = buffed_height * desired_ratio
+            addy = Vector2((target_width - buffed_width) / 2)
+            buffed_tl -= addy
+            buffed_br += addy
+
+        new_center = (buffed_tl + buffed_br) / 2
+        # TODO: Is this correct?
+        new_zoom = buffed_br.x - buffed_tl.x
+
+        self.smoothly_transition_to(new_center, new_zoom, dt, transition_time)
 
     def world_to_camera(self, vec: Vector2) -> Vector2:
         """Transforms a worldspace-vector to its position on the camera's screen."""
