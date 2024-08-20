@@ -164,6 +164,16 @@ class Camera:
         # draw_polygon does it for us
         self.draw_polygon(color, points)
 
+    def draw_hairline(self, color: Color, start: Vector2, end: Vector2):
+        tstart, tend = self.world_to_camera(start), self.world_to_camera(end)
+        startx, starty = int(tstart.x), int(tstart.y)
+        endx, endy = int(tend.x), int(tend.y)
+        tl = Vector2(min(startx, endx), min(starty, endy))
+        br = Vector2(max(startx, endx), max(starty, endy))
+
+        if self._rectangle_intersects_screen(tl, br):
+            pygame.gfxdraw.line(self.surface, startx, starty, endx, endy, color)
+
     def draw_rect(self, color: Color, top_left: Vector2, bottom_right: Vector2):
         ttop_left = self.world_to_camera(top_left)
         tbottom_right = self.world_to_camera(bottom_right)
