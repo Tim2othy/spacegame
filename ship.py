@@ -28,6 +28,7 @@ class Ship(Disk):
         self.MAX_health = 200.0
         self.projectiles: list[Bullet] = []
         self.gun_cooldown = 3
+        self.has_trophy = True
 
         self.ammo: int = 250
         self.thrust = 100 * self.mass

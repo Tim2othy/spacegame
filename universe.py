@@ -84,6 +84,18 @@ class RefuelArea(Area):
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
 
+class TrophyArea(Area):
+    def __init__(
+        self,
+        top_left: Vector2,
+        bottom_right: Vector2,
+    ):
+        super().__init__(top_left, bottom_right, pygame.Color("gold"), "Trophy")
+
+    def event(self, ship: Ship):
+        ship.has_trophy = True
+
+
 class Universe:
     """
     A collection of celestial objects, forming a Universe.
