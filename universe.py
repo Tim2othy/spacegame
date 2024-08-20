@@ -109,12 +109,8 @@ class Universe:
     def step(self, dt: float):
         # Call `step` on everything
         self.player_ship.step(dt)
-        for projectile in self.player_ship.projectiles:
-            projectile.step(dt)
         for ship in self.enemy_ships:
             ship.step(dt)
-            for projectile in ship.projectiles:
-                projectile.step(dt)
         for asteroid in self.asteroids:
             asteroid.step(dt)
 

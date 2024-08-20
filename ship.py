@@ -75,6 +75,9 @@ class Ship(Disk):
 
         super().step(dt)
 
+        for projectile in self.projectiles:
+            projectile.step(dt)
+
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
     def draw(self, camera: Camera):
