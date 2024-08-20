@@ -248,69 +248,29 @@ while running:
 
         universe.draw(camera)
 
-        # Display ship coordinates
-        font = pygame.font.Font(None, 22)
-        coord_text = font.render(
-            f"X: {int(ship.pos[0])}, Y: {int(ship.pos[1])}", True, Color("white")
-        )
-        camera.surface.blit(coord_text, (10, 10))
-        # Display fuel
-        fuel_text = font.render(f"Fuel: {ship.fuel:.3f}", True, Color("white"))
-        camera.surface.blit(fuel_text, (10, 50))
-        # Display item status
-        item_text = font.render(
-            "Item: Collected" if has_item else "Item: Not Collected",
-            True,
-            Color("white"),
-        )
-        camera.surface.blit(item_text, (10, 90))
-        # Display mission status
-        mission_text = font.render(
-            "Mission Complete!" if mission_complete else "Mission: In Progress",
-            True,
-            (255, 255, 255),
-        )
-        camera.surface.blit(mission_text, (10, 130))
-        # Display ship health
-        health_text = font.render(f"Health: {int(ship.health)}", True, (255, 255, 255))
-        camera.surface.blit(health_text, (10, 170))
-        # Display square coordinates
-        pos_refuel_text = font.render(
-            f"Coordinates Refuel: {int(pos_refuel[0])}, {int(pos_refuel[1])}",
-            True,
-            (255, 255, 255),
-        )
-        pos_item_text = font.render(
-            f"Coordinates Item: {int(pos_item[0])}, {int(pos_item[1])}",
-            True,
-            (255, 255, 255),
-        )
-        pos_complete_text = font.render(
-            f"Coordinates Destination: {int(pos_complete[0])}, {int(pos_complete[1])}",
-            True,
-            (255, 255, 255),
-        )
-        camera.surface.blit(pos_refuel_text, (10, 210))
-        camera.surface.blit(pos_item_text, (10, 230))
-        camera.surface.blit(pos_complete_text, (10, 250))
-        ammo_text = font.render(f"Ammo: {ship.ammo}", True, (255, 255, 255))
-        camera.surface.blit(ammo_text, (10, 290))
-        advice_text = font.render(
-            "Ignore the squares, just fight the enemies", True, (255, 255, 255)
-        )
-        camera.surface.blit(advice_text, (10, 310))
-        lag_text1 = font.render(
-            f"ship.bullets: {len(ship.projectiles)}", True, (255, 255, 255)
-        )
-        camera.surface.blit(lag_text1, (10, 330))
-        lag_text2 = font.render(f"enemies: {len(enemy_ships)}", True, (255, 255, 255))
-        camera.surface.blit(lag_text2, (10, 350))
-        lag_text3 = font.render(
-            f"enemy_projectiles: {sum(map(lambda e: len(e.projectiles), universe.enemy_ships))}",
-            True,
-            (255, 255, 255),
-        )
-        camera.surface.blit(lag_text3, (10, 370))
+        text_vertical_offset = 10
+        font_size = 22
+        font = pygame.font.Font(None, font_size)
+
+        def texty(text: str | None = None, color: Color = Color("white")):
+            global text_vertical_offset
+
+            if text is not None:
+                # TODO: Externalise part of this into Camera-class
+                rendered = font.render(text, True, color)
+                camera.surface.blit(rendered, (10, text_vertical_offset))
+            text_vertical_offset += 2 * font_size
+
+        texty(f"({int(ship.pos[0])}, {int(ship.pos[1])})")
+        texty(f"Remaining Fuel: {ship.fuel:.3f}")
+        texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
+        texty(f"Health: {ship.health}")
+        texty(f"Ammunition: {ship.ammo}")
+        for area in areas:
+            f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
+        texty(f"{len(ship.projectiles)} projectiles from you")
+        enemy_projectile_count = sum([len(e.projectiles) for e in universe.enemy_ships])
+        texty(f"{enemy_projectile_count} enemy projectiles")
 
     else:
         # Game over screen
