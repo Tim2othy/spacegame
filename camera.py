@@ -163,3 +163,11 @@ class Camera:
         # Need not check whether this is on-screen, as
         # draw_polygon does it for us
         self.draw_polygon(color, points)
+
+    def draw_rect(self, color: Color, top_left: Vector2, bottom_right: Vector2):
+        ttop_left = self.world_to_camera(top_left)
+        tbottom_right = self.world_to_camera(bottom_right)
+        if self._rectangle_intersects_screen(ttop_left, tbottom_right):
+            pygame.gfxdraw.box(
+                self.surface, (ttop_left, tbottom_right - ttop_left), color
+            )
