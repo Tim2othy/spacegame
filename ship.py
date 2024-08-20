@@ -256,7 +256,7 @@ class BulletEnemy(Ship):
         self.apply_force(force, dt)
 
         super().step(dt)
-        self.angle = math.atan2(self.vel.y, self.vel.x)
+        self.angle = math.degrees(math.atan2(self.vel.y, self.vel.x))
 
         # Shooting logic
         self.time_until_next_shot -= 1
