@@ -221,12 +221,12 @@ class BulletEnemy(Ship):
         color: Color = Color("purple"),
     ):
         super().__init__(pos, vel, 1, 8, color)
+        self.thrust /= 2
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
-        self.thrust = 100
         self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
 
