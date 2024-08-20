@@ -106,14 +106,15 @@ class Camera:
         Assumes that top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
         """
         (width, height) = self.surface.get_size()
-        offset = Vector2(width, height) / 2
-        own_top_left = self.pos - offset
-        own_bottom_right = self.pos + offset
-        return (
-            own_top_left.x <= bottom_right.x
-            and own_bottom_right.x >= top_left.x
-            and own_top_left.y >= bottom_right.y
-            and own_bottom_right.y <= top_left.y
+        own_top_left = Vector2(0, 0)
+        own_bottom_right = Vector2(width, height)
+        return all(
+            [
+                own_top_left.x <= bottom_right.x,
+                top_left.x <= own_bottom_right.x,
+                own_top_left.y <= bottom_right.y,
+                top_left.y <= own_bottom_right.y,
+            ]
         )
 
     def world_to_camera(self, vec: Vector2) -> Vector2:
