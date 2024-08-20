@@ -9,4 +9,4 @@ Run with:
 py main.py
 ```
 
-Move with arrow keys, shoot with space, repair the ship with `m`, replenish fuel with `n`.
+Move with arrow keys, shoot with space.
