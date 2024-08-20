@@ -131,20 +131,24 @@ class Camera:
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
 
         # soft check for circle-screen-intersection:
-        offset = Vector2(radius, radius)
-        tl, br = ccenter - offset, ccenter + offset
+        offset = Vector2(r, r)
+        icenter = Vector2(x, y)
+        tl, br = icenter - offset, icenter + offset
         if self._rectangle_intersects_screen(tl, br):
             pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
     def draw_polygon(self, color: Color, points: list[Vector2]):
+        # Soft check for points-screen-intersection:
+
         cpoints = [self.world_to_camera(p) for p in points]
-        # TODO: Don't draw if off-screen
-        pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
-        pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
+
+        (enclosing_tl, enclosing_br) = self._get_enclosing_rect(cpoints)
+        if self._rectangle_intersects_screen(enclosing_tl, enclosing_br):
+            pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
+            pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
     def draw_line(self, color: Color, start: Vector2, end: Vector2, width: float):
-        # TODO: Don't draw if off-screen
         delta = end - start
         if delta == Vector2(0, 0):
             return
@@ -155,4 +159,6 @@ class Camera:
             end - orthogonal,
             start - orthogonal,
         ]
+        # Need not check whether this is on-screen, as
+        # draw_polygon does it for us
         self.draw_polygon(color, points)
