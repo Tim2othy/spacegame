@@ -105,7 +105,7 @@ class Ship(Disk):
             Color("blue"),
             self.pos,
             self.pos + forward * self.radius * GUNBARREL_LENGTH,
-            GUNBARREL_WIDTH,
+            GUNBARREL_WIDTH * self.radius,
         )
 
         # thruster_rot_left (material)
