@@ -97,7 +97,8 @@ class Ship(Disk):
 
         # TODO: Especially the backward-thruster is super ugly
         # thruster_backward (active)
-        drawy(Color("red"), [forward * 2, left * 1.25, right * 1.25])
+        if self.thruster_backward:
+            drawy(Color("red"), [forward * 2, left * 1.25, right * 1.25])
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
@@ -148,16 +149,17 @@ class Ship(Disk):
             )
 
         # thruster_forward (flame)
-        drawy(
-            Color("orange"),
-            [
-                0.7 * left + 0.7 * backward,
-                0.5 * left + 1.5 * backward,
-                1.25 * backward,
-                0.5 * right + 1.5 * backward,
-                0.7 * right + 0.7 * backward,
-            ],
-        )
+        if self.thruster_forward:
+            drawy(
+                Color("orange"),
+                [
+                    0.7 * left + 0.7 * backward,
+                    0.5 * left + 1.5 * backward,
+                    1.25 * backward,
+                    0.5 * right + 1.5 * backward,
+                    0.7 * right + 0.7 * backward,
+                ],
+            )
         # thruster_forward (material)
         drawy(
             darker_color,
