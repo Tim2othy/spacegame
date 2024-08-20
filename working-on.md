@@ -1,5 +1,4 @@
 # Code Hygiene
-- Minimap class?
 - Add docstrings where reasonable
 
 
