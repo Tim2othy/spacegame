@@ -3,6 +3,10 @@ import pygame.camera
 from pygame.math import Vector2
 from camera import Camera
 import math
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ship import Ship
 
 GRAVITATIONAL_CONSTANT = 0.0006
 
@@ -137,62 +141,56 @@ class Bullet(PhysicalObject):
 
 
 class Rocket(Bullet):
-    def __init__(self, pos: Vector2, vel: Vector2, color: pygame.Color):
+    def __init__(
+        self, pos: Vector2, vel: Vector2, color: pygame.Color, target_ship: "Ship"
+    ):
         super().__init__(pos, vel, color)
+        self.target_ship = target_ship
+        self.vel /= 4
+        self.homing_thrust = 1000 * self.mass
+        self.homing_timer = 0
+        self.homing_duration = 1
+        self.nonhoming_duration = 3
+        self._total_duration = self.homing_duration + self.nonhoming_duration
 
-    # TODO: Reimplement the below code, once I understand what it does.
-    # For now, Rockets are synonymous to Bullets.
-    # If re-implementing this, also check all calls to the constructor so that
-    # they do what you'd like them to do.
-    """
-        self.pos = Vector2(x, y)
-        self.target_pos = target_pos
-        self.speed = Vector2(0, 0)  # Initial speed is zero
-        self.last_acceleration_time = time.time()
-        self.accelerating = True
-        self.color = (255, 0, 0)
+    def step(self, dt: float):
+        self.homing_timer = (self.homing_timer + dt) % self._total_duration
 
-    def update(self, ship: Ship):
-        current_time = time.time()
-        time_since_last_acceleration = current_time - self.last_acceleration_time
+        if self.homing_timer <= self.homing_duration:
+            # Target the ship
+            dir = self.target_ship.pos - self.pos
+            if dir != Vector2(0, 0):
+                dir.normalize_ip()
+                self.apply_force(dir * self.homing_thrust, dt)
 
-        if self.accelerating:
-            self.color = (255, 0, 200)  # one color while accelerating
-        else:
-            self.color = (255, 100, 0)  # different color not accelerating
+        super().step(dt)
 
-        # Check if it's time to start accelerating
-        if not self.accelerating and time_since_last_acceleration >= 9:
-            self.accelerating = True
-            self.last_acceleration_time = current_time
+    def draw(self, camera: Camera):
+        forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
+        left = Vector2(-forward.y, forward.x)
+        right = -left
+        backward = -forward
 
-        # Check if the acceleration period should end
-        elif self.accelerating and time_since_last_acceleration >= 3:
-            self.accelerating = False
-            self.last_acceleration_time = current_time
+        # Spooky homing body
+        if self.homing_timer <= self.homing_duration:
+            camera.draw_polygon(
+                self.color.lerp(pygame.Color("blue"), 0.5),
+                [
+                    self.pos + 4 * (left + forward),
+                    self.pos + 4 * (left + backward),
+                    self.pos + 4 * (right + backward),
+                    self.pos + 4 * (right + forward),
+                ],
+            )
 
-        # Update the target position to the ship's current position
-        self.target_pos = ship.pos
-        dx = self.target_pos[0] - self.pos[0]
-        dy = self.target_pos[1] - self.pos[1]
-        dist = sqrt(dx**2 + dy**2)
-
-        if dist != 0:  # Avoid division by zero
-            # Update speed direction towards the player
-            if self.accelerating:
-                # Apply additional acceleration in the direction of the player
-                self.speed[0] += (dx / dist) * ROCKET_ACCELERATION
-                self.speed[1] += (dy / dist) * ROCKET_ACCELERATION
-
-        # Update position based on speed
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        pygame.draw.circle(
-            screen,
+        # Missile body
+        camera.draw_polygon(
             self.color,
-            self.pos - camera_pos,
-            5,
+            [
+                self.pos + 3 * (left + forward),
+                self.pos + 3 * (left + backward),
+                self.pos + 3 * (right + backward),
+                self.pos + 3 * (right + forward),
+                self.pos + 2 * (3 * forward),
+            ],
         )
-    """
