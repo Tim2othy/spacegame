@@ -104,7 +104,6 @@ class Camera:
         ccenter, cradius = self.world_to_camera(center), radius * self.zoom
         # ??? Why only ints?
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
-        print(x, y, r)
         # TODO: Don't draw if off-screen
         pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
         pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
