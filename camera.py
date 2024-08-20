@@ -104,15 +104,19 @@ class Camera:
         ccenter, cradius = self.world_to_camera(center), radius * self.zoom
         # ??? Why only ints?
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
+        print(x, y, r)
+        # TODO: Don't draw if off-screen
         pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
         pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
     def draw_polygon(self, color: Color, points: list[Vector2]):
         cpoints = [self.world_to_camera(p) for p in points]
+        # TODO: Don't draw if off-screen
         pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
         pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
     def draw_line(self, color: Color, start: Vector2, end: Vector2, width: float):
+        # TODO: Don't draw if off-screen
         delta = end - start
         if delta == Vector2(0, 0):
             return
