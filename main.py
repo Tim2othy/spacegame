@@ -249,17 +249,17 @@ while running:
         universe.draw(camera)
 
         text_vertical_offset = 10
-        font_size = 22
+        font_size = 32
         font = pygame.font.Font(None, font_size)
 
-        def texty(text: str | None = None, color: Color = Color("white")):
+        def texty(text: str | None = None, color: Color = Color((255, 255, 255, 128))):
             global text_vertical_offset
 
             if text is not None:
                 # TODO: Externalise part of this into Camera-class
                 rendered = font.render(text, True, color)
                 camera.surface.blit(rendered, (10, text_vertical_offset))
-            text_vertical_offset += 2 * font_size
+            text_vertical_offset += 1.0 * font_size
 
         texty(f"({int(ship.pos[0])}, {int(ship.pos[1])})")
         texty(f"Remaining Fuel: {ship.fuel:.3f}")
