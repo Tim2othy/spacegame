@@ -90,117 +90,83 @@ class Ship(Disk):
         darker_color.r = darker_color.r // 2
         darker_color.g = darker_color.g // 2
         darker_color.b = darker_color.b // 2
-        ship_screen_pos = camera.world_to_camera(self.pos)
+
+        # Helper function for drawing polygons relative to the ship-position
+        def drawy(color: Color, points: list[Vector2]):
+            camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
         # TODO: Especially the backward-thruster is super ugly
         # thruster_backward (active)
-        if self.thruster_backward:
-            pygame.draw.polygon(
-                camera.surface,
-                Color("red"),
-                [
-                    camera.world_to_camera(self.pos + self.radius * p)
-                    for p in [forward * 2, left * 1.25, right * 1.25]
-                ],
-            )
+        drawy(Color("red"), [forward * 2, left * 1.25, right * 1.25])
 
         # "For his neutral special, he wields a gun"
-        gun_end = camera.world_to_camera(
-            self.pos + forward * self.radius * GUNBARREL_LENGTH
-        )
-        pygame.draw.line(
-            camera.surface,
+        camera.draw_line(
             Color("blue"),
-            ship_screen_pos,
-            gun_end,
-            int(GUNBARREL_WIDTH * self.radius),
+            self.pos,
+            self.pos + forward * self.radius * GUNBARREL_LENGTH,
+            GUNBARREL_WIDTH,
         )
 
         # thruster_rot_left (material)
-        pygame.draw.polygon(
-            camera.surface,
+        drawy(
             darker_color,
             [
-                camera.world_to_camera(self.pos + self.radius * p)
-                for p in [
-                    0.7 * left + 0.7 * forward,
-                    0.5 * left + 0.5 * backward,
-                    2.0 * left + 1.0 * backward,
-                ]
+                0.7 * left + 0.7 * forward,
+                0.5 * left + 0.5 * backward,
+                2.0 * left + 1.0 * backward,
             ],
         )
         # thruster_rot_left (active)
         if self.thruster_rot_left:
-            pygame.draw.polygon(
-                camera.surface,
+            drawy(
                 Color("yellow"),
                 [
-                    camera.world_to_camera(self.pos + self.radius * p)
-                    for p in [
-                        1.5 * left + 1.25 * backward,
-                        0.5 * left + 0.5 * backward,
-                        2.0 * left + 1.0 * backward,
-                    ]
+                    1.5 * left + 1.25 * backward,
+                    0.5 * left + 0.5 * backward,
+                    2.0 * left + 1.0 * backward,
                 ],
             )
 
         # thruster_rot_right (material)
-        pygame.draw.polygon(
-            camera.surface,
+        drawy(
             darker_color,
             [
-                camera.world_to_camera(self.pos + self.radius * p)
-                for p in [
-                    0.7 * right + 0.7 * forward,
-                    0.5 * right + 0.5 * backward,
-                    2.0 * right + 1.0 * backward,
-                ]
+                0.7 * right + 0.7 * forward,
+                0.5 * right + 0.5 * backward,
+                2.0 * right + 1.0 * backward,
             ],
         )
         # thruster_rot_right (active)
         if self.thruster_rot_right:
-            pygame.draw.polygon(
-                camera.surface,
+            drawy(
                 Color("yellow"),
                 [
-                    camera.world_to_camera(self.pos + self.radius * p)
-                    for p in [
-                        1.5 * right + 1.25 * backward,
-                        0.5 * right + 0.5 * backward,
-                        2.0 * right + 1.0 * backward,
-                    ]
+                    1.5 * right + 1.25 * backward,
+                    0.5 * right + 0.5 * backward,
+                    2.0 * right + 1.0 * backward,
                 ],
             )
 
         # thruster_forward (flame)
-        if self.thruster_forward:
-            pygame.draw.polygon(
-                camera.surface,
-                Color("orange"),
-                [
-                    camera.world_to_camera(self.pos + self.radius * p)
-                    for p in [
-                        0.7 * left + 0.7 * backward,
-                        0.5 * left + 1.5 * backward,
-                        1.25 * backward,
-                        0.5 * right + 1.5 * backward,
-                        0.7 * right + 0.7 * backward,
-                    ]
-                ],
-            )
+        drawy(
+            Color("orange"),
+            [
+                0.7 * left + 0.7 * backward,
+                0.5 * left + 1.5 * backward,
+                1.25 * backward,
+                0.5 * right + 1.5 * backward,
+                0.7 * right + 0.7 * backward,
+            ],
+        )
         # thruster_forward (material)
-        pygame.draw.polygon(
-            camera.surface,
+        drawy(
             darker_color,
             [
-                camera.world_to_camera(self.pos + self.radius * p)
-                for p in [
-                    0.7 * left + 0.7 * backward,
-                    0.5 * left + 1.25 * backward,
-                    1.0 * backward,
-                    0.5 * right + 1.25 * backward,
-                    0.7 * right + 0.7 * backward,
-                ]
+                0.7 * left + 0.7 * backward,
+                0.5 * left + 1.25 * backward,
+                1.0 * backward,
+                0.5 * right + 1.25 * backward,
+                0.7 * right + 0.7 * backward,
             ],
         )
 
