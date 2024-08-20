@@ -7,7 +7,7 @@ import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from init import camera
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
+from init import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
 # Initialize Pygame
