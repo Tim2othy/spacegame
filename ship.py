@@ -12,7 +12,7 @@ import random
 BULLET_SPEED = 500
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-ENEMY_SHOOT_RANGE = 9000
+ENEMY_SHOOT_RANGE = 1000
 
 
 class Ship(Disk):
@@ -38,8 +38,8 @@ class Ship(Disk):
         self.thruster_backward = False
         self.thruster_forward = False
         self.fuel = 100.0
-        self.fuel_consumption_rate = 0.4
-        self.fuel_rot_consumption_rate = 0.4
+        self.fuel_consumption_rate = 0.7
+        self.fuel_rot_consumption_rate = 0.7
         # self.MAX_FUEL = 100.0
 
     def get_faced_direction(self):

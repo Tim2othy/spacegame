@@ -139,15 +139,23 @@ class Universe:
         for asteroid in self.asteroids:
             self.apply_gravity_to_obj(dt, asteroid)
 
-    def apply_bounce_to_disk(self, disk: Disk) -> float | None:
+    def apply_bounce_to_disk(self, disk: Disk) -> list | None:
         for body in self.asteroids + self.planets:
             bounce = disk.bounce_off_of_disk(body)
+            print(f"bounce1, should be list? or None:  {bounce}")
+            print(f"bounce2, should be list, or None: {disk.bounce_off_of_disk(body)}")
+            
             if bounce is not None:
+                print(f"bounce, should be list, not None!!!!: {bounce}")
+
                 return bounce
         return None
 
     def apply_bounce(self):
-        ship_bounce = self.apply_bounce_to_disk(self.player_ship)
+        temp_list = self.apply_bounce_to_disk(self.player_ship)
+        print(f"temp_list, should be touple or so: {temp_list}")
+        ship_bounce = temp_list
+
         if ship_bounce is not None:
             # TODO: Reimplement ship glowing red on impact
             # TODO: Adjust this to taste.
@@ -156,8 +164,7 @@ class Universe:
             # I don't understand its code, but it decides
             # what value to return for the impact-intensity,
             # i.e. the bounce-variable.
-            damage = math.sqrt(ship_bounce) / 500
-            self.player_ship.health -= damage
+            self.player_ship.health -= ship_bounce * 0.000005 # do we need the extra step with the damadge here? (just for readability?)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
@@ -257,7 +264,7 @@ class Universe:
 
     def draw_grid(self, camera: Camera):
         grid_color = Color("darkgreen")
-        gridline_spacing = 900
+        gridline_spacing = 1000
         width = self.size.x
         height = self.size.y
 

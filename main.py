@@ -34,7 +34,7 @@ planets = [
 ]
 
 player_ship = Ship(
-    Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    Vector2(10_000, 10_000),
     Vector2(0, 0),
     1,
     10,
@@ -47,14 +47,14 @@ areas: list[Area] = [
 ]
 
 asteroids: list[Asteroid] = []
-for _ in range(200):
+for _ in range(1):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
     vel = Vector2(0, 0)
-    radius = random.uniform(40, 120)
+    radius = random.uniform(4, 60)
     asteroids.append(Asteroid(pos, vel, 1, radius))
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(20):
+for _ in range(1):
     pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))

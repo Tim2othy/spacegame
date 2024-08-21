@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ship import Ship
 
-GRAVITATIONAL_CONSTANT = 3
+GRAVITATIONAL_CONSTANT = 2
 
 
 class PhysicalObject:
@@ -76,6 +76,7 @@ class Disk(PhysicalObject):
         Bounce `self` off of `disk`, iff the two intersect.
         Returns severity of the impact if it occurred, None otherwise.
         """
+        print("does this first thing this ever happen!")
 
         # TODO: The impulse of `disk` should also affect the way
         # that self is reflected.
@@ -83,6 +84,7 @@ class Disk(PhysicalObject):
         # calculation
 
         if self.intersects_disk(disk):
+            print("does this ever happen!")
             # Calculate normal vector
             delta = self.pos - disk.pos
             delta_magnitude = delta.magnitude()
@@ -96,7 +98,7 @@ class Disk(PhysicalObject):
                 return None
 
             # Calculate restitution (bounciness)
-            restitution = 1
+            restitution = 0.9
 
             # TODO: In the original ship-crash-method,
             # bounciness (don't ask me what that corresponds to, here)
@@ -104,17 +106,39 @@ class Disk(PhysicalObject):
             # should probably be implemented here, to, but I do not
             # understand this code.
 
+            """I think this is working the way it did before, if restitution is 1 then you have the
+            same vel after the bounce as before, if it's 0.5 you lose half your vel, if it's > 1 then you gain vel in proportion to restitution.
+
+            it works fine if one object is a planet otherwise both vel should be taken into account (eventually)
+            """
+
             # Calculate impulse scalar
-            j = -(1 + restitution) * self_vel_along_normal
-            j /= 1 / self.mass + 1 / disk.mass
+            impulse_scalar_questionmark = (
+                -(1 + restitution) * self_vel_along_normal
+            )  # what was called j is the impulse scalar, right?
+            impulse_scalar_questionmark /= 1 / self.mass + 1 / disk.mass
 
             # Apply impulse
-            self.vel += normal_vector * j / self.mass
+            self.vel += normal_vector * impulse_scalar_questionmark / self.mass
 
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return j  # TODO: Is this correct???
+            impulse_scalar_and_self_vel_normal = list[
+                impulse_scalar_questionmark,
+                self_vel_along_normal,
+            ]
+            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
+            print(f"self_vel_along_normal: {self_vel_along_normal}")
+            print(
+                f"impulse_scalar_and_self_vel_normal, should be list or None: {impulse_scalar_and_self_vel_normal}"
+            )
+
+            return (
+                impulse_scalar_questionmark
+                # and self_vel_along_normal  # TODO: Is this correct???, think so
+            )
+
         else:
             return None
 
