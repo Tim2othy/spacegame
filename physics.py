@@ -1,10 +1,10 @@
 """Physical objects, and the interactions between them"""
 
+import math
 import pygame
 import pygame.camera
 from pygame.math import Vector2
 from camera import Camera
-import math
 
 GRAVITATIONAL_CONSTANT = 0.5
 
@@ -69,6 +69,12 @@ class PhysicalObject:
         return force
 
     def draw(self, camera: Camera):
+        """Draws `self` on `camera`.
+        Implemented by subclasses.
+
+        Args:
+            camera (Camera): Camera to draw on
+        """
         pass
 
 
@@ -92,7 +98,7 @@ class Disk(PhysicalObject):
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
         """
-        mass = radius**3 * math.pi * 4 / 3
+        mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = color
@@ -110,7 +116,7 @@ class Disk(PhysicalObject):
         """Determine whether `vec` is in `self`
 
         Args:
-            vec (Vector2): The vector to test for intersection
+            vec (Vector2): Vector to test for intersection
 
         Returns:
             bool: True iff `vec` is in `self`
