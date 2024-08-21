@@ -17,10 +17,10 @@ class Camera:
         """Construct a new camera.
 
         Args:
-            pos (Vector2): The worldspace-coordinate at the center of the screen.
-            zoom (float): Higher = Fewer objects fit on screen.
-                Zoom==1 corresponds to 1 pixel per unitt.
-            surface (pygame.Surface): The surface to draw on.
+            pos (Vector2): Worldspace-coordinate at the center of the screen
+            zoom (float): Higher = Fewer objects fit on screen,
+                zoom==1 corresponds to 1 pixel per unit
+            surface (pygame.Surface): Surface to draw on
         """
         self.pos: Vector2 = pos
         self.zoom: float = zoom
@@ -36,11 +36,11 @@ class Camera:
         """Smoothly transition the camera to a new location.
 
         Args:
-            new_pos (Vector2): The new camera worldspace-position.
-            new_zoom (float): The new zoom-factor.
-            dt (float): The time-factor (for the smooth operation)
+            new_pos (Vector2): New camera worldspace-position
+            new_zoom (float): New zoom-factor
+            dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25
         """
         dist = self.pos.distance_to(new_pos)
         self.pos.move_towards_ip(new_pos, dist * dt / transition_time)
@@ -56,10 +56,10 @@ class Camera:
         entirely, but not more.
 
         Args:
-            rect (Rect): The worldspace-rectangle to fit to.
-            dt (float): The time-factor (for the smooth operation)
+            rect (Rect): Worldspace-rectangle to fit to
+            dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25
         """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
@@ -86,11 +86,11 @@ class Camera:
         with an additional buffer.
 
         Args:
-            points (list[Vector2]): The worldspace-points to focus on. Hopefully nonempty.
-            buff (float): The worldspace-buffer around the points.
-            dt (float): The time-factor (for the smooth operation)
+            points (list[Vector2]): Worldspace-points to focus on. Hopefully nonempty.
+            buff (float): Worldspace-buffer around the points
+            dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25
         """
         enclosing_rect = self._get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
@@ -104,7 +104,7 @@ class Camera:
             points (list[Vector2]): Points to enclose
 
         Returns:
-            Rect: The rectangle fitting all points snugly.
+            Rect: Rectangle fitting all points snugly
         """
         minx = miny = float("inf")
         maxx = maxy = float("-inf")
@@ -120,10 +120,10 @@ class Camera:
         camera's screen.
 
         Args:
-            rect (Rect): The screenspace-rectangle.
+            rect (Rect): Screenspace-rectangle
 
         Returns:
-            bool: True iff the screenspace-rectangle intersects the screen.
+            bool: True iff screenspace-rectangle intersects the screen
         """
         own_rect = Rect((0, 0), self.surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
@@ -223,7 +223,7 @@ class Camera:
 
         Args:
             color (Color): Border- and fill-color
-            rect (Rect): Worldspace rectangle to draw.
+            rect (Rect): Worldspace rectangle to draw
         """
         ttopleft = self.world_to_screen(Vector2(rect.topleft))
         tbottomright = self.world_to_screen(Vector2(rect.bottomright))
@@ -237,11 +237,11 @@ class Camera:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:
-            text (str): The text to draw
-            pos (Vector2 | None): If Vector2, screenspace-position of text's top-left-corner.
-                If None, text will be centered on screen.
+            text (str): Text to render
+            pos (Vector2 | None): If Vector2, screenspace-position of text's top-left-corner,
+                if None, text will be centered on screen
             font (pygame.font.Font): Font to be used
-            color (Color): Text's fill color.
+            color (Color): Text's fill color
         """
         rendered = font.render(text, True, color)
         if pos is None:
