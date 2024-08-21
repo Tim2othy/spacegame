@@ -6,7 +6,7 @@ import pygame.camera
 from pygame.math import Vector2
 from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0.5
+GRAVITATIONAL_CONSTANT = 0.0003
 
 
 class PhysicalObject:
@@ -141,7 +141,7 @@ class Disk(PhysicalObject):
             disk (Disk): Disk to potentially bounce off of
 
         Returns:
-            float | None: If float, it's `self`'s impact-speed on `disk`.
+            float | None: If float, it's `self`'s suffered damage.
                 If None, the two didn't intersect.
         """
         if not self.intersects_disk(disk):
@@ -152,31 +152,22 @@ class Disk(PhysicalObject):
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
 
+        bounciness = 0.70  # Always between 0 and 1. At 1 collisions cause no damage. I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, so bounciness won't play that big of a role.
+
         # Calculate normal vector
         delta = self.pos - disk.pos
         delta_magnitude = delta.magnitude()
         normal_vector = delta / delta_magnitude
         self_vel_along_normal = self.vel.dot(normal_vector)
 
-        # Do not resolve if velocities are separating
+        # Check if the objects are moving away from each other
         if self_vel_along_normal > 0:
             return None
 
-        # Calculate restitution (bounciness)
-        restitution = 0.9
-
-        # I think this is working generally correctly:
-        # - if restitution is 1 then the ship has the same vel after the bounce as before,
-        # - if it's 0.5 it loses half it's vel,
-        # - if it's 2 then vel is doubled by the inpact, etc.
-
-        # Calculate impulse scalar
-        impulse_scalar = -(1 + restitution) * self_vel_along_normal
+        impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
-
         self.vel += normal_vector * impulse_scalar / self.mass
 
-        # Move self outside other
-        overlap = self.radius + disk.radius - delta_magnitude
-        self.pos += normal_vector * overlap
-        return self_vel_along_normal
+        # This allows the ship to land on the planet. If impulse is small there is no damage.
+        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
+        return damage

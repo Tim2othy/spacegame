@@ -202,16 +202,16 @@ class Universe:
                 If None, no impact occured.
         """
         for body in self.asteroids + self.planets:
-            bounce_result = disk.bounce_off_of_disk(body)
-            if bounce_result is not None:
-                return bounce_result
+            damage = disk.bounce_off_of_disk(body)
+            if damage is not None:
+                return damage
         return None
 
     def apply_bounce(self):
         """Run all bounce-interactions within `self`."""
-        bounce_result = self.apply_bounce_to_disk(self.player_ship)
-        if bounce_result is not None:
-            self.player_ship.suffer_damage(abs(bounce_result) * 0.07)
+        damage = self.apply_bounce_to_disk(self.player_ship)
+        if damage is not None:
+            self.player_ship.suffer_damage(damage)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
@@ -315,6 +315,7 @@ class Universe:
 
         ship = self.player_ship
         texty(f"({int(ship.pos.x)}, {int(ship.pos.y)})")
+        texty(f"Velocity: ({int(ship.vel.x)}, {int(ship.vel.y)})")
         texty(f"Remaining Fuel: {ship.fuel:.2f}")
         texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
         texty(f"Health: {ship.health:.2f}")
@@ -334,7 +335,7 @@ class Universe:
             camera (Camera): Camera to draw on
         """
         grid_color = Color("darkgreen")
-        gridline_spacing = 500
+        gridline_spacing = 5000
         width = self.size.x
         height = self.size.y
 
