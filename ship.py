@@ -14,6 +14,9 @@ GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1000
 
+# How long a ship should glow after taking damage
+DAMAGE_INDICATOR_TIME = 0.5
+
 
 class Ship(Disk):
     def __init__(
@@ -56,6 +59,14 @@ class Ship(Disk):
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.1
             self.ammo -= 1
+
+    def suffer_damage(self, damage: float):
+        """Deal damage to the ship and activate its damage-indicator.
+        Does nothing if damage is <= 0.
+        """
+        if damage > 0:
+            self.health -= damage
+            self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float):
         if self.fuel > 0:
