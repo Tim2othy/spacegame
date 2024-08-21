@@ -15,11 +15,11 @@ pygame.init()
 pygame.display.set_caption("Space Game")
 game_over = False
 testmode = False
-SPAWNPOINT = Vector2(300_000, 300_000)
+SPAWNPOINT = Vector2(100_000, 100_000)
 
 # Cameras
 SCREEN_SIZE = Vector2(1700, 900)
-WORLD_SIZE = Vector2(1_000_000, 1_000_000)
+WORLD_SIZE = Vector2(200_000, 200_000)
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(SPAWNPOINT, 1.0, surface)
 MINIMAP_SIZE = Vector2(250, 250)
@@ -28,29 +28,28 @@ minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surfa
 
 # Create planets
 planets = [
-    Planet(Vector2(100_000, 130_000), 1, 20000, Color("turquoise")),
-    Planet(Vector2(180_000, 670_000), 1, 37000, Color("darkred")),
-    Planet(Vector2(230_000, 890_000), 1, 28000, Color("green")),
-    Planet(Vector2(307_000, 317_000), 1, 15000, Color("khaki")),
-    Planet(Vector2(370_000, 530_000), 1, 42000, Color("deeppink")),
-    Planet(Vector2(420_000, 370_000), 1, 28000, Color("mediumpurple")),
-    Planet(Vector2(400_000, 900_000), 1, 3800, Color("darkorange")),
-    Planet(Vector2(400_000, 400_000), 1, 3500, Color("royalblue")),
-    Planet(Vector2(410_000, 370_000), 1, 2800, Color("orange")),
-    Planet(Vector2(570_000, 900_000), 1, 3800, Color("darkslategray")),
-    Planet(Vector2(520_000, 440_000), 1, 5400, Color("yellow")),
-    Planet(Vector2(570_000, 870_000), 1, 3800, Color("black")),
-    Planet(Vector2(600_000, 200_000), 1, 4000, Color("lightblue")),
-    Planet(Vector2(600_000, 430_000), 1, 19700, Color("crimson")),
-    Planet(Vector2(600_000, 600_000), 1, 2800, Color("lime")),
-    Planet(Vector2(600_000, 800_000), 1, 9200, Color("hotpink")),
-    Planet(Vector2(600_000, 700_000), 1, 28000, Color("plum")),
-    Planet(Vector2(710_000, 120_000), 1, 3800, Color("coral")),
-    Planet(Vector2(730_000, 640_000), 1, 3500, Color("blue")),
-    Planet(Vector2(750_000, 260_000), 1, 28000, Color("gold")),
-    Planet(Vector2(870_000, 380_000), 1, 3800, Color("slategray")),
-    Planet(Vector2(990_000, 500_000), 1, 5400, Color("red")),
-    Planet(Vector2(910_000, 420_000), 1, 30000, Color("navy")),
+    Planet(Vector2(67_000, 18_000), 1, 3_000, Color("darkred")),
+    Planet(Vector2(30_000, 32_000), 1, 3_000, Color("khaki")),
+    Planet(Vector2(40_000, 40_000), 1, 3_500, Color("royalblue")),
+    Planet(Vector2(37_000, 47_000), 1, 2_000, Color("mediumpurple")),
+    Planet(Vector2(100_000, 57_000), 1, 6800, Color("darkslategray")),
+    Planet(Vector2(87_000, 57_000), 1, 3_800, Color("plum")),
+    Planet(Vector2(43_000, 60_000), 1, 700, Color("crimson")),
+    Planet(Vector2(180_000, 60_000), 1, 5200, Color("hotpink")),
+    Planet(Vector2(12_000, 71_000), 1, 3_800, Color("coral")),
+    Planet(Vector2(26_000, 75_000), 1, 2_000, Color("gold")),
+    Planet(Vector2(50_000, 99_000), 1, 5_400, Color("red")),
+    Planet(Vector2(13_000, 110_000), 1, 2_000, Color("turquoise")),
+    Planet(Vector2(30_000, 129_000), 1, 4_000, Color("green")),
+    Planet(Vector2(53_000, 137_000), 1, 2_000, Color("deeppink")),
+    Planet(Vector2(90_000, 140_000), 1, 3_800, Color("darkorange")),
+    Planet(Vector2(37_000, 141_000), 1, 2_800, Color("orange")),
+    Planet(Vector2(44_000, 152_000), 1, 400, Color("yellow")),
+    Planet(Vector2(120_000, 160_000), 1, 5000, Color("lightblue")),
+    Planet(Vector2(60_000, 160_000), 1, 2_800, Color("lime")),
+    Planet(Vector2(64_000, 173_000), 1, 3_500, Color("blue")),
+    Planet(Vector2(138_000, 187_000), 1, 5_800, Color("slategray")),
+    Planet(Vector2(42_000, 191_000), 1, 900, Color("navy")),
 ]
 
 
@@ -63,8 +62,8 @@ player_ship = Ship(
 )
 
 areas: list[Area] = [
-    RefuelArea(pygame.Rect((7000, 1000), (200, 200))),
-    TrophyArea(pygame.Rect((3000, 8000), (200, 200))),
+    RefuelArea(pygame.Rect((7_000, 1_000), (200, 200))),
+    TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
 ]
 
 areas = []
@@ -86,16 +85,16 @@ for _ in range(50):
 
 
 if testmode == True:
-    SPAWNPOINT = Vector2(5000, 5000)
+    SPAWNPOINT = Vector2(5_000, 5_000)
     planets = [
-        Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
-        Planet(Vector2(2300, 900), 1, 280, Color("green")),
-        Planet(Vector2(4200, 3700), 1, 280, Color("mediumpurple")),
-        Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
-        Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
-        Planet(Vector2(8600, 8700), 1, 880, Color("orange")),
-        Planet(Vector2(6700, 7200), 1, 380, Color("darkslategray")),
-        Planet(Vector2(9200, 4400), 1, 540, Color("yellow")),
+        Planet(Vector2(1_800, 6_700), 1, 370, Color("darkred")),
+        Planet(Vector2(2_300, 900), 1, 280, Color("green")),
+        Planet(Vector2(4_200, 3_700), 1, 280, Color("mediumpurple")),
+        Planet(Vector2(5_000, 9_000), 1, 380, Color("darkorange")),
+        Planet(Vector2(6_000, 400), 1, 350, Color("royalblue")),
+        Planet(Vector2(8_600, 8_700), 1, 880, Color("orange")),
+        Planet(Vector2(6_700, 7_200), 1, 380, Color("darkslategray")),
+        Planet(Vector2(9_200, 4_400), 1, 540, Color("yellow")),
     ]
     WORLD_SIZE = Vector2(10_000, 10_000)
     camera = Camera(SPAWNPOINT, 1.0, surface)
@@ -128,7 +127,7 @@ universe = Universe(
 
 clock = pygame.time.Clock()
 while True:
-    dt = clock.tick() / 1000
+    dt = clock.tick() / 1_000
 
     if any(map(lambda e: e.type == pygame.QUIT, pygame.event.get())):
         break
