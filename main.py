@@ -19,7 +19,7 @@ SCREEN_SIZE = Vector2(1700, 900)
 WORLD_SIZE = Vector2(10_000, 10_000)
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(WORLD_SIZE / 2, 1.0, surface)
-MINIMAP_SIZE = Vector2(100, 100)
+MINIMAP_SIZE = Vector2(250, 250)
 minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
 minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 
