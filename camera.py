@@ -89,7 +89,8 @@ class Camera:
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
         """Determines whether a screenspace-rectangle intersects the screen."""
         own_rect = Rect((0, 0), self.surface.get_size())
-        return own_rect.colliderect(rect)
+        # Inflate rect, to take care of edge-cases like zero width or height
+        return own_rect.colliderect(rect.inflate(1, 1))
 
     def world_to_camera(self, vec: Vector2) -> Vector2:
         """Transforms a worldspace-vector to its position on the camera's screen."""
