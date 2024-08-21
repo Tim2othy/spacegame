@@ -1,7 +1,7 @@
 import math
 import pygame
 import pygame.camera
-from pygame import Color
+from pygame import Color, Rect
 from pygame.math import Vector2
 from physics import Disk, PhysicalObject
 from ship import Ship, BulletEnemy
@@ -48,13 +48,17 @@ class Area(Rect):
     def __init__(
         self,
         top_left: Vector2,
-        bottom_right: Vector2,
+        width_height: Vector2,
         color: Color,
         caption: str,
     ):
-        super().__init__(top_left, bottom_right, color)
+        super().__init__(top_left, width_height)
+        self.color = color
         self.caption = str
-    
+
+    def draw(self, camera: Camera):
+        camera.draw_rect(self.color, self)
+
     def event(self, ship: Ship):
         pass
 
@@ -168,7 +172,7 @@ class Universe:
 
         # Areas
         for area in self.areas:
-            if area.intersects_point(self.player_ship.pos):
+            if area.collidepoint(self.player_ship.pos):
                 area.event(self.player_ship)
 
         # Collide bullets:
@@ -227,7 +231,7 @@ class Universe:
         texty(f"Health: {ship.health}")
         texty(f"Ammunition: {ship.ammo}")
         for area in self.areas:
-            f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
+            f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})"
         texty(f"{len(ship.projectiles)} projectiles from you")
         enemy_projectile_count = sum([len(e.projectiles) for e in self.enemy_ships])
         texty(f"{enemy_projectile_count} enemy projectiles")
