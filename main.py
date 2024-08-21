@@ -32,8 +32,8 @@ planets = [
     Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
     Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
     Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
-    Planet(Vector2(8500, 9000), 1, 380, Color("yellow")),
-    Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
+    Planet(Vector2(8700, 9200), 1, 380, Color("yellow")),
+    Planet(Vector2(9200, 4400), 1, 540, Color("darkslategray")),
 ]
 
 player_ship = Ship(

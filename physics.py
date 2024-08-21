@@ -94,7 +94,30 @@ class Disk(PhysicalObject):
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
         self.vel += normal_vector * impulse_scalar / self.mass
-        damage = impulse_scalar**2 * (1 - bounciness) * 1e-10
+        # damage = impulse_scalar**2 * (1 - bounciness) * 1e-10
+        speed = self.vel.magnitude()
+
+        damage = (max(0, impulse_scalar * 2 * 1e-4 - 100, speed - 100)) ** 2 * (
+            1 - bounciness
+        )
+
+        #
+        #
+
+        max_value = max(impulse_scalar * 2 * 1e-4 - 100, speed - 100)
+        if max_value == impulse_scalar * 2 * 1e-4 - 100:
+            print("impulse_scalar")
+        elif max_value == speed - 100:
+            print("speed")
+        else:
+            print("Zero")
+
+        #
+        #
+
+        print("speed:", speed - 100)
+        print("damage:", damage)
+        print("impulse_scalar:", impulse_scalar * 2 * 1e-4 - 100)
 
         # TODO: I don't think we really need this, but it seems like it would be safer to have it here?
         """
