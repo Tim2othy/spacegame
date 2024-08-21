@@ -76,42 +76,6 @@ def sign(x: int | float):
     return math.copysign(1, x)
 
 
-class Square:
-    # TODO: It's probably better to create different subclasses for Square that have different
-    # inherent actions associated with them, rather than have an `action` parameter for
-    # creation here.
-    def __init__(self, x: float, y: float, size: float, color: Color, action: str):
-        self.pos = Vector2(x, y)
-        self.size = size
-        self.color = color
-        self.action = action
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        if (
-            0 <= self.pos[0] - camera_pos.x < SCREEN_WIDTH
-            and 0 <= self.pos[1] - camera_pos.y < SCREEN_HEIGHT
-        ):
-            pygame.draw.rect(
-                screen,
-                self.color,
-                (
-                    self.pos - camera_pos,
-                    (
-                        self.size,
-                        self.size,
-                    ),
-                ),
-            )
-
-    def check_collision(self, ship: Ship):
-        return (
-            self.pos.x - ship.radius < ship.pos.x < self.pos.x + self.size + ship.radius
-            and self.pos.y - ship.radius
-            < ship.pos.y
-            < self.pos.y + self.size + ship.radius
-        )
-
-
 def draw_minimap():
     # TODO: Reimplement this with another instance of the Camera class :)
     # Or maybe we even need specialised draw-methods for every PhysicalObject
