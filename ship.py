@@ -23,29 +23,26 @@ class Ship(Disk):
         self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
     ):
         super().__init__(pos, vel, density, size, color)
-        self.size = size
-        self.angle = 0
-        self.health = 100.0
-        # self.REPAIR_RATE = 0.1 not currently being used
-        # self.REFUEL_RATE = 0.2
-        # self.MAX_health = 200.0
+        self.size: float = size
+        self.angle: float = 0
+        self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown = 3
-        self.has_trophy = True
+        self.gun_cooldown: float = 3.0
+        self.has_trophy: bool = False
 
         self.ammo: int = 250
-        self.thrust = 500 * self.mass
-        self.rotation_thrust = 150
-        self.thruster_rot_left = False
-        self.thruster_rot_right = False
-        self.thruster_backward = False
-        self.thruster_forward = False
-        self.MAX_FUEL = 100.0
-        self.fuel = self.MAX_FUEL
-        self.fuel_consumption_rate = 0.7
-        self.fuel_rot_consumption_rate = 0.7
+        self.thrust: float = 500 * self.mass
+        self.rotation_thrust: float = 150
+        self.thruster_rot_left: bool = False
+        self.thruster_rot_right: bool = False
+        self.thruster_backward: bool = False
+        self.thruster_forward: bool = False
+        self.MAX_FUEL: float = 100.0
+        self.fuel: float = self.MAX_FUEL
+        self.fuel_consumption_rate: float = 0.7
+        self.fuel_rot_consumption_rate: float = 0.7
 
-        self.damage_indicator_timer = 0
+        self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vector2:
         # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
