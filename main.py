@@ -87,8 +87,6 @@ while running:
         font = pygame.font.Font(None, 64)
         camera.draw_text("GAME OVER", None, font, Color("red"))
     else:
-        # TODO: reimplement drawing the grid
-
         # Handle input
         keys = pygame.key.get_pressed()
         player_ship.thruster_rot_left = keys[pygame.K_RIGHT]
