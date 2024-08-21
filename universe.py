@@ -139,23 +139,15 @@ class Universe:
         for asteroid in self.asteroids:
             self.apply_gravity_to_obj(dt, asteroid)
 
-    def apply_bounce_to_disk(self, disk: Disk) -> list | None:
+    def apply_bounce_to_disk(self, disk: Disk) -> float | None:
         for body in self.asteroids + self.planets:
             bounce = disk.bounce_off_of_disk(body)
-            print(f"bounce1, should be list? or None:  {bounce}")
-            print(f"bounce2, should be list, or None: {disk.bounce_off_of_disk(body)}")
-            
             if bounce is not None:
-                print(f"bounce, should be list, not None!!!!: {bounce}")
-
                 return bounce
         return None
 
     def apply_bounce(self):
-        temp_list = self.apply_bounce_to_disk(self.player_ship)
-        print(f"temp_list, should be touple or so: {temp_list}")
-        ship_bounce = temp_list
-
+        ship_bounce = self.apply_bounce_to_disk(self.player_ship)
         if ship_bounce is not None:
             # TODO: Reimplement ship glowing red on impact
             # TODO: Adjust this to taste.
@@ -264,7 +256,7 @@ class Universe:
 
     def draw_grid(self, camera: Camera):
         grid_color = Color("darkgreen")
-        gridline_spacing = 1000
+        gridline_spacing = 500
         width = self.size.x
         height = self.size.y
 
