@@ -13,15 +13,16 @@ pygame.init()
 pygame.display.set_caption("Space Game")
 game_over = False
 testmode = False
+SPAWNPOINT = Vector2(300_000, 300_000)
 
 # Cameras
 SCREEN_SIZE = Vector2(1700, 900)
 WORLD_SIZE = Vector2(1_000_000, 1_000_000)
 surface = pygame.display.set_mode(SCREEN_SIZE)
-camera = Camera(Vector2(300_000, 300_000), 1.0, surface)
+camera = Camera(SPAWNPOINT, 1.0, surface)
 MINIMAP_SIZE = Vector2(250, 250)
 minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
-minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
+minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 
 # Create planets
 planets = [
@@ -51,7 +52,7 @@ planets = [
 
 
 player_ship = Ship(
-    Vector2(300_000, 300_000),
+    SPAWNPOINT,
     Vector2(0, 0),
     1,
     10,
@@ -80,6 +81,7 @@ for _ in range(50):
 
 
 if testmode == True:
+    SPAWNPOINT = Vector2(5000, 5000)
     planets = [
         Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
         Planet(Vector2(2300, 900), 1, 280, Color("green")),
@@ -91,18 +93,18 @@ if testmode == True:
         Planet(Vector2(9200, 4400), 1, 540, Color("yellow")),
     ]
     WORLD_SIZE = Vector2(10_000, 10_000)
-    camera = Camera(WORLD_SIZE / 2, 1.0, surface)
+    camera = Camera(SPAWNPOINT, 1.0, surface)
 
     asteroids = []
     enemy_ships = []
     minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
     minimap_camera = Camera(
-        WORLD_SIZE / 2,
+        SPAWNPOINT,
         MINIMAP_SIZE.x / WORLD_SIZE.x,
         minimap_surface,
     )
     player_ship = Ship(
-        Vector2(5_000, 5_000),
+        SPAWNPOINT,
         Vector2(0, 0),
         1,
         10,
@@ -145,7 +147,7 @@ while running:
 
         if (
             not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        ) and testmode == False:
+        ) and testmode == 0:
             game_over = True
         camera.smoothly_focus_points(
             [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
