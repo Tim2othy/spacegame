@@ -208,6 +208,7 @@ class Universe:
 
         ship = self.player_ship
         texty(f"({int(ship.pos.x)}, {int(ship.pos.y)})")
+        texty(f"Velocity: ({int(ship.vel.x)}, {int(ship.vel.y)})")
         texty(f"Remaining Fuel: {ship.fuel:.2f}")
         texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
         texty(f"Health: {ship.health:.2f}")
