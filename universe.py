@@ -1,3 +1,6 @@
+"""If you wish to collect celestial bodies, spaceships, and everything else,
+you must first invent the universe."""
+
 import pygame
 import pygame.camera
 from pygame import Color, Rect
@@ -17,6 +20,14 @@ class Planet(Disk):
         radius: float,
         color: Color,
     ):
+        """Create a new planet.
+
+        Args:
+            pos (Vector2): Fixed position
+            density (float): Density
+            radius (float): Radius
+            color (Color): Color
+        """
         super().__init__(pos, Vector2(0, 0), density, radius, color)
 
 
@@ -30,6 +41,15 @@ class Asteroid(Disk):
         density: float,
         radius: float,
     ):
+        """Create a new Asteroid.
+        Any color you like, as long as it's gray.
+
+        Args:
+            pos (Vector2): Initial position
+            vel (Vector2): Initial velocity
+            density (float): Density
+            radius (float): Radius
+        """
         super().__init__(pos, vel, density, radius, Color("gray"))
 
 
