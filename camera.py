@@ -138,15 +138,11 @@ class Camera:
 
     def draw_hairline(self, color: Color, start: Vector2, end: Vector2):
         tstart, tend = self.world_to_camera(start), self.world_to_camera(end)
-        startx, starty = int(tstart.x), int(tstart.y)
-        endx, endy = int(tend.x), int(tend.y)
-        enclosing_rect = Rect(
-            (min(startx, endx), min(starty, endy)),
-            (abs(startx - endx), abs(starty - endy)),
-        )
-
-        if self._rectangle_intersects_screen(enclosing_rect):
-            pygame.gfxdraw.line(self.surface, startx, starty, endx, endy, color)
+        screen_rect = Rect((0, 0), self.surface.get_size())
+        clipped_line = screen_rect.clipline(tstart, tend)
+        if clipped_line:
+            ((x1, y1), (x2, y2)) = clipped_line
+            pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
     def draw_rect(self, color: Color, rect: Rect):
         ttopleft = self.world_to_camera(Vector2(rect.topleft))
