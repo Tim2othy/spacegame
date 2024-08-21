@@ -99,7 +99,7 @@ class Disk(PhysicalObject):
                 return None
 
             # Calculate restitution (bounciness)
-            restitution = 10000
+            restitution = 10000000
 
             # TODO: In the original ship-crash-method,
             # bounciness (don't ask me what that corresponds to, here)
@@ -116,16 +116,25 @@ class Disk(PhysicalObject):
             impulse_scalar_questionmark = (
                 -(1 + restitution) * self_vel_along_normal
             )  # what used to be called j is the impulse_scalar right?
+
             print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
-            impulse_scalar_questionmark /= 1 / self.mass + 1 / disk.mass
+
+            impulse_scalar_questionmark = impulse_scalar_questionmark / (
+                1 / self.mass + 1 / disk.mass
+            )
+
             print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
+
             # Apply impulse
             self.vel += normal_vector * impulse_scalar_questionmark / self.mass
 
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return impulse_scalar_questionmark  # TODO: Is this correct???, i think so, it mostly makes sense
+            return (
+                impulse_scalar_questionmark,
+                self_vel_along_normal,
+            )  # TODO: Is this correct???, i think so, it mostly makes sense
         else:
             return None
 

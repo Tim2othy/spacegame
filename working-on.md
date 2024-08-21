@@ -1,10 +1,6 @@
 # Code Hygiene
 - Add docstrings where reasonable
 
-# Bugs
-- SCREEN_HEIGHT and WIDTH are only allowed to go up to 30_918
-- higher restitution causes collisions to deal more damadge, which probably shouln't be the case
-- 
 
 # Obvious needs
 - Give everything good collision detection and world border detection

@@ -123,16 +123,24 @@ class Universe:
         for asteroid in self.asteroids:
             self.apply_gravity_to_obj(dt, asteroid)
 
-    def apply_bounce_to_disk(self, disk: Disk) -> float | None:
+    def apply_bounce_to_disk(self, disk: Disk): # removed typehinting for a moment
+        bounce = None
+        vel = None
         for body in self.asteroids + self.planets:
-            bounce = disk.bounce_off_of_disk(body)
-            if bounce is not None:
-                return bounce
+            result = disk.bounce_off_of_disk(body)
+            if result is not None:
+                bounce, vel = result
+                return bounce, vel
         return None
 
     def apply_bounce(self):
-        ship_bounce = self.apply_bounce_to_disk(self.player_ship)
+        ship_bounce = None
+        ship_vel = None
+        ship_result = self.apply_bounce_to_disk(self.player_ship)
+        if ship_result is not None:
+            ship_bounce, ship_vel = ship_result
         if ship_bounce is not None:
+            print(ship_bounce, ship_vel)
             # TODO: Reimplement ship glowing red on impact
             # TODO: Adjust this to taste.
             # Also, should we really cast a sqrt here?
@@ -140,7 +148,10 @@ class Universe:
             # I don't understand its code, but it decides
             # what value to return for the impact-intensity,
             # i.e. the bounce-variable.
-            self.player_ship.health -= ship_bounce * 0.000005 # do we need the extra step with the damadge here? (just for readability?)
+            print(f"ship_bounce: {ship_bounce}")
+            print(f"ship_vel: {ship_vel}")
+
+            #self.player_ship.health -= ship_vel * 0.000005 # do we need the extra step with the damadge here? (just for readability?)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
