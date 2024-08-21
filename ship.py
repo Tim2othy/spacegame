@@ -22,10 +22,10 @@ class Ship(Disk):
         super().__init__(pos, vel, density, size, color)
         self.size = size
         self.angle = 0
-        self.health = 10000.0
-        self.REPAIR_RATE = 0.1
-        self.REFUEL_RATE = 0.2
-        self.MAX_health = 200.0
+        self.health = 100.0
+        # self.REPAIR_RATE = 0.1 not currently being used
+        # self.REFUEL_RATE = 0.2
+        # self.MAX_health = 200.0
         self.projectiles: list[Bullet] = []
         self.gun_cooldown = 3
         self.has_trophy = True
@@ -38,9 +38,9 @@ class Ship(Disk):
         self.thruster_backward = False
         self.thruster_forward = False
         self.fuel = 100.0
-        self.fuel_consumption_rate = 0.07
-        self.fuel_rot_consumption_rate = 0.03
-        self.MAX_FUEL = 100.0
+        self.fuel_consumption_rate = 0.4
+        self.fuel_rot_consumption_rate = 0.4
+        # self.MAX_FUEL = 100.0
 
     def get_faced_direction(self):
         # TODO: Why doesn't Vector2.from_polar() work?
@@ -54,7 +54,7 @@ class Ship(Disk):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
-            self.gun_cooldown = 0.25
+            self.gun_cooldown = 0.1
             self.ammo -= 1
 
     def step(self, dt: float):
@@ -290,7 +290,7 @@ class RocketEnemy(BulletEnemy):
             self.projectiles.append(
                 Rocket(bullet_pos, bullet_vel, self.color, self.target_ship)
             )
-            self.gun_cooldown = 0.25
+            self.gun_cooldown = 0.025
             self.ammo -= 1
 
 

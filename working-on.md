@@ -2,6 +2,8 @@
 - Minimap class?
 - Add docstrings where reasonable
 
+# Bugs
+- SCREEN_HEIGHT and WIDTH are only allowed to go up to 30_918
 
 # Obvious needs
 - Give everything good collision detection and world border detection

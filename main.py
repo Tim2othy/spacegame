@@ -47,14 +47,14 @@ areas: list[Area] = [
 ]
 
 asteroids: list[Asteroid] = []
-for _ in range(80):
+for _ in range(200):
     pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
-    vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    vel = Vector2(0, 0)
     radius = random.uniform(40, 120)
     asteroids.append(Asteroid(pos, vel, 1, radius))
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(16):
+for _ in range(20):
     pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))

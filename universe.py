@@ -62,7 +62,7 @@ class Rect:
     def draw(self, camera: Camera):
         camera.draw_rect(self.color, self.top_left, self.bottom_right)
 
-class Area(Rect):
+class Area(Rect): # Don't focus so much on the Area/squares, they are not so important, you can also remove them for now
     """A rectangular area that triggers an event for a ship."""
 
     def __init__(
@@ -243,9 +243,9 @@ class Universe:
 
         ship = self.player_ship
         texty(f"({int(ship.pos.x)}, {int(ship.pos.y)})")
-        texty(f"Remaining Fuel: {ship.fuel:.3f}")
+        texty(f"Remaining Fuel: {ship.fuel:.2f}")
         texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
-        texty(f"Health: {ship.health}")
+        texty(f"Health: {ship.health:.2f}")
         texty(f"Ammunition: {ship.ammo}")
         for area in self.areas:
             f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
@@ -257,7 +257,7 @@ class Universe:
 
     def draw_grid(self, camera: Camera):
         grid_color = Color("darkgreen")
-        gridline_spacing = 500
+        gridline_spacing = 900
         width = self.size.x
         height = self.size.y
 

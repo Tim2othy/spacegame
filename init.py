@@ -5,10 +5,10 @@ from camera import Camera
 # of a Game class that has this code as an instance-method
 # (not necessarily as its __init__ method)
 
-SCREEN_WIDTH = 1700
-SCREEN_HEIGHT = 900
-WORLD_WIDTH = 20_000
-WORLD_HEIGHT = 20_000
+SCREEN_WIDTH = 1800
+SCREEN_HEIGHT = 700
+WORLD_WIDTH = 30_917
+WORLD_HEIGHT = WORLD_WIDTH
 
 
 # Set up the display
