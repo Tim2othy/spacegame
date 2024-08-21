@@ -127,7 +127,7 @@ class Universe:
     def apply_bounce(self):
         bounce_result = self.apply_bounce_to_disk(self.player_ship)
         if bounce_result is not None:
-            self.player_ship.health -= abs(bounce_result) * 0.07
+            self.player_ship.suffer_damage(abs(bounce_result) * 0.07)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
@@ -177,7 +177,7 @@ class Universe:
                     ship.projectiles.remove(projectile)
                     continue
                 if self.player_ship.intersects_point(projectile.pos):
-                    self.player_ship.health -= 10
+                    self.player_ship.suffer_damage(10)
                     ship.projectiles.remove(projectile)
                     continue
 
