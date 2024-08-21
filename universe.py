@@ -92,6 +92,7 @@ class Area(Rect):
 
 class RefuelArea(Area):
     """Refuel every ship entering this."""
+
     def __init__(
         self,
         rect: Rect,
@@ -114,6 +115,7 @@ class RefuelArea(Area):
 
 class TrophyArea(Area):
     """Give every ship entering this a trophy."""
+
     def __init__(self, rect: Rect):
         """Create a TrophyArea
 
