@@ -1,3 +1,9 @@
+"""Class for rendering things to a surface, relative to a camera-position.
+
+worldspace == Coordinates in space
+screenspace == Coordinates on the screen
+"""
+
 import pygame
 import pygame.gfxdraw
 from pygame.math import Vector2
@@ -8,15 +14,17 @@ class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
     def __init__(self, pos: Vector2, zoom: float, surface: pygame.Surface):
-        """
+        """Construct a new camera.
+
         Args:
-            pos (Vector2): Center of the camera-frame.
-            zoom (float): Zoom-factor of the camera, higher meaning that fewer same-size objects fit on screen.
-            surface (pygame.Surface): The surface to be drawn to.
+            pos (Vector2): Worldspace-coordinate at the center of the screen
+            zoom (float): Higher = Fewer objects fit on screen,
+                zoom==1 corresponds to 1 pixel per unit
+            surface (pygame.Surface): Surface to draw on
         """
-        self.pos = pos
-        self.zoom = zoom
-        self.surface = surface
+        self.pos: Vector2 = pos
+        self.zoom: float = zoom
+        self.surface: pygame.Surface = surface
 
     def smoothly_transition_to(
         self,
@@ -25,12 +33,15 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ):
-        """Smoothly transition the camera view to a new pos and zoom.
+        """Smoothly transition the camera to a new location.
 
-        transition_speed (float): After this amount of time has passed, the camera will have fully
-        transitioned to the new location.
+        Args:
+            new_pos (Vector2): New camera worldspace-position
+            new_zoom (float): New zoom-factor
+            dt (float): Time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+                the camera will have fully transitioned. Defaults to 0.25
         """
-
         dist = self.pos.distance_to(new_pos)
         self.pos.move_towards_ip(new_pos, dist * dt / transition_time)
 
@@ -41,6 +52,15 @@ class Camera:
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
     def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25):
+        """Smoothly move the camera so that a worldspace-rectangle is visible
+        entirely, but not more.
+
+        Args:
+            rect (Rect): Worldspace-rectangle to fit to
+            dt (float): Time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+                the camera will have fully transitioned. Defaults to 0.25
+        """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
         surface_height = self.surface.get_height()
@@ -62,11 +82,15 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ):
-        """Focus camera smoothly on a list of points.
+        """Smoothly focus camera so that a list of worldspace-points is visible,
+        with an additional buffer.
 
         Args:
-            points (list[Vector2]): The points to focus on
-            buff (float): The padding around the points
+            points (list[Vector2]): Worldspace-points to focus on. Hopefully nonempty.
+            buff (float): Worldspace-buffer around the points
+            dt (float): Time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+                the camera will have fully transitioned. Defaults to 0.25
         """
         enclosing_rect = self._get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
@@ -74,7 +98,13 @@ class Camera:
 
     def _get_enclosing_rect(self, points: list[Vector2]) -> Rect:
         """Gets the smallest rectangle enclosing all points.
-        Returns top-left and bottom-right coordinate of rect.
+        This method works irrespective of which space you use.
+
+        Args:
+            points (list[Vector2]): Points to enclose
+
+        Returns:
+            Rect: Rectangle fitting all points snugly
         """
         minx = miny = float("inf")
         maxx = maxy = float("-inf")
@@ -86,22 +116,47 @@ class Camera:
         return Rect((minx, miny), (maxx - minx, maxy - miny))
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
-        """Determines whether a screenspace-rectangle intersects the screen."""
+        """Determines whether a screenspace-rectangle intersects the
+        camera's screen.
+
+        Args:
+            rect (Rect): Screenspace-rectangle
+
+        Returns:
+            bool: True iff screenspace-rectangle intersects the screen
+        """
         own_rect = Rect((0, 0), self.surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def world_to_camera(self, vec: Vector2) -> Vector2:
-        """Transforms a worldspace-vector to its position on the camera's screen."""
+    def world_to_screen(self, vec: Vector2) -> Vector2:
+        """Transform a worldspace-vector to screenspace.
+
+        Args:
+            vec (Vector2): Worldspace-vector
+
+        Returns:
+            Vector2: Screenspace-vector
+        """
         width, height = self.surface.get_size()
         center = Vector2(width / 2, height / 2)
         return (vec - self.pos) * self.zoom + center
 
     def start_drawing_new_frame(self):
+        """Fills the camera's surface black, to prepare for
+        drawing a new frame.
+        """
         self.surface.fill(Color("black"))
 
     def draw_circle(self, color: Color, center: Vector2, radius: float):
-        ccenter, cradius = self.world_to_camera(center), radius * self.zoom
+        """Draw a anti-aliased worldspace-circle on screen.
+
+        Args:
+            color (Color): Border- and fill-color
+            center (Vector2): Worldspace-center of the circle
+            radius (float): Worldspace-radius of the circle
+        """
+        ccenter, cradius = self.world_to_screen(center), radius * self.zoom
         # ??? Why only ints?
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
 
@@ -112,20 +167,32 @@ class Camera:
             pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
     def draw_polygon(self, color: Color, points: list[Vector2]):
+        """Draw an anti-aliased worldspace-polygon on screen.
+
+        Args:
+            color (Color): Border- and fill-color
+            points (list[Vector2]): Worldspace-points
+        """
+        cpoints = [self.world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
-
-        cpoints = [self.world_to_camera(p) for p in points]
-
         enclosing_rect = self._get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
             pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
-    def draw_line(self, color: Color, start: Vector2, end: Vector2, width: float):
+    def draw_line(self, color: Color, start: Vector2, end: Vector2, thickness: float):
+        """Draw an anti-aliased worldspace-line with a given thickness.
+
+        Args:
+            color (Color): Border- and fill-color
+            start (Vector2): Line's start-worldspace-point
+            end (Vector2): Line's end-worldspace-point
+            width (float): Line's worldspace-thickness
+        """
         delta = end - start
         if delta == Vector2(0, 0):
             return
-        orthogonal = Vector2(-delta.y, delta.x).normalize() * width / 2
+        orthogonal = Vector2(-delta.y, delta.x).normalize() * thickness / 2
         points = [
             start + orthogonal,
             end + orthogonal,
@@ -137,7 +204,14 @@ class Camera:
         self.draw_polygon(color, points)
 
     def draw_hairline(self, color: Color, start: Vector2, end: Vector2):
-        tstart, tend = self.world_to_camera(start), self.world_to_camera(end)
+        """Draw an anti-aliased worldspace-line of single-pixel-thickness.
+
+        Args:
+            color (Color): Line's color
+            start (Vector2): Line's start-worldspace-point
+            end (Vector2): Line's end-worldspace-point
+        """
+        tstart, tend = self.world_to_screen(start), self.world_to_screen(end)
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
@@ -145,8 +219,14 @@ class Camera:
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
     def draw_rect(self, color: Color, rect: Rect):
-        ttopleft = self.world_to_camera(Vector2(rect.topleft))
-        tbottomright = self.world_to_camera(Vector2(rect.bottomright))
+        """Draw an anti-aliased worldspace-rectangle.
+
+        Args:
+            color (Color): Border- and fill-color
+            rect (Rect): Worldspace rectangle to draw
+        """
+        ttopleft = self.world_to_screen(Vector2(rect.topleft))
+        tbottomright = self.world_to_screen(Vector2(rect.bottomright))
         screen_rect = Rect(ttopleft, tbottomright - ttopleft)
         if self._rectangle_intersects_screen(screen_rect):
             pygame.gfxdraw.box(self.surface, screen_rect, color)
@@ -154,7 +234,15 @@ class Camera:
     def draw_text(
         self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
     ):
-        """Draw text on screen, at pos `pos`. If `pos` is `None`, centers text."""
+        """Draw text on screen at screenspace-position, or centered on screen.
+
+        Args:
+            text (str): Text to render
+            pos (Vector2 | None): If Vector2, screenspace-position of text's top-left-corner,
+                if None, text will be centered on screen
+            font (pygame.font.Font): Font to be used
+            color (Color): Text's fill color
+        """
         rendered = font.render(text, True, color)
         if pos is None:
             width, height = self.surface.get_size()

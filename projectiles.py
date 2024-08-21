@@ -1,8 +1,10 @@
+"""Projectiles, shooting through space"""
+
+from typing import TYPE_CHECKING
 from pygame.math import Vector2
 from pygame import Color
 from camera import Camera
 from physics import PhysicalObject
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -12,10 +14,22 @@ class Bullet(PhysicalObject):
     """A triangular bullet."""
 
     def __init__(self, pos: Vector2, vel: Vector2, color: Color):
+        """Create a new basic Bullet
+
+        Args:
+            pos (Vector2): Start position
+            vel (Vector2): Velocity
+            color (Color): Border- and fill-color
+        """
         super().__init__(pos, vel, 1.0)
         self.color = color
 
     def draw(self, camera: Camera):
+        """Draw `self` on `camera`.
+
+        Args:
+            camera (Camera): Camera to draw on
+        """
         forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
         camera.draw_polygon(
             self.color,
@@ -28,7 +42,17 @@ class Bullet(PhysicalObject):
 
 
 class Rocket(Bullet):
+    """A pentagonal bullet, homing on a target-ship."""
+
     def __init__(self, pos: Vector2, vel: Vector2, color: Color, target_ship: "Ship"):
+        """Create a new rocket targeting `target_ship`.
+
+        Args:
+            pos (Vector2): Initial position
+            vel (Vector2): Initial velocity
+            color (Color): Border- and fill-color
+            target_ship (Ship): Ship to home in on
+        """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
         self.vel /= 4
@@ -39,18 +63,28 @@ class Rocket(Bullet):
         self._total_duration = self.homing_duration + self.nonhoming_duration
 
     def step(self, dt: float):
+        """Apply homing and physics-logic
+
+        Args:
+            dt (float): Passed time
+        """
         self.homing_timer = (self.homing_timer + dt) % self._total_duration
 
         if self.homing_timer <= self.homing_duration:
             # Target the ship
-            dir = self.target_ship.pos - self.pos
-            if dir != Vector2(0, 0):
-                dir.normalize_ip()
-                self.apply_force(dir * self.homing_thrust, dt)
+            direction = self.target_ship.pos - self.pos
+            if direction != Vector2(0, 0):
+                direction.normalize_ip()
+                self.apply_force(direction * self.homing_thrust, dt)
 
         super().step(dt)
 
     def draw(self, camera: Camera):
+        """Draw `self` to `camera`
+
+        Args:
+            camera (Camera): Camera to draw on
+        """
         forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
         left = Vector2(-forward.y, forward.x)
         right = -left
