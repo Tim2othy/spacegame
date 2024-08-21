@@ -41,26 +41,6 @@ class Asteroid(Disk):
     the player will not always accadentally hit the border and die
     '''
 
-class Rect:
-    """
-    A rectangle, given by its top_left and bottom_right corners.
-
-    Must satisfy top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
-    """
-
-    def __init__(self, top_left: Vector2, bottom_right: Vector2, color: Color):
-        self.top_left = top_left
-        self.bottom_right = bottom_right
-        self.color = color
-
-    def intersects_point(self, vec: Vector2):
-        return (
-            self.top_left.x <= vec.x <= self.bottom_right.x
-            and self.top_left.y <= vec.y <= self.bottom_right.y
-        )
-
-    def draw(self, camera: Camera):
-        camera.draw_rect(self.color, self.top_left, self.bottom_right)
 
 class Area(Rect):
     """A rectangular area that triggers an event for a ship."""
