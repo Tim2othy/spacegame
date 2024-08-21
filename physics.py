@@ -75,6 +75,8 @@ class Disk(PhysicalObject):
         """
         Bounce `self` off of `disk`, iff the two intersect.
         Returns severity of the impact if it occurred, None otherwise.
+        is currently using restitution to calc damadge, shoud be changed,
+        probably bu using vel along normal vector of ship
         """
 
         # TODO: The impulse of `disk` should also affect the way
@@ -88,6 +90,7 @@ class Disk(PhysicalObject):
             delta_magnitude = delta.magnitude()
             normal_vector = delta / delta_magnitude
             self_vel_along_normal = self.vel.dot(normal_vector)
+            print(f"self_vel_along_normal: {self_vel_along_normal}")
 
             # Do not resolve if velocities are separating
             # TODO: What does this mean? And is `False`
@@ -96,7 +99,7 @@ class Disk(PhysicalObject):
                 return None
 
             # Calculate restitution (bounciness)
-            restitution = 1
+            restitution = 10000
 
             # TODO: In the original ship-crash-method,
             # bounciness (don't ask me what that corresponds to, here)
@@ -104,17 +107,25 @@ class Disk(PhysicalObject):
             # should probably be implemented here, to, but I do not
             # understand this code.
 
-            # Calculate impulse scalar
-            j = -(1 + restitution) * self_vel_along_normal
-            j /= 1 / self.mass + 1 / disk.mass
+            """I think this is working the way it did before, if restitution is 1 then you have the
+            same vel after the bounce as before, if it's 0.5 you lose half your vel, 
+            if it's > 1 then you gain vel in proportion to restitution
+            """
 
+            # Calculate impulse scalar
+            impulse_scalar_questionmark = (
+                -(1 + restitution) * self_vel_along_normal
+            )  # what used to be called j is the impulse_scalar right?
+            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
+            impulse_scalar_questionmark /= 1 / self.mass + 1 / disk.mass
+            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
             # Apply impulse
-            self.vel += normal_vector * j / self.mass
+            self.vel += normal_vector * impulse_scalar_questionmark / self.mass
 
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return j  # TODO: Is this correct???
+            return impulse_scalar_questionmark  # TODO: Is this correct???, i think so, it mostly makes sense
         else:
             return None
 

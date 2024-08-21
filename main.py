@@ -15,7 +15,7 @@ game_over = False
 
 # Cameras
 SCREEN_SIZE = Vector2(1700, 900)
-WORLD_SIZE = Vector2(10_000, 10_000)
+WORLD_SIZE = Vector2(10_000, 10_000)  # Make larger
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(WORLD_SIZE / 2, 1.0, surface)
 MINIMAP_SIZE = Vector2(250, 250)
@@ -27,17 +27,17 @@ planets = [
     Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
     Planet(Vector2(1800, 6700), 1, 370, Color("darkred")),
     Planet(Vector2(2300, 900), 1, 280, Color("green")),
-    Planet(Vector2(3400, 5300), 1, 420, Color("blue")),
-    Planet(Vector2(4000, 3700), 1, 280, Color("deeppink")),
+    Planet(Vector2(3700, 5300), 1, 420, Color("deeppink")),
+    Planet(Vector2(4200, 3700), 1, 280, Color("mediumpurple")),
     Planet(Vector2(5000, 9000), 1, 380, Color("darkorange")),
     Planet(Vector2(6000, 400), 1, 350, Color("royalblue")),
     Planet(Vector2(7000, 3700), 1, 280, Color("orange")),
-    Planet(Vector2(8500, 8000), 1, 380, Color("mediumpurple")),
+    Planet(Vector2(8500, 8000), 1, 380, Color("yellow")),
     Planet(Vector2(9200, 4400), 1, 440, Color("darkslategray")),
 ]
 
 player_ship = Ship(
-    WORLD_SIZE / 2,
+    (10_000, 10_000),
     Vector2(0, 0),
     1,
     10,
@@ -53,7 +53,7 @@ asteroids: list[Asteroid] = []
 for _ in range(15):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vector2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(40, 120)
+    radius = random.uniform(4, 60)
     asteroids.append(Asteroid(pos, vel, 1, radius))
 
 enemy_ships: list[BulletEnemy] = []
