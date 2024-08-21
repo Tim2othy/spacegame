@@ -1,13 +1,14 @@
-import pygame
-import pygame.gfxdraw
-from pygame.math import Vector2
-from pygame import Color, Rect
-
 """Class for rendering things to a surface, relative to a camera-position.
 
 worldspace == Coordinates in space
 screenspace == Coordinates on the screen
 """
+
+import pygame
+import pygame.gfxdraw
+from pygame.math import Vector2
+from pygame import Color, Rect
+
 
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
