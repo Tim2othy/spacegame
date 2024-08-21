@@ -28,7 +28,8 @@ minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surfa
 planets = [
     Planet(Vector2(100_000, 130_000), 1, 20000, Color("turquoise")),
     Planet(Vector2(180_000, 670_000), 1, 37000, Color("darkred")),
-    Planet(Vector2(230_000, 290_000), 1, 28000, Color("green")),
+    Planet(Vector2(230_000, 890_000), 1, 28000, Color("green")),
+    Planet(Vector2(307_000, 317_000), 1, 15000, Color("khaki")),
     Planet(Vector2(370_000, 530_000), 1, 42000, Color("deeppink")),
     Planet(Vector2(420_000, 370_000), 1, 28000, Color("mediumpurple")),
     Planet(Vector2(400_000, 900_000), 1, 3800, Color("darkorange")),
@@ -46,7 +47,7 @@ planets = [
     Planet(Vector2(730_000, 640_000), 1, 3500, Color("blue")),
     Planet(Vector2(750_000, 260_000), 1, 28000, Color("gold")),
     Planet(Vector2(870_000, 380_000), 1, 3800, Color("slategray")),
-    Planet(Vector2(990_000, 500_000), 1, 5400, Color("khaki")),
+    Planet(Vector2(990_000, 500_000), 1, 5400, Color("red")),
     Planet(Vector2(910_000, 420_000), 1, 30000, Color("navy")),
 ]
 
@@ -63,6 +64,8 @@ areas: list[Area] = [
     RefuelArea(Vector2(7000, 1000), Vector2(200, 200)),
     TrophyArea(Vector2(3000, 8000), Vector2(200, 200)),
 ]
+
+areas = []
 
 asteroids: list[Asteroid] = []
 for _ in range(50):

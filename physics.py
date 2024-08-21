@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from camera import Camera
 import math
 
-GRAVITATIONAL_CONSTANT = 0.005
+GRAVITATIONAL_CONSTANT = 0.0003
 
 
 class PhysicalObject:

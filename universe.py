@@ -223,7 +223,7 @@ class Universe:
 
     def draw_grid(self, camera: Camera):
         grid_color = Color("darkgreen")
-        gridline_spacing = 10000
+        gridline_spacing = 5000
         width = self.size.x
         height = self.size.y
 
