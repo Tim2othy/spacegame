@@ -1,3 +1,5 @@
+"""Staging-grounds for the game."""
+
 from __future__ import annotations
 import pygame
 from pygame.math import Vector2
