@@ -1,10 +1,10 @@
 """Projectiles, shooting through space"""
 
+from typing import TYPE_CHECKING
 from pygame.math import Vector2
 from pygame import Color
 from camera import Camera
 from physics import PhysicalObject
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -72,10 +72,10 @@ class Rocket(Bullet):
 
         if self.homing_timer <= self.homing_duration:
             # Target the ship
-            dir = self.target_ship.pos - self.pos
-            if dir != Vector2(0, 0):
-                dir.normalize_ip()
-                self.apply_force(dir * self.homing_thrust, dt)
+            direction = self.target_ship.pos - self.pos
+            if direction != Vector2(0, 0):
+                direction.normalize_ip()
+                self.apply_force(direction * self.homing_thrust, dt)
 
         super().step(dt)
 
