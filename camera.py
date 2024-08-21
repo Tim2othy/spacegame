@@ -8,15 +8,16 @@ class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
     def __init__(self, pos: Vector2, zoom: float, surface: pygame.Surface):
-        """
+        """Construct a new camera.
+
         Args:
-            pos (Vector2): Center of the camera-frame.
-            zoom (float): Zoom-factor of the camera, higher meaning that fewer same-size objects fit on screen.
-            surface (pygame.Surface): The surface to be drawn to.
+            pos (Vector2): The worldspace-coordinate at the center of the screen.
+            zoom (float): Higher = Fewer objects fit on screen. Zoom==1 corresponds to 1 pixel per unitt.
+            surface (pygame.Surface): The surface to draw on.
         """
-        self.pos = pos
-        self.zoom = zoom
-        self.surface = surface
+        self.pos: Vector2 = pos
+        self.zoom: float = zoom
+        self.surface: pygame.Surface = surface
 
     def smoothly_transition_to(
         self,
@@ -25,10 +26,14 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ):
-        """Smoothly transition the camera view to a new pos and zoom.
+        """Smoothly transition the camera to a new location.
 
-        transition_speed (float): After this amount of time has passed, the camera will have fully
-        transitioned to the new location.
+        Args:
+            new_pos (Vector2): The new camera position.
+            new_zoom (float): The new zoom-factor.
+            dt (float): The time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+            the camera will have fully transitioned. Defaults to 0.25.
         """
 
         dist = self.pos.distance_to(new_pos)
@@ -41,6 +46,14 @@ class Camera:
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
     def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25):
+        """Smoothly move the camera so that a rectangle is visible entirely, but not more.
+
+        Args:
+            rect (Rect): The rectangle to fit to.
+            dt (float): The time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+            the camera will have fully transitioned. Defaults to 0.25.
+        """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
         surface_height = self.surface.get_height()
@@ -62,11 +75,15 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ):
-        """Focus camera smoothly on a list of points.
+        """Smoothly focus camera so that a list of points is visible, with
+        an additional buffer.
 
         Args:
-            points (list[Vector2]): The points to focus on
-            buff (float): The padding around the points
+            points (list[Vector2]): The points to focus on. Hopefully nonempty.
+            buff (float): The buffer around the points.
+            dt (float): The time-factor (for the smooth operation)
+            transition_time (float, optional): After this amount of dt has passed,
+            the camera will have fully transitioned. Defaults to 0.25.
         """
         enclosing_rect = self._get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
@@ -74,7 +91,12 @@ class Camera:
 
     def _get_enclosing_rect(self, points: list[Vector2]) -> Rect:
         """Gets the smallest rectangle enclosing all points.
-        Returns top-left and bottom-right coordinate of rect.
+
+        Args:
+            points (list[Vector2]): Points to enclose
+
+        Returns:
+            Rect: The rectangle fitting all points snugly.
         """
         minx = miny = float("inf")
         maxx = maxy = float("-inf")
