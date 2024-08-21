@@ -1,4 +1,3 @@
-import math
 import pygame
 import pygame.camera
 from pygame import Color, Rect

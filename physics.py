@@ -79,14 +79,15 @@ class Disk(PhysicalObject):
 
         if self.intersects_disk(disk):
             # When rewriting this: The pygame.math module already has methods for normal-vector
-            # calculation
+            # calculation.
+            # Also use the add_force or add_impulse methods from Physics, do
+            # not modify velocity directly
 
             # Calculate normal vector
             delta = self.pos - disk.pos
             delta_magnitude = delta.magnitude()
             normal_vector = delta / delta_magnitude
             self_vel_along_normal = self.vel.dot(normal_vector)
-            print(f"self_vel_along_normal: {self_vel_along_normal}")
 
             # Do not resolve if velocities are separating
             if self_vel_along_normal > 0:
@@ -95,31 +96,14 @@ class Disk(PhysicalObject):
             # Calculate restitution (bounciness)
             restitution = 10000
 
-            # TODO: In the original ship-crash-method,
-            # bounciness (don't ask me what that corresponds to, here)
-            # was multiplied by 0.5, for sake of energy-loss. This
-            # should probably be implemented here, to, but I do not
-            # understand this code.
-
-            """I think this is working the way it did before, if restitution is 1 then you have the
-            same vel after the bounce as before, if it's 0.5 you lose half your vel, 
-            if it's > 1 then you gain vel in proportion to restitution
-            """
-
-            # Calculate impulse scalar
-            impulse_scalar_questionmark = (
-                -(1 + restitution) * self_vel_along_normal
-            )  # what used to be called j is the impulse_scalar right?
-            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
-            impulse_scalar_questionmark /= 1 / self.mass + 1 / disk.mass
-            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
-            # Apply impulse
-            self.vel += normal_vector * impulse_scalar_questionmark / self.mass
+            imuplse_scalar = -(1 + restitution) * self_vel_along_normal
+            imuplse_scalar /= 1 / self.mass + 1 / disk.mass
+            self.vel += normal_vector * imuplse_scalar / self.mass
 
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return impulse_scalar_questionmark
+            return imuplse_scalar
         else:
             return None
 

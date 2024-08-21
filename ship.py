@@ -36,10 +36,10 @@ class Ship(Disk):
         self.thruster_rot_right = False
         self.thruster_backward = False
         self.thruster_forward = False
-        self.fuel = 100.0
+        self.MAX_FUEL = 100.0
+        self.fuel = self.MAX_FUEL
         self.fuel_consumption_rate = 0.7
         self.fuel_rot_consumption_rate = 0.7
-        # self.MAX_FUEL = 100.0
 
     def get_faced_direction(self) -> Vector2:
         # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.

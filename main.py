@@ -37,7 +37,7 @@ planets = [
 ]
 
 player_ship = Ship(
-    (10_000, 10_000),
+    Vector2(10_000, 10_000),
     Vector2(0, 0),
     1,
     10,
