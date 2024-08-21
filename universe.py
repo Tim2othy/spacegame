@@ -65,7 +65,7 @@ class RefuelArea(Area):
         super().__init__(topleft, size, Color("yellow"), "Refuel")
 
     def event(self, ship: Ship):
-        ship.fuel = ship.MAX_FUEL
+        ship.fuel = ship._max_fuel
 
 
 class TrophyArea(Area):

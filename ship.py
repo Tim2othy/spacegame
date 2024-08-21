@@ -1,5 +1,7 @@
 """Spaceships, shooting through space"""
 
+from enum import Enum
+import random
 import pygame
 from pygame.math import Vector2
 from pygame import Color
@@ -7,8 +9,6 @@ import math
 from physics import Disk
 from projectiles import Bullet, Rocket
 from camera import Camera
-from enum import Enum
-import random
 
 
 BULLET_SPEED = 500
