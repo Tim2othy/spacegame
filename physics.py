@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from camera import Camera
 import math
 
-GRAVITATIONAL_CONSTANT = 0.5
+GRAVITATIONAL_CONSTANT = 0.005
 
 
 class PhysicalObject:
@@ -79,7 +79,7 @@ class Disk(PhysicalObject):
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
 
-        bounciness = 0.90  # Always between 0 and 1. At 1 collisions cause no damage. I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, so bounciness won't play that big of a role.
+        bounciness = 0.70  # Always between 0 and 1. At 1 collisions cause no damage. I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, so bounciness won't play that big of a role.
 
         # Calculate normal vector
         delta = self.pos - disk.pos
@@ -96,6 +96,6 @@ class Disk(PhysicalObject):
         self.vel += normal_vector * impulse_scalar / self.mass
 
         # This allows the ship to land on the planet. If impulse is small there is no damage.
-        damage = (max(0, impulse_scalar - 1500000)) ** 2 * (1 - bounciness) * 5e-9
-
+        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
+        print(impulse_scalar)
         return damage
