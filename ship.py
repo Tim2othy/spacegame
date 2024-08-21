@@ -87,6 +87,8 @@ class Ship(Disk):
                 self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
                 self.apply_force(-forward * self.thrust, dt)
 
+        self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
+
         super().step(dt)
 
         for projectile in self.projectiles:
@@ -100,10 +102,8 @@ class Ship(Disk):
         left = -right
         backward = -forward
 
-        darker_color = Color(self.color)
-        darker_color.r = darker_color.r // 2
-        darker_color.g = darker_color.g // 2
-        darker_color.b = darker_color.b // 2
+        base_color: Color = self.color.lerp(Color("red"), self.damage_indicator_timer)
+        darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
         def drawy(color: Color, points: list[Vector2]):
@@ -185,7 +185,11 @@ class Ship(Disk):
             ],
         )
 
+        # Ugly hack
+        backup_self_color = Color(self.color)
+        self.color = base_color
         super().draw(camera)  # Draw circular body ("hitbox")
+        self.color = backup_self_color
 
         for projectile in self.projectiles:
             projectile.draw(camera)
