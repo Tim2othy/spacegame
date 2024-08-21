@@ -3,7 +3,6 @@ import pygame
 from pygame.math import Vector2
 from pygame import Color
 import sys
-import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from camera import Camera
@@ -73,11 +72,6 @@ universe = Universe(
     areas,
     enemy_ships,
 )
-
-
-# I can't *believe* that math doesn't have a sign-function
-def sign(x: int | float):
-    return math.copysign(1, x)
 
 
 running = True
