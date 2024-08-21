@@ -47,12 +47,12 @@ class Area(Rect):
 
     def __init__(
         self,
-        top_left: Vector2,
-        width_height: Vector2,
+        topleft: Vector2,
+        size: Vector2,
         color: Color,
         caption: str,
     ):
-        super().__init__(top_left, width_height)
+        super().__init__(topleft, size)
         self.color = color
         self.caption = str
 
@@ -66,10 +66,10 @@ class Area(Rect):
 class RefuelArea(Area):
     def __init__(
         self,
-        top_left: Vector2,
-        bottom_right: Vector2,
+        topleft: Vector2,
+        size: Vector2,
     ):
-        super().__init__(top_left, bottom_right, Color("yellow"), "Refuel")
+        super().__init__(topleft, size, Color("yellow"), "Refuel")
     
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
@@ -77,10 +77,10 @@ class RefuelArea(Area):
 class TrophyArea(Area):
     def __init__(
         self,
-        top_left: Vector2,
-        bottom_right: Vector2,
+        topleft: Vector2,
+        size: Vector2,
     ):
-        super().__init__(top_left, bottom_right, Color("gold"), "Trophy")
+        super().__init__(topleft, size, Color("gold"), "Trophy")
 
     def event(self, ship: Ship):
         ship.has_trophy = True
