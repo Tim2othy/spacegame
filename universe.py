@@ -53,19 +53,16 @@ class Asteroid(Disk):
         super().__init__(pos, vel, density, radius, Color("gray"))
 
 
-class Area(
-    Rect
-):  # Don't focus so much on the Area/squares, they are not so important, you can also remove them for now
+class Area(Rect):
     """A rectangular area that triggers an event for a ship."""
 
     def __init__(
         self,
-        topleft: Vector2,
-        size: Vector2,
+        rect: Rect,
         color: Color,
         caption: str,
     ):
-        super().__init__(topleft, size)
+        super().__init__(rect)
         self.color = color
         self.caption = str
 
@@ -79,22 +76,17 @@ class Area(
 class RefuelArea(Area):
     def __init__(
         self,
-        topleft: Vector2,
-        size: Vector2,
+        rect: Rect,
     ):
-        super().__init__(topleft, size, Color("yellow"), "Refuel")
+        super().__init__(rect, Color("yellow"), "Refuel")
 
     def event(self, ship: Ship):
-        ship.fuel = ship._max_fuel
+        ship.fuel = ship.max_fuel
 
 
 class TrophyArea(Area):
-    def __init__(
-        self,
-        topleft: Vector2,
-        size: Vector2,
-    ):
-        super().__init__(topleft, size, Color("gold"), "Trophy")
+    def __init__(self, rect: Rect):
+        super().__init__(rect, Color("gold"), "Trophy")
 
     def event(self, ship: Ship):
         ship.has_trophy = True

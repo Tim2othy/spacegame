@@ -47,8 +47,8 @@ player_ship = Ship(
 )
 
 areas: list[Area] = [
-    RefuelArea(Vector2(5000, 1000), Vector2(200, 200)),
-    TrophyArea(Vector2(3000, 5000), Vector2(200, 200)),
+    RefuelArea(pygame.Rect((5000, 1000), (200, 200))),
+    TrophyArea(pygame.Rect((3000, 5000), (200, 200))),
 ]
 
 asteroids: list[Asteroid] = []
