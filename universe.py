@@ -71,7 +71,7 @@ class Area(Rect):
         """
         super().__init__(rect)
         self.color = color
-        self.caption = str
+        self.caption = caption
 
     def draw(self, camera: Camera):
         """Draw `self` on `camera`
@@ -213,11 +213,11 @@ class Universe:
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
-            other_asteroids = list(filter(lambda ast: ast != asteroid, self.asteroids))
+            other_asteroids = [ast for ast in self.asteroids if ast != asteroid]
             for disk in other_asteroids + self.planets:
                 asteroid.bounce_off_of_disk(disk)
 
-    def asteroids_or_planets_intersect_point(self, vec: Vector2):
+    def asteroids_or_planets_intersect_point(self, vec: Vector2) -> bool:
         """Test whether any of `self`'s planets or asteroids intersect `vec`
 
         Args:
@@ -318,9 +318,9 @@ class Universe:
         texty(f"Health: {ship.health:.2f}")
         texty(f"Ammunition: {ship.ammo}")
         for area in self.areas:
-            f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})"
+            texty(f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})")
         texty(f"{len(ship.projectiles)} projectiles from you")
-        enemy_projectile_count = sum([len(e.projectiles) for e in self.enemy_ships])
+        enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
         texty(f"{enemy_projectile_count} enemy projectiles")
 
         del self.text_vertical_offset
@@ -342,7 +342,7 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_hairline(grid_color, Vector2(0, y), Vector2(width, y))
 
-    def contains_point(self, vec: Vector2):
+    def contains_point(self, vec: Vector2) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries
 
         Args:
@@ -353,7 +353,7 @@ class Universe:
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def clamp_point(self, vec: Vector2):
+    def clamp_point(self, vec: Vector2) -> Vector2:
         """Return `vec` clamped to be within `self`'s bounds.
 
         Args:
