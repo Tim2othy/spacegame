@@ -117,7 +117,7 @@ class Universe:
         for asteroid in self.asteroids:
             self.apply_gravity_to_obj(dt, asteroid)
 
-    def apply_bounce_to_disk(self, disk: Disk) -> tuple[float | None, float | None]:
+    def apply_bounce_to_disk(self, disk: Disk) -> tuple[float, float] | None:
         bounce = None
         vel = None
         for body in self.asteroids + self.planets:
@@ -128,12 +128,9 @@ class Universe:
         return None
 
     def apply_bounce(self):
-        ship_bounce = None
-        ship_vel = None
         bounce_result = self.apply_bounce_to_disk(self.player_ship)
         if bounce_result is not None:
-            ship_bounce, ship_vel = bounce_result
-        if ship_bounce is not None:
+            _, ship_vel = bounce_result
             self.player_ship.health -= abs(ship_vel) * 0.07
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
