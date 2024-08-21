@@ -71,12 +71,12 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: "Disk") -> bool:
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk") -> float | None:
+    def bounce_off_of_disk(
+        self, disk: "Disk"
+    ) -> tuple[float | None, float | None]:  # I think this is the correct return type
         """
         Bounce `self` off of `disk`, iff the two intersect.
-        Returns severity of the impact if it occurred, None otherwise.
-        is currently using restitution to calc damadge, shoud be changed,
-        probably bu using vel along normal vector of ship
+        Returns velocity of object at impact and severity of impact if it occurred, None otherwise.
         """
 
         # TODO: The impulse of `disk` should also affect the way
@@ -90,7 +90,6 @@ class Disk(PhysicalObject):
             delta_magnitude = delta.magnitude()
             normal_vector = delta / delta_magnitude
             self_vel_along_normal = self.vel.dot(normal_vector)
-            print(f"self_vel_along_normal: {self_vel_along_normal}")
 
             # Do not resolve if velocities are separating
             # TODO: What does this mean? And is `False`
@@ -99,17 +98,13 @@ class Disk(PhysicalObject):
                 return None
 
             # Calculate restitution (bounciness)
-            restitution = 10000000
+            restitution = 0.9
 
-            # TODO: In the original ship-crash-method,
-            # bounciness (don't ask me what that corresponds to, here)
-            # was multiplied by 0.5, for sake of energy-loss. This
-            # should probably be implemented here, to, but I do not
-            # understand this code.
-
-            """I think this is working the way it did before, if restitution is 1 then you have the
-            same vel after the bounce as before, if it's 0.5 you lose half your vel, 
-            if it's > 1 then you gain vel in proportion to restitution
+            """
+            I think this is working generally correctly:
+            - if restitution is 1 then the ship has the same vel after the bounce as before,
+            - if it's 0.5 it loses half it's vel, 
+            - if it's 2 then vel is doubled by the inpact, etc.
             """
 
             # Calculate impulse scalar
@@ -117,15 +112,10 @@ class Disk(PhysicalObject):
                 -(1 + restitution) * self_vel_along_normal
             )  # what used to be called j is the impulse_scalar right?
 
-            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
-
             impulse_scalar_questionmark = impulse_scalar_questionmark / (
                 1 / self.mass + 1 / disk.mass
             )
 
-            print(f"impulse_scalar_questionmark: {impulse_scalar_questionmark}")
-
-            # Apply impulse
             self.vel += normal_vector * impulse_scalar_questionmark / self.mass
 
             # Move self outside other
@@ -134,7 +124,7 @@ class Disk(PhysicalObject):
             return (
                 impulse_scalar_questionmark,
                 self_vel_along_normal,
-            )  # TODO: Is this correct???, i think so, it mostly makes sense
+            )
         else:
             return None
 
