@@ -148,12 +148,13 @@ class Camera:
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.gfxdraw.line(self.surface, startx, starty, endx, endy, color)
 
-    def draw_rect(self, color: Color, top_left: Vector2, bottom_right: Vector2):
-        ttop_left = self.world_to_camera(top_left)
-        tbottom_right = self.world_to_camera(bottom_right)
-        rect = Rect(ttop_left, tbottom_right - ttop_left)
-        if self._rectangle_intersects_screen(rect):
-            pygame.gfxdraw.box(self.surface, rect, color)
+    def draw_rect(self, color: Color, rect: Rect):
+        width, height = self.surface.get_size()
+        screen_rect = (
+            rect.move(-self.pos).scale_by(self.zoom, self.zoom).move(width, height)
+        )
+        if self._rectangle_intersects_screen(screen_rect):
+            pygame.gfxdraw.box(self.surface, screen_rect, color)
 
     def draw_text(
         self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
