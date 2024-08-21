@@ -226,7 +226,6 @@ class Universe:
         for ship in self.enemy_ships:
             ship.draw(camera)
         self.player_ship.draw(camera)
-        self.draw_text(camera)
 
     def draw_text(self, camera: Camera):
         font_size = 32

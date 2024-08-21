@@ -195,6 +195,9 @@ while running:
         )
 
         universe.draw(camera)
+        universe.draw_text(camera)
+        minimap_camera.start_drawing_new_frame()
+        universe.draw(minimap_camera)
 
     pygame.display.flip()
 
