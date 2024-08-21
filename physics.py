@@ -74,12 +74,12 @@ class Disk(PhysicalObject):
         if not self.intersects_disk(disk):
             return None
 
-        bounciness = 0.99  # I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life, all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, but in this game, the spaceship bounces off of the object. So, I think it's better to just hardcode the bounciness value here. If you want to change the bounciness, you can just change the value here. On the other hand, it's not a bad idea to have a bounciness attribute for each disk, but I think it's better to just hardcode the bounciness value here. But if you want to have a bounciness attribute for each disk, you can just add a bounciness attribute to the Disk class and change the value here to disk.bounciness. Never mind, I think it's better to just hardcode the bounciness value here. (I think it's better to just hardcode the bounciness value here, because it's not necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life, (all objects have a bounciness of 1.0) (No! auto suggestion that's not true), in real life a spaceship just dies if it flies into anything, but in this game, the spaceship bounces off of the object. So, I think it's better to just hardcode the bounciness value here. If you want to change the bounciness, you can just change the value.) Sorry I got a little carried away with the autosuggestion tool.
-
         # When rewriting this: The pygame.math module already has methods for normal-vector
         # calculation.
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
+
+        bounciness = 0.90  # Always between 0 and 1. At 1 collisions cause no damage. I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, so bounciness won't play that big of a role.
 
         # Calculate normal vector
         delta = self.pos - disk.pos
@@ -94,35 +94,8 @@ class Disk(PhysicalObject):
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
         self.vel += normal_vector * impulse_scalar / self.mass
-        # damage = impulse_scalar**2 * (1 - bounciness) * 1e-10
-        speed = self.vel.magnitude()
 
-        damage = (max(0, impulse_scalar * 2 * 1e-4 - 100, speed - 100)) ** 2 * (
-            1 - bounciness
-        )
+        # This allows the ship to land on the planet. If impulse is small there is no damage.
+        damage = (max(0, impulse_scalar - 1500000)) ** 2 * (1 - bounciness) * 5e-9
 
-        #
-        #
-
-        max_value = max(impulse_scalar * 2 * 1e-4 - 100, speed - 100)
-        if max_value == impulse_scalar * 2 * 1e-4 - 100:
-            print("impulse_scalar")
-        elif max_value == speed - 100:
-            print("speed")
-        else:
-            print("Zero")
-
-        #
-        #
-
-        print("speed:", speed - 100)
-        print("damage:", damage)
-        print("impulse_scalar:", impulse_scalar * 2 * 1e-4 - 100)
-
-        # TODO: I don't think we really need this, but it seems like it would be safer to have it here?
-        """
-        # Move self outside other
-        overlap = self.radius + disk.radius - delta_magnitude
-        self.pos += normal_vector * overlap
-        """
         return damage
