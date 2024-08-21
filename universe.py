@@ -1,4 +1,3 @@
-import math
 import pygame
 import pygame.camera
 from pygame import Color, Rect
@@ -33,16 +32,10 @@ class Asteroid(Disk):
     ):
         super().__init__(pos, vel, density, radius, Color("gray"))
 
-    # TODO: Re-implement that the Asteroids stopped at the world-border.
-    # Or should they wrap instead? Should *all* PhysicalObjects wrap?
-    
-    '''ANSWER: No, nothing should wrap (I think), I had that at the beginning and it's not so fun.
-    Later the map can be made much larger e.g. 500_000 instead of 10_000 and then 
-    the player will not always accadentally hit the border and die
-    '''
 
-
-class Area(Rect): # Don't focus so much on the Area/squares, they are not so important, you can also remove them for now
+class Area(
+    Rect
+):  # Don't focus so much on the Area/squares, they are not so important, you can also remove them for now
     """A rectangular area that triggers an event for a ship."""
 
     def __init__(
@@ -70,9 +63,10 @@ class RefuelArea(Area):
         size: Vector2,
     ):
         super().__init__(topleft, size, Color("yellow"), "Refuel")
-    
+
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
+
 
 class TrophyArea(Area):
     def __init__(
@@ -147,10 +141,6 @@ class Universe:
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
-            # TODO: This is an *asymmetric* interaction.
-            # If two asteroids collide, only one of them will bounce,
-            # because when the second tries to bounce, the two will already
-            # have been separated from one another
             other_asteroids = list(filter(lambda ast: ast != asteroid, self.asteroids))
             for disk in other_asteroids + self.planets:
                 asteroid.bounce_off_of_disk(disk)
