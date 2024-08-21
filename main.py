@@ -1,11 +1,11 @@
 """Staging-grounds for the game."""
 
 from __future__ import annotations
+import sys
+import random
 import pygame
 from pygame.math import Vector2
 from pygame import Color
-import sys
-import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from camera import Camera
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
@@ -76,13 +76,12 @@ universe = Universe(
 )
 
 
-running = True
 clock = pygame.time.Clock()
-while running:
+while True:
     dt = clock.tick() / 1000
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+
+    if any(map(lambda e: e.type == pygame.QUIT, pygame.event.get())):
+        break
 
     camera.start_drawing_new_frame()
     if game_over:
