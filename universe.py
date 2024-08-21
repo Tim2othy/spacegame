@@ -1,7 +1,7 @@
 import math
 import pygame
 import pygame.camera
-from pygame import Color
+from pygame import Color, Rect
 from pygame.math import Vector2
 from physics import Disk, PhysicalObject
 from ship import Ship, BulletEnemy
@@ -41,40 +41,24 @@ class Asteroid(Disk):
     the player will not always accadentally hit the border and die
     '''
 
-class Rect:
-    """
-    A rectangle, given by its top_left and bottom_right corners.
-
-    Must satisfy top_left.x <= bottom_right.x and top_left.y <= bottom_right.y.
-    """
-
-    def __init__(self, top_left: Vector2, bottom_right: Vector2, color: Color):
-        self.top_left = top_left
-        self.bottom_right = bottom_right
-        self.color = color
-
-    def intersects_point(self, vec: Vector2):
-        return (
-            self.top_left.x <= vec.x <= self.bottom_right.x
-            and self.top_left.y <= vec.y <= self.bottom_right.y
-        )
-
-    def draw(self, camera: Camera):
-        camera.draw_rect(self.color, self.top_left, self.bottom_right)
 
 class Area(Rect):
     """A rectangular area that triggers an event for a ship."""
 
     def __init__(
         self,
-        top_left: Vector2,
-        bottom_right: Vector2,
+        topleft: Vector2,
+        size: Vector2,
         color: Color,
         caption: str,
     ):
-        super().__init__(top_left, bottom_right, color)
+        super().__init__(topleft, size)
+        self.color = color
         self.caption = str
-    
+
+    def draw(self, camera: Camera):
+        camera.draw_rect(self.color, self)
+
     def event(self, ship: Ship):
         pass
 
@@ -82,10 +66,10 @@ class Area(Rect):
 class RefuelArea(Area):
     def __init__(
         self,
-        top_left: Vector2,
-        bottom_right: Vector2,
+        topleft: Vector2,
+        size: Vector2,
     ):
-        super().__init__(top_left, bottom_right, Color("yellow"), "Refuel")
+        super().__init__(topleft, size, Color("yellow"), "Refuel")
     
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
@@ -93,10 +77,10 @@ class RefuelArea(Area):
 class TrophyArea(Area):
     def __init__(
         self,
-        top_left: Vector2,
-        bottom_right: Vector2,
+        topleft: Vector2,
+        size: Vector2,
     ):
-        super().__init__(top_left, bottom_right, Color("gold"), "Trophy")
+        super().__init__(topleft, size, Color("gold"), "Trophy")
 
     def event(self, ship: Ship):
         ship.has_trophy = True
@@ -188,7 +172,7 @@ class Universe:
 
         # Areas
         for area in self.areas:
-            if area.intersects_point(self.player_ship.pos):
+            if area.collidepoint(self.player_ship.pos):
                 area.event(self.player_ship)
 
         # Collide bullets:
@@ -247,7 +231,7 @@ class Universe:
         texty(f"Health: {ship.health}")
         texty(f"Ammunition: {ship.ammo}")
         for area in self.areas:
-            f"  Coordinates of {area.caption}: ({area.top_left.x}, {area.top_left.y})"
+            f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})"
         texty(f"{len(ship.projectiles)} projectiles from you")
         enemy_projectile_count = sum([len(e.projectiles) for e in self.enemy_ships])
         texty(f"{enemy_projectile_count} enemy projectiles")
