@@ -6,18 +6,16 @@ import sys
 import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
-from init import camera
+from camera import Camera
 from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
 # Initialize Pygame
 pygame.init()
-
-# Game state
-has_item = False
-mission_complete = False
+pygame.display.set_caption("Space Game")
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+camera = Camera(pygame.math.Vector2(0, 0), 1.0, screen)
 game_over = False
-
 
 # Create planets
 planets = [
