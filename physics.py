@@ -31,8 +31,6 @@ class PhysicalObject:
     def gravitational_force(self, pobj: "PhysicalObject") -> Vector2:
         """Returns the gravitational force between `self` and `pobj` that affects `self`."""
 
-        # TODO: Here (and everywhere else where we divide by a magnitude) we must
-        # check for -- and eliminate -- the case where distance_squared==0.
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
@@ -79,12 +77,10 @@ class Disk(PhysicalObject):
         probably bu using vel along normal vector of ship
         """
 
-        # TODO: The impulse of `disk` should also affect the way
-        # that self is reflected.
-        # TODO: The pygame.math module already has methods for normal-vector
-        # calculation
-
         if self.intersects_disk(disk):
+            # When rewriting this: The pygame.math module already has methods for normal-vector
+            # calculation
+
             # Calculate normal vector
             delta = self.pos - disk.pos
             delta_magnitude = delta.magnitude()
@@ -93,8 +89,6 @@ class Disk(PhysicalObject):
             print(f"self_vel_along_normal: {self_vel_along_normal}")
 
             # Do not resolve if velocities are separating
-            # TODO: What does this mean? And is `False`
-            # the correct return-value here?
             if self_vel_along_normal > 0:
                 return None
 
@@ -125,7 +119,7 @@ class Disk(PhysicalObject):
             # Move self outside other
             overlap = self.radius + disk.radius - delta_magnitude
             self.pos += normal_vector * overlap
-            return impulse_scalar_questionmark  # TODO: Is this correct???, i think so, it mostly makes sense
+            return impulse_scalar_questionmark
         else:
             return None
 

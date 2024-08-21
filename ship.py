@@ -8,7 +8,6 @@ from enum import Enum
 import random
 
 
-# TODO: Move constant somewhere else
 BULLET_SPEED = 500
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
@@ -42,11 +41,11 @@ class Ship(Disk):
         self.fuel_rot_consumption_rate = 0.7
         # self.MAX_FUEL = 100.0
 
-    def get_faced_direction(self):
-        # TODO: Why doesn't Vector2.from_polar() work?
-        return Vector2(
-            math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))
-        )
+    def get_faced_direction(self) -> Vector2:
+        # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
+        dir = Vector2()
+        dir.from_polar((1, self.angle))
+        return dir
 
     def shoot(self):
         if self.gun_cooldown <= 0 and self.ammo > 0:
@@ -96,7 +95,6 @@ class Ship(Disk):
         def drawy(color: Color, points: list[Vector2]):
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
-        # TODO: Especially the backward-thruster is super ugly
         # thruster_backward (active)
         if self.thruster_backward:
             drawy(Color("red"), [forward * 2, left * 1.25, right * 1.25])
@@ -178,33 +176,6 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
-    # TODO: Either revive or delete this code at some point
-    # If reviving, add `self.load_image('ship_sprite.png')` back
-    # to the Ship.__init__ method.
-    """
-    def load_image(self, image_path: str):
-        
-        #Load and prepare the ship image.
-        #param image_path: Path to the ship image file
-        
-        self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (60, 28))  # Resize 
-        self.original_image = self.image  # Store the original image for rotation
-
-    def draw_with_image(self, screen: pygame.Surface, camera_pos: Vector2): 
-        ship_relative_pos = self.pos - camera_pos 
-            
-        # Rotate the image
-        rotated_image = pygame.transform.rotate(self.original_image, self.angle)
-        
-        # Get the rect of the rotated image and set its center
-        rect = rotated_image.get_rect()
-        rect.center = ship_relative_pos
-            
-        # Draw the rotated image
-        screen.blit(rotated_image, rect)
-    """
-
 
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
@@ -232,10 +203,6 @@ class BulletEnemy(Ship):
         self.projectiles: list[Bullet] = []
 
     def step(self, dt: float):
-        # TODO: Enemies should be affected by gravity and collisions, this
-        # must be added back into the main-loop (or applied into some
-        # superclass step-function)
-
         self.action_timer -= dt
         if self.action_timer <= 0:
             self.current_action = random.choice(list(BulletEnemy.Action))
@@ -248,8 +215,6 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
             case BulletEnemy.Action.accelerate_randomly:
-                # TODO: Almost certainly, these accelerations will cancel each other out,
-                # and the ship will not experience significant change in speed
                 force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
@@ -292,50 +257,3 @@ class RocketEnemy(BulletEnemy):
             )
             self.gun_cooldown = 0.025
             self.ammo -= 1
-
-
-# TODO: Revive spaceguns, or decide they're not worth reviving
-"""
-class Spacegun:
-    def __init__(self, x: float, y: float):
-        self.pos = Vector2(x, y)
-        self.size = 40
-        self.color = (50, 50, 100)
-        self.last_shot_time = 60
-        self.shoot_interval = 300
-        self.bullets: list[Bullet] = []
-
-    def draw(self, screen: pygame.Surface, camera_pos: Vector2):
-        pygame.draw.rect(
-            screen,
-            self.color,
-            (self.pos - camera_pos, (self.size, self.size)),
-        )
-
-    def shoot(self, target_pos: Vector2):
-        current_time = pygame.time.get_ticks()
-        if current_time - self.last_shot_time > self.shoot_interval:
-            direction = target_pos - self.pos
-            length = direction.magnitude()
-            if length > 0:
-                direction /= length
-
-            # TODO: Do we really want to append even if direction is the zero-vector?
-            self.bullets.append(Bullet(self.pos, direction, Color("orange")))
-            self.last_shot_time = current_time
-
-    def update_bullets(self, ship: Ship) -> bool:
-        for bullet in self.bullets:
-            bullet.step(dt)
-            # TODO: reimplement that old bullets get destroyed.
-            # Or perhaps we limit the size of the bullets-array,
-            # and always throw out the oldest ones?
-            if ship.intersects_point(bullet.pos):
-                self.bullets.remove(bullet)
-                return True  # Collision detected
-        return False
-
-    def draw_bullets(self, camera: Camera):
-        for bullet in self.bullets:
-            bullet.draw(camera)
-"""

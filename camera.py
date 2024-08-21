@@ -18,7 +18,6 @@ class Camera:
         self.zoom = zoom
         self.surface = surface
 
-    # TODO: Stop the camera at the universe-border?
     def smoothly_transition_to(
         self,
         new_pos: Vector2,
@@ -155,7 +154,6 @@ class Camera:
         screen_rect = Rect(ttopleft, tbottomright - ttopleft)
         if self._rectangle_intersects_screen(screen_rect):
             pygame.gfxdraw.box(self.surface, screen_rect, color)
-
 
     def draw_text(
         self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
