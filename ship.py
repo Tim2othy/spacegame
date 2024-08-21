@@ -14,6 +14,9 @@ GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1000
 
+# How long a ship should glow after taking damage
+DAMAGE_INDICATOR_TIME = 0.75
+
 
 class Ship(Disk):
     def __init__(
@@ -42,6 +45,8 @@ class Ship(Disk):
         self.fuel_consumption_rate = 0.7
         self.fuel_rot_consumption_rate = 0.7
 
+        self.damage_indicator_timer = 0
+
     def get_faced_direction(self) -> Vector2:
         # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
         dir = Vector2()
@@ -56,6 +61,14 @@ class Ship(Disk):
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.1
             self.ammo -= 1
+
+    def suffer_damage(self, damage: float):
+        """Deal damage to the ship and activate its damage-indicator.
+        Does nothing if damage is <= 0.
+        """
+        if damage > 0:
+            self.health -= damage
+            self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float):
         if self.fuel > 0:
@@ -74,6 +87,8 @@ class Ship(Disk):
                 self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
                 self.apply_force(-forward * self.thrust, dt)
 
+        self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
+
         super().step(dt)
 
         for projectile in self.projectiles:
@@ -87,10 +102,8 @@ class Ship(Disk):
         left = -right
         backward = -forward
 
-        darker_color = Color(self.color)
-        darker_color.r = darker_color.r // 2
-        darker_color.g = darker_color.g // 2
-        darker_color.b = darker_color.b // 2
+        base_color: Color = self.color.lerp(Color("red"), self.damage_indicator_timer)
+        darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
         def drawy(color: Color, points: list[Vector2]):
@@ -172,7 +185,11 @@ class Ship(Disk):
             ],
         )
 
+        # Ugly hack
+        backup_self_color = Color(self.color)
+        self.color = base_color
         super().draw(camera)  # Draw circular body ("hitbox")
+        self.color = backup_self_color
 
         for projectile in self.projectiles:
             projectile.draw(camera)
