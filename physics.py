@@ -136,6 +136,8 @@ class Disk(PhysicalObject):
 
     def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
+            Calculates intensity with `self` is moving towards `disk`
+            at moment of collision. Then strength of bounce and damage
 
         Args:
             disk (Disk): Disk to potentially bounce off of
@@ -152,22 +154,21 @@ class Disk(PhysicalObject):
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
 
-        bounciness = 0.70  # Always between 0 and 1. At 1 collisions cause no damage. I don't think it's necissary to give every disk a bounciness attribute. The game is supposed to be realistic, in real life all objects have a bounciness of 1.0. No! Bad auto suggestion, that's not true, in real life a spaceship just dies if it flies into anything, so bounciness won't play that big of a role.
-
-        # Calculate normal vector
+        bounciness = 0.70
+        """
+        bounciness: float between 0 and 1. 
+        At 1 collisions cause no damage.
+        """
+        """Calculate normal vector"""
         delta = self.pos - disk.pos
         delta_magnitude = delta.magnitude()
         normal_vector = delta / delta_magnitude
         self_vel_along_normal = self.vel.dot(normal_vector)
 
-        # Check if the objects are moving away from each other
-        if self_vel_along_normal > 0:
-            return None
-
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
         self.vel += normal_vector * impulse_scalar / self.mass
 
-        # This allows the ship to land on the planet. If impulse is small there is no damage.
+        """This allows the ship to land on the planet. If impulse is small there is no damage"""
         damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
         return damage
