@@ -12,7 +12,8 @@ class Camera:
 
         Args:
             pos (Vector2): The worldspace-coordinate at the center of the screen.
-            zoom (float): Higher = Fewer objects fit on screen. Zoom==1 corresponds to 1 pixel per unitt.
+            zoom (float): Higher = Fewer objects fit on screen.
+                Zoom==1 corresponds to 1 pixel per unitt.
             surface (pygame.Surface): The surface to draw on.
         """
         self.pos: Vector2 = pos
@@ -33,7 +34,7 @@ class Camera:
             new_zoom (float): The new zoom-factor.
             dt (float): The time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-            the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25.
         """
 
         dist = self.pos.distance_to(new_pos)
@@ -52,7 +53,7 @@ class Camera:
             rect (Rect): The rectangle to fit to.
             dt (float): The time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-            the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25.
         """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
@@ -83,7 +84,7 @@ class Camera:
             buff (float): The buffer around the points.
             dt (float): The time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
-            the camera will have fully transitioned. Defaults to 0.25.
+                the camera will have fully transitioned. Defaults to 0.25.
         """
         enclosing_rect = self._get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
