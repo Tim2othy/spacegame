@@ -1,3 +1,5 @@
+"""Spaceships, shooting through space"""
+
 import pygame
 from pygame.math import Vector2
 from pygame import Color
@@ -19,9 +21,19 @@ DAMAGE_INDICATOR_TIME = 0.75
 
 
 class Ship(Disk):
+    """A basic spaceship."""
     def __init__(
         self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
     ):
+        """Create a new spaceship
+
+        Args:
+            pos (Vector2): Initial position
+            vel (Vector2): Initial velocity
+            density (float): Density (of disk-body)
+            size (float): Radius of disk-body
+            color (Color): Material color
+        """
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
         self.angle: float = 0
@@ -37,20 +49,26 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.MAX_FUEL: float = 100.0
-        self.fuel: float = self.MAX_FUEL
+        self._max_fuel: float = 100.0
+        self.fuel: float = self._max_fuel
         self.fuel_consumption_rate: float = 0.7
         self.fuel_rot_consumption_rate: float = 0.7
 
         self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vector2:
+        """Get `self`'s faced direction from its `angle`
+
+        Returns:
+            Vector2: Faced direction, normalized
+        """
         # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
-        dir = Vector2()
-        dir.from_polar((1, self.angle))
-        return dir
+        direction = Vector2()
+        direction.from_polar((1, self.angle))
+        return direction
 
     def shoot(self):
+        """Try to shoot a bullet."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
@@ -62,12 +80,20 @@ class Ship(Disk):
     def suffer_damage(self, damage: float):
         """Deal damage to the ship and activate its damage-indicator.
         Does nothing if damage is <= 0.
+
+        Args:
+            damage (float): Amount of damage to deal.
         """
         if damage > 0:
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float):
+        """Physics, control, and bullet-stepping for `self`
+
+        Args:
+            dt (float): Passed time
+        """
         if self.fuel > 0:
             if self.thruster_rot_left:
                 self.fuel = max(0, self.fuel - dt * self.fuel_rot_consumption_rate)
@@ -94,6 +120,11 @@ class Ship(Disk):
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
     def draw(self, camera: Camera):
+        """Draw `self` on `camera
+
+        Args:
+            camera (Camera): Camera to draw on
+        """
         forward = self.get_faced_direction()
         right = pygame.math.Vector2(-forward.y, forward.x)
         left = -right
@@ -207,6 +238,15 @@ class BulletEnemy(Ship):
         shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
     ):
+        """Create a new enemy ship
+
+        Args:
+            pos (Vector2): Initial position
+            vel (Vector2): Initial velocity
+            target_ship (Ship): Ship to target
+            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
+            color (Color, optional): Material color. Defaults to Color("purple").
+        """
         super().__init__(pos, vel, 1, 8, color)
         self.thrust /= 2
         self.time_until_next_shot = 0
@@ -218,6 +258,11 @@ class BulletEnemy(Ship):
         self.projectiles: list[Bullet] = []
 
     def step(self, dt: float):
+        """Apply physics and "AI" to `self`
+
+        Args:
+            dt (float): Passed time
+        """
         self.action_timer -= dt
         if self.action_timer <= 0:
             self.current_action = random.choice(list(BulletEnemy.Action))
@@ -260,6 +305,15 @@ class RocketEnemy(BulletEnemy):
         shoot_cooldown: float = 0.5,
         color: Color = Color("red"),
     ):
+        """Create a new Rocket-Ship
+
+        Args:
+            pos (Vector2): Initial position
+            vel (Vector2): Initial velocity
+            target_ship (Ship): Ship to target
+            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.5.
+            color (Color, optional): Material color. Defaults to Color("red").
+        """
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
     def shoot(self):
