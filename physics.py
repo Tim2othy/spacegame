@@ -65,10 +65,10 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: "Disk") -> bool:
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk") -> tuple[float, float] | None:
+    def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """
         Bounce `self` off of `disk`, iff the two intersect.
-        Returns velocity of object at impact and severity of impact if it occurred, None otherwise.
+        Returns speed of object at impact, None otherwise.
         """
 
         if not self.intersects_disk(disk):
@@ -101,7 +101,6 @@ class Disk(PhysicalObject):
 
         # Calculate impulse scalar
         impulse_scalar = -(1 + restitution) * self_vel_along_normal
-
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
 
         self.vel += normal_vector * impulse_scalar / self.mass
@@ -109,7 +108,4 @@ class Disk(PhysicalObject):
         # Move self outside other
         overlap = self.radius + disk.radius - delta_magnitude
         self.pos += normal_vector * overlap
-        return (
-            impulse_scalar,
-            self_vel_along_normal,
-        )
+        return self_vel_along_normal
