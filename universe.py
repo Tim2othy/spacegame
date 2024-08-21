@@ -35,11 +35,11 @@ class Asteroid(Disk):
 
     # TODO: Re-implement that the Asteroids stopped at the world-border.
     # Or should they wrap instead? Should *all* PhysicalObjects wrap?
-    
-    '''ANSWER: No, nothing should wrap (I think), I had that at the beginning and it's not so fun.
+
+    """ANSWER: No, nothing should wrap (I think), I had that at the beginning and it's not so fun.
     Later the map can be made much larger e.g. 500_000 instead of 10_000 and then 
     the player will not always accadentally hit the border and die
-    '''
+    """
 
 
 class Area(Rect):
@@ -70,9 +70,10 @@ class RefuelArea(Area):
         size: Vector2,
     ):
         super().__init__(topleft, size, Color("yellow"), "Refuel")
-    
+
     def event(self, ship: Ship):
         ship.fuel = ship.MAX_FUEL
+
 
 class TrophyArea(Area):
     def __init__(

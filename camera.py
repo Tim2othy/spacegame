@@ -156,7 +156,6 @@ class Camera:
         if self._rectangle_intersects_screen(screen_rect):
             pygame.gfxdraw.box(self.surface, screen_rect, color)
 
-
     def draw_text(
         self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
     ):
