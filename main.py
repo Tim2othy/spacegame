@@ -7,7 +7,7 @@ import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from camera import Camera
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT
+from config import WORLD_WIDTH, WORLD_HEIGHT
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
 # Initialize Pygame
@@ -17,6 +17,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 camera = Camera(pygame.math.Vector2(0, 0), 1.0, screen)
 game_over = False
 
+SCREEN_SIZE = Vector2(1700, 900)
+WORLD_SIZE = Vector2(10_000, 10_000)
 # Create planets
 planets = [
     Planet(Vector2(700, 1300), 1, 400, Color("turquoise")),
