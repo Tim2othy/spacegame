@@ -191,8 +191,8 @@ class Ship(Disk):
         self.image = pygame.transform.scale(self.image, (60, 28))  # Resize 
         self.original_image = self.image  # Store the original image for rotation
 
-    def draw_with_image(self, screen: pygame.Surface, camera_pos: Vector2): # TODO is this type hinting ???
-        ship_relative_pos = self.pos - camera_pos # TODO should all be done using vectors
+    def draw_with_image(self, screen: pygame.Surface, camera_pos: Vector2): 
+        ship_relative_pos = self.pos - camera_pos 
             
         # Rotate the image
         rotated_image = pygame.transform.rotate(self.original_image, self.angle)
@@ -204,6 +204,7 @@ class Ship(Disk):
         # Draw the rotated image
         screen.blit(rotated_image, rect)
     """
+
 
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
@@ -266,6 +267,7 @@ class BulletEnemy(Ship):
         ):
             self.shoot()
             self.time_until_next_shot = self.shoot_cooldown
+
 
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
