@@ -7,7 +7,6 @@ import math
 import random
 from ship import Ship, BulletEnemy, RocketEnemy
 from camera import Camera
-from config import WORLD_WIDTH, WORLD_HEIGHT
 from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 
 # Initialize Pygame
@@ -34,7 +33,7 @@ planets = [
 ]
 
 player_ship = Ship(
-    Vector2(WORLD_WIDTH / 2, WORLD_HEIGHT / 2),
+    WORLD_SIZE / 2,
     Vector2(0, 0),
     1,
     10,
@@ -48,21 +47,21 @@ areas: list[Area] = [
 
 asteroids: list[Asteroid] = []
 for _ in range(15):
-    pos = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
-    vel = Vector2(random.uniform(0, WORLD_WIDTH), random.uniform(0, WORLD_HEIGHT))
+    pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
+    vel = Vector2(random.uniform(-100, 100), random.uniform(-100, 100))
     radius = random.uniform(40, 120)
     asteroids.append(Asteroid(pos, vel, 1, radius))
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(16):
-    pos = Vector2(random.randint(0, WORLD_WIDTH), random.randint(0, WORLD_HEIGHT))
+    pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))
     else:
         enemy_ships.append(RocketEnemy(pos, Vector2(0, 0), player_ship))
 
 universe = Universe(
-    Vector2(WORLD_WIDTH, WORLD_HEIGHT),
+    WORLD_SIZE,
     planets,
     asteroids,
     player_ship,
