@@ -107,7 +107,7 @@ class Camera:
         x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
 
         # soft check for circle-screen-intersection:
-        enclosing_rect = Rect((x - r, x - r), (2 * r, 2 * r))
+        enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
