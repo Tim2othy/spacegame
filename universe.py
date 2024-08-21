@@ -119,15 +119,15 @@ class Universe:
 
     def apply_bounce_to_disk(self, disk: Disk) -> float | None:
         for body in self.asteroids + self.planets:
-            bounce_result = disk.bounce_off_of_disk(body)
-            if bounce_result is not None:
-                return bounce_result
+            damage = disk.bounce_off_of_disk(body)
+            if damage is not None:
+                return damage
         return None
 
     def apply_bounce(self):
-        bounce_result = self.apply_bounce_to_disk(self.player_ship)
-        if bounce_result is not None:
-            self.player_ship.suffer_damage(abs(bounce_result) * 0.07)
+        damage = self.apply_bounce_to_disk(self.player_ship)
+        if damage is not None:
+            self.player_ship.suffer_damage(damage)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:

@@ -98,7 +98,10 @@ while running:
 
         universe.step(dt)
 
-        if not universe.contains_point(player_ship.pos) or player_ship.health <= 0:
+        if (
+            not universe.contains_point(player_ship.pos)
+            # or player_ship.health <= 0 no death for the moment being
+        ):
             game_over = True
         camera.smoothly_focus_points(
             [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
