@@ -15,7 +15,7 @@ GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1000
 
 # How long a ship should glow after taking damage
-DAMAGE_INDICATOR_TIME = 0.5
+DAMAGE_INDICATOR_TIME = 0.75
 
 
 class Ship(Disk):
