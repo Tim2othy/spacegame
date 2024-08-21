@@ -33,14 +33,6 @@ class Asteroid(Disk):
     ):
         super().__init__(pos, vel, density, radius, Color("gray"))
 
-    # TODO: Re-implement that the Asteroids stopped at the world-border.
-    # Or should they wrap instead? Should *all* PhysicalObjects wrap?
-
-    """ANSWER: No, nothing should wrap (I think), I had that at the beginning and it's not so fun.
-    Later the map can be made much larger e.g. 500_000 instead of 10_000 and then 
-    the player will not always accadentally hit the border and die
-    """
-
 
 class Area(Rect):
     """A rectangular area that triggers an event for a ship."""
@@ -134,22 +126,11 @@ class Universe:
     def apply_bounce(self):
         ship_bounce = self.apply_bounce_to_disk(self.player_ship)
         if ship_bounce is not None:
-            # TODO: Reimplement ship glowing red on impact
-            # TODO: Adjust this to taste.
-            # Also, should we really cast a sqrt here?
-            # Check the bounce_off_of_disk method please,
-            # I don't understand its code, but it decides
-            # what value to return for the impact-intensity,
-            # i.e. the bounce-variable.
             damage = math.sqrt(ship_bounce) / 500
             self.player_ship.health -= damage
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
-            # TODO: This is an *asymmetric* interaction.
-            # If two asteroids collide, only one of them will bounce,
-            # because when the second tries to bounce, the two will already
-            # have been separated from one another
             other_asteroids = list(filter(lambda ast: ast != asteroid, self.asteroids))
             for disk in other_asteroids + self.planets:
                 asteroid.bounce_off_of_disk(disk)

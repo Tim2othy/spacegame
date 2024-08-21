@@ -18,7 +18,6 @@ class Camera:
         self.zoom = zoom
         self.surface = surface
 
-    # TODO: Stop the camera at the universe-border?
     def smoothly_transition_to(
         self,
         new_pos: Vector2,
