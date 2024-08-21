@@ -121,22 +121,19 @@ class Universe:
         bounce = None
         vel = None
         for body in self.asteroids + self.planets:
-            temp_check_if_None = disk.bounce_off_of_disk(body)
-            if temp_check_if_None is not None:
-                bounce, vel = temp_check_if_None
+            bounce_result = disk.bounce_off_of_disk(body)
+            if bounce_result is not None:
+                bounce, vel = bounce_result
                 return bounce, vel
         return None
 
     def apply_bounce(self):
         ship_bounce = None
         ship_vel = None
-        ship_temp_check_if_None = self.apply_bounce_to_disk(self.player_ship)
-        if ship_temp_check_if_None is not None:
-            ship_bounce, ship_vel = ship_temp_check_if_None
+        bounce_result = self.apply_bounce_to_disk(self.player_ship)
+        if bounce_result is not None:
+            ship_bounce, ship_vel = bounce_result
         if ship_bounce is not None:
-            # TODO: Reimplement ship glowing red on impact
-            # TODO: Adjust this to taste.
-   
             self.player_ship.health -= abs(ship_vel) * 0.07
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)

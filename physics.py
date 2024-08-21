@@ -65,57 +65,51 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: "Disk") -> bool:
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(
-        self, disk: "Disk"
-    ) -> tuple[float | None, float | None]:  # I think this is the correct return type
+    def bounce_off_of_disk(self, disk: "Disk") -> tuple[float, float] | None:
         """
         Bounce `self` off of `disk`, iff the two intersect.
         Returns velocity of object at impact and severity of impact if it occurred, None otherwise.
         """
 
-        if self.intersects_disk(disk):
-            # When rewriting this: The pygame.math module already has methods for normal-vector
-            # calculation.
-            # Also use the add_force or add_impulse methods from Physics, do
-            # not modify velocity directly
-
-            # Calculate normal vector
-            delta = self.pos - disk.pos
-            delta_magnitude = delta.magnitude()
-            normal_vector = delta / delta_magnitude
-            self_vel_along_normal = self.vel.dot(normal_vector)
-
-            # Do not resolve if velocities are separating
-            if self_vel_along_normal > 0:
-                return None
-
-            # Calculate restitution (bounciness)
-            restitution = 0.9
-
-            """
-            I think this is working generally correctly:
-            - if restitution is 1 then the ship has the same vel after the bounce as before,
-            - if it's 0.5 it loses half it's vel, 
-            - if it's 2 then vel is doubled by the inpact, etc.
-            """
-
-            # Calculate impulse scalar
-            impulse_scalar_questionmark = (
-                -(1 + restitution) * self_vel_along_normal
-            )  # what used to be called j is the impulse_scalar right?
-
-            impulse_scalar_questionmark = impulse_scalar_questionmark / (
-                1 / self.mass + 1 / disk.mass
-            )
-
-            self.vel += normal_vector * impulse_scalar_questionmark / self.mass
-
-            # Move self outside other
-            overlap = self.radius + disk.radius - delta_magnitude
-            self.pos += normal_vector * overlap
-            return (
-                impulse_scalar_questionmark,
-                self_vel_along_normal,
-            )
-        else:
+        if not self.intersects_disk(disk):
             return None
+
+        # When rewriting this: The pygame.math module already has methods for normal-vector
+        # calculation.
+        # Also use the add_force or add_impulse methods from Physics, do
+        # not modify velocity directly
+
+        # Calculate normal vector
+        delta = self.pos - disk.pos
+        delta_magnitude = delta.magnitude()
+        normal_vector = delta / delta_magnitude
+        self_vel_along_normal = self.vel.dot(normal_vector)
+
+        # Do not resolve if velocities are separating
+        if self_vel_along_normal > 0:
+            return None
+
+        # Calculate restitution (bounciness)
+        restitution = 0.9
+
+        """
+        I think this is working generally correctly:
+        - if restitution is 1 then the ship has the same vel after the bounce as before,
+        - if it's 0.5 it loses half it's vel, 
+        - if it's 2 then vel is doubled by the inpact, etc.
+        """
+
+        # Calculate impulse scalar
+        impulse_scalar = -(1 + restitution) * self_vel_along_normal
+
+        impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
+
+        self.vel += normal_vector * impulse_scalar / self.mass
+
+        # Move self outside other
+        overlap = self.radius + disk.radius - delta_magnitude
+        self.pos += normal_vector * overlap
+        return (
+            impulse_scalar,
+            self_vel_along_normal,
+        )
