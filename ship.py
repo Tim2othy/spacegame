@@ -45,6 +45,8 @@ class Ship(Disk):
         self.fuel_consumption_rate = 0.7
         self.fuel_rot_consumption_rate = 0.7
 
+        self.damage_indicator_timer = 0
+
     def get_faced_direction(self) -> Vector2:
         # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
         dir = Vector2()
