@@ -61,7 +61,7 @@ class Camera:
         self, rect: Rect, dt: float, transition_time: float = 0.25
     ) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is
-            visible entirely, but not more.
+        visible entirely, but not more.
 
         Args:
         ----
@@ -93,7 +93,7 @@ class Camera:
         transition_time: float = 0.25,
     ) -> None:
         """Smoothly focus camera so that a list of worldspace-points is
-            visible, with an additional buffer.
+        visible, with an additional buffer.
 
         Args:
         ----
