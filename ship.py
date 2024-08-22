@@ -58,7 +58,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
-        self.bullet_color = bullet_color
+        self.bullet_color = Color(bullet_color)
 
         self.ammo: int = 600
         self.thrust: float = 250 * self.mass

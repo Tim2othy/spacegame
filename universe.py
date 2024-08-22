@@ -186,7 +186,7 @@ class Universe:
             enemy_ships (list[BulletEnemy]): Enemy fleet
 
         """
-        self.size = size
+        self.size = Vec2(size)
         self.planets = planets
         self.asteroids = asteroids
         self.player_ships = player_ships
