@@ -319,7 +319,6 @@ class PlayerShip(Ship):
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
-        print(keys[self.spaceship_input.thruster_rot_left])
         self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
         self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
