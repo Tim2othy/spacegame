@@ -73,23 +73,23 @@ else:
 
 player_ships = [
     PlayerShip(
-        SPAWNPOINT,
+        SPAWNPOINT + Vec2(800, 0),
         Vec2(0, 0),
         1,
         10,
-        Color("darkslategray"),
-        Color("yellow"),
+        Color("white"),
+        Color("orange"),
         ShipInput(
             pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
         ),
     ),
     PlayerShip(
-        SPAWNPOINT + Vec2(30, 0),
+        SPAWNPOINT + Vec2(0, 0),
         Vec2(0, 0),
         1,
         10,
-        Color("white"),
-        Color("purple"),
+        Color("darkslategray"),
+        Color("yellow"),
         ShipInput(
             pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
         ),

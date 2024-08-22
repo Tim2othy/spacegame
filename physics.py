@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import math
 from typing import TYPE_CHECKING
+from pygame.math import Vector2 as Vec2
 
 if TYPE_CHECKING:
     from pygame import Color
-    from pygame.math import Vector2 as Vec2
 
     from camera import Camera
 
@@ -29,9 +29,9 @@ class PhysicalObject:
             mass (float): Object's mass
 
         """
-        self.pos = pos
+        self.pos = Vec2(pos)
         self.mass = mass
-        self.vel = vel
+        self.vel = Vec2(vel)
 
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
