@@ -14,7 +14,7 @@ from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 pygame.init()
 pygame.display.set_caption("Space Game")
 game_over = False
-testmode = True
+testmode = True  # Turn this on and the world and planets will be smaller, the player spawns in the smaller world
 death = True
 SPAWNPOINT = Vector2(100_000, 100_000)
 
@@ -28,7 +28,8 @@ minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
 minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 """
 # Create planets
-planets = [
+planets = [  # TODO: I just removed the planets for now because I didn't want to have to give them all a bullet_color argument that they don't need
+             #       I guess you can fix this and/or tell me how one can make one disk have an argument but not the others : ) 
     Planet(Vector2(67_000, 18_000), 1, 3_000, Color("darkred")),
     Planet(Vector2(30_000, 32_000), 1, 3_000, Color("khaki")),
     Planet(Vector2(40_000, 40_000), 1, 3_500, Color("royalblue")),
@@ -97,14 +98,16 @@ if testmode == True:
 
 
 asteroids: list[Asteroid] = []
-for _ in range(50):
+for _ in range(20):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vector2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(4, 60)
-    asteroids.append(Asteroid(pos, vel, 1, radius, None))
+    radius = random.uniform(20, 300)
+    asteroids.append(
+        Asteroid(pos, vel, 1, radius, None)
+    )  # TODO: this None for bullet_color, I'm sure there is some way to remove this?
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(50):
+for _ in range(20):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))

@@ -148,11 +148,11 @@ class Ship(Disk):
 
         # thruster_backward (active)
         if self.thruster_backward:
-            drawy(Color("red"), [forward * 2, left * 1.25, right * 1.25])
+            drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
-            Color("blue"),
+            darker_color,
             self.pos,
             self.pos + forward * self.radius * GUNBARREL_LENGTH,
             GUNBARREL_WIDTH * self.radius,
@@ -170,7 +170,7 @@ class Ship(Disk):
         # thruster_rot_left (active)
         if self.thruster_rot_left:
             drawy(
-                Color("yellow"),
+                Color("orange"),
                 [
                     1.5 * left + 1.25 * backward,
                     0.5 * left + 0.5 * backward,
@@ -190,7 +190,7 @@ class Ship(Disk):
         # thruster_rot_right (active)
         if self.thruster_rot_right:
             drawy(
-                Color("yellow"),
+                Color("orange"),
                 [
                     1.5 * right + 1.25 * backward,
                     0.5 * right + 0.5 * backward,
@@ -313,7 +313,7 @@ class RocketEnemy(BulletEnemy):
         vel: Vector2,
         target_ship: Ship,
         shoot_cooldown: float = 0.5,
-        color: Color = Color("red"),
+        color: Color = Color("darkgreen"),
     ):
         """Create a new Rocket-Ship
 

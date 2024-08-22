@@ -6,7 +6,7 @@ import pygame.camera
 from pygame.math import Vector2
 from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0.003
+GRAVITATIONAL_CONSTANT = 0.03
 
 
 class PhysicalObject:
@@ -98,11 +98,13 @@ class Disk(PhysicalObject):
             density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
+            bullet_color (pygame.Color): Disk's bullet's color, it has bullets
         """
         mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = color
+        self.bulletcolor = bullet_color
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera):
@@ -152,10 +154,8 @@ class Disk(PhysicalObject):
 
         # When rewriting this: The pygame.math module already has methods for normal-vector
         # calculation.
-        # Also use the add_force or add_impulse methods from Physics, do
-        # not modify velocity directly
 
-        bounciness = 0.70
+        bounciness = 0.90
         """
         bounciness: float between 0 and 1. 
         At 1 collisions cause no damage.
@@ -168,10 +168,9 @@ class Disk(PhysicalObject):
 
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
-        self.vel += normal_vector * impulse_scalar / self.mass
-
+        self.add_impulse(normal_vector * impulse_scalar)
         """This allows the ship to land on the planet. If impulse is small there is no damage"""
-        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
+        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 6e-4
 
         # Move self outside other
         overlap = self.radius + disk.radius - delta_magnitude

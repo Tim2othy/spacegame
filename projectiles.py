@@ -55,12 +55,13 @@ class Rocket(Bullet):
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
-        self.vel /= 4
-        self.homing_thrust = 1000 * self.mass
+        self.vel /= 4  # TODO: what does this do? The initial velocity should be 0 plus the velocity of the shooting ship
+        self.homing_thrust = 200 * self.mass
         self.homing_timer = 0
-        self.homing_duration = 1
-        self.nonhoming_duration = 3
+        self.homing_duration = 3
+        self.nonhoming_duration = 9
         self._total_duration = self.homing_duration + self.nonhoming_duration
+        self.color = Color("red")
 
     def step(self, dt: float):
         """Apply homing and physics-logic
@@ -92,6 +93,7 @@ class Rocket(Bullet):
 
         # Spooky homing body
         if self.homing_timer <= self.homing_duration:
+            self.color = Color("purple")
             camera.draw_polygon(
                 self.color.lerp(Color("blue"), 0.5),
                 [
@@ -101,6 +103,8 @@ class Rocket(Bullet):
                     self.pos + 4 * (right + forward),
                 ],
             )
+        else:
+            self.color = Color("red")
 
         # Missile body
         camera.draw_polygon(
