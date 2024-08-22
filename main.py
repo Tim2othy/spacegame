@@ -91,7 +91,7 @@ player_ships = [
         Color("darkslategray"),
         Color("yellow"),
         ShipInput(
-            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+            pygame.K_LEFT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
         ),
     ),
 ]
@@ -102,7 +102,7 @@ for _ in range(50):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vec2(random.uniform(-100, 100), random.uniform(-100, 100))
     radius = random.uniform(4, 60)
-    asteroids.append(Asteroid(pos, vel, 1, radius, None))
+    asteroids.append(Asteroid(pos, vel, 1, radius, Color("white")))
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(50):
@@ -112,14 +112,7 @@ for _ in range(50):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-planets = [Planet(Vec2(6_000, 1_000), 1, 300, Color("darkred"), None)]
-
-surface = pygame.display.set_mode(SCREEN_SIZE)
-camera = Camera(SPAWNPOINT, 1.0, surface)
-minimap_surface = surface.subsurface(
-    ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE),
-)
-minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
+planets = [Planet(Vec2(6_000, 1_000), 1, 300, Color("darkred"), Color("white"))]
 
 universe = Universe(
     WORLD_SIZE,
@@ -130,7 +123,21 @@ universe = Universe(
     enemy_ships,
 )
 
-game_over = False
+cameras: list[Camera] = []
+surface = pygame.display.set_mode(SCREEN_SIZE)
+player_count = len(player_ships)
+for player_ix, player in enumerate(player_ships):
+    # TODO: Probably fix the off-by-one-error in here.
+    topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
+    size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
+    subsurface = surface.subsurface((topleft, size))
+    camera = Camera(player.pos, 1.0, subsurface)
+    cameras.append(camera)
+minimap_surface = surface.subsurface(
+    ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE),
+)
+minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
+
 clock = pygame.time.Clock()
 while True:
     dt = clock.tick() / 1_000
@@ -138,37 +145,36 @@ while True:
     if any(e.type == pygame.QUIT for e in pygame.event.get()):
         break
 
-    camera.start_drawing_new_frame()
-    if game_over:
-        font = pygame.font.Font(None, 64)
-        camera.draw_text("GAME OVER", None, font, Color("red"))
-    else:
-        universe.handle_input(pygame.key.get_pressed())
-        universe.step(dt)
+    universe.handle_input(pygame.key.get_pressed())
+    universe.step(dt)
 
-        for player_ship in player_ships:
-            if (
-                not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-            ) and not TEST_MODE:
-                game_over = True
+    for player_ix, player_ship in enumerate(player_ships):
+        player_camera = cameras[player_ix]
+        player_camera.start_drawing_new_frame()
+        gameover = (
+            not universe.contains_point(player_ship.pos) or player_ship.health <= 0
+        ) and not TEST_MODE
+        if gameover:
+            font = pygame.font.Font(None, int(64 / player_count))
+            player_camera.draw_text("GAME OVER", None, font, Color("red"))
+        else:
+            universe.move_camera(player_camera, dt)
+            universe.draw_grid(player_camera)
+            universe.draw(player_camera)
+            universe.draw_text(player_camera)
 
-        universe.move_camera(camera, dt)
-        universe.draw_grid(camera)
-        universe.draw(camera)
-        universe.draw_text(camera)
-        minimap_camera.start_drawing_new_frame()
-        universe.draw(minimap_camera)
-
-        # Draw minimap border
-        # This being worldspace is a kinda bad hack.
-        MINIMAP_BORDER_COLOR = Color("aquamarine")
-        minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
-        minimap_camera.draw_horizontal_hairline(
-            MINIMAP_BORDER_COLOR,
-            0,
-            WORLD_SIZE.x,
-            WORLD_SIZE.y - 1,
-        )
+    minimap_camera.start_drawing_new_frame()
+    universe.draw(minimap_camera)
+    # Draw minimap border
+    # This being worldspace is a kinda bad hack.
+    MINIMAP_BORDER_COLOR = Color("aquamarine")
+    minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
+    minimap_camera.draw_horizontal_hairline(
+        MINIMAP_BORDER_COLOR,
+        0,
+        WORLD_SIZE.x,
+        WORLD_SIZE.y - 1,
+    )
 
     pygame.display.flip()
 

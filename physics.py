@@ -5,10 +5,9 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 from pygame.math import Vector2 as Vec2
+from pygame import Color
 
 if TYPE_CHECKING:
-    from pygame import Color
-
     from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.03
@@ -120,6 +119,7 @@ class Disk(PhysicalObject):
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = Color(color)
+        # print(bullet_color, Color(bullet_color))
         self.bulletcolor = Color(bullet_color)
         self._radius_squared = radius**2
 
