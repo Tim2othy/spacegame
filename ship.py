@@ -37,8 +37,8 @@ class Ship(Disk):
         size: float,
         color: Color,
         bullet_color: Color,
-    ):
-        """Create a new spaceship
+    ) -> None:
+        """Create a new spaceship.
 
         Args:
         ----
@@ -48,6 +48,7 @@ class Ship(Disk):
             size (float): Radius of disk-body
             color (Color): Material color
             bullet_color (Color): Bullet_color
+
         """
         super().__init__(pos, vel, density, size, color, bullet_color)
         self.size: float = size
@@ -258,7 +259,8 @@ class BulletEnemy(Ship):
             "accelerate_to_player2",
             "accelerate_to_player3",
             "accelerate_to_player4",
-            # "accelerate_randomly", fix this so they don't choose a new random direction every tick
+            # fix this so they don't choose a new random direction every tick
+            # "accelerate_randomly",
             "decelerate",
         ],
     )
@@ -271,8 +273,8 @@ class BulletEnemy(Ship):
         shoot_cooldown: float = 0.125,
         color: Color = Color("lightblue"),
         bullet_color: Color = Color("lime"),
-    ):
-        """Create a new enemy ship
+    ) -> None:
+        """Create a new enemy ship.
 
         Args:
         ----
@@ -352,8 +354,8 @@ class RocketEnemy(BulletEnemy):
         target_ship: Ship,
         shoot_cooldown: float = 10,
         color: Color = Color("plum"),
-    ):
-        """Create a new Rocket-Ship
+    ) -> None:
+        """Create a new Rocket-Ship.
 
         Args:
         ----

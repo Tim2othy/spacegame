@@ -27,7 +27,7 @@ class Planet(Disk):
         radius: float,
         color: Color,
         bullet_color: Color,
-    ):
+    ) -> None:
         """Create a new planet.
 
         Args:
@@ -51,7 +51,7 @@ class Asteroid(Disk):
         density: float,
         radius: float,
         bullet_color: Color,
-    ):
+    ) -> None:
         """Create a new Asteroid.
 
         Args:
