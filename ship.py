@@ -11,7 +11,7 @@ from projectiles import Bullet, Rocket
 from camera import Camera
 
 
-BULLET_SPEED = 200
+BULLET_SPEED = 300
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1000
@@ -45,23 +45,23 @@ class Ship(Disk):
         super().__init__(pos, vel, density, size, color, bullet_color)
         self.size: float = size
         self.angle: float = 0
-        self.health: float = 100.0
+        self.health: float = 800.0
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
         self.bullet_color = Color("yellow")
 
-        self.ammo: int = 250
+        self.ammo: int = 600
         self.thrust: float = 200 * self.mass
-        self.rotation_thrust: float = 150
+        self.rotation_thrust: float = 190
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
         self.max_fuel: float = 100.0
         self.fuel: float = self.max_fuel
-        self.fuel_consumption_rate: float = 0.7
-        self.fuel_rot_consumption_rate: float = 0.7
+        self.fuel_consumption_rate: float = 1
+        self.fuel_rot_consumption_rate: float = 1
 
         self.damage_indicator_timer: float = 0
 

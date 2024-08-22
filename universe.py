@@ -328,6 +328,9 @@ class Universe:
         enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
         texty(f"{enemy_projectile_count} enemy projectiles")
 
+        enemy_count = len(self.enemy_ships)
+        texty(f"Enemies left: {enemy_count}")
+
         del self.text_vertical_offset
 
     def draw_grid(self, camera: Camera):

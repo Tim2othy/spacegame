@@ -14,7 +14,8 @@ from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
 pygame.init()
 pygame.display.set_caption("Space Game")
 game_over = False
-testmode = False
+testmode = True
+death = True
 SPAWNPOINT = Vector2(100_000, 100_000)
 
 # Cameras
@@ -66,6 +67,35 @@ areas: list[Area] = [
 
 areas = []
 
+
+if testmode == True:
+    SPAWNPOINT = Vector2(5_000, 5_000)
+    planets = [
+        Planet(Vector2(1_800, 6_700), 1, 370, Color("darkred"), None),
+        Planet(Vector2(2_300, 900), 1, 280, Color("green"), None),
+        Planet(Vector2(4_200, 3_700), 1, 280, Color("mediumpurple"), None),
+        Planet(Vector2(5_000, 9_000), 1, 380, Color("darkorange"), None),
+        Planet(Vector2(6_000, 400), 1, 350, Color("royalblue"), None),
+        Planet(Vector2(8_600, 8_700), 1, 880, Color("orange"), None),
+        Planet(Vector2(6_700, 7_200), 1, 380, Color("darkslategray"), None),
+        Planet(Vector2(9_200, 4_400), 1, 540, Color("yellow"), None),
+    ]
+    WORLD_SIZE = Vector2(10_000, 10_000)
+    camera = Camera(SPAWNPOINT, 1.0, surface)
+
+    asteroids = []
+    # enemy_ships = []
+    minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
+    minimap_camera = Camera(
+        SPAWNPOINT,
+        MINIMAP_SIZE.x / WORLD_SIZE.x,
+        minimap_surface,
+    )
+    player_ship = Ship(
+        SPAWNPOINT, Vector2(0, 0), 1, 10, Color("darkslategray"), Color("yellow")
+    )
+
+
 asteroids: list[Asteroid] = []
 for _ in range(50):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
@@ -81,37 +111,6 @@ for _ in range(50):
     else:
         enemy_ships.append(RocketEnemy(pos, Vector2(0, 0), player_ship))
 
-
-if testmode == True:
-    SPAWNPOINT = Vector2(5_000, 5_000)
-    planets = [
-        Planet(Vector2(1_800, 6_700), 1, 370, Color("darkred")),
-        Planet(Vector2(2_300, 900), 1, 280, Color("green")),
-        Planet(Vector2(4_200, 3_700), 1, 280, Color("mediumpurple")),
-        Planet(Vector2(5_000, 9_000), 1, 380, Color("darkorange")),
-        Planet(Vector2(6_000, 400), 1, 350, Color("royalblue")),
-        Planet(Vector2(8_600, 8_700), 1, 880, Color("orange")),
-        Planet(Vector2(6_700, 7_200), 1, 380, Color("darkslategray")),
-        Planet(Vector2(9_200, 4_400), 1, 540, Color("yellow")),
-    ]
-    WORLD_SIZE = Vector2(10_000, 10_000)
-    camera = Camera(SPAWNPOINT, 1.0, surface)
-
-    asteroids = []
-    enemy_ships = []
-    minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
-    minimap_camera = Camera(
-        SPAWNPOINT,
-        MINIMAP_SIZE.x / WORLD_SIZE.x,
-        minimap_surface,
-    )
-    player_ship = Ship(
-        SPAWNPOINT,
-        Vector2(0, 0),
-        1,
-        10,
-        Color("orange"),
-    )
 
 universe = Universe(
     WORLD_SIZE,
@@ -148,7 +147,7 @@ while True:
 
         if (
             not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        ) and testmode == 5:  # Just so one can't die for now
+        ) and death == True:  # Just so one can't die for now
             game_over = True
         camera.smoothly_focus_points(
             [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
