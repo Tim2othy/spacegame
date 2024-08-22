@@ -325,7 +325,6 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        self.draw_grid(camera)
         for area in self.areas:
             area.draw(camera)
         for asteroid in self.asteroids:
