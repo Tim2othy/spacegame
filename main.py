@@ -104,7 +104,7 @@ for _ in range(20):
     radius = random.uniform(20, 300)
     asteroids.append(
         Asteroid(pos, vel, 1, radius, None)
-    )  # TODO: this None for bullet_color, I'm sure there is some way to remove this?
+    )  # TODO: this None is for bullet_color, I'm sure there is some way to remove this?
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(20):

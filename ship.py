@@ -245,7 +245,7 @@ class BulletEnemy(Ship):
         vel: Vector2,
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
-        color: Color = Color("purple"),
+        color: Color = Color("lightblue"),
         bullet_color: Color = Color("yellow"),
     ):
         """Create a new enemy ship

@@ -155,7 +155,7 @@ class Disk(PhysicalObject):
         # When rewriting this: The pygame.math module already has methods for normal-vector
         # calculation.
 
-        bounciness = 0.90
+        bounciness = 0.97
         """
         bounciness: float between 0 and 1. 
         At 1 collisions cause no damage.

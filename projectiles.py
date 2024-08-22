@@ -35,8 +35,8 @@ class Bullet(PhysicalObject):
             self.color,
             [
                 self.pos + 5 * forward,
-                self.pos + 2 * forward.rotate(150),
-                self.pos + 2 * forward.rotate(-150),
+                self.pos + 5 * forward.rotate(150),
+                self.pos + 5 * forward.rotate(-150),
             ],
         )
 
