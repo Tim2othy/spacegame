@@ -103,7 +103,7 @@ class Disk(PhysicalObject):
         radius: float,
         color: Color,
         bullet_color: Color,
-    ) -> None:  # TODO: Sorry, I removed what you wrote here I'm not sure why my merge make what you wrote break the code?
+    ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
@@ -180,8 +180,8 @@ class Disk(PhysicalObject):
         if not self.intersects_disk(disk):
             return None
 
-        # When rewriting this: The pygame.math module already has methods for normal-vector
-        # calculation.
+        # When rewriting this: The pygame.math module already has
+        # methods for normal-vector calculation.
 
         # 0 <= bounciness <= 1.
         # At bounciness == 1.0, collisions cause no damage.

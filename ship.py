@@ -259,7 +259,6 @@ class BulletEnemy(Ship):
             "accelerate_to_player2",
             "accelerate_to_player3",
             "accelerate_to_player4",
-            # fix this so they don't choose a new random direction every tick
             # "accelerate_randomly",
             "decelerate",
         ],
@@ -323,9 +322,8 @@ class BulletEnemy(Ship):
                 force_direction = delta_target_ship
             case BulletEnemy.Action.accelerate_to_player4:
                 force_direction = delta_target_ship
-
             # case BulletEnemy.Action.accelerate_randomly:
-            #    force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+            #     force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
         force = force_direction * self.thrust / force_direction.magnitude()
