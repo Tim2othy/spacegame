@@ -88,6 +88,7 @@ class Disk(PhysicalObject):
         density: float,
         radius: float,
         color: pygame.Color,
+        bullet_color: pygame.Color,
     ):
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 

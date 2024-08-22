@@ -19,6 +19,7 @@ class Planet(Disk):
         density: float,
         radius: float,
         color: Color,
+        bullet_color
     ):
         """Create a new planet.
 
@@ -28,7 +29,7 @@ class Planet(Disk):
             radius (float): Radius
             color (Color): Color
         """
-        super().__init__(pos, Vector2(0, 0), density, radius, color)
+        super().__init__(pos, Vector2(0, 0), density, radius, color, bullet_color)
 
 
 class Asteroid(Disk):
@@ -40,6 +41,7 @@ class Asteroid(Disk):
         vel: Vector2,
         density: float,
         radius: float,
+        bullet_color
     ):
         """Create a new Asteroid.
         Any color you like, as long as it's gray.
@@ -50,7 +52,7 @@ class Asteroid(Disk):
             density (float): Density
             radius (float): Radius
         """
-        super().__init__(pos, vel, density, radius, Color("gray"))
+        super().__init__(pos, vel, density, radius, Color("gray"), bullet_color)
 
 
 class Area(Rect):
@@ -284,7 +286,7 @@ class Universe:
         Args:
             camera (Camera): Camera to draw on
         """
-        self.draw_grid(camera)
+        #self.draw_grid(camera)
         for area in self.areas:
             area.draw(camera)
         for asteroid in self.asteroids:

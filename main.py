@@ -25,7 +25,7 @@ camera = Camera(SPAWNPOINT, 1.0, surface)
 MINIMAP_SIZE = Vector2(250, 250)
 minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
 minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
-
+"""
 # Create planets
 planets = [
     Planet(Vector2(67_000, 18_000), 1, 3_000, Color("darkred")),
@@ -50,15 +50,13 @@ planets = [
     Planet(Vector2(64_000, 173_000), 1, 3_500, Color("blue")),
     Planet(Vector2(138_000, 187_000), 1, 5_800, Color("slategray")),
     Planet(Vector2(42_000, 191_000), 1, 900, Color("navy")),
-]
+]"""
+
+planets = [Planet(Vector2(67_000, 18_000), 1, 3_000, Color("darkred"), None)]
 
 
 player_ship = Ship(
-    SPAWNPOINT,
-    Vector2(0, 0),
-    1,
-    10,
-    Color("turquoise"),
+    SPAWNPOINT, Vector2(0, 0), 1, 10, Color("turquoise"), Color("yellow")
 )
 
 areas: list[Area] = [
@@ -73,7 +71,7 @@ for _ in range(50):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vector2(random.uniform(-100, 100), random.uniform(-100, 100))
     radius = random.uniform(4, 60)
-    asteroids.append(Asteroid(pos, vel, 1, radius))
+    asteroids.append(Asteroid(pos, vel, 1, radius, None))
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(50):

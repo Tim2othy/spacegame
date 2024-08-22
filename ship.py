@@ -11,7 +11,7 @@ from projectiles import Bullet, Rocket
 from camera import Camera
 
 
-BULLET_SPEED = 500
+BULLET_SPEED = 200
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1000
@@ -24,7 +24,13 @@ class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(
-        self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
+        self,
+        pos: Vector2,
+        vel: Vector2,
+        density: float,
+        size: float,
+        color: Color,
+        bullet_color: Color,
     ):
         """Create a new spaceship
 
@@ -34,17 +40,19 @@ class Ship(Disk):
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
+            bullet_color (Color): Bullet_color
         """
-        super().__init__(pos, vel, density, size, color)
+        super().__init__(pos, vel, density, size, color, bullet_color)
         self.size: float = size
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown: float = 3.0
+        self.gun_cooldown: float = 0
         self.has_trophy: bool = False
+        self.bullet_color = Color("yellow")
 
         self.ammo: int = 250
-        self.thrust: float = 500 * self.mass
+        self.thrust: float = 200 * self.mass
         self.rotation_thrust: float = 150
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
@@ -74,7 +82,7 @@ class Ship(Disk):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
+            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
             self.gun_cooldown = 0.1
             self.ammo -= 1
 
@@ -238,6 +246,7 @@ class BulletEnemy(Ship):
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
+        bullet_color: Color = Color("yellow"),
     ):
         """Create a new enemy ship
 
@@ -248,7 +257,7 @@ class BulletEnemy(Ship):
             shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
         """
-        super().__init__(pos, vel, 1, 8, color)
+        super().__init__(pos, vel, 1, 8, color, bullet_color)
         self.thrust /= 2
         self.time_until_next_shot = 0
         self.action_timer = 6
