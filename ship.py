@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from enum import Enum
-import random
-from pygame.math import Vector2 as Vec2
-from pygame import Color
 import math
+import random
+from enum import Enum
+from typing import TYPE_CHECKING
+
+from pygame import Color
+from pygame.math import Vector2 as Vec2
+
 from physics import Disk
 from projectiles import Bullet, Rocket
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from camera import Camera

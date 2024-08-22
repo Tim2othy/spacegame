@@ -1,8 +1,10 @@
 """Projectiles, shooting through space."""
 
 from typing import TYPE_CHECKING
-from pygame.math import Vector2 as Vec2
+
 from pygame import Color
+from pygame.math import Vector2 as Vec2
+
 from camera import Camera
 from physics import PhysicalObject
 

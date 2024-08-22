@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pygame
 import pygame.gfxdraw
-from pygame.math import Vector2 as Vec2
 from pygame import Color, Rect
+from pygame.math import Vector2 as Vec2
 
 
 class Camera:

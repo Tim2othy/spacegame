@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pygame
 import pygame.camera
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
+
 from physics import Disk, PhysicalObject
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from camera import Camera
-    from ship import Ship, BulletEnemy
+    from ship import BulletEnemy, Ship
 
 
 class Planet(Disk):

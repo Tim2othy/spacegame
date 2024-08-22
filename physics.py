@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import math
+from typing import TYPE_CHECKING
+
 import pygame
 import pygame.camera
 from pygame.math import Vector2 as Vec2
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from camera import Camera

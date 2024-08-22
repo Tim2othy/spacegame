@@ -1,14 +1,17 @@
 """Staging-grounds for the game."""
 
 from __future__ import annotations
-import sys
+
 import random
+import sys
+
 import pygame
-from pygame.math import Vector2 as Vec2
 from pygame import Color
-from ship import Ship, BulletEnemy, RocketEnemy
+from pygame.math import Vector2 as Vec2
+
 from camera import Camera
-from universe import Universe, Planet, Asteroid, RefuelArea, TrophyArea, Area
+from ship import BulletEnemy, RocketEnemy, Ship
+from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
 
 # Initialize Pygame
 pygame.init()
