@@ -255,10 +255,7 @@ class BulletEnemy(Ship):
     Action = Enum(
         "Action",
         [
-            "accelerate_to_player1",
-            "accelerate_to_player2",
-            "accelerate_to_player3",
-            "accelerate_to_player4",
+            "accelerate_to_player",
             # "accelerate_randomly",
             "decelerate",
         ],
@@ -291,7 +288,7 @@ class BulletEnemy(Ship):
         self.action_timer = 6
         self.health = 100
         self.current_action: BulletEnemy.Action = (
-            BulletEnemy.Action.accelerate_to_player1
+            BulletEnemy.Action.accelerate_to_player
         )
         self.target_ship = target_ship
         self.shoot_cooldown = shoot_cooldown
@@ -307,20 +304,16 @@ class BulletEnemy(Ship):
         """
         self.action_timer -= dt
         if self.action_timer <= 0:
-            self.current_action = random.choice(list(BulletEnemy.Action))
+            [self.current_action] = random.choices(
+                population=list(BulletEnemy.Action), weights=[0.8, 0.2]
+            )
             self.action_timer = 6
 
         delta_target_ship = self.target_ship.pos - self.pos
 
         force_direction: Vec2
         match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player1:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player2:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player3:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player4:
+            case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
             # case BulletEnemy.Action.accelerate_randomly:
             #     force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
