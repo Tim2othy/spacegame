@@ -7,6 +7,7 @@ import random
 from enum import Enum
 from typing import TYPE_CHECKING
 
+import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
@@ -57,7 +58,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
-        self.bullet_color = bullet_color
+        self.bullet_color = Color(bullet_color)
 
         self.ammo: int = 600
         self.thrust: float = 250 * self.mass
@@ -247,6 +248,84 @@ class Ship(Disk):
 
         for projectile in self.projectiles:
             projectile.draw(camera)
+
+
+class ShipInput:
+    """Specification for which keys trigger what spaceship-action."""
+
+    type PygameKey = int
+
+    def __init__(
+        self,
+        thruster_rot_left: PygameKey,
+        thruster_rot_right: PygameKey,
+        thruster_forward: PygameKey,
+        thruster_backward: PygameKey,
+        shoot: PygameKey,
+    ) -> None:
+        """Create a new map from keys to spaceship-actions.
+
+        Args:
+        ----
+            thruster_rot_left (pygame_key): Left rotation thruster's key
+            thruster_rot_right (pygame_key): Right rotation thruster's key
+            thruster_forward (pygame_key): Forward thruster's key
+            thruster_backward (pygame_key): Backward thruster's key
+            shoot (pygame_key): Pew pew key
+
+        """
+        self.thruster_rot_left = thruster_rot_left
+        self.thruster_rot_right = thruster_rot_right
+        self.thruster_forward = thruster_forward
+        self.thruster_backward = thruster_backward
+        self.shoot = shoot
+
+
+class PlayerShip(Ship):
+    """A player-controlled spaceship."""
+
+    def __init__(
+        self,
+        pos: Vec2,
+        vel: Vec2,
+        density: float,
+        size: float,
+        color: Color,
+        bullet_color: Color,
+        spaceship_input: ShipInput,
+    ) -> None:
+        """Create a new player-spaceship.
+
+        Args:
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            density (float): Density (of disk-body)
+            size (float): Radius of disk-body
+            color (Color): Material color
+            bullet_color (Color): Bullet_color
+            spaceship_input (SpaceshipInput): Map from keys to actions
+
+        """
+        super().__init__(pos, vel, density, size, color, bullet_color)
+        self.spaceship_input = spaceship_input
+
+    def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
+        """Handle input for `self` using ScancodeWrapper `keys`.
+
+        `keys` is typically retreived using `pygame.key.get_pressed()`
+
+        Args:
+        ----
+            keys (pygame.key.ScancodeWrapper): Pressed keys
+
+        """
+        self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
+        self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
+        self.thruster_forward = keys[self.spaceship_input.thruster_forward]
+        self.thruster_backward = keys[self.spaceship_input.thruster_backward]
+        if keys[self.spaceship_input.shoot]:
+            self.shoot()
 
 
 class BulletEnemy(Ship):

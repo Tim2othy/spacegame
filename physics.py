@@ -5,10 +5,10 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from pygame import Color
-    from pygame.math import Vector2 as Vec2
+from pygame import Color
+from pygame.math import Vector2 as Vec2
 
+if TYPE_CHECKING:
     from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.03
@@ -29,9 +29,9 @@ class PhysicalObject:
             mass (float): Object's mass
 
         """
-        self.pos = pos
+        self.pos = Vec2(pos)
         self.mass = mass
-        self.vel = vel
+        self.vel = Vec2(vel)
 
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
@@ -119,8 +119,9 @@ class Disk(PhysicalObject):
         mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
         self.radius = radius
-        self.color = color
-        self.bulletcolor = bullet_color
+        self.color = Color(color)
+        # print(bullet_color, Color(bullet_color))
+        self.bulletcolor = Color(bullet_color)
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:

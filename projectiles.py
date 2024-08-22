@@ -26,7 +26,7 @@ class Bullet(PhysicalObject):
 
         """
         super().__init__(pos, vel, 1.0)
-        self.color = color
+        self.color = Color(color)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.

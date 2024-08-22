@@ -26,7 +26,7 @@ class Camera:
             surface (pygame.Surface): Surface to draw on
 
         """
-        self.pos: Vec2 = pos
+        self.pos: Vec2 = Vec2(pos)
         self.zoom: float = zoom
         self.surface: pygame.Surface = surface
 
