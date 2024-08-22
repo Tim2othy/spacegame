@@ -103,7 +103,9 @@ else:
 
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(SPAWNPOINT, 1.0, surface)
-minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
+minimap_surface = surface.subsurface(
+    ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE)
+)
 minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 
 universe = Universe(
