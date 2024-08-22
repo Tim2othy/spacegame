@@ -1,81 +1,95 @@
-"""Physical objects, and the interactions between them"""
+"""Physical objects, and the interactions between them."""
+
+from __future__ import annotations
 
 import math
-import pygame
-import pygame.camera
-from pygame.math import Vector2
-from camera import Camera
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pygame import Color
+    from pygame.math import Vector2 as Vec2
+
+    from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.003
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
+    """A physical object with dynamic position, dynamic velocity,
+    and constant nonzero mass.
+    """
 
-    def __init__(self, pos: Vector2, vel: Vector2, mass: float):
-        """Create a new PhysicalObject
+    def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
+        """Create a new PhysicalObject.
 
         Args:
-            pos (Vector2): Object's position, usually its center
-            vel (Vector2): Object's velocity (ignore relativity please)
+        ----
+            pos (Vec2): Object's position, usually its center
+            vel (Vec2): Object's velocity (ignore relativity please)
             mass (float): Object's mass
+
         """
         self.pos = pos
         self.mass = mass
         self.vel = vel
 
-    def step(self, dt: float):
-        """Apply its velocity to `self`
+    def step(self, dt: float) -> None:
+        """Apply its velocity to `self`.
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.pos += dt * self.vel
 
-    def add_impulse(self, impulse: Vector2):
-        """Add an impulse to `self`
+    def add_impulse(self, impulse: Vec2) -> None:
+        """Add an impulse to `self`.
 
         Args:
-            impulse (Vector2): Impulse to apply
+        ----
+            impulse (Vec2): Impulse to apply
+
         """
         self.vel += impulse / self.mass
 
-    def apply_force(self, force: Vector2, dt: float):
-        """Apply a force to `self`
+    def apply_force(self, force: Vec2, dt: float) -> None:
+        """Apply a force to `self`.
 
         Args:
-            force (Vector2): Force to apply
+        ----
+            force (Vec2): Force to apply
             dt (float): Passed time
+
         """
         self.add_impulse(force * dt)
 
-    def gravitational_force(self, pobj: "PhysicalObject") -> Vector2:
-        """Calculate gravitational force between `pobj` and `self` that
-        affects `self`.
+    def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
+        """Calculate gravitational force between `pobj` and `self` affecting `self`.
 
         Args:
+        ----
             pobj (PhysicalObject): Other PhysicalObject to gravitate towards
 
         Returns:
-            Vector2: Resulting force to apply to `self`
-        """
+        -------
+            Vec2: Resulting force to apply to `self`
 
+        """
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
-        force = normalised_delta * force_magnitude
+        return normalised_delta * force_magnitude
 
-        return force
-
-    def draw(self, camera: Camera):
-        """Draws `self` on `camera`.
-        Implemented by subclasses.
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` on `camera`. Implemented by subclasses.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
-        pass
 
 
 class Disk(PhysicalObject):
@@ -83,20 +97,22 @@ class Disk(PhysicalObject):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         density: float,
         radius: float,
-        color: pygame.Color,
-    ):
+        color: Color,
+    ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
-            pos (Vector2): Disk's center
-            vel (Vector2): Disk's velocity
+        ----
+            pos (Vec2): Disk's center
+            vel (Vec2): Disk's velocity
             density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
+
         """
         mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
@@ -104,71 +120,82 @@ class Disk(PhysicalObject):
         self.color = color
         self._radius_squared = radius**2
 
-    def draw(self, camera: Camera):
-        """Draw anti-aliased `self`
+    def draw(self, camera: Camera) -> None:
+        """Draw anti-aliased `self`.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         camera.draw_circle(self.color, self.pos, self.radius)
 
-    def intersects_point(self, vec: Vector2) -> bool:
-        """Determine whether `vec` is in `self`
+    def intersects_point(self, vec: Vec2) -> bool:
+        """Determine whether `vec` is in `self`.
 
         Args:
-            vec (Vector2): Vector to test for intersection
+        ----
+            vec (Vec2): Vector to test for intersection
 
         Returns:
+        -------
             bool: True iff `vec` is in `self`
+
         """
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
-    def intersects_disk(self, disk: "Disk") -> bool:
-        """Determine whether `self` intersects another Disk
+    def intersects_disk(self, disk: Disk) -> bool:
+        """Determine whether `self` intersects another Disk.
 
         Args:
+        ----
             disk (Disk): Other disk
 
         Returns:
+        -------
             bool: True iff the two disks intersect
+
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk") -> float | None:
+    def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
-            Calculates intensity with `self` is moving towards `disk`
-            at moment of collision. Then strength of bounce and damage
+
+        Calculates intensity that `self` moved towards `disk`
+        at moment of collision. Returns calculated impact-damage.
 
         Args:
+        ----
             disk (Disk): Disk to potentially bounce off of
 
         Returns:
+        -------
             float | None: If float, it's `self`'s suffered damage.
                 If None, the two didn't intersect.
+
         """
         if not self.intersects_disk(disk):
             return None
 
-        # When rewriting this: The pygame.math module already has methods for normal-vector
-        # calculation.
+        # When rewriting this: The pygame.math module already
+        #  has methods for normal-vector calculation.
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
 
+        # 0 <= bounciness <= 1.
+        # At bounciness == 1.0, collisions cause no damage.
         bounciness = 0.70
-        """
-        bounciness: float between 0 and 1. 
-        At 1 collisions cause no damage.
-        """
-        """Calculate normal vector"""
+
+        # Calculate normal vector
         delta = self.pos - disk.pos
         delta_magnitude = delta.magnitude()
         normal_vector = delta / delta_magnitude
         self_vel_along_normal = self.vel.dot(normal_vector)
 
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
-        impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
+        impulse_scalar /= 1 / self.mass + 1 / disk.mass
         self.vel += normal_vector * impulse_scalar / self.mass
 
-        """This allows the ship to land on the planet. If impulse is small there is no damage"""
-        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
-        return damage
+        # This allows the ship to land on the planet.
+        # If impulse is small there is no damage
+        return (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4

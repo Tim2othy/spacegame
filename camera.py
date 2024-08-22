@@ -4,62 +4,72 @@ worldspace == Coordinates in space
 screenspace == Coordinates on the screen
 """
 
+from __future__ import annotations
+
 import pygame
 import pygame.gfxdraw
-from pygame.math import Vector2
 from pygame import Color, Rect
+from pygame.math import Vector2 as Vec2
 
 
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, pos: Vector2, zoom: float, surface: pygame.Surface):
+    def __init__(self, pos: Vec2, zoom: float, surface: pygame.Surface) -> None:
         """Construct a new camera.
 
         Args:
-            pos (Vector2): Worldspace-coordinate at the center of the screen
+        ----
+            pos (Vec2): Worldspace-coordinate at the center of the screen
             zoom (float): Higher = Fewer objects fit on screen,
                 zoom==1 corresponds to 1 pixel per unit
             surface (pygame.Surface): Surface to draw on
+
         """
-        self.pos: Vector2 = pos
+        self.pos: Vec2 = pos
         self.zoom: float = zoom
         self.surface: pygame.Surface = surface
 
     def smoothly_transition_to(
         self,
-        new_pos: Vector2,
+        new_pos: Vec2,
         new_zoom: float,
         dt: float,
         transition_time: float = 0.25,
-    ):
+    ) -> None:
         """Smoothly transition the camera to a new location.
 
         Args:
-            new_pos (Vector2): New camera worldspace-position
+        ----
+            new_pos (Vec2): New camera worldspace-position
             new_zoom (float): New zoom-factor
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
         dist = self.pos.distance_to(new_pos)
         self.pos.move_towards_ip(new_pos, dist * dt / transition_time)
 
         # This makes it easier to write, please don't judge me
-        zoomy = Vector2(self.zoom, 0)
-        new_zoomy = Vector2(new_zoom, 0)
+        zoomy = Vec2(self.zoom, 0)
+        new_zoomy = Vec2(new_zoom, 0)
         dist = abs(self.zoom - new_zoom)
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
-    def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25):
-        """Smoothly move the camera so that a worldspace-rectangle is visible
-        entirely, but not more.
+    def smoothly_focus_rect(
+        self, rect: Rect, dt: float, transition_time: float = 0.25
+    ) -> None:
+        """Smoothly move the camera so that a worldspace-rectangle is
+        visible entirely, but not more.
 
         Args:
+        ----
             rect (Rect): Worldspace-rectangle to fit to
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
@@ -73,88 +83,76 @@ class Camera:
             # Height dominates
             zoom = surface_height / rect.height
 
-        self.smoothly_transition_to(Vector2(rect.center), zoom, dt, transition_time)
+        self.smoothly_transition_to(Vec2(rect.center), zoom, dt, transition_time)
 
     def smoothly_focus_points(
         self,
-        points: list[Vector2],
+        points: list[Vec2],
         buff: float,
         dt: float,
         transition_time: float = 0.25,
-    ):
-        """Smoothly focus camera so that a list of worldspace-points is visible,
-        with an additional buffer.
+    ) -> None:
+        """Smoothly focus camera so that a list of worldspace-points is
+        visible, with an additional buffer.
 
         Args:
-            points (list[Vector2]): Worldspace-points to focus on. Hopefully nonempty.
+        ----
+            points (list[Vec2]): Worldspace-points to focus on. Hopefully nonempty.
             buff (float): Worldspace-buffer around the points
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
-        enclosing_rect = self._get_enclosing_rect(points)
+        enclosing_rect = _get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
         self.smoothly_focus_rect(buffed_rect, dt, transition_time)
 
-    def _get_enclosing_rect(self, points: list[Vector2]) -> Rect:
-        """Gets the smallest rectangle enclosing all points.
-        This method works irrespective of which space you use.
-
-        Args:
-            points (list[Vector2]): Points to enclose
-
-        Returns:
-            Rect: Rectangle fitting all points snugly
-        """
-        minx = miny = float("inf")
-        maxx = maxy = float("-inf")
-        for point in points:
-            minx = min(minx, point.x)
-            maxx = max(maxx, point.x)
-            miny = min(miny, point.y)
-            maxy = max(maxy, point.y)
-        return Rect((minx, miny), (maxx - minx, maxy - miny))
-
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
-        """Determines whether a screenspace-rectangle intersects the
-        camera's screen.
+        """Determine whether a screenspace-rectangle intersects the camera's screen.
 
         Args:
+        ----
             rect (Rect): Screenspace-rectangle
 
         Returns:
+        -------
             bool: True iff screenspace-rectangle intersects the screen
+
         """
         own_rect = Rect((0, 0), self.surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def world_to_screen(self, vec: Vector2) -> Vector2:
+    def world_to_screen(self, vec: Vec2) -> Vec2:
         """Transform a worldspace-vector to screenspace.
 
         Args:
-            vec (Vector2): Worldspace-vector
+        ----
+            vec (Vec2): Worldspace-vector
 
         Returns:
-            Vector2: Screenspace-vector
+        -------
+            Vec2: Screenspace-vector
+
         """
         width, height = self.surface.get_size()
-        center = Vector2(width / 2, height / 2)
+        center = Vec2(width / 2, height / 2)
         return (vec - self.pos) * self.zoom + center
 
-    def start_drawing_new_frame(self):
-        """Fills the camera's surface black, to prepare for
-        drawing a new frame.
-        """
+    def start_drawing_new_frame(self) -> None:
+        """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
 
-    def draw_circle(self, color: Color, center: Vector2, radius: float):
-        """Draw a anti-aliased worldspace-circle on screen.
+    def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
+        """Draw an anti-aliased worldspace-circle on screen.
 
         Args:
+        ----
             color (Color): Border- and fill-color
-            center (Vector2): Worldspace-center of the circle
+            center (Vec2): Worldspace-center of the circle
             radius (float): Worldspace-radius of the circle
+
         """
         ccenter, cradius = self.world_to_screen(center), radius * self.zoom
         # ??? Why only ints?
@@ -166,33 +164,37 @@ class Camera:
             pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
-    def draw_polygon(self, color: Color, points: list[Vector2]):
+    def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
         """Draw an anti-aliased worldspace-polygon on screen.
 
         Args:
+        ----
             color (Color): Border- and fill-color
-            points (list[Vector2]): Worldspace-points
+            points (list[Vec2]): Worldspace-points
+
         """
         cpoints = [self.world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
-        enclosing_rect = self._get_enclosing_rect(cpoints)
+        enclosing_rect = _get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
             pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
-    def draw_line(self, color: Color, start: Vector2, end: Vector2, thickness: float):
+    def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw an anti-aliased worldspace-line with a given thickness.
 
         Args:
+        ----
             color (Color): Border- and fill-color
-            start (Vector2): Line's start-worldspace-point
-            end (Vector2): Line's end-worldspace-point
-            width (float): Line's worldspace-thickness
+            start (Vec2): Line's start-worldspace-point
+            end (Vec2): Line's end-worldspace-point
+            thickness (float): Line's worldspace-thickness
+
         """
         delta = end - start
-        if delta == Vector2(0, 0):
+        if delta == Vec2(0, 0):
             return
-        orthogonal = Vector2(-delta.y, delta.x).normalize() * thickness / 2
+        orthogonal = Vec2(-delta.y, delta.x).normalize() * thickness / 2
         points = [
             start + orthogonal,
             end + orthogonal,
@@ -203,13 +205,15 @@ class Camera:
         # draw_polygon does it for us
         self.draw_polygon(color, points)
 
-    def draw_hairline(self, color: Color, start: Vector2, end: Vector2):
+    def draw_hairline(self, color: Color, start: Vec2, end: Vec2) -> None:
         """Draw an anti-aliased worldspace-line of single-pixel-thickness.
 
         Args:
+        ----
             color (Color): Line's color
-            start (Vector2): Line's start-worldspace-point
-            end (Vector2): Line's end-worldspace-point
+            start (Vec2): Line's start-worldspace-point
+            end (Vec2): Line's end-worldspace-point
+
         """
         tstart, tend = self.world_to_screen(start), self.world_to_screen(end)
         screen_rect = Rect((0, 0), self.surface.get_size())
@@ -218,35 +222,61 @@ class Camera:
             ((x1, y1), (x2, y2)) = clipped_line
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
-    def draw_rect(self, color: Color, rect: Rect):
+    def draw_rect(self, color: Color, rect: Rect) -> None:
         """Draw an anti-aliased worldspace-rectangle.
 
         Args:
+        ----
             color (Color): Border- and fill-color
             rect (Rect): Worldspace rectangle to draw
+
         """
-        ttopleft = self.world_to_screen(Vector2(rect.topleft))
-        tbottomright = self.world_to_screen(Vector2(rect.bottomright))
+        ttopleft = self.world_to_screen(Vec2(rect.topleft))
+        tbottomright = self.world_to_screen(Vec2(rect.bottomright))
         screen_rect = Rect(ttopleft, tbottomright - ttopleft)
         if self._rectangle_intersects_screen(screen_rect):
             pygame.gfxdraw.box(self.surface, screen_rect, color)
 
     def draw_text(
-        self, text: str, pos: Vector2 | None, font: pygame.font.Font, color: Color
-    ):
+        self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color
+    ) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:
+        ----
             text (str): Text to render
-            pos (Vector2 | None): If Vector2, screenspace-position of text's top-left-corner,
+            pos (Vec2 | None): If Vec2, screenspace-position of text's top-left-corner,
                 if None, text will be centered on screen
             font (pygame.font.Font): Font to be used
             color (Color): Text's fill color
+
         """
         rendered = font.render(text, True, color)
         if pos is None:
             width, height = self.surface.get_size()
-            pos = Vector2(
+            pos = Vec2(
                 (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2
             )
         self.surface.blit(rendered, pos)
+
+
+def _get_enclosing_rect(points: list[Vec2]) -> Rect:
+    """Get the smallest rectangle enclosing all points.
+
+    Args:
+    ----
+        points (list[Vec2]): Points to enclose
+
+    Returns:
+    -------
+        Rect: Rectangle fitting all points snugly
+
+    """
+    minx = miny = float("inf")
+    maxx = maxy = float("-inf")
+    for point in points:
+        minx = min(minx, point.x)
+        maxx = max(maxx, point.x)
+        miny = min(miny, point.y)
+        maxy = max(maxy, point.y)
+    return Rect((minx, miny), (maxx - minx, maxy - miny))
