@@ -261,8 +261,8 @@ class Universe:
 
         """
         return any(
-            map(lambda planet: planet.intersects_point(vec), self.planets)
-        ) or any(map(lambda asteroid: asteroid.intersects_point(vec), self.asteroids))
+            (planet.intersects_point(vec) for planet in self.planets)
+        ) or any((asteroid.intersects_point(vec) for asteroid in self.asteroids))
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
