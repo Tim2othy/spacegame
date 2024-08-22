@@ -1,14 +1,20 @@
-"""Spaceships, shooting through space"""
+"""Spaceships, shooting through space."""
 
-from enum import Enum
-import random
-import pygame
-from pygame.math import Vector2
-from pygame import Color
+from __future__ import annotations
+
 import math
+import random
+from enum import Enum
+from typing import TYPE_CHECKING
+
+from pygame import Color
+from pygame.math import Vector2 as Vec2
+
 from physics import Disk
 from projectiles import Bullet, Rocket
-from camera import Camera
+
+if TYPE_CHECKING:
+    from camera import Camera
 
 
 BULLET_SPEED = 300
@@ -35,8 +41,9 @@ class Ship(Disk):
         """Create a new spaceship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
@@ -65,18 +72,20 @@ class Ship(Disk):
 
         self.damage_indicator_timer: float = 0
 
-    def get_faced_direction(self) -> Vector2:
-        """Get `self`'s faced direction from its `angle`
+    def get_faced_direction(self) -> Vec2:
+        """Get `self`'s faced direction from its `angle`.
 
-        Returns:
-            Vector2: Faced direction, normalized
+        Returns
+        -------
+            Vec2: Faced direction, normalized
+
         """
-        # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
-        direction = Vector2()
+        # For unknown reasons, `Vec2.from_polar((self.angle, 1))` won't work.
+        direction = Vec2()
         direction.from_polar((1, self.angle))
         return direction
 
-    def shoot(self):
+    def shoot(self) -> None:
         """Try to shoot a bullet."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
@@ -86,22 +95,27 @@ class Ship(Disk):
             self.gun_cooldown = 0.1
             self.ammo -= 1
 
-    def suffer_damage(self, damage: float):
+    def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
+
         Does nothing if damage is <= 0.
 
         Args:
+        ----
             damage (float): Amount of damage to deal.
+
         """
         if damage > 0:
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def step(self, dt: float):
-        """Physics, control, and bullet-stepping for `self`
+    def step(self, dt: float) -> None:
+        """Physics, control, and bullet-stepping for `self`.
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         if self.fuel > 0:
             if self.thruster_rot_left:
@@ -128,14 +142,16 @@ class Ship(Disk):
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
-    def draw(self, camera: Camera):
-        """Draw `self` on `camera
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` on `camera.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         forward = self.get_faced_direction()
-        right = pygame.math.Vector2(-forward.y, forward.x)
+        right = Vec2(-forward.y, forward.x)
         left = -right
         backward = -forward
 
@@ -143,7 +159,7 @@ class Ship(Disk):
         darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
-        def drawy(color: Color, points: list[Vector2]):
+        def drawy(color: Color, points: list[Vec2]) -> None:
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
         # thruster_backward (active)
@@ -249,8 +265,8 @@ class BulletEnemy(Ship):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
         color: Color = Color("lightblue"),
@@ -259,11 +275,14 @@ class BulletEnemy(Ship):
         """Create a new enemy ship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
+            shoot_cooldown (float, optional): Minimum time between shots.
+                Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
+
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
         self.thrust *= 0.5
@@ -277,11 +296,13 @@ class BulletEnemy(Ship):
         self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
 
-    def step(self, dt: float):
-        """Apply physics and "AI" to `self`
+    def step(self, dt: float) -> None:
+        """Apply physics and "AI" to `self`.
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.action_timer -= dt
         if self.action_timer <= 0:
@@ -290,7 +311,7 @@ class BulletEnemy(Ship):
 
         delta_target_ship = self.target_ship.pos - self.pos
 
-        force_direction: Vector2
+        force_direction: Vec2
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player1:
                 force_direction = delta_target_ship
@@ -326,8 +347,8 @@ class RocketEnemy(BulletEnemy):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 10,
         color: Color = Color("darkgreen"),
@@ -335,21 +356,25 @@ class RocketEnemy(BulletEnemy):
         """Create a new Rocket-Ship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.5.
+            shoot_cooldown (float, optional): Minimum time between shots.
+                Defaults to 0.5.
             color (Color, optional): Material color. Defaults to Color("red").
+
         """
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
-    def shoot(self):
+    def shoot(self) -> None:
+        """Shoot a Rocket."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(
-                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship)
+                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
             )
             self.gun_cooldown = 0.025
             self.ammo -= 1

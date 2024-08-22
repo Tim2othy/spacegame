@@ -1,8 +1,10 @@
-"""Projectiles, shooting through space"""
+"""Projectiles, shooting through space."""
 
 from typing import TYPE_CHECKING
-from pygame.math import Vector2
+
 from pygame import Color
+from pygame.math import Vector2 as Vec2
+
 from camera import Camera
 from physics import PhysicalObject
 
@@ -13,24 +15,28 @@ if TYPE_CHECKING:
 class Bullet(PhysicalObject):
     """A triangular bullet."""
 
-    def __init__(self, pos: Vector2, vel: Vector2, color: Color):
-        """Create a new basic Bullet
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
+        """Create a new basic Bullet.
 
         Args:
-            pos (Vector2): Start position
-            vel (Vector2): Velocity
+        ----
+            pos (Vec2): Start position
+            vel (Vec2): Velocity
             color (Color): Border- and fill-color
+
         """
         super().__init__(pos, vel, 1.0)
         self.color = color
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
-        forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
+        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
         camera.draw_polygon(
             self.color,
             [
@@ -44,14 +50,16 @@ class Bullet(PhysicalObject):
 class Rocket(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(self, pos: Vector2, vel: Vector2, color: Color, target_ship: "Ship"):
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
         """Create a new rocket targeting `target_ship`.
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
             target_ship (Ship): Ship to home in on
+
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
@@ -63,31 +71,35 @@ class Rocket(Bullet):
         self._total_duration = self.homing_duration + self.nonhoming_duration
         self.color = Color("red")
 
-    def step(self, dt: float):
-        """Apply homing and physics-logic
+    def step(self, dt: float) -> None:
+        """Apply homing and physics-logic.
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.homing_timer = (self.homing_timer + dt) % self._total_duration
 
         if self.homing_timer <= self.homing_duration:
             # Target the ship
             direction = self.target_ship.pos - self.pos
-            if direction != Vector2(0, 0):
+            if direction != Vec2(0, 0):
                 direction.normalize_ip()
                 self.apply_force(direction * self.homing_thrust, dt)
 
         super().step(dt)
 
-    def draw(self, camera: Camera):
-        """Draw `self` to `camera`
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` to `camera`.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
-        forward = self.vel.normalize() if self.vel != Vector2(0, 0) else Vector2(1, 0)
-        left = Vector2(-forward.y, forward.x)
+        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
 
