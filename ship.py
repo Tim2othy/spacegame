@@ -253,15 +253,15 @@ class Ship(Disk):
 class ShipInput:
     """Specification for which keys trigger what spaceship-action."""
 
-    type pygame_key = int
+    type PygameKey = int
 
     def __init__(
         self,
-        thruster_rot_left: pygame_key,
-        thruster_rot_right: pygame_key,
-        thruster_forward: pygame_key,
-        thruster_backward: pygame_key,
-        shoot: pygame_key,
+        thruster_rot_left: PygameKey,
+        thruster_rot_right: PygameKey,
+        thruster_forward: PygameKey,
+        thruster_backward: PygameKey,
+        shoot: PygameKey,
     ) -> None:
         """Create a new map from keys to spaceship-actions.
 

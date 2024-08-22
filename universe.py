@@ -181,7 +181,7 @@ class Universe:
             size (Vec2): Width and height
             planets (list[Planet]): Planets
             asteroids (list[Asteroid]): Asteroids
-            player_ship (Ship): Player's ship
+            player_ships (list[Ship]): List of player-ships
             areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
 
