@@ -222,6 +222,48 @@ class Camera:
             ((x1, y1), (x2, y2)) = clipped_line
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
+    def draw_vertical_hairline(
+        self, color: Color, x: float, starty: float, endy: float
+    ) -> None:
+        """Draw a vertical worldspace-line of single-pixel-thickness
+
+        Args:
+            color (Color): Line's Color
+            x (float): Line's horizontal position
+            starty (float): Line's starting point
+            endy (float): Line's ending point
+        """
+        tstart, tend = (
+            self.world_to_screen(Vec2(x, starty)),
+            self.world_to_screen(Vec2(x, endy)),
+        )
+        screen_rect = Rect((0, 0), self.surface.get_size())
+        clipped_line = screen_rect.clipline(tstart, tend)
+        if clipped_line:
+            ((x, y1), (_, y2)) = clipped_line
+            pygame.gfxdraw.vline(self.surface, x, y1, y2, color)
+
+    def draw_horizontal_hairline(
+        self, color: Color, startx: float, endx: float, y: float
+    ) -> None:
+        """Draw a horizontal worldspace-line of single-pixel-thickness
+
+        Args:
+            color (Color): Line's Color
+            startx (float): Line's starting point
+            endy (float): Line's ending point
+            y (float): Line's vertical position
+        """
+        tstart, tend = (
+            self.world_to_screen(Vec2(startx, y)),
+            self.world_to_screen(Vec2(endx, y)),
+        )
+        screen_rect = Rect((0, 0), self.surface.get_size())
+        clipped_line = screen_rect.clipline(tstart, tend)
+        if clipped_line:
+            ((x1, y), (x2, _)) = clipped_line
+            pygame.gfxdraw.hline(self.surface, x1, x2, y, color)
+
     def draw_rect(self, color: Color, rect: Rect) -> None:
         """Draw an anti-aliased worldspace-rectangle.
 

@@ -103,8 +103,10 @@ else:
 
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(SPAWNPOINT, 1.0, surface)
-minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
-minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
+minimap_surface = surface.subsurface(
+    ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE)
+)
+minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 
 universe = Universe(
     WORLD_SIZE,
@@ -147,10 +149,19 @@ while True:
             [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
         )
 
+        universe.draw_grid(camera)
         universe.draw(camera)
         universe.draw_text(camera)
         minimap_camera.start_drawing_new_frame()
         universe.draw(minimap_camera)
+
+        # Draw minimap border
+        # This being worldspace is a kinda bad hack.
+        MINIMAP_BORDER_COLOR = Color("aquamarine")
+        minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
+        minimap_camera.draw_horizontal_hairline(
+            MINIMAP_BORDER_COLOR, 0, WORLD_SIZE.x, WORLD_SIZE.y - 1
+        )
 
     pygame.display.flip()
 
