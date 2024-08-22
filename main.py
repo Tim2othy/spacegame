@@ -23,7 +23,7 @@ SCREEN_SIZE = Vector2(1700, 900)
 WORLD_SIZE = Vector2(200_000, 200_000)
 surface = pygame.display.set_mode(SCREEN_SIZE)
 camera = Camera(SPAWNPOINT, 1.0, surface)
-MINIMAP_SIZE = Vector2(250, 250)
+MINIMAP_SIZE = Vector2(350, 350)
 minimap_surface = surface.subsurface((SCREEN_SIZE - MINIMAP_SIZE, MINIMAP_SIZE))
 minimap_camera = Camera(SPAWNPOINT, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 """
@@ -101,13 +101,13 @@ asteroids: list[Asteroid] = []
 for _ in range(20):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vector2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(20, 300)
+    radius = random.uniform(20, 100)
     asteroids.append(
         Asteroid(pos, vel, 1, radius, None)
     )  # TODO: this None is for bullet_color, I'm sure there is some way to remove this?
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(20):
+for _ in range(5):
     pos = Vector2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vector2(0, 0), player_ship))
