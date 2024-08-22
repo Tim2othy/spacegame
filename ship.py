@@ -9,7 +9,10 @@ from pygame import Color
 import math
 from physics import Disk
 from projectiles import Bullet, Rocket
-from camera import Camera
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from camera import Camera
 
 
 BULLET_SPEED = 500

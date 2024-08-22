@@ -6,7 +6,10 @@ import math
 import pygame
 import pygame.camera
 from pygame.math import Vector2 as Vec2
-from camera import Camera
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.003
 

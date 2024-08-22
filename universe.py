@@ -7,8 +7,11 @@ import pygame.camera
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 from physics import Disk, PhysicalObject
-from ship import Ship, BulletEnemy
-from camera import Camera
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from camera import Camera
+    from ship import Ship, BulletEnemy
 
 
 class Planet(Disk):
