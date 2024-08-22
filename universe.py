@@ -154,8 +154,7 @@ class TrophyArea(Area):
 
 
 class Universe:
-    """
-    A collection of celestial objects, forming a Universe.
+    """A collection of celestial objects, forming a Universe.
 
     Its width is size.x, its height is size.y.
     Coordinates are implicitly zero-based.
