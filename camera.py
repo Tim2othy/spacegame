@@ -11,26 +11,6 @@ import pygame.gfxdraw
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
-def _get_enclosing_rect(points: list[Vec2]) -> Rect:
-    """Get the smallest rectangle enclosing all points.
-
-    Args:
-    ----
-        points (list[Vec2]): Points to enclose
-
-    Returns:
-    -------
-        Rect: Rectangle fitting all points snugly
-
-    """
-    minx = miny = float("inf")
-    maxx = maxy = float("-inf")
-    for point in points:
-        minx = min(minx, point.x)
-        maxx = max(maxx, point.x)
-        miny = min(miny, point.y)
-        maxy = max(maxy, point.y)
-    return Rect((minx, miny), (maxx - minx, maxy - miny))
 
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
@@ -278,3 +258,25 @@ class Camera:
                 (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2
             )
         self.surface.blit(rendered, pos)
+
+
+def _get_enclosing_rect(points: list[Vec2]) -> Rect:
+    """Get the smallest rectangle enclosing all points.
+
+    Args:
+    ----
+        points (list[Vec2]): Points to enclose
+
+    Returns:
+    -------
+        Rect: Rectangle fitting all points snugly
+
+    """
+    minx = miny = float("inf")
+    maxx = maxy = float("-inf")
+    for point in points:
+        minx = min(minx, point.x)
+        maxx = max(maxx, point.x)
+        miny = min(miny, point.y)
+        maxy = max(maxy, point.y)
+    return Rect((minx, miny), (maxx - minx, maxy - miny))
