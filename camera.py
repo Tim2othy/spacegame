@@ -251,7 +251,7 @@ class Camera:
             color (Color): Text's fill color
 
         """
-        rendered = font.render(text, antialias=True, color=color)
+        rendered = font.render(text, True, color)
         if pos is None:
             width, height = self.surface.get_size()
             pos = Vec2(
