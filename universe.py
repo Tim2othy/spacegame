@@ -104,7 +104,6 @@ class Area(Rect):
             ship (Ship): Affected `ship`
 
         """
-        pass
 
 
 class RefuelArea(Area):

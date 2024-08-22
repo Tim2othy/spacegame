@@ -91,7 +91,6 @@ class PhysicalObject:
             camera (Camera): Camera to draw on
 
         """
-        pass
 
 
 class Disk(PhysicalObject):
