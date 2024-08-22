@@ -73,14 +73,14 @@ else:
 
 player_ships = [
     PlayerShip(
-        SPAWNPOINT + Vec2(800, 0),
+        SPAWNPOINT + Vec2(100, 0),
         Vec2(0, 0),
         1,
         10,
         Color("white"),
         Color("orange"),
         ShipInput(
-            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
         ),
     ),
     PlayerShip(
@@ -90,9 +90,7 @@ player_ships = [
         10,
         Color("darkslategray"),
         Color("yellow"),
-        ShipInput(
-            pygame.K_LEFT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
-        ),
+        ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
     ),
 ]
 
@@ -158,10 +156,10 @@ while True:
             font = pygame.font.Font(None, int(64 / player_count))
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
         else:
-            universe.move_camera(player_camera, dt)
+            universe.move_camera(player_camera, player_ix, dt)
             universe.draw_grid(player_camera)
             universe.draw(player_camera)
-            universe.draw_text(player_camera)
+            universe.draw_text(player_camera, player_ix)
 
     minimap_camera.start_drawing_new_frame()
     universe.draw(minimap_camera)

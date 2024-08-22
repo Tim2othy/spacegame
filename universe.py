@@ -304,19 +304,19 @@ class Universe:
         for player_ship in self.player_ships:
             player_ship.handle_input(keys)
 
-    def move_camera(self, camera: Camera, dt: float) -> None:
-        """Move the camera to `self.player_ships`.
+    def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
+        """Move the camera to `self.player_ships[player_ix]`.
 
         Args:
         ----
             camera (Camera): Camera to move
+            player_ix (int): Player to focus on
             dt (float): Passed time
 
         """
-
+        ship = self.player_ships[player_ix]
         camera.smoothly_focus_points(
-            [p.pos for p in self.player_ships]
-            + [p.pos + 1.0 * p.vel for p in self.player_ships],
+            [ship.pos, ship.pos + 1.0 * ship.vel],
             500,
             dt,
         )
@@ -364,12 +364,13 @@ class Universe:
         ):
             pobj.draw(camera)
 
-    def draw_text(self, camera: Camera) -> None:
-        """Draw "debugging" text about `self` on `camera`.
+    def draw_text(self, camera: Camera, player_ix: int) -> None:
+        """Draw "debugging" text on `camera`.
 
         Args:
         ----
             camera (Camera): Camera to draw on
+            player_ix (int): Player to display information about
 
         """
         font_size = 32
@@ -384,17 +385,13 @@ class Universe:
                 )
             self.text_vertical_offset += 1.0 * font_size
 
-        for ix, player_ship in enumerate(self.player_ships):
-            texty(f"{ix} ({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
-            texty(
-                f"{ix} Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})"
-            )
-            texty(f"{ix} Remaining Fuel: {player_ship.fuel:.2f}")
-            texty(
-                f"{ix} Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}"
-            )
-            texty(f"{ix} Health: {player_ship.health:.2f}")
-            texty(f"{ix} Ammunition: {player_ship.ammo}")
+        player_ship = self.player_ships[player_ix]
+        texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
+        texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
+        texty(f"Remaining Fuel: {player_ship.fuel:.2f}")
+        texty(f"Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}")
+        texty(f"Health: {player_ship.health:.2f}")
+        texty(f"Ammunition: {player_ship.ammo}")
         for area in self.areas:
             texty(f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})")
         player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
