@@ -16,7 +16,9 @@ GRAVITATIONAL_CONSTANT = 0.003
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
+    """A physical object with dynamic position, dynamic velocity,
+    and constant nonzero mass.
+    """
 
     def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
@@ -180,17 +182,16 @@ class Disk(PhysicalObject):
         if not self.intersects_disk(disk):
             return None
 
-        # When rewriting this: The pygame.math module already has methods for normal-vector
-        # calculation.
+        # When rewriting this: The pygame.math module already
+        #  has methods for normal-vector calculation.
         # Also use the add_force or add_impulse methods from Physics, do
         # not modify velocity directly
 
+        # 0 <= bounciness <= 1.
+        # At bounciness == 1.0, collisions cause no damage.
         bounciness = 0.70
-        """
-        bounciness: float between 0 and 1. 
-        At 1 collisions cause no damage.
-        """
-        """Calculate normal vector"""
+
+        # Calculate normal vector
         delta = self.pos - disk.pos
         delta_magnitude = delta.magnitude()
         normal_vector = delta / delta_magnitude
@@ -200,6 +201,7 @@ class Disk(PhysicalObject):
         impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
         self.vel += normal_vector * impulse_scalar / self.mass
 
-        """This allows the ship to land on the planet. If impulse is small there is no damage"""
+        # This allows the ship to land on the planet.
+        # If impulse is small there is no damage
         damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
         return damage

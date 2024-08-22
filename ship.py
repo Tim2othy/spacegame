@@ -68,7 +68,7 @@ class Ship(Disk):
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
 
-        Returns:
+        Returns
         -------
             Vec2: Faced direction, normalized
 
@@ -263,7 +263,8 @@ class BulletEnemy(Ship):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
+            shoot_cooldown (float, optional): Minimum time between shots.
+                Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
 
         """
@@ -334,13 +335,15 @@ class RocketEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.5.
+            shoot_cooldown (float, optional): Minimum time between shots.
+                Defaults to 0.5.
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
     def shoot(self) -> None:
+        """Shoot a Rocket."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
