@@ -10,7 +10,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from ship import BulletEnemy, RocketEnemy, Ship
+from ship import BulletEnemy, RocketEnemy, ShipInput, PlayerShip
 from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
 
 # Initialize Pygame
@@ -71,8 +71,16 @@ else:
     ]
 
 
-player_ship = Ship(
-    SPAWNPOINT, Vec2(0, 0), 1, 10, Color("darkslategray"), Color("yellow")
+player_ship = PlayerShip(
+    SPAWNPOINT,
+    Vec2(0, 0),
+    1,
+    10,
+    Color("darkslategray"),
+    Color("yellow"),
+    ShipInput(
+        pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+    ),
 )
 
 
@@ -104,7 +112,7 @@ universe = Universe(
     WORLD_SIZE,
     planets,
     asteroids,
-    player_ship,
+    [player_ship],
     areas,
     enemy_ships,
 )
@@ -122,14 +130,7 @@ while True:
         font = pygame.font.Font(None, 64)
         camera.draw_text("GAME OVER", None, font, Color("red"))
     else:
-        # Handle input
-        keys = pygame.key.get_pressed()
-        player_ship.thruster_rot_left = keys[pygame.K_RIGHT]
-        player_ship.thruster_rot_right = keys[pygame.K_LEFT]
-        player_ship.thruster_forward = keys[pygame.K_UP]
-        player_ship.thruster_backward = keys[pygame.K_DOWN]
-        if keys[pygame.K_SPACE]:
-            player_ship.shoot()
+        universe.handle_input(pygame.key.get_pressed())
 
         universe.step(dt)
 
