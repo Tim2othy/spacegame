@@ -155,6 +155,14 @@ while True:
         minimap_camera.start_drawing_new_frame()
         universe.draw(minimap_camera)
 
+        # Draw minimap border
+        # This being worldspace is a kinda bad hack.
+        MINIMAP_BORDER_COLOR = Color("aquamarine")
+        minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
+        minimap_camera.draw_horizontal_hairline(
+            MINIMAP_BORDER_COLOR, 0, WORLD_SIZE.x, WORLD_SIZE.y - 1
+        )
+
     pygame.display.flip()
 
 pygame.quit()
