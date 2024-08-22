@@ -71,17 +71,30 @@ else:
     ]
 
 
-player_ship = PlayerShip(
-    SPAWNPOINT,
-    Vec2(0, 0),
-    1,
-    10,
-    Color("darkslategray"),
-    Color("yellow"),
-    ShipInput(
-        pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+player_ships = [
+    PlayerShip(
+        SPAWNPOINT,
+        Vec2(0, 0),
+        1,
+        10,
+        Color("darkslategray"),
+        Color("yellow"),
+        ShipInput(
+            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+        ),
     ),
-)
+    PlayerShip(
+        SPAWNPOINT + Vec2(30, 0),
+        Vec2(0, 0),
+        1,
+        10,
+        Color("white"),
+        Color("purple"),
+        ShipInput(
+            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
+        ),
+    ),
+]
 
 
 asteroids: list[Asteroid] = []
@@ -95,9 +108,9 @@ enemy_ships: list[BulletEnemy] = []
 for _ in range(50):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
-        enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), player_ship))
+        enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
-        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), player_ship))
+        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
 planets = [Planet(Vec2(6_000, 1_000), 1, 300, Color("darkred"), None)]
 
@@ -112,7 +125,7 @@ universe = Universe(
     WORLD_SIZE,
     planets,
     asteroids,
-    [player_ship],
+    player_ships,
     areas,
     enemy_ships,
 )
@@ -133,12 +146,13 @@ while True:
         universe.handle_input(pygame.key.get_pressed())
         universe.step(dt)
 
-        if (
-            not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        ) and not TEST_MODE:
-            game_over = True
+        for player_ship in player_ships:
+            if (
+                not universe.contains_point(player_ship.pos) or player_ship.health <= 0
+            ) and not TEST_MODE:
+                game_over = True
         camera.smoothly_focus_points(
-            [player_ship.pos, player_ship.pos + 1 * player_ship.vel],
+            [p.pos for p in player_ships] + [p.pos + 1.0 * p.vel for p in player_ships],
             500,
             dt,
         )
