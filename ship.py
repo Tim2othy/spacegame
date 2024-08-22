@@ -144,7 +144,7 @@ class Ship(Disk):
         darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
-        def drawy(color: Color, points: list[Vec2]):
+        def drawy(color: Color, points: list[Vec2]) -> None:
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
         # thruster_backward (active)

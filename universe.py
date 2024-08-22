@@ -344,7 +344,7 @@ class Universe:
 
         self.text_vertical_offset = 10
 
-        def texty(text: str | None = None):
+        def texty(text: str | None = None) -> None:
             if text is not None:
                 camera.draw_text(
                     text, Vec2(10, self.text_vertical_offset), font, Color("white")
