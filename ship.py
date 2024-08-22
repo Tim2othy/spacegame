@@ -26,11 +26,13 @@ class Ship(Disk):
         """Create a new spaceship
 
         Args:
+        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
+
         """
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
@@ -58,7 +60,9 @@ class Ship(Disk):
         """Get `self`'s faced direction from its `angle`
 
         Returns:
+        -------
             Vec2: Faced direction, normalized
+
         """
         # For unknown reasons, `Vec2.from_polar((self.angle, 1))` won't work.
         direction = Vec2()
@@ -80,7 +84,9 @@ class Ship(Disk):
         Does nothing if damage is <= 0.
 
         Args:
+        ----
             damage (float): Amount of damage to deal.
+
         """
         if damage > 0:
             self.health -= damage
@@ -90,7 +96,9 @@ class Ship(Disk):
         """Physics, control, and bullet-stepping for `self`
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         if self.fuel > 0:
             if self.thruster_rot_left:
@@ -121,7 +129,9 @@ class Ship(Disk):
         """Draw `self` on `camera
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         forward = self.get_faced_direction()
         right = Vec2(-forward.y, forward.x)
@@ -239,11 +249,13 @@ class BulletEnemy(Ship):
         """Create a new enemy ship
 
         Args:
+        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
             shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
+
         """
         super().__init__(pos, vel, 1, 8, color)
         self.thrust /= 2
@@ -259,7 +271,9 @@ class BulletEnemy(Ship):
         """Apply physics and "AI" to `self`
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.action_timer -= dt
         if self.action_timer <= 0:
@@ -306,11 +320,13 @@ class RocketEnemy(BulletEnemy):
         """Create a new Rocket-Ship
 
         Args:
+        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
             shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.5.
             color (Color, optional): Material color. Defaults to Color("red").
+
         """
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 

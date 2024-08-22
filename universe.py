@@ -23,10 +23,12 @@ class Planet(Disk):
         """Create a new planet.
 
         Args:
+        ----
             pos (Vec2): Fixed position
             density (float): Density
             radius (float): Radius
             color (Color): Color
+
         """
         super().__init__(pos, Vec2(0, 0), density, radius, color)
 
@@ -45,10 +47,12 @@ class Asteroid(Disk):
         Any color you like, as long as it's gray.
 
         Args:
+        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             density (float): Density
             radius (float): Radius
+
         """
         super().__init__(pos, vel, density, radius, Color("gray"))
 
@@ -65,9 +69,11 @@ class Area(Rect):
         """Create a new area
 
         Args:
+        ----
             rect (Rect): Rectangular area
             color (Color): Color
             caption (str): Area's "Name"
+
         """
         super().__init__(rect)
         self.color = color
@@ -77,7 +83,9 @@ class Area(Rect):
         """Draw `self` on `camera`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         camera.draw_rect(self.color, self)
 
@@ -85,7 +93,9 @@ class Area(Rect):
         """An event to trigger for a ship entering `self`
 
         Args:
+        ----
             ship (Ship): Affected `ship`
+
         """
         pass
 
@@ -100,7 +110,9 @@ class RefuelArea(Area):
         """Create a RefuelArea
 
         Args:
+        ----
             rect (Rect): Rectangular area
+
         """
         super().__init__(rect, Color("yellow"), "Refuel")
 
@@ -108,7 +120,9 @@ class RefuelArea(Area):
         """Refuel `ship`
 
         Args:
+        ----
             ship (Ship): Ship to refuel
+
         """
         ship.fuel = ship.max_fuel
 
@@ -120,7 +134,9 @@ class TrophyArea(Area):
         """Create a TrophyArea
 
         Args:
+        ----
             rect (Rect): Rectangular area
+
         """
         super().__init__(rect, Color("gold"), "Trophy")
 
@@ -128,7 +144,9 @@ class TrophyArea(Area):
         """Give `ship` a trophy
 
         Args:
+        ----
             ship (Ship): Ship to give a trophy to
+
         """
         ship.has_trophy = True
 
@@ -153,12 +171,14 @@ class Universe:
         """Create a new universe (not in the big-bang way, sadly)
 
         Args:
+        ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
             asteroids (list[Asteroid]): Asteroids
             player_ship (Ship): Player's ship
             areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
+
         """
         self.size = size
         self.planets = planets
@@ -171,8 +191,10 @@ class Universe:
         """Have pobj be affected by `self`'s entire gravity
 
         Args:
+        ----
             dt (float): Passed time
             pobj (PhysicalObject): Object to affect
+
         """
         force_sum = Vec2(0, 0)
         for body in self.planets:
@@ -183,7 +205,9 @@ class Universe:
         """Apply gravity to all of `self`'s objects
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.apply_gravity_to_obj(dt, self.player_ship)
         for enemy_ship in self.enemy_ships:
@@ -195,11 +219,14 @@ class Universe:
         """Bounce a disk off of each of `self`s objects
 
         Args:
+        ----
             disk (Disk): Disk to bounce
 
         Returns:
+        -------
             float | None: If float, impact velocity of first bounce.
                 If None, no impact occured.
+
         """
         for body in self.asteroids + self.planets:
             damage = disk.bounce_off_of_disk(body)
@@ -223,10 +250,13 @@ class Universe:
         """Test whether any of `self`'s planets or asteroids intersect `vec`
 
         Args:
+        ----
             vec (Vec2): Position to test for intersection
 
         Returns:
+        -------
             bool: True iff any intersect
+
         """
         return any(
             map(lambda planet: planet.intersects_point(vec), self.planets)
@@ -236,7 +266,9 @@ class Universe:
         """Run the universe-logic, also for the object `self` contains.
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         # Call `step` on everything
         self.player_ship.step(dt)
@@ -282,7 +314,9 @@ class Universe:
         """Draw all of `self` on `camera`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         self.draw_grid(camera)
         for area in self.areas:
@@ -299,7 +333,9 @@ class Universe:
         """Draw "debugging" text about `self` on `camera`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         font_size = 32
         font = pygame.font.Font(None, font_size)
@@ -332,7 +368,9 @@ class Universe:
         """Draw grid on `camera`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         grid_color = Color("darkgreen")
         gridline_spacing = 5000
@@ -349,10 +387,13 @@ class Universe:
         """Test whether `vec` is contained in `self`'s boundaries
 
         Args:
+        ----
             vec (Vec2): Vec to test for containment
 
         Returns:
+        -------
             bool: True iff `self` contains `vec`
+
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
@@ -360,9 +401,12 @@ class Universe:
         """Return `vec` clamped to be within `self`'s bounds.
 
         Args:
+        ----
             vec (Vec2): Point to clamp into `self`
 
         Returns:
+        -------
             Vec2: The clamped point. Unchanged if it already was in `self`.
+
         """
         return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))

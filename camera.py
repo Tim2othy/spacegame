@@ -17,10 +17,12 @@ class Camera:
         """Construct a new camera.
 
         Args:
+        ----
             pos (Vec2): Worldspace-coordinate at the center of the screen
             zoom (float): Higher = Fewer objects fit on screen,
                 zoom==1 corresponds to 1 pixel per unit
             surface (pygame.Surface): Surface to draw on
+
         """
         self.pos: Vec2 = pos
         self.zoom: float = zoom
@@ -36,11 +38,13 @@ class Camera:
         """Smoothly transition the camera to a new location.
 
         Args:
+        ----
             new_pos (Vec2): New camera worldspace-position
             new_zoom (float): New zoom-factor
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
         dist = self.pos.distance_to(new_pos)
         self.pos.move_towards_ip(new_pos, dist * dt / transition_time)
@@ -56,10 +60,12 @@ class Camera:
         entirely, but not more.
 
         Args:
+        ----
             rect (Rect): Worldspace-rectangle to fit to
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
         ratio = rect.width / rect.height
         surface_width = self.surface.get_width()
@@ -86,11 +92,13 @@ class Camera:
         with an additional buffer.
 
         Args:
+        ----
             points (list[Vec2]): Worldspace-points to focus on. Hopefully nonempty.
             buff (float): Worldspace-buffer around the points
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
                 the camera will have fully transitioned. Defaults to 0.25
+
         """
         enclosing_rect = self._get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
@@ -101,10 +109,13 @@ class Camera:
         This method works irrespective of which space you use.
 
         Args:
+        ----
             points (list[Vec2]): Points to enclose
 
         Returns:
+        -------
             Rect: Rectangle fitting all points snugly
+
         """
         minx = miny = float("inf")
         maxx = maxy = float("-inf")
@@ -120,10 +131,13 @@ class Camera:
         camera's screen.
 
         Args:
+        ----
             rect (Rect): Screenspace-rectangle
 
         Returns:
+        -------
             bool: True iff screenspace-rectangle intersects the screen
+
         """
         own_rect = Rect((0, 0), self.surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
@@ -133,10 +147,13 @@ class Camera:
         """Transform a worldspace-vector to screenspace.
 
         Args:
+        ----
             vec (Vec2): Worldspace-vector
 
         Returns:
+        -------
             Vec2: Screenspace-vector
+
         """
         width, height = self.surface.get_size()
         center = Vec2(width / 2, height / 2)
@@ -152,9 +169,11 @@ class Camera:
         """Draw a anti-aliased worldspace-circle on screen.
 
         Args:
+        ----
             color (Color): Border- and fill-color
             center (Vec2): Worldspace-center of the circle
             radius (float): Worldspace-radius of the circle
+
         """
         ccenter, cradius = self.world_to_screen(center), radius * self.zoom
         # ??? Why only ints?
@@ -170,8 +189,10 @@ class Camera:
         """Draw an anti-aliased worldspace-polygon on screen.
 
         Args:
+        ----
             color (Color): Border- and fill-color
             points (list[Vec2]): Worldspace-points
+
         """
         cpoints = [self.world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
@@ -184,10 +205,12 @@ class Camera:
         """Draw an anti-aliased worldspace-line with a given thickness.
 
         Args:
+        ----
             color (Color): Border- and fill-color
             start (Vec2): Line's start-worldspace-point
             end (Vec2): Line's end-worldspace-point
             width (float): Line's worldspace-thickness
+
         """
         delta = end - start
         if delta == Vec2(0, 0):
@@ -207,9 +230,11 @@ class Camera:
         """Draw an anti-aliased worldspace-line of single-pixel-thickness.
 
         Args:
+        ----
             color (Color): Line's color
             start (Vec2): Line's start-worldspace-point
             end (Vec2): Line's end-worldspace-point
+
         """
         tstart, tend = self.world_to_screen(start), self.world_to_screen(end)
         screen_rect = Rect((0, 0), self.surface.get_size())
@@ -222,8 +247,10 @@ class Camera:
         """Draw an anti-aliased worldspace-rectangle.
 
         Args:
+        ----
             color (Color): Border- and fill-color
             rect (Rect): Worldspace rectangle to draw
+
         """
         ttopleft = self.world_to_screen(Vec2(rect.topleft))
         tbottomright = self.world_to_screen(Vec2(rect.bottomright))
@@ -237,11 +264,13 @@ class Camera:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:
+        ----
             text (str): Text to render
             pos (Vec2 | None): If Vec2, screenspace-position of text's top-left-corner,
                 if None, text will be centered on screen
             font (pygame.font.Font): Font to be used
             color (Color): Text's fill color
+
         """
         rendered = font.render(text, True, color)
         if pos is None:

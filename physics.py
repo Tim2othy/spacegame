@@ -16,9 +16,11 @@ class PhysicalObject:
         """Create a new PhysicalObject
 
         Args:
+        ----
             pos (Vec2): Object's position, usually its center
             vel (Vec2): Object's velocity (ignore relativity please)
             mass (float): Object's mass
+
         """
         self.pos = pos
         self.mass = mass
@@ -28,7 +30,9 @@ class PhysicalObject:
         """Apply its velocity to `self`
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.pos += dt * self.vel
 
@@ -36,7 +40,9 @@ class PhysicalObject:
         """Add an impulse to `self`
 
         Args:
+        ----
             impulse (Vec2): Impulse to apply
+
         """
         self.vel += impulse / self.mass
 
@@ -44,8 +50,10 @@ class PhysicalObject:
         """Apply a force to `self`
 
         Args:
+        ----
             force (Vec2): Force to apply
             dt (float): Passed time
+
         """
         self.add_impulse(force * dt)
 
@@ -54,10 +62,13 @@ class PhysicalObject:
         affects `self`.
 
         Args:
+        ----
             pobj (PhysicalObject): Other PhysicalObject to gravitate towards
 
         Returns:
+        -------
             Vec2: Resulting force to apply to `self`
+
         """
 
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
@@ -73,7 +84,9 @@ class PhysicalObject:
         Implemented by subclasses.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         pass
 
@@ -92,11 +105,13 @@ class Disk(PhysicalObject):
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
+        ----
             pos (Vec2): Disk's center
             vel (Vec2): Disk's velocity
             density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
+
         """
         mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
@@ -108,7 +123,9 @@ class Disk(PhysicalObject):
         """Draw anti-aliased `self`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         camera.draw_circle(self.color, self.pos, self.radius)
 
@@ -116,10 +133,13 @@ class Disk(PhysicalObject):
         """Determine whether `vec` is in `self`
 
         Args:
+        ----
             vec (Vec2): Vector to test for intersection
 
         Returns:
+        -------
             bool: True iff `vec` is in `self`
+
         """
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
@@ -127,10 +147,13 @@ class Disk(PhysicalObject):
         """Determine whether `self` intersects another Disk
 
         Args:
+        ----
             disk (Disk): Other disk
 
         Returns:
+        -------
             bool: True iff the two disks intersect
+
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
@@ -140,11 +163,14 @@ class Disk(PhysicalObject):
             at moment of collision. Then strength of bounce and damage
 
         Args:
+        ----
             disk (Disk): Disk to potentially bounce off of
 
         Returns:
+        -------
             float | None: If float, it's `self`'s suffered damage.
                 If None, the two didn't intersect.
+
         """
         if not self.intersects_disk(disk):
             return None

@@ -17,9 +17,11 @@ class Bullet(PhysicalObject):
         """Create a new basic Bullet
 
         Args:
+        ----
             pos (Vec2): Start position
             vel (Vec2): Velocity
             color (Color): Border- and fill-color
+
         """
         super().__init__(pos, vel, 1.0)
         self.color = color
@@ -28,7 +30,9 @@ class Bullet(PhysicalObject):
         """Draw `self` on `camera`.
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
         camera.draw_polygon(
@@ -48,10 +52,12 @@ class Rocket(Bullet):
         """Create a new rocket targeting `target_ship`.
 
         Args:
+        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
             target_ship (Ship): Ship to home in on
+
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
@@ -66,7 +72,9 @@ class Rocket(Bullet):
         """Apply homing and physics-logic
 
         Args:
+        ----
             dt (float): Passed time
+
         """
         self.homing_timer = (self.homing_timer + dt) % self._total_duration
 
@@ -83,7 +91,9 @@ class Rocket(Bullet):
         """Draw `self` to `camera`
 
         Args:
+        ----
             camera (Camera): Camera to draw on
+
         """
         forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
         left = Vec2(-forward.y, forward.x)
