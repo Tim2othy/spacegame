@@ -58,7 +58,7 @@ class Camera:
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
     def smoothly_focus_rect(
-        self, rect: Rect, dt: float, transition_time: float = 0.25
+        self, rect: Rect, dt: float, transition_time: float = 0.25,
     ) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is
         visible entirely, but not more.
@@ -223,15 +223,17 @@ class Camera:
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
     def draw_vertical_hairline(
-        self, color: Color, x: float, starty: float, endy: float
+        self, color: Color, x: float, starty: float, endy: float,
     ) -> None:
-        """Draw a vertical worldspace-line of single-pixel-thickness
+        """Draw a vertical worldspace-line of single-pixel-thickness.
 
         Args:
+        ----
             color (Color): Line's Color
             x (float): Line's horizontal position
             starty (float): Line's starting point
             endy (float): Line's ending point
+
         """
         tstart, tend = (
             self.world_to_screen(Vec2(x, starty)),
@@ -244,15 +246,17 @@ class Camera:
             pygame.gfxdraw.vline(self.surface, x, y1, y2, color)
 
     def draw_horizontal_hairline(
-        self, color: Color, startx: float, endx: float, y: float
+        self, color: Color, startx: float, endx: float, y: float,
     ) -> None:
-        """Draw a horizontal worldspace-line of single-pixel-thickness
+        """Draw a horizontal worldspace-line of single-pixel-thickness.
 
         Args:
+        ----
             color (Color): Line's Color
             startx (float): Line's starting point
             endy (float): Line's ending point
             y (float): Line's vertical position
+
         """
         tstart, tend = (
             self.world_to_screen(Vec2(startx, y)),
@@ -280,7 +284,7 @@ class Camera:
             pygame.gfxdraw.box(self.surface, screen_rect, color)
 
     def draw_text(
-        self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color
+        self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color,
     ) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 
@@ -297,7 +301,7 @@ class Camera:
         if pos is None:
             width, height = self.surface.get_size()
             pos = Vec2(
-                (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2
+                (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2,
             )
         self.surface.blit(rendered, pos)
 

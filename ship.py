@@ -30,7 +30,7 @@ class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(
-        self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color
+        self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color,
     ) -> None:
         """Create a new spaceship.
 
@@ -245,7 +245,7 @@ class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
     Action = Enum(
-        "Action", ["accelerate_to_player", "accelerate_randomly", "decelerate"]
+        "Action", ["accelerate_to_player", "accelerate_randomly", "decelerate"],
     )
 
     def __init__(
@@ -349,7 +349,7 @@ class RocketEnemy(BulletEnemy):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(
-                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship)
+                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
             )
             self.gun_cooldown = 0.025
             self.ammo -= 1

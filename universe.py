@@ -270,7 +270,7 @@ class Universe:
         """Run bullet-collision checks and damage ships as a result."""
         for projectile in self.player_ship.projectiles:
             if self.asteroids_or_planets_intersect_point(
-                projectile.pos
+                projectile.pos,
             ) or not self.contains_point(projectile.pos):
                 self.player_ship.projectiles.remove(projectile)
                 continue
@@ -282,7 +282,7 @@ class Universe:
         for ship in self.enemy_ships:
             for projectile in ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(
-                    projectile.pos
+                    projectile.pos,
                 ) or not self.contains_point(projectile.pos):
                     ship.projectiles.remove(projectile)
                     continue
@@ -351,7 +351,7 @@ class Universe:
         def texty(text: str | None = None) -> None:
             if text is not None:
                 camera.draw_text(
-                    text, Vec2(10, self.text_vertical_offset), font, Color("white")
+                    text, Vec2(10, self.text_vertical_offset), font, Color("white"),
                 )
             self.text_vertical_offset += 1.0 * font_size
 
