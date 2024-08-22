@@ -172,4 +172,9 @@ class Disk(PhysicalObject):
 
         """This allows the ship to land on the planet. If impulse is small there is no damage"""
         damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
+
+        # Move self outside other
+        overlap = self.radius + disk.radius - delta_magnitude
+        self.pos += normal_vector * overlap
+
         return damage
