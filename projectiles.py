@@ -40,9 +40,9 @@ class Bullet(PhysicalObject):
         camera.draw_polygon(
             self.color,
             [
-                self.pos + 5 * forward,
-                self.pos + 5 * forward.rotate(150),
-                self.pos + 5 * forward.rotate(-150),
+                self.pos + 4 * forward,
+                self.pos + 4 * forward.rotate(150),
+                self.pos + 4 * forward.rotate(-150),
             ],
         )
 
@@ -116,7 +116,7 @@ class Rocket(Bullet):
                 ],
             )
         else:
-            self.color = Color("red")
+            self.color = Color("darkblue    ")
 
         # Missile body
         camera.draw_polygon(

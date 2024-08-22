@@ -384,7 +384,7 @@ class Universe:
 
         """
         grid_color = Color("darkgreen")
-        gridline_spacing = 5000
+        gridline_spacing = 500
         width = self.size.x
         height = self.size.y
 

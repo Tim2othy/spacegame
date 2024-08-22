@@ -71,7 +71,9 @@ else:
     ]
 
 
-player_ship = Ship(SPAWNPOINT, Vec2(0, 0), 1, 10, Color("turquoise"), Color("yellow"))
+player_ship = Ship(
+    SPAWNPOINT, Vec2(0, 0), 1, 10, Color("darkslategray"), Color("yellow")
+)
 
 
 asteroids: list[Asteroid] = []

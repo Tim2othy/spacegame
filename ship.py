@@ -31,8 +31,8 @@ class Ship(Disk):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         density: float,
         size: float,
         color: Color,
@@ -56,7 +56,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
-        self.bullet_color = Color("yellow")
+        self.bullet_color = bullet_color
 
         self.ammo: int = 600
         self.thrust: float = 250 * self.mass
@@ -270,7 +270,7 @@ class BulletEnemy(Ship):
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
         color: Color = Color("lightblue"),
-        bullet_color: Color = Color("yellow"),
+        bullet_color: Color = Color("lime"),
     ):
         """Create a new enemy ship
 
@@ -351,7 +351,7 @@ class RocketEnemy(BulletEnemy):
         vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 10,
-        color: Color = Color("darkgreen"),
+        color: Color = Color("plum"),
     ):
         """Create a new Rocket-Ship
 
