@@ -11,6 +11,26 @@ import pygame.gfxdraw
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
+def _get_enclosing_rect(points: list[Vec2]) -> Rect:
+    """Get the smallest rectangle enclosing all points.
+
+    Args:
+    ----
+        points (list[Vec2]): Points to enclose
+
+    Returns:
+    -------
+        Rect: Rectangle fitting all points snugly
+
+    """
+    minx = miny = float("inf")
+    maxx = maxy = float("-inf")
+    for point in points:
+        minx = min(minx, point.x)
+        maxx = max(maxx, point.x)
+        miny = min(miny, point.y)
+        maxy = max(maxy, point.y)
+    return Rect((minx, miny), (maxx - minx, maxy - miny))
 
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
@@ -104,33 +124,9 @@ class Camera:
                 the camera will have fully transitioned. Defaults to 0.25
 
         """
-        enclosing_rect = self._get_enclosing_rect(points)
+        enclosing_rect = _get_enclosing_rect(points)
         buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
         self.smoothly_focus_rect(buffed_rect, dt, transition_time)
-
-    def _get_enclosing_rect(self, points: list[Vec2]) -> Rect:
-        """Get the smallest rectangle enclosing all points.
-
-        If `points` are screenspace, the Rect is screenspace.
-        If `points` are worldspace, the Rect is worldspace.
-
-        Args:
-        ----
-            points (list[Vec2]): Points to enclose
-
-        Returns:
-        -------
-            Rect: Rectangle fitting all points snugly
-
-        """
-        minx = miny = float("inf")
-        maxx = maxy = float("-inf")
-        for point in points:
-            minx = min(minx, point.x)
-            maxx = max(maxx, point.x)
-            miny = min(miny, point.y)
-            maxy = max(maxy, point.y)
-        return Rect((minx, miny), (maxx - minx, maxy - miny))
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
         """Determine whether a screenspace-rectangle intersects the camera's screen.
@@ -199,7 +195,7 @@ class Camera:
         """
         cpoints = [self.world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
-        enclosing_rect = self._get_enclosing_rect(cpoints)
+        enclosing_rect = _get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
             pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
