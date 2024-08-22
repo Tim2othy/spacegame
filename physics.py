@@ -5,9 +5,8 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-import pygame
-
 if TYPE_CHECKING:
+    from pygame import Color
     from pygame.math import Vector2 as Vec2
 
     from camera import Camera
@@ -102,7 +101,7 @@ class Disk(PhysicalObject):
         vel: Vec2,
         density: float,
         radius: float,
-        color: pygame.Color,
+        color: Color,
     ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 

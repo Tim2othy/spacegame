@@ -7,7 +7,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pygame
-import pygame.camera
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
