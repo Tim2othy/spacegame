@@ -319,21 +319,13 @@ class PlayerShip(Ship):
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
+        print(keys[self.spaceship_input.thruster_rot_left])
         self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
         self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         if keys[self.spaceship_input.shoot]:
             self.shoot()
-
-    def step(self, dt: float) -> None:
-        """Physics, control, and bullet-stepping for `self`.
-
-        Args:
-        ----
-            dt (float): Passed time
-
-        """
 
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""

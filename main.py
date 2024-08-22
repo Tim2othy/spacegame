@@ -131,7 +131,6 @@ while True:
         camera.draw_text("GAME OVER", None, font, Color("red"))
     else:
         universe.handle_input(pygame.key.get_pressed())
-
         universe.step(dt)
 
         if (
