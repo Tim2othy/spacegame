@@ -60,8 +60,7 @@ class Camera:
     def smoothly_focus_rect(
         self, rect: Rect, dt: float, transition_time: float = 0.25
     ) -> None:
-        """Smoothly move the camera so that a worldspace-rectangle is visible
-        entirely, but not more.
+        """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
 
         Args:
         ----
@@ -92,8 +91,7 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ) -> None:
-        """Smoothly focus camera so that a list of worldspace-points is visible,
-        with an additional buffer.
+        """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
 
         Args:
         ----
@@ -110,6 +108,7 @@ class Camera:
 
     def _get_enclosing_rect(self, points: list[Vec2]) -> Rect:
         """Get the smallest rectangle enclosing all points.
+
         If `points` are screenspace, the Rect is screenspace.
         If `points` are worldspace, the Rect is worldspace.
 
@@ -132,8 +131,7 @@ class Camera:
         return Rect((minx, miny), (maxx - minx, maxy - miny))
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
-        """Determine whether a screenspace-rectangle intersects the
-        camera's screen.
+        """Determine whether a screenspace-rectangle intersects the camera's screen.
 
         Args:
         ----
@@ -165,13 +163,11 @@ class Camera:
         return (vec - self.pos) * self.zoom + center
 
     def start_drawing_new_frame(self) -> None:
-        """Fill the camera's surface black, to prepare for
-        drawing a new frame.
-        """
+        """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
-        """Draw a anti-aliased worldspace-circle on screen.
+        """Draw an anti-aliased worldspace-circle on screen.
 
         Args:
         ----

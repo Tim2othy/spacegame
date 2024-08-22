@@ -24,7 +24,9 @@ DAMAGE_INDICATOR_TIME = 0.75
 class Ship(Disk):
     """A basic spaceship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color) -> None:
+    def __init__(
+        self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color
+    ) -> None:
         """Create a new spaceship.
 
         Args:

@@ -60,8 +60,7 @@ class PhysicalObject:
         self.add_impulse(force * dt)
 
     def gravitational_force(self, pobj: "PhysicalObject") -> Vec2:
-        """Calculate gravitational force between `pobj` and `self` that
-        affects `self`.
+        """Calculate gravitational force between `pobj` and `self` affecting `self`.
 
         Args:
         ----
