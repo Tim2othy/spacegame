@@ -53,6 +53,7 @@ else:
         10,
         Color("turquoise"),
     )
+    player_ship.ammo = 1_000_000
 
     planets = [
         Planet(Vec2(67_000, 18_000), 1, 3_000, Color("darkred")),
