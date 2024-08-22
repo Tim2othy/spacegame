@@ -3,7 +3,7 @@
 import math
 import pygame
 import pygame.camera
-from pygame.math import Vector2
+from pygame.math import Vector2 as Vec2
 from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.003
@@ -12,12 +12,12 @@ GRAVITATIONAL_CONSTANT = 0.003
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
 
-    def __init__(self, pos: Vector2, vel: Vector2, mass: float):
+    def __init__(self, pos: Vec2, vel: Vec2, mass: float):
         """Create a new PhysicalObject
 
         Args:
-            pos (Vector2): Object's position, usually its center
-            vel (Vector2): Object's velocity (ignore relativity please)
+            pos (Vec2): Object's position, usually its center
+            vel (Vec2): Object's velocity (ignore relativity please)
             mass (float): Object's mass
         """
         self.pos = pos
@@ -32,24 +32,24 @@ class PhysicalObject:
         """
         self.pos += dt * self.vel
 
-    def add_impulse(self, impulse: Vector2):
+    def add_impulse(self, impulse: Vec2):
         """Add an impulse to `self`
 
         Args:
-            impulse (Vector2): Impulse to apply
+            impulse (Vec2): Impulse to apply
         """
         self.vel += impulse / self.mass
 
-    def apply_force(self, force: Vector2, dt: float):
+    def apply_force(self, force: Vec2, dt: float):
         """Apply a force to `self`
 
         Args:
-            force (Vector2): Force to apply
+            force (Vec2): Force to apply
             dt (float): Passed time
         """
         self.add_impulse(force * dt)
 
-    def gravitational_force(self, pobj: "PhysicalObject") -> Vector2:
+    def gravitational_force(self, pobj: "PhysicalObject") -> Vec2:
         """Calculate gravitational force between `pobj` and `self` that
         affects `self`.
 
@@ -57,7 +57,7 @@ class PhysicalObject:
             pobj (PhysicalObject): Other PhysicalObject to gravitate towards
 
         Returns:
-            Vector2: Resulting force to apply to `self`
+            Vec2: Resulting force to apply to `self`
         """
 
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
@@ -83,8 +83,8 @@ class Disk(PhysicalObject):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         density: float,
         radius: float,
         color: pygame.Color,
@@ -92,8 +92,8 @@ class Disk(PhysicalObject):
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
-            pos (Vector2): Disk's center
-            vel (Vector2): Disk's velocity
+            pos (Vec2): Disk's center
+            vel (Vec2): Disk's velocity
             density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
@@ -112,11 +112,11 @@ class Disk(PhysicalObject):
         """
         camera.draw_circle(self.color, self.pos, self.radius)
 
-    def intersects_point(self, vec: Vector2) -> bool:
+    def intersects_point(self, vec: Vec2) -> bool:
         """Determine whether `vec` is in `self`
 
         Args:
-            vec (Vector2): Vector to test for intersection
+            vec (Vec2): Vector to test for intersection
 
         Returns:
             bool: True iff `vec` is in `self`

@@ -2,8 +2,7 @@
 
 from enum import Enum
 import random
-import pygame
-from pygame.math import Vector2
+from pygame.math import Vector2 as Vec2
 from pygame import Color
 import math
 from physics import Disk
@@ -23,14 +22,12 @@ DAMAGE_INDICATOR_TIME = 0.75
 class Ship(Disk):
     """A basic spaceship."""
 
-    def __init__(
-        self, pos: Vector2, vel: Vector2, density: float, size: float, color: Color
-    ):
+    def __init__(self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color):
         """Create a new spaceship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
@@ -57,14 +54,14 @@ class Ship(Disk):
 
         self.damage_indicator_timer: float = 0
 
-    def get_faced_direction(self) -> Vector2:
+    def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`
 
         Returns:
-            Vector2: Faced direction, normalized
+            Vec2: Faced direction, normalized
         """
-        # For unknown reasons, `Vector2.from_polar((self.angle, 1))` won't work.
-        direction = Vector2()
+        # For unknown reasons, `Vec2.from_polar((self.angle, 1))` won't work.
+        direction = Vec2()
         direction.from_polar((1, self.angle))
         return direction
 
@@ -127,7 +124,7 @@ class Ship(Disk):
             camera (Camera): Camera to draw on
         """
         forward = self.get_faced_direction()
-        right = pygame.math.Vector2(-forward.y, forward.x)
+        right = Vec2(-forward.y, forward.x)
         left = -right
         backward = -forward
 
@@ -135,7 +132,7 @@ class Ship(Disk):
         darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
-        def drawy(color: Color, points: list[Vector2]):
+        def drawy(color: Color, points: list[Vec2]):
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
         # thruster_backward (active)
@@ -233,8 +230,8 @@ class BulletEnemy(Ship):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
@@ -242,8 +239,8 @@ class BulletEnemy(Ship):
         """Create a new enemy ship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
             shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
@@ -271,12 +268,12 @@ class BulletEnemy(Ship):
 
         delta_target_ship = self.target_ship.pos - self.pos
 
-        force_direction: Vector2
+        force_direction: Vec2
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
             case BulletEnemy.Action.accelerate_randomly:
-                force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+                force_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
         force = force_direction * self.thrust / force_direction.magnitude()
@@ -300,8 +297,8 @@ class RocketEnemy(BulletEnemy):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 0.5,
         color: Color = Color("red"),
@@ -309,8 +306,8 @@ class RocketEnemy(BulletEnemy):
         """Create a new Rocket-Ship
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
             shoot_cooldown (float, optional): Minimum time between shots. Defaults to 0.5.
             color (Color, optional): Material color. Defaults to Color("red").

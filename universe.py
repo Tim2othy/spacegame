@@ -4,7 +4,7 @@ you must first invent the universe."""
 import pygame
 import pygame.camera
 from pygame import Color, Rect
-from pygame.math import Vector2
+from pygame.math import Vector2 as Vec2
 from physics import Disk, PhysicalObject
 from ship import Ship, BulletEnemy
 from camera import Camera
@@ -15,7 +15,7 @@ class Planet(Disk):
 
     def __init__(
         self,
-        pos: Vector2,
+        pos: Vec2,
         density: float,
         radius: float,
         color: Color,
@@ -23,12 +23,12 @@ class Planet(Disk):
         """Create a new planet.
 
         Args:
-            pos (Vector2): Fixed position
+            pos (Vec2): Fixed position
             density (float): Density
             radius (float): Radius
             color (Color): Color
         """
-        super().__init__(pos, Vector2(0, 0), density, radius, color)
+        super().__init__(pos, Vec2(0, 0), density, radius, color)
 
 
 class Asteroid(Disk):
@@ -36,8 +36,8 @@ class Asteroid(Disk):
 
     def __init__(
         self,
-        pos: Vector2,
-        vel: Vector2,
+        pos: Vec2,
+        vel: Vec2,
         density: float,
         radius: float,
     ):
@@ -45,8 +45,8 @@ class Asteroid(Disk):
         Any color you like, as long as it's gray.
 
         Args:
-            pos (Vector2): Initial position
-            vel (Vector2): Initial velocity
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
             density (float): Density
             radius (float): Radius
         """
@@ -143,7 +143,7 @@ class Universe:
 
     def __init__(
         self,
-        size: Vector2,
+        size: Vec2,
         planets: list[Planet],
         asteroids: list[Asteroid],
         player_ship: Ship,
@@ -153,7 +153,7 @@ class Universe:
         """Create a new universe (not in the big-bang way, sadly)
 
         Args:
-            size (Vector2): Width and height
+            size (Vec2): Width and height
             planets (list[Planet]): Planets
             asteroids (list[Asteroid]): Asteroids
             player_ship (Ship): Player's ship
@@ -174,7 +174,7 @@ class Universe:
             dt (float): Passed time
             pobj (PhysicalObject): Object to affect
         """
-        force_sum = Vector2(0, 0)
+        force_sum = Vec2(0, 0)
         for body in self.planets:
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
@@ -219,11 +219,11 @@ class Universe:
             for disk in other_asteroids + self.planets:
                 asteroid.bounce_off_of_disk(disk)
 
-    def asteroids_or_planets_intersect_point(self, vec: Vector2) -> bool:
+    def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
         """Test whether any of `self`'s planets or asteroids intersect `vec`
 
         Args:
-            vec (Vector2): Position to test for intersection
+            vec (Vec2): Position to test for intersection
 
         Returns:
             bool: True iff any intersect
@@ -309,7 +309,7 @@ class Universe:
         def texty(text: str | None = None):
             if text is not None:
                 camera.draw_text(
-                    text, Vector2(10, self.text_vertical_offset), font, Color("white")
+                    text, Vec2(10, self.text_vertical_offset), font, Color("white")
                 )
             self.text_vertical_offset += 1.0 * font_size
 
@@ -340,29 +340,29 @@ class Universe:
         height = self.size.y
 
         for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_hairline(grid_color, Vector2(x, 0), Vector2(x, height))
+            camera.draw_hairline(grid_color, Vec2(x, 0), Vec2(x, height))
 
         for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_hairline(grid_color, Vector2(0, y), Vector2(width, y))
+            camera.draw_hairline(grid_color, Vec2(0, y), Vec2(width, y))
 
-    def contains_point(self, vec: Vector2) -> bool:
+    def contains_point(self, vec: Vec2) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries
 
         Args:
-            vec (Vector2): Vec to test for containment
+            vec (Vec2): Vec to test for containment
 
         Returns:
             bool: True iff `self` contains `vec`
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def clamp_point(self, vec: Vector2) -> Vector2:
+    def clamp_point(self, vec: Vec2) -> Vec2:
         """Return `vec` clamped to be within `self`'s bounds.
 
         Args:
-            vec (Vector2): Point to clamp into `self`
+            vec (Vec2): Point to clamp into `self`
 
         Returns:
-            Vector2: The clamped point. Unchanged if it already was in `self`.
+            Vec2: The clamped point. Unchanged if it already was in `self`.
         """
-        return Vector2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
+        return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
