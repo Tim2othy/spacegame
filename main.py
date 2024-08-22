@@ -151,12 +151,8 @@ while True:
                 not universe.contains_point(player_ship.pos) or player_ship.health <= 0
             ) and not TEST_MODE:
                 game_over = True
-        camera.smoothly_focus_points(
-            [p.pos for p in player_ships] + [p.pos + 1.0 * p.vel for p in player_ships],
-            500,
-            dt,
-        )
 
+        universe.move_camera(camera, dt)
         universe.draw_grid(camera)
         universe.draw(camera)
         universe.draw_text(camera)

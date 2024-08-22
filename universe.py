@@ -299,9 +299,27 @@ class Universe:
         Args:
         ----
             keys (pygame.key.ScancodeWrapper): Pressed keys
+
         """
         for player_ship in self.player_ships:
             player_ship.handle_input(keys)
+
+    def move_camera(self, camera: Camera, dt: float) -> None:
+        """Move the camera to `self.player_ships`.
+
+        Args:
+        ----
+            camera (Camera): Camera to move
+            dt (float): Passed time
+
+        """
+
+        camera.smoothly_focus_points(
+            [p.pos for p in self.player_ships]
+            + [p.pos + 1.0 * p.vel for p in self.player_ships],
+            500,
+            dt,
+        )
 
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
