@@ -65,7 +65,7 @@ class PhysicalObject:
         """
         self.add_impulse(force * dt)
 
-    def gravitational_force(self, pobj: "PhysicalObject") -> Vec2:
+    def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
         """Calculate gravitational force between `pobj` and `self` affecting `self`.
 
         Args:
@@ -83,7 +83,6 @@ class PhysicalObject:
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
         return normalised_delta * force_magnitude
-
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`. Implemented by subclasses.
@@ -148,7 +147,7 @@ class Disk(PhysicalObject):
         """
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
-    def intersects_disk(self, disk: "Disk") -> bool:
+    def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
 
         Args:
@@ -162,7 +161,7 @@ class Disk(PhysicalObject):
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: "Disk") -> float | None:
+    def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
 
         Calculates intensity that `self` moved towards `disk`
