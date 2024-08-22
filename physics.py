@@ -26,7 +26,7 @@ class PhysicalObject:
         self.mass = mass
         self.vel = vel
 
-    def step(self, dt: float):
+    def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
 
         Args:
@@ -36,7 +36,7 @@ class PhysicalObject:
         """
         self.pos += dt * self.vel
 
-    def add_impulse(self, impulse: Vec2):
+    def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`.
 
         Args:
@@ -46,7 +46,7 @@ class PhysicalObject:
         """
         self.vel += impulse / self.mass
 
-    def apply_force(self, force: Vec2, dt: float):
+    def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.
 
         Args:
@@ -79,7 +79,7 @@ class PhysicalObject:
 
         return force
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draws `self` on `camera`.
         Implemented by subclasses.
 
@@ -119,7 +119,7 @@ class Disk(PhysicalObject):
         self.color = color
         self._radius_squared = radius**2
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw anti-aliased `self`.
 
         Args:

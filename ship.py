@@ -69,7 +69,7 @@ class Ship(Disk):
         direction.from_polar((1, self.angle))
         return direction
 
-    def shoot(self):
+    def shoot(self) -> None:
         """Try to shoot a bullet."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
@@ -79,7 +79,7 @@ class Ship(Disk):
             self.gun_cooldown = 0.1
             self.ammo -= 1
 
-    def suffer_damage(self, damage: float):
+    def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
         Does nothing if damage is <= 0.
 
@@ -92,7 +92,7 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def step(self, dt: float):
+    def step(self, dt: float) -> None:
         """Physics, control, and bullet-stepping for `self`.
 
         Args:
@@ -125,7 +125,7 @@ class Ship(Disk):
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera.
 
         Args:
@@ -267,7 +267,7 @@ class BulletEnemy(Ship):
         self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
 
-    def step(self, dt: float):
+    def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
 
         Args:
@@ -330,7 +330,7 @@ class RocketEnemy(BulletEnemy):
         """
         super().__init__(pos, vel, target_ship, shoot_cooldown, color)
 
-    def shoot(self):
+    def shoot(self) -> None:
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH

@@ -34,7 +34,7 @@ class Camera:
         new_zoom: float,
         dt: float,
         transition_time: float = 0.25,
-    ):
+    ) -> None:
         """Smoothly transition the camera to a new location.
 
         Args:
@@ -55,7 +55,9 @@ class Camera:
         dist = abs(self.zoom - new_zoom)
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
-    def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25):
+    def smoothly_focus_rect(
+        self, rect: Rect, dt: float, transition_time: float = 0.25
+    ) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is visible
         entirely, but not more.
 
@@ -87,7 +89,7 @@ class Camera:
         buff: float,
         dt: float,
         transition_time: float = 0.25,
-    ):
+    ) -> None:
         """Smoothly focus camera so that a list of worldspace-points is visible,
         with an additional buffer.
 
@@ -159,13 +161,13 @@ class Camera:
         center = Vec2(width / 2, height / 2)
         return (vec - self.pos) * self.zoom + center
 
-    def start_drawing_new_frame(self):
+    def start_drawing_new_frame(self) -> None:
         """Fills the camera's surface black, to prepare for
         drawing a new frame.
         """
         self.surface.fill(Color("black"))
 
-    def draw_circle(self, color: Color, center: Vec2, radius: float):
+    def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a anti-aliased worldspace-circle on screen.
 
         Args:
@@ -185,7 +187,7 @@ class Camera:
             pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
             pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
 
-    def draw_polygon(self, color: Color, points: list[Vec2]):
+    def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
         """Draw an anti-aliased worldspace-polygon on screen.
 
         Args:
@@ -201,7 +203,7 @@ class Camera:
             pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
             pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
 
-    def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float):
+    def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw an anti-aliased worldspace-line with a given thickness.
 
         Args:
@@ -226,7 +228,7 @@ class Camera:
         # draw_polygon does it for us
         self.draw_polygon(color, points)
 
-    def draw_hairline(self, color: Color, start: Vec2, end: Vec2):
+    def draw_hairline(self, color: Color, start: Vec2, end: Vec2) -> None:
         """Draw an anti-aliased worldspace-line of single-pixel-thickness.
 
         Args:
@@ -243,7 +245,7 @@ class Camera:
             ((x1, y1), (x2, y2)) = clipped_line
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
-    def draw_rect(self, color: Color, rect: Rect):
+    def draw_rect(self, color: Color, rect: Rect) -> None:
         """Draw an anti-aliased worldspace-rectangle.
 
         Args:
@@ -260,7 +262,7 @@ class Camera:
 
     def draw_text(
         self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color
-    ):
+    ) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:

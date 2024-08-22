@@ -79,7 +79,7 @@ class Area(Rect):
         self.color = color
         self.caption = caption
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
 
         Args:
@@ -89,7 +89,7 @@ class Area(Rect):
         """
         camera.draw_rect(self.color, self)
 
-    def event(self, ship: Ship):
+    def event(self, ship: Ship) -> None:
         """An event to trigger for a ship entering `self`.
 
         Args:
@@ -116,7 +116,7 @@ class RefuelArea(Area):
         """
         super().__init__(rect, Color("yellow"), "Refuel")
 
-    def event(self, ship: Ship):
+    def event(self, ship: Ship) -> None:
         """Refuel `ship`.
 
         Args:
@@ -140,7 +140,7 @@ class TrophyArea(Area):
         """
         super().__init__(rect, Color("gold"), "Trophy")
 
-    def event(self, ship: Ship):
+    def event(self, ship: Ship) -> None:
         """Give `ship` a trophy.
 
         Args:
@@ -187,7 +187,7 @@ class Universe:
         self.areas = areas
         self.enemy_ships = enemy_ships
 
-    def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject):
+    def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Have pobj be affected by `self`'s entire gravity.
 
         Args:
@@ -201,7 +201,7 @@ class Universe:
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
-    def apply_gravity(self, dt: float):
+    def apply_gravity(self, dt: float) -> None:
         """Apply gravity to all of `self`'s objects.
 
         Args:
@@ -234,7 +234,7 @@ class Universe:
                 return damage
         return None
 
-    def apply_bounce(self):
+    def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
         damage = self.apply_bounce_to_disk(self.player_ship)
         if damage is not None:
@@ -262,7 +262,7 @@ class Universe:
             map(lambda planet: planet.intersects_point(vec), self.planets)
         ) or any(map(lambda asteroid: asteroid.intersects_point(vec), self.asteroids))
 
-    def step(self, dt: float):
+    def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
 
         Args:
@@ -310,7 +310,7 @@ class Universe:
                     ship.projectiles.remove(projectile)
                     continue
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw all of `self` on `camera`.
 
         Args:
@@ -329,7 +329,7 @@ class Universe:
             ship.draw(camera)
         self.player_ship.draw(camera)
 
-    def draw_text(self, camera: Camera):
+    def draw_text(self, camera: Camera) -> None:
         """Draw "debugging" text about `self` on `camera`.
 
         Args:
@@ -364,7 +364,7 @@ class Universe:
 
         del self.text_vertical_offset
 
-    def draw_grid(self, camera: Camera):
+    def draw_grid(self, camera: Camera) -> None:
         """Draw grid on `camera`.
 
         Args:

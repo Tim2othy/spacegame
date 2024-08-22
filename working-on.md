@@ -1,6 +1,6 @@
 # Obvious needs
 - Give everything good world border detection
-
+ 
 # Future features (that aren't already issues) (roughly in order of interestingness)
 - Clever homing missile
 - iron dome

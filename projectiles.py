@@ -26,7 +26,7 @@ class Bullet(PhysicalObject):
         super().__init__(pos, vel, 1.0)
         self.color = color
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
 
         Args:
@@ -68,7 +68,7 @@ class Rocket(Bullet):
         self.nonhoming_duration = 3
         self._total_duration = self.homing_duration + self.nonhoming_duration
 
-    def step(self, dt: float):
+    def step(self, dt: float) -> None:
         """Apply homing and physics-logic.
 
         Args:
@@ -87,7 +87,7 @@ class Rocket(Bullet):
 
         super().step(dt)
 
-    def draw(self, camera: Camera):
+    def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`.
 
         Args:
