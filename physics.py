@@ -82,8 +82,7 @@ class PhysicalObject:
         return force
 
     def draw(self, camera: Camera) -> None:
-        """Draws `self` on `camera`.
-        Implemented by subclasses.
+        """Draw `self` on `camera`. Implemented by subclasses.
 
         Args:
         ----
@@ -161,8 +160,9 @@ class Disk(PhysicalObject):
 
     def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
-            Calculates intensity with `self` is moving towards `disk`
-            at moment of collision. Then strength of bounce and damage.
+
+        Calculates intensity that `self` moved towards `disk`
+        at moment of collision. Returns calculated impact-damage.
 
         Args:
         ----

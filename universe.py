@@ -1,5 +1,4 @@
-"""If you wish to collect celestial bodies, spaceships, and everything else,
-you must first invent the universe."""
+"""If you wish to collect celestial bodies, spaceships, and everything else, you must first invent the universe."""
 
 from __future__ import annotations
 
@@ -46,7 +45,6 @@ class Asteroid(Disk):
         radius: float,
     ) -> None:
         """Create a new Asteroid.
-        Any color you like, as long as it's gray.
 
         Args:
         ----
@@ -189,7 +187,7 @@ class Universe:
         self.enemy_ships = enemy_ships
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
-        """Have pobj be affected by `self`'s entire gravity.
+        """Affect pobj by `self`'s entire gravity.
 
         Args:
         ----

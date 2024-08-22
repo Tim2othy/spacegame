@@ -83,6 +83,7 @@ class Ship(Disk):
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
+
         Does nothing if damage is <= 0.
 
         Args:
