@@ -293,6 +293,16 @@ class Universe:
                         enemy_ship.projectiles.remove(projectile)
                         break
 
+    def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
+        """Run input-logic for player-ships.
+
+        Args:
+        ----
+            keys (pygame.key.ScancodeWrapper): Pressed keys
+        """
+        for player_ship in self.player_ships:
+            player_ship.handle_input(keys)
+
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
 
