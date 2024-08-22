@@ -149,8 +149,8 @@ while True:
             [player_ship.pos, player_ship.pos + 1 * player_ship.vel], 500, dt
         )
 
-        universe.draw(camera)
         universe.draw_grid(camera)
+        universe.draw(camera)
         universe.draw_text(camera)
         minimap_camera.start_drawing_new_frame()
         universe.draw(minimap_camera)
