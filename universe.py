@@ -384,10 +384,10 @@ class Universe:
         height = self.size.y
 
         for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_hairline(grid_color, Vec2(x, 0), Vec2(x, height))
+            camera.draw_vertical_hairline(grid_color, x, 0, height)
 
         for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_hairline(grid_color, Vec2(0, y), Vec2(width, y))
+            camera.draw_horizontal_hairline(grid_color, 0, width, y)
 
     def contains_point(self, vec: Vec2) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries.
