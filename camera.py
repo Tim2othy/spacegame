@@ -212,7 +212,7 @@ class Camera:
             color (Color): Border- and fill-color
             start (Vec2): Line's start-worldspace-point
             end (Vec2): Line's end-worldspace-point
-            width (float): Line's worldspace-thickness
+            thickness (float): Line's worldspace-thickness
 
         """
         delta = end - start

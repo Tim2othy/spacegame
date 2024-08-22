@@ -193,7 +193,7 @@ class Disk(PhysicalObject):
         self_vel_along_normal = self.vel.dot(normal_vector)
 
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
-        impulse_scalar = impulse_scalar / (1 / self.mass + 1 / disk.mass)
+        impulse_scalar /= 1 / self.mass + 1 / disk.mass
         self.vel += normal_vector * impulse_scalar / self.mass
 
         # This allows the ship to land on the planet.
