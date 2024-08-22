@@ -254,7 +254,7 @@ class Camera:
         ----
             color (Color): Line's Color
             startx (float): Line's starting point
-            endy (float): Line's ending point
+            endx (float): Line's ending point
             y (float): Line's vertical position
 
         """
@@ -301,7 +301,8 @@ class Camera:
         if pos is None:
             width, height = self.surface.get_size()
             pos = Vec2(
-                (width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2,
+                (width - rendered.get_width()) / 2,
+                (height - rendered.get_height()) / 2,
             )
         self.surface.blit(rendered, pos)
 

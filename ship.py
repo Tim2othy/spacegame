@@ -37,8 +37,8 @@ class Ship(Disk):
         size: float,
         color: Color,
         bullet_color: Color,
-    ):
-        """Create a new spaceship
+    ) -> None:
+        """Create a new spaceship.
 
         Args:
         ----
@@ -48,6 +48,7 @@ class Ship(Disk):
             size (float): Radius of disk-body
             color (Color): Material color
             bullet_color (Color): Bullet_color
+
         """
         super().__init__(pos, vel, density, size, color, bullet_color)
         self.size: float = size
@@ -254,11 +255,8 @@ class BulletEnemy(Ship):
     Action = Enum(
         "Action",
         [
-            "accelerate_to_player1",
-            "accelerate_to_player2",
-            "accelerate_to_player3",
-            "accelerate_to_player4",
-            # "accelerate_randomly", fix this so they don't choose a new random direction every tick
+            "accelerate_to_player",
+            # "accelerate_randomly",
             "decelerate",
         ],
     )
@@ -271,8 +269,8 @@ class BulletEnemy(Ship):
         shoot_cooldown: float = 0.125,
         color: Color = Color("lightblue"),
         bullet_color: Color = Color("lime"),
-    ):
-        """Create a new enemy ship
+    ) -> None:
+        """Create a new enemy ship.
 
         Args:
         ----
@@ -290,7 +288,7 @@ class BulletEnemy(Ship):
         self.action_timer = 6
         self.health = 100
         self.current_action: BulletEnemy.Action = (
-            BulletEnemy.Action.accelerate_to_player1
+            BulletEnemy.Action.accelerate_to_player
         )
         self.target_ship = target_ship
         self.shoot_cooldown = shoot_cooldown
@@ -306,24 +304,19 @@ class BulletEnemy(Ship):
         """
         self.action_timer -= dt
         if self.action_timer <= 0:
-            self.current_action = random.choice(list(BulletEnemy.Action))
+            [self.current_action] = random.choices(
+                population=list(BulletEnemy.Action), weights=[0.8, 0.2]
+            )
             self.action_timer = 6
 
         delta_target_ship = self.target_ship.pos - self.pos
 
         force_direction: Vec2
         match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player1:
+            case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player2:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player3:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.accelerate_to_player4:
-                force_direction = delta_target_ship
-
             # case BulletEnemy.Action.accelerate_randomly:
-            #    force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+            #     force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
         force = force_direction * self.thrust / force_direction.magnitude()
@@ -352,8 +345,8 @@ class RocketEnemy(BulletEnemy):
         target_ship: Ship,
         shoot_cooldown: float = 10,
         color: Color = Color("plum"),
-    ):
-        """Create a new Rocket-Ship
+    ) -> None:
+        """Create a new Rocket-Ship.
 
         Args:
         ----
