@@ -31,6 +31,7 @@ if TEST_MODE:
         10,
         Color("orange"),
     )
+    player_ship.ammo = 1_000_000
 
     planets: list[Planet] = [
         Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred")),
@@ -53,7 +54,6 @@ else:
         10,
         Color("turquoise"),
     )
-    player_ship.ammo = 1_000_000
 
     planets = [
         Planet(Vec2(67_000, 18_000), 1, 3_000, Color("darkred")),
