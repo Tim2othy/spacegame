@@ -92,7 +92,7 @@ class Area(Rect):
         camera.draw_rect(self.color, self)
 
     def event(self, ship: Ship) -> None:
-        """An event to trigger for a ship entering `self`.
+        """Trigger event for a ship entering `self`.
 
         Args:
         ----

@@ -109,8 +109,9 @@ class Camera:
         self.smoothly_focus_rect(buffed_rect, dt, transition_time)
 
     def _get_enclosing_rect(self, points: list[Vec2]) -> Rect:
-        """Gets the smallest rectangle enclosing all points.
-        This method works irrespective of which space you use.
+        """Get the smallest rectangle enclosing all points.
+        If `points` are screenspace, the Rect is screenspace.
+        If `points` are worldspace, the Rect is worldspace.
 
         Args:
         ----
@@ -131,7 +132,7 @@ class Camera:
         return Rect((minx, miny), (maxx - minx, maxy - miny))
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
-        """Determines whether a screenspace-rectangle intersects the
+        """Determine whether a screenspace-rectangle intersects the
         camera's screen.
 
         Args:
@@ -164,7 +165,7 @@ class Camera:
         return (vec - self.pos) * self.zoom + center
 
     def start_drawing_new_frame(self) -> None:
-        """Fills the camera's surface black, to prepare for
+        """Fill the camera's surface black, to prepare for
         drawing a new frame.
         """
         self.surface.fill(Color("black"))
