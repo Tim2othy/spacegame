@@ -1,5 +1,7 @@
 """Spaceships, shooting through space."""
 
+from __future__ import annotations
+
 from enum import Enum
 import random
 from pygame.math import Vector2 as Vec2

@@ -1,5 +1,7 @@
 """Physical objects, and the interactions between them."""
 
+from __future__ import annotations
+
 import math
 import pygame
 import pygame.camera

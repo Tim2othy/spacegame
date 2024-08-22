@@ -1,6 +1,8 @@
 """If you wish to collect celestial bodies, spaceships, and everything else,
 you must first invent the universe."""
 
+from __future__ import annotations
+
 import pygame
 import pygame.camera
 from pygame import Color, Rect

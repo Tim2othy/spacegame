@@ -4,6 +4,8 @@ worldspace == Coordinates in space
 screenspace == Coordinates on the screen
 """
 
+from __future__ import annotations
+
 import pygame
 import pygame.gfxdraw
 from pygame.math import Vector2 as Vec2
