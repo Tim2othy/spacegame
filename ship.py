@@ -249,7 +249,7 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
-class SpaceshipInput:
+class ShipInput:
     """Specification for which keys trigger what spaceship-action"""
 
     type pygame_key = int
@@ -291,7 +291,7 @@ class PlayerShip(Ship):
         size: float,
         color: Color,
         bullet_color: Color,
-        spaceship_input: SpaceshipInput,
+        spaceship_input: ShipInput,
     ) -> None:
         """Create a new player-spaceship.
 
