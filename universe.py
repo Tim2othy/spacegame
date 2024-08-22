@@ -21,7 +21,7 @@ class Planet(Disk):
         density: float,
         radius: float,
         color: Color,
-    ):
+    ) -> None:
         """Create a new planet.
 
         Args:
@@ -44,7 +44,7 @@ class Asteroid(Disk):
         vel: Vec2,
         density: float,
         radius: float,
-    ):
+    ) -> None:
         """Create a new Asteroid.
         Any color you like, as long as it's gray.
 
@@ -67,7 +67,7 @@ class Area(Rect):
         rect: Rect,
         color: Color,
         caption: str,
-    ):
+    ) -> None:
         """Create a new area.
 
         Args:
@@ -108,7 +108,7 @@ class RefuelArea(Area):
     def __init__(
         self,
         rect: Rect,
-    ):
+    ) -> None:
         """Create a RefuelArea.
 
         Args:
@@ -132,7 +132,7 @@ class RefuelArea(Area):
 class TrophyArea(Area):
     """Give every ship entering this a trophy."""
 
-    def __init__(self, rect: Rect):
+    def __init__(self, rect: Rect) -> None:
         """Create a TrophyArea.
 
         Args:
@@ -169,7 +169,7 @@ class Universe:
         player_ship: Ship,
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
-    ):
+    ) -> None:
         """Create a new universe (not in the big-bang way, sadly).
 
         Args:

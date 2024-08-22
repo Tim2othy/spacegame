@@ -24,7 +24,7 @@ DAMAGE_INDICATOR_TIME = 0.75
 class Ship(Disk):
     """A basic spaceship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color):
+    def __init__(self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color) -> None:
         """Create a new spaceship.
 
         Args:
@@ -247,7 +247,7 @@ class BulletEnemy(Ship):
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
-    ):
+    ) -> None:
         """Create a new enemy ship.
 
         Args:
@@ -318,7 +318,7 @@ class RocketEnemy(BulletEnemy):
         target_ship: Ship,
         shoot_cooldown: float = 0.5,
         color: Color = Color("red"),
-    ):
+    ) -> None:
         """Create a new Rocket-Ship.
 
         Args:

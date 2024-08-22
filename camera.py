@@ -15,7 +15,7 @@ from pygame import Color, Rect
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, pos: Vec2, zoom: float, surface: pygame.Surface):
+    def __init__(self, pos: Vec2, zoom: float, surface: pygame.Surface) -> None:
         """Construct a new camera.
 
         Args:

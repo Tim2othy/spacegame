@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Bullet(PhysicalObject):
     """A triangular bullet."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color):
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
         """Create a new basic Bullet.
 
         Args:
@@ -48,7 +48,7 @@ class Bullet(PhysicalObject):
 class Rocket(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship"):
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
         """Create a new rocket targeting `target_ship`.
 
         Args:

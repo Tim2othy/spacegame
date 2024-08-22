@@ -14,7 +14,7 @@ GRAVITATIONAL_CONSTANT = 0.003
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, mass: float):
+    def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
 
         Args:
@@ -103,7 +103,7 @@ class Disk(PhysicalObject):
         density: float,
         radius: float,
         color: pygame.Color,
-    ):
+    ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
