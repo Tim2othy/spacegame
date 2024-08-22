@@ -77,7 +77,6 @@ class PhysicalObject:
             Vec2: Resulting force to apply to `self`
 
         """
-
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
