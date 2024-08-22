@@ -10,7 +10,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from ship import BulletEnemy, RocketEnemy, ShipInput, PlayerShip
+from ship import BulletEnemy, PlayerShip, RocketEnemy, ShipInput
 from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
 
 # Initialize Pygame

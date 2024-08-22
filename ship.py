@@ -7,8 +7,8 @@ import random
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from pygame import Color
 import pygame
+from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from physics import Disk
@@ -249,8 +249,9 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
+
 class ShipInput:
-    """Specification for which keys trigger what spaceship-action"""
+    """Specification for which keys trigger what spaceship-action."""
 
     type pygame_key = int
 
@@ -261,8 +262,8 @@ class ShipInput:
         thruster_forward: pygame_key,
         thruster_backward: pygame_key,
         shoot: pygame_key,
-    ):
-        """Create a new map from keys to spaceship-actions
+    ) -> None:
+        """Create a new map from keys to spaceship-actions.
 
         Args:
         ----
@@ -309,7 +310,7 @@ class PlayerShip(Ship):
         super().__init__(pos, vel, density, size, color, bullet_color)
         self.spaceship_input = spaceship_input
 
-    def handle_input(self, keys: pygame.key.ScancodeWrapper):
+    def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
 
         `keys` is typically retreived using `pygame.key.get_pressed()`
@@ -325,6 +326,7 @@ class PlayerShip(Ship):
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         if keys[self.spaceship_input.shoot]:
             self.shoot()
+
 
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
