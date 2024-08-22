@@ -14,7 +14,7 @@ from physics import Disk, PhysicalObject
 
 if TYPE_CHECKING:
     from camera import Camera
-    from ship import BulletEnemy, Ship
+    from ship import BulletEnemy, PlayerShip, Ship
 
 
 class Planet(Disk):
@@ -170,7 +170,7 @@ class Universe:
         size: Vec2,
         planets: list[Planet],
         asteroids: list[Asteroid],
-        player_ship: Ship,
+        player_ships: list[PlayerShip],
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
     ) -> None:
@@ -189,7 +189,7 @@ class Universe:
         self.size = size
         self.planets = planets
         self.asteroids = asteroids
-        self.player_ship = player_ship
+        self.player_ships = player_ships
         self.areas = areas
         self.enemy_ships = enemy_ships
 
@@ -215,11 +215,8 @@ class Universe:
             dt (float): Passed time
 
         """
-        self.apply_gravity_to_obj(dt, self.player_ship)
-        for enemy_ship in self.enemy_ships:
-            self.apply_gravity_to_obj(dt, enemy_ship)
-        for asteroid in self.asteroids:
-            self.apply_gravity_to_obj(dt, asteroid)
+        for pobj in self.player_ships + self.enemy_ships + self.asteroids:
+            self.apply_gravity_to_obj(dt, pobj)
 
     def apply_bounce_to_disk(self, disk: Disk) -> float | None:
         """Bounce a disk off of each of `self`s objects.
@@ -242,9 +239,10 @@ class Universe:
 
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        damage = self.apply_bounce_to_disk(self.player_ship)
-        if damage is not None:
-            self.player_ship.suffer_damage(damage)
+        for player_ship in self.player_ships:
+            damage = self.apply_bounce_to_disk(player_ship)
+            if damage is not None:
+                player_ship.suffer_damage(damage)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
         for asteroid in self.asteroids:
@@ -270,28 +268,30 @@ class Universe:
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
-        for projectile in self.player_ship.projectiles:
-            if self.asteroids_or_planets_intersect_point(
-                projectile.pos,
-            ) or not self.contains_point(projectile.pos):
-                self.player_ship.projectiles.remove(projectile)
-                continue
-            for ship in self.enemy_ships:
-                if ship.intersects_point(projectile.pos):
-                    self.enemy_ships.remove(ship)
-                    self.player_ship.projectiles.remove(projectile)
-                    break
-        for ship in self.enemy_ships:
-            for projectile in ship.projectiles:
+        for player_ship in self.player_ships:
+            for projectile in player_ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(
                     projectile.pos,
                 ) or not self.contains_point(projectile.pos):
-                    ship.projectiles.remove(projectile)
+                    player_ship.projectiles.remove(projectile)
                     continue
-                if self.player_ship.intersects_point(projectile.pos):
-                    self.player_ship.suffer_damage(10)
-                    ship.projectiles.remove(projectile)
+                for enemy_ship in self.enemy_ships:
+                    if enemy_ship.intersects_point(projectile.pos):
+                        self.enemy_ships.remove(enemy_ship)
+                        player_ship.projectiles.remove(projectile)
+                        break
+        for enemy_ship in self.enemy_ships:
+            for projectile in enemy_ship.projectiles:
+                if self.asteroids_or_planets_intersect_point(
+                    projectile.pos,
+                ) or not self.contains_point(projectile.pos):
+                    enemy_ship.projectiles.remove(projectile)
                     continue
+                for player_ship in self.player_ships:
+                    if player_ship.intersects_point(projectile.pos):
+                        player_ship.suffer_damage(10)
+                        enemy_ship.projectiles.remove(projectile)
+                        break
 
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
@@ -302,8 +302,7 @@ class Universe:
 
         """
         # Call `step` on everything
-        self.player_ship.step(dt)
-        for ship in self.enemy_ships:
+        for ship in self.player_ships + self.enemy_ships:
             ship.step(dt)
         for asteroid in self.asteroids:
             asteroid.step(dt)
@@ -314,8 +313,9 @@ class Universe:
 
         # Areas
         for area in self.areas:
-            if area.collidepoint(self.player_ship.pos):
-                area.event(self.player_ship)
+            for player_ship in self.player_ships:
+                if area.collidepoint(player_ship.pos):
+                    area.event(player_ship)
 
         self.collide_bullets()
 
@@ -327,15 +327,14 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for area in self.areas:
-            area.draw(camera)
-        for asteroid in self.asteroids:
-            asteroid.draw(camera)
-        for planet in self.planets:
-            planet.draw(camera)
-        for ship in self.enemy_ships:
-            ship.draw(camera)
-        self.player_ship.draw(camera)
+        for pobj in (
+            self.areas
+            + self.asteroids
+            + self.planets
+            + self.enemy_ships
+            + self.player_ships
+        ):
+            pobj.draw(camera)
 
     def draw_text(self, camera: Camera) -> None:
         """Draw "debugging" text about `self` on `camera`.
@@ -357,17 +356,22 @@ class Universe:
                 )
             self.text_vertical_offset += 1.0 * font_size
 
-        ship = self.player_ship
-        texty(f"({int(ship.pos.x)}, {int(ship.pos.y)})")
-        texty(f"Velocity: ({int(ship.vel.x)}, {int(ship.vel.y)})")
-        texty(f"Remaining Fuel: {ship.fuel:.2f}")
-        texty(f"Trophy: {"Collected" if ship.has_trophy else "Not collected"}")
-        texty(f"Health: {ship.health:.2f}")
-        texty(f"Ammunition: {ship.ammo}")
+        for ix, player_ship in enumerate(self.player_ships):
+            texty(f"{ix} ({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
+            texty(
+                f"{ix} Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})"
+            )
+            texty(f"{ix} Remaining Fuel: {player_ship.fuel:.2f}")
+            texty(
+                f"{ix} Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}"
+            )
+            texty(f"{ix} Health: {player_ship.health:.2f}")
+            texty(f"{ix} Ammunition: {player_ship.ammo}")
         for area in self.areas:
             texty(f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})")
-        texty(f"{len(ship.projectiles)} projectiles from you")
+        player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
         enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
+        texty(f"{player_projectile_count} player projectiles")
         texty(f"{enemy_projectile_count} enemy projectiles")
 
         enemy_count = len(self.enemy_ships)
