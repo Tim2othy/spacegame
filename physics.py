@@ -82,9 +82,8 @@ class PhysicalObject:
         dist_squared = delta.magnitude_squared()
         force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
-        force = normalised_delta * force_magnitude
+        return normalised_delta * force_magnitude
 
-        return force
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`. Implemented by subclasses.
@@ -203,5 +202,4 @@ class Disk(PhysicalObject):
 
         # This allows the ship to land on the planet.
         # If impulse is small there is no damage
-        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
-        return damage
+        return (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 1e-4
