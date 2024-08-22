@@ -38,7 +38,7 @@ class Planet(Disk):
             color (Color): Color
 
         """
-        super().__init__(pos, Vector2(0, 0), density, radius, color, bullet_color)
+        super().__init__(pos, Vec2(0, 0), density, radius, color, bullet_color)
 
 
 class Asteroid(Disk):

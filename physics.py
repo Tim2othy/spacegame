@@ -103,7 +103,7 @@ class Disk(PhysicalObject):
         radius: float,
         color: Color,
         bullet_color: Color,
-    ): -> None:
+    ):  # TODO: Sorry, I removed what you wrote here I'm not sure why my merge make what you wrote break the code?
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
@@ -195,8 +195,8 @@ class Disk(PhysicalObject):
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar /= 1 / self.mass + 1 / disk.mass
         self.add_impulse(normal_vector * impulse_scalar)
-        
-        #This allows the ship to land on the planet.
+
+        # This allows the ship to land on the planet.
         # If impulse is small there is no damage
         damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 6e-4
 
