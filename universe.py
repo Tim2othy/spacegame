@@ -264,6 +264,31 @@ class Universe:
             map(lambda planet: planet.intersects_point(vec), self.planets)
         ) or any(map(lambda asteroid: asteroid.intersects_point(vec), self.asteroids))
 
+    def collide_bullets(self) -> None:
+        """Run bullet-collision checks and damage ships as a result."""
+        for projectile in self.player_ship.projectiles:
+            if self.asteroids_or_planets_intersect_point(
+                projectile.pos
+            ) or not self.contains_point(projectile.pos):
+                self.player_ship.projectiles.remove(projectile)
+                continue
+            for ship in self.enemy_ships:
+                if ship.intersects_point(projectile.pos):
+                    self.enemy_ships.remove(ship)
+                    self.player_ship.projectiles.remove(projectile)
+                    break
+        for ship in self.enemy_ships:
+            for projectile in ship.projectiles:
+                if self.asteroids_or_planets_intersect_point(
+                    projectile.pos
+                ) or not self.contains_point(projectile.pos):
+                    ship.projectiles.remove(projectile)
+                    continue
+                if self.player_ship.intersects_point(projectile.pos):
+                    self.player_ship.suffer_damage(10)
+                    ship.projectiles.remove(projectile)
+                    continue
+
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
 
@@ -288,29 +313,7 @@ class Universe:
             if area.collidepoint(self.player_ship.pos):
                 area.event(self.player_ship)
 
-        # Collide bullets:
-        for projectile in self.player_ship.projectiles:
-            if self.asteroids_or_planets_intersect_point(
-                projectile.pos
-            ) or not self.contains_point(projectile.pos):
-                self.player_ship.projectiles.remove(projectile)
-                continue
-            for ship in self.enemy_ships:
-                if ship.intersects_point(projectile.pos):
-                    self.enemy_ships.remove(ship)
-                    self.player_ship.projectiles.remove(projectile)
-                    break
-        for ship in self.enemy_ships:
-            for projectile in ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos
-                ) or not self.contains_point(projectile.pos):
-                    ship.projectiles.remove(projectile)
-                    continue
-                if self.player_ship.intersects_point(projectile.pos):
-                    self.player_ship.suffer_damage(10)
-                    ship.projectiles.remove(projectile)
-                    continue
+        self.collide_bullets()
 
     def draw(self, camera: Camera) -> None:
         """Draw all of `self` on `camera`.
