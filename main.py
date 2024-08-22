@@ -116,7 +116,7 @@ clock = pygame.time.Clock()
 while True:
     dt = clock.tick() / 1_000
 
-    if any((e.type == pygame.QUIT for e in pygame.event.get())):
+    if any(e.type == pygame.QUIT for e in pygame.event.get()):
         break
 
     camera.start_drawing_new_frame()
