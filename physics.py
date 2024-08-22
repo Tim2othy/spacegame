@@ -1,4 +1,4 @@
-"""Physical objects, and the interactions between them"""
+"""Physical objects, and the interactions between them."""
 
 import math
 import pygame
@@ -13,7 +13,7 @@ class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
 
     def __init__(self, pos: Vec2, vel: Vec2, mass: float):
-        """Create a new PhysicalObject
+        """Create a new PhysicalObject.
 
         Args:
         ----
@@ -27,7 +27,7 @@ class PhysicalObject:
         self.vel = vel
 
     def step(self, dt: float):
-        """Apply its velocity to `self`
+        """Apply its velocity to `self`.
 
         Args:
         ----
@@ -37,7 +37,7 @@ class PhysicalObject:
         self.pos += dt * self.vel
 
     def add_impulse(self, impulse: Vec2):
-        """Add an impulse to `self`
+        """Add an impulse to `self`.
 
         Args:
         ----
@@ -47,7 +47,7 @@ class PhysicalObject:
         self.vel += impulse / self.mass
 
     def apply_force(self, force: Vec2, dt: float):
-        """Apply a force to `self`
+        """Apply a force to `self`.
 
         Args:
         ----
@@ -120,7 +120,7 @@ class Disk(PhysicalObject):
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera):
-        """Draw anti-aliased `self`
+        """Draw anti-aliased `self`.
 
         Args:
         ----
@@ -130,7 +130,7 @@ class Disk(PhysicalObject):
         camera.draw_circle(self.color, self.pos, self.radius)
 
     def intersects_point(self, vec: Vec2) -> bool:
-        """Determine whether `vec` is in `self`
+        """Determine whether `vec` is in `self`.
 
         Args:
         ----
@@ -144,7 +144,7 @@ class Disk(PhysicalObject):
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
     def intersects_disk(self, disk: "Disk") -> bool:
-        """Determine whether `self` intersects another Disk
+        """Determine whether `self` intersects another Disk.
 
         Args:
         ----
@@ -160,7 +160,7 @@ class Disk(PhysicalObject):
     def bounce_off_of_disk(self, disk: "Disk") -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
             Calculates intensity with `self` is moving towards `disk`
-            at moment of collision. Then strength of bounce and damage
+            at moment of collision. Then strength of bounce and damage.
 
         Args:
         ----

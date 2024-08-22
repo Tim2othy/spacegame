@@ -66,7 +66,7 @@ class Area(Rect):
         color: Color,
         caption: str,
     ):
-        """Create a new area
+        """Create a new area.
 
         Args:
         ----
@@ -80,7 +80,7 @@ class Area(Rect):
         self.caption = caption
 
     def draw(self, camera: Camera):
-        """Draw `self` on `camera`
+        """Draw `self` on `camera`.
 
         Args:
         ----
@@ -90,7 +90,7 @@ class Area(Rect):
         camera.draw_rect(self.color, self)
 
     def event(self, ship: Ship):
-        """An event to trigger for a ship entering `self`
+        """An event to trigger for a ship entering `self`.
 
         Args:
         ----
@@ -107,7 +107,7 @@ class RefuelArea(Area):
         self,
         rect: Rect,
     ):
-        """Create a RefuelArea
+        """Create a RefuelArea.
 
         Args:
         ----
@@ -117,7 +117,7 @@ class RefuelArea(Area):
         super().__init__(rect, Color("yellow"), "Refuel")
 
     def event(self, ship: Ship):
-        """Refuel `ship`
+        """Refuel `ship`.
 
         Args:
         ----
@@ -131,7 +131,7 @@ class TrophyArea(Area):
     """Give every ship entering this a trophy."""
 
     def __init__(self, rect: Rect):
-        """Create a TrophyArea
+        """Create a TrophyArea.
 
         Args:
         ----
@@ -141,7 +141,7 @@ class TrophyArea(Area):
         super().__init__(rect, Color("gold"), "Trophy")
 
     def event(self, ship: Ship):
-        """Give `ship` a trophy
+        """Give `ship` a trophy.
 
         Args:
         ----
@@ -168,7 +168,7 @@ class Universe:
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
     ):
-        """Create a new universe (not in the big-bang way, sadly)
+        """Create a new universe (not in the big-bang way, sadly).
 
         Args:
         ----
@@ -188,7 +188,7 @@ class Universe:
         self.enemy_ships = enemy_ships
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject):
-        """Have pobj be affected by `self`'s entire gravity
+        """Have pobj be affected by `self`'s entire gravity.
 
         Args:
         ----
@@ -202,7 +202,7 @@ class Universe:
         pobj.apply_force(force_sum, dt)
 
     def apply_gravity(self, dt: float):
-        """Apply gravity to all of `self`'s objects
+        """Apply gravity to all of `self`'s objects.
 
         Args:
         ----
@@ -216,7 +216,7 @@ class Universe:
             self.apply_gravity_to_obj(dt, asteroid)
 
     def apply_bounce_to_disk(self, disk: Disk) -> float | None:
-        """Bounce a disk off of each of `self`s objects
+        """Bounce a disk off of each of `self`s objects.
 
         Args:
         ----
@@ -247,7 +247,7 @@ class Universe:
                 asteroid.bounce_off_of_disk(disk)
 
     def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
-        """Test whether any of `self`'s planets or asteroids intersect `vec`
+        """Test whether any of `self`'s planets or asteroids intersect `vec`.
 
         Args:
         ----
@@ -311,7 +311,7 @@ class Universe:
                     continue
 
     def draw(self, camera: Camera):
-        """Draw all of `self` on `camera`
+        """Draw all of `self` on `camera`.
 
         Args:
         ----
@@ -330,7 +330,7 @@ class Universe:
         self.player_ship.draw(camera)
 
     def draw_text(self, camera: Camera):
-        """Draw "debugging" text about `self` on `camera`
+        """Draw "debugging" text about `self` on `camera`.
 
         Args:
         ----
@@ -365,7 +365,7 @@ class Universe:
         del self.text_vertical_offset
 
     def draw_grid(self, camera: Camera):
-        """Draw grid on `camera`
+        """Draw grid on `camera`.
 
         Args:
         ----
@@ -384,7 +384,7 @@ class Universe:
             camera.draw_hairline(grid_color, Vec2(0, y), Vec2(width, y))
 
     def contains_point(self, vec: Vec2) -> bool:
-        """Test whether `vec` is contained in `self`'s boundaries
+        """Test whether `vec` is contained in `self`'s boundaries.
 
         Args:
         ----

@@ -1,4 +1,4 @@
-"""Projectiles, shooting through space"""
+"""Projectiles, shooting through space."""
 
 from typing import TYPE_CHECKING
 from pygame.math import Vector2 as Vec2
@@ -14,7 +14,7 @@ class Bullet(PhysicalObject):
     """A triangular bullet."""
 
     def __init__(self, pos: Vec2, vel: Vec2, color: Color):
-        """Create a new basic Bullet
+        """Create a new basic Bullet.
 
         Args:
         ----
@@ -69,7 +69,7 @@ class Rocket(Bullet):
         self._total_duration = self.homing_duration + self.nonhoming_duration
 
     def step(self, dt: float):
-        """Apply homing and physics-logic
+        """Apply homing and physics-logic.
 
         Args:
         ----
@@ -88,7 +88,7 @@ class Rocket(Bullet):
         super().step(dt)
 
     def draw(self, camera: Camera):
-        """Draw `self` to `camera`
+        """Draw `self` to `camera`.
 
         Args:
         ----

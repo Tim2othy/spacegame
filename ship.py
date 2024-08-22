@@ -1,4 +1,4 @@
-"""Spaceships, shooting through space"""
+"""Spaceships, shooting through space."""
 
 from enum import Enum
 import random
@@ -23,7 +23,7 @@ class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(self, pos: Vec2, vel: Vec2, density: float, size: float, color: Color):
-        """Create a new spaceship
+        """Create a new spaceship.
 
         Args:
         ----
@@ -57,7 +57,7 @@ class Ship(Disk):
         self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vec2:
-        """Get `self`'s faced direction from its `angle`
+        """Get `self`'s faced direction from its `angle`.
 
         Returns:
         -------
@@ -93,7 +93,7 @@ class Ship(Disk):
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float):
-        """Physics, control, and bullet-stepping for `self`
+        """Physics, control, and bullet-stepping for `self`.
 
         Args:
         ----
@@ -126,7 +126,7 @@ class Ship(Disk):
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
     def draw(self, camera: Camera):
-        """Draw `self` on `camera
+        """Draw `self` on `camera.
 
         Args:
         ----
@@ -246,7 +246,7 @@ class BulletEnemy(Ship):
         shoot_cooldown: float = 0.125,
         color: Color = Color("purple"),
     ):
-        """Create a new enemy ship
+        """Create a new enemy ship.
 
         Args:
         ----
@@ -268,7 +268,7 @@ class BulletEnemy(Ship):
         self.projectiles: list[Bullet] = []
 
     def step(self, dt: float):
-        """Apply physics and "AI" to `self`
+        """Apply physics and "AI" to `self`.
 
         Args:
         ----
@@ -317,7 +317,7 @@ class RocketEnemy(BulletEnemy):
         shoot_cooldown: float = 0.5,
         color: Color = Color("red"),
     ):
-        """Create a new Rocket-Ship
+        """Create a new Rocket-Ship.
 
         Args:
         ----
