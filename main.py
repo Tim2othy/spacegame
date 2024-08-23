@@ -149,7 +149,8 @@ while True:
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
         else:
             universe.move_camera(player_camera, player_ix, dt)
-            universe.draw_grid(player_camera)
+            # universe.draw_grid(player_camera)
+            universe.draw_background(player_camera)
             universe.draw(player_camera)
             universe.draw_text(player_camera, player_ix)
 
