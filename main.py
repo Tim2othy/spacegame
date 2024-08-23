@@ -82,16 +82,7 @@ player_ships = [
         ShipInput(
             pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
         ),
-    ),
-    PlayerShip(
-        SPAWNPOINT + Vec2(0, 0),
-        Vec2(0, 0),
-        1,
-        10,
-        Color("darkslategray"),
-        Color("yellow"),
-        ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
-    ),
+    )
 ]
 
 
