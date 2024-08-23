@@ -119,6 +119,7 @@ universe = Universe(
     player_ships,
     areas,
     enemy_ships,
+    ["assets/stars-0.png", "assets/stars-1.png", "assets/stars-1.png"],
 )
 
 cameras: list[Camera] = []
