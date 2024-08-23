@@ -173,6 +173,7 @@ class Universe:
         player_ships: list[PlayerShip],
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
+        parallax_background_paths: list[str],
     ) -> None:
         """Create a new universe (not in the big-bang way, sadly).
 
@@ -184,6 +185,8 @@ class Universe:
             player_ships (list[Ship]): List of player-ships
             areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
+            parallax_background_paths (list[str]): Paths to
+                background-images,increasingly far away
 
         """
         self.size = Vec2(size)
@@ -192,6 +195,10 @@ class Universe:
         self.player_ships = player_ships
         self.areas = areas
         self.enemy_ships = enemy_ships
+        self.parallax_backgrounds = [
+            pygame.image.load(path).convert_alpha()
+            for path in parallax_background_paths
+        ]
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
