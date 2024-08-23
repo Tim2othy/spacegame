@@ -363,16 +363,20 @@ class Universe:
 
         """
         zoom = camera.zoom
-        screenspace_topleft = (0, 0)
-        screenspace_bottomright = camera.surface.get_size()
+        screenspace_size = camera.surface.get_size()
+        camera_intpos_x = int(-camera.pos.x)
+        camera_intpos_y = int(-camera.pos.y)
         for ix, background in enumerate(self.parallax_backgrounds):
-            # TODO: Use smooth scaling?
-            scaled_background = pygame.transform.scale_by(background, zoom)
+            scaled_background = pygame.transform.smoothscale_by(background, zoom)
             (bg_width, bg_height) = scaled_background.get_size()
-            draw_start_x = (screenspace_topleft[0] % bg_width) - bg_width
-            draw_start_y = (screenspace_topleft[1] % bg_height) - bg_height
-            draw_stop_x = (screenspace_bottomright[0] % bg_width) + bg_width
-            draw_stop_y = (screenspace_bottomright[1] % bg_height) + bg_height
+            draw_start_x = (camera_intpos_x % bg_width) - bg_width
+            draw_start_y = (camera_intpos_y % bg_height) - bg_height
+            draw_stop_x = draw_start_x + bg_width * (
+                2 * screenspace_size[0] // bg_width
+            )
+            draw_stop_y = draw_start_y + bg_height * (
+                2 * screenspace_size[1] // bg_height
+            )
             for x in range(draw_start_x, draw_stop_x, bg_width):
                 for y in range(draw_start_y, draw_stop_y, bg_height):
                     camera.surface.blit(scaled_background, (x, y))
