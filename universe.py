@@ -354,6 +354,29 @@ class Universe:
 
         self.collide_bullets()
 
+    def draw_background(self, camera: Camera) -> None:
+        """Draw `self`'s parallaxing background on `camera`.
+
+        Args:
+        ----
+            camera (Camera): Camera to draw on
+
+        """
+        zoom = camera.zoom
+        screenspace_topleft = (0, 0)
+        screenspace_bottomright = camera.surface.get_size()
+        for ix, background in enumerate(self.parallax_backgrounds):
+            # TODO: Use smooth scaling?
+            scaled_background = pygame.transform.scale_by(background, zoom)
+            (bg_width, bg_height) = scaled_background.get_size()
+            draw_start_x = (screenspace_topleft[0] % bg_width) - bg_width
+            draw_start_y = (screenspace_topleft[1] % bg_height) - bg_height
+            draw_stop_x = (screenspace_bottomright[0] % bg_width) + bg_width
+            draw_stop_y = (screenspace_bottomright[1] % bg_height) + bg_height
+            for x in range(draw_start_x, draw_stop_x, bg_width):
+                for y in range(draw_start_y, draw_stop_y, bg_height):
+                    camera.surface.blit(scaled_background, (x, y))
+
     def draw(self, camera: Camera) -> None:
         """Draw all of `self` on `camera`.
 
