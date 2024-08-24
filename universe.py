@@ -4,6 +4,7 @@ everything else, you must first invent the universe.
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 import pygame
@@ -36,6 +37,7 @@ class Planet(Disk):
             density (float): Density
             radius (float): Radius
             color (Color): Color
+            bullet_color (Color): To be deprecated.
 
         """
         super().__init__(pos, Vec2(0, 0), density, radius, color, bullet_color)
@@ -60,6 +62,7 @@ class Asteroid(Disk):
             vel (Vec2): Initial velocity
             density (float): Density
             radius (float): Radius
+            bullet_color (Color): To be deprecated.
 
         """
         super().__init__(pos, vel, density, radius, Color("gray"), bullet_color)
@@ -173,6 +176,7 @@ class Universe:
         player_ships: list[PlayerShip],
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
+        parallax_background_paths: list[str],
     ) -> None:
         """Create a new universe (not in the big-bang way, sadly).
 
@@ -184,6 +188,8 @@ class Universe:
             player_ships (list[Ship]): List of player-ships
             areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
+            parallax_background_paths (list[str]): Paths to
+                background-images,increasingly far away
 
         """
         self.size = Vec2(size)
@@ -192,6 +198,10 @@ class Universe:
         self.player_ships = player_ships
         self.areas = areas
         self.enemy_ships = enemy_ships
+        self.parallax_backgrounds = [
+            pygame.image.load(path).convert_alpha()
+            for path in parallax_background_paths
+        ]
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
@@ -346,6 +356,39 @@ class Universe:
                     area.event(player_ship)
 
         self.collide_bullets()
+
+    def draw_background(self, camera: Camera) -> None:
+        """Draw `self`'s parallaxing background on `camera`.
+
+        Args:
+        ----
+            camera (Camera): Camera to draw on
+
+        """
+        zoom = camera.zoom
+        screenspace_size = camera.surface.get_size()
+        camera_pos_x = -camera.pos.x * zoom
+        camera_pos_y = -camera.pos.y * zoom
+        background_count = len(self.parallax_backgrounds)
+
+        for ix, background in enumerate(self.parallax_backgrounds):
+            scaled_background = pygame.transform.smoothscale_by(background, zoom)
+            (bg_width, bg_height) = Vec2(background.get_size()) * zoom
+
+            draw_start_x = (
+                camera_pos_x / (background_count - ix + 0.5) % bg_width
+            ) - bg_width
+            draw_start_y = (
+                camera_pos_y / (background_count - ix + 0.5) % bg_height
+            ) - bg_height
+            repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
+            repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
+
+            for i in range(repeat_x):
+                for j in range(repeat_y):
+                    x = int(draw_start_x + i * bg_width)
+                    y = int(draw_start_y + j * bg_height)
+                    camera.surface.blit(scaled_background, (x, y))
 
     def draw(self, camera: Camera) -> None:
         """Draw all of `self` on `camera`.

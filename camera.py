@@ -15,20 +15,21 @@ from pygame.math import Vector2 as Vec2
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, pos: Vec2, zoom: float, surface: pygame.Surface) -> None:
+    def __init__(self, center: Vec2, zoom: float, surface: pygame.Surface) -> None:
         """Construct a new camera.
 
         Args:
         ----
-            pos (Vec2): Worldspace-coordinate at the center of the screen
+            center (Vec2): Worldspace-coordinate at the center of the screen
             zoom (float): Higher = Fewer objects fit on screen,
                 zoom==1 corresponds to 1 pixel per unit
             surface (pygame.Surface): Surface to draw on
 
         """
-        self.pos: Vec2 = Vec2(pos)
         self.zoom: float = zoom
         self.surface: pygame.Surface = surface
+        # Convert `center` to topleft corner
+        self.pos: Vec2 = Vec2(center) - Vec2(surface.get_size()) / (2 * zoom)
 
     def smoothly_transition_to(
         self,
@@ -41,7 +42,7 @@ class Camera:
 
         Args:
         ----
-            new_pos (Vec2): New camera worldspace-position
+            new_pos (Vec2): New camera worldspace topleft corner
             new_zoom (float): New zoom-factor
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
@@ -77,13 +78,17 @@ class Camera:
         desired_ratio = surface_width / surface_height
 
         if ratio > desired_ratio:
-            # Width dominates
-            zoom = surface_width / rect.width
+            # Width dominates, height is too small
+            new_zoom = surface_width / rect.width
+            new_height = rect.width / desired_ratio
+            rect.inflate_ip(0, new_height - rect.height)
         else:
-            # Height dominates
-            zoom = surface_height / rect.height
+            # Height dominates, width is too small
+            new_zoom = surface_height / rect.height
+            new_width = rect.height * desired_ratio
+            rect.inflate_ip(new_width - rect.width, 0)
 
-        self.smoothly_transition_to(Vec2(rect.center), zoom, dt, transition_time)
+        self.smoothly_transition_to(Vec2(rect.topleft), new_zoom, dt, transition_time)
 
     def smoothly_focus_points(
         self,
@@ -136,9 +141,7 @@ class Camera:
             Vec2: Screenspace-vector
 
         """
-        width, height = self.surface.get_size()
-        center = Vec2(width / 2, height / 2)
-        return (vec - self.pos) * self.zoom + center
+        return (vec - self.pos) * self.zoom
 
     def start_drawing_new_frame(self) -> None:
         """Fill the camera's surface black to prepare for drawing a new frame."""

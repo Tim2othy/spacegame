@@ -359,6 +359,7 @@ class BulletEnemy(Ship):
             shoot_cooldown (float, optional): Minimum time between shots.
                 Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
+            bullet_color (Color): Color of shot projectiles
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)

@@ -120,7 +120,6 @@ class Disk(PhysicalObject):
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = Color(color)
-        # print(bullet_color, Color(bullet_color))
         self.bulletcolor = Color(bullet_color)
         self._radius_squared = radius**2
 
