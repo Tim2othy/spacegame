@@ -374,10 +374,10 @@ class Universe:
             (bg_width, bg_height) = Vec2(background.get_size()) * zoom
 
             draw_start_x = (
-                camera_pos_x / (background_count - ix) % bg_width
+                camera_pos_x / (background_count - ix + 0.5) % bg_width
             ) - bg_width
             draw_start_y = (
-                camera_pos_y / (background_count - ix) % bg_height
+                camera_pos_y / (background_count - ix + 0.5) % bg_height
             ) - bg_height
             repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
             repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
