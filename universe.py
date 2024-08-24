@@ -4,6 +4,7 @@ everything else, you must first invent the universe.
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 import pygame
@@ -364,26 +365,27 @@ class Universe:
         """
         zoom = camera.zoom
         screenspace_size = camera.surface.get_size()
-        camera_intpos_x = -camera.pos.x * zoom
-        camera_intpos_y = -camera.pos.y * zoom
+        camera_pos_x = -camera.pos.x * zoom
+        camera_pos_y = -camera.pos.y * zoom
         background_count = len(self.parallax_backgrounds)
+
         for ix, background in enumerate(self.parallax_backgrounds):
             scaled_background = pygame.transform.smoothscale_by(background, zoom)
-            (bg_width, bg_height) = scaled_background.get_size()
-            draw_start_x = int(
-                (camera_intpos_x / (background_count - ix) % bg_width) - bg_width
-            )
-            draw_start_y = int(
-                (camera_intpos_y / (background_count - ix) % bg_height) - bg_height
-            )
-            draw_stop_x = draw_start_x + bg_width * (
-                2 * screenspace_size[0] // bg_width
-            )
-            draw_stop_y = draw_start_y + bg_height * (
-                2 * screenspace_size[1] // bg_height
-            )
-            for x in range(draw_start_x, draw_stop_x, bg_width):
-                for y in range(draw_start_y, draw_stop_y, bg_height):
+            (bg_width, bg_height) = Vec2(background.get_size()) * zoom
+
+            draw_start_x = (
+                camera_pos_x / (background_count - ix) % bg_width
+            ) - bg_width
+            draw_start_y = (
+                camera_pos_y / (background_count - ix) % bg_height
+            ) - bg_height
+            repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
+            repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
+
+            for i in range(repeat_x):
+                for j in range(repeat_y):
+                    x = int(draw_start_x + i * bg_width)
+                    y = int(draw_start_y + j * bg_height)
                     camera.surface.blit(scaled_background, (x, y))
 
     def draw(self, camera: Camera) -> None:
