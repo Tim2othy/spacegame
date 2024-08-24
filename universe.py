@@ -364,13 +364,18 @@ class Universe:
         """
         zoom = camera.zoom
         screenspace_size = camera.surface.get_size()
-        camera_intpos_x = int(-camera.pos.x)
-        camera_intpos_y = int(-camera.pos.y)
+        camera_intpos_x = -camera.pos.x * zoom
+        camera_intpos_y = -camera.pos.y * zoom
+        background_count = len(self.parallax_backgrounds)
         for ix, background in enumerate(self.parallax_backgrounds):
             scaled_background = pygame.transform.smoothscale_by(background, zoom)
             (bg_width, bg_height) = scaled_background.get_size()
-            draw_start_x = (camera_intpos_x % bg_width) - bg_width
-            draw_start_y = (camera_intpos_y % bg_height) - bg_height
+            draw_start_x = int(
+                (camera_intpos_x / (background_count - ix) % bg_width) - bg_width
+            )
+            draw_start_y = int(
+                (camera_intpos_y / (background_count - ix) % bg_height) - bg_height
+            )
             draw_stop_x = draw_start_x + bg_width * (
                 2 * screenspace_size[0] // bg_width
             )
