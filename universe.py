@@ -37,6 +37,7 @@ class Planet(Disk):
             density (float): Density
             radius (float): Radius
             color (Color): Color
+            bullet_color (Color): To be deprecated.
 
         """
         super().__init__(pos, Vec2(0, 0), density, radius, color, bullet_color)
@@ -61,6 +62,7 @@ class Asteroid(Disk):
             vel (Vec2): Initial velocity
             density (float): Density
             radius (float): Radius
+            bullet_color (Color): To be deprecated.
 
         """
         super().__init__(pos, vel, density, radius, Color("gray"), bullet_color)
