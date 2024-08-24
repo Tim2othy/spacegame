@@ -30,7 +30,6 @@ class Camera:
         self.surface: pygame.Surface = surface
         # Convert `center` to topleft corner
         self.pos: Vec2 = Vec2(center) - Vec2(surface.get_size()) / (2 * zoom)
-        print(self.pos, zoom)
 
     def smoothly_transition_to(
         self,
