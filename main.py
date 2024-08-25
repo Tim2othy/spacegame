@@ -17,7 +17,7 @@ from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
 pygame.init()
 pygame.display.set_caption("Space Game")
 
-TEST_MODE = True
+TEST_MODE = False
 SCREEN_SIZE = Vec2(1700, 900)
 MINIMAP_SIZE = Vec2(250, 250)
 
@@ -41,30 +41,30 @@ if TEST_MODE:
     enemy_ships: list[BulletEnemy] = []
 else:
 
-    """planets = [
-        Planet(Vec2(67_000, 18_000), 1, 3_000, Color("darkred")),
-        Planet(Vec2(30_000, 32_000), 1, 3_000, Color("khaki")),
-        Planet(Vec2(40_000, 40_000), 1, 3_500, Color("royalblue")),
-        Planet(Vec2(37_000, 47_000), 1, 2_000, Color("mediumpurple")),
-        Planet(Vec2(100_000, 57_000), 1, 6800, Color("darkslategray")),
-        Planet(Vec2(87_000, 57_000), 1, 3_800, Color("plum")),
-        Planet(Vec2(43_000, 60_000), 1, 700, Color("crimson")),
-        Planet(Vec2(180_000, 60_000), 1, 5200, Color("hotpink")),
-        Planet(Vec2(12_000, 71_000), 1, 3_800, Color("coral")),
-        Planet(Vec2(26_000, 75_000), 1, 2_000, Color("gold")),
-        Planet(Vec2(50_000, 99_000), 1, 5_400, Color("red")),
-        Planet(Vec2(13_000, 110_000), 1, 2_000, Color("turquoise")),
-        Planet(Vec2(30_000, 129_000), 1, 4_000, Color("green")),
-        Planet(Vec2(53_000, 137_000), 1, 2_000, Color("deeppink")),
-        Planet(Vec2(90_000, 140_000), 1, 3_800, Color("darkorange")),
-        Planet(Vec2(37_000, 141_000), 1, 2_800, Color("orange")),
-        Planet(Vec2(44_000, 152_000), 1, 400, Color("yellow")),
-        Planet(Vec2(120_000, 160_000), 1, 5000, Color("lightblue")),
-        Planet(Vec2(60_000, 160_000), 1, 2_800, Color("lime")),
-        Planet(Vec2(64_000, 173_000), 1, 3_500, Color("blue")),
-        Planet(Vec2(138_000, 187_000), 1, 5_800, Color("slategray")),
-        Planet(Vec2(42_000, 191_000), 1, 900, Color("navy")),
-    ]"""
+    planets = [
+        Planet(Vec2(67_000, 18_000), 1, 3_000, Color("darkred"), Color("white")),
+        Planet(Vec2(30_000, 32_000), 1, 3_000, Color("khaki"), Color("white")),
+        Planet(Vec2(40_000, 40_000), 1, 3_500, Color("royalblue"), Color("white")),
+        Planet(Vec2(37_000, 47_000), 1, 2_000, Color("mediumpurple"), Color("white")),
+        Planet(Vec2(100_000, 57_000), 1, 6800, Color("darkslategray"), Color("white")),
+        Planet(Vec2(87_000, 57_000), 1, 3_800, Color("plum"), Color("white")),
+        Planet(Vec2(43_000, 60_000), 1, 700, Color("crimson"), Color("white")),
+        Planet(Vec2(180_000, 60_000), 1, 5200, Color("hotpink"), Color("white")),
+        Planet(Vec2(12_000, 71_000), 1, 3_800, Color("coral"), Color("white")),
+        Planet(Vec2(26_000, 75_000), 1, 2_000, Color("gold"), Color("white")),
+        Planet(Vec2(50_000, 99_000), 1, 5_400, Color("red"), Color("white")),
+        Planet(Vec2(13_000, 110_000), 1, 2_000, Color("turquoise"), Color("white")),
+        Planet(Vec2(30_000, 129_000), 1, 4_000, Color("green"), Color("white")),
+        Planet(Vec2(53_000, 137_000), 1, 2_000, Color("deeppink"), Color("white")),
+        Planet(Vec2(90_000, 140_000), 1, 3_800, Color("darkorange"), Color("white")),
+        Planet(Vec2(37_000, 141_000), 1, 2_800, Color("orange"), Color("white")),
+        Planet(Vec2(44_000, 152_000), 1, 400, Color("yellow"), Color("white")),
+        Planet(Vec2(120_000, 160_000), 1, 5000, Color("lightblue"), Color("white")),
+        Planet(Vec2(60_000, 160_000), 1, 2_800, Color("lime"), Color("white")),
+        Planet(Vec2(64_000, 173_000), 1, 3_500, Color("blue"), Color("white")),
+        Planet(Vec2(138_000, 187_000), 1, 5_800, Color("slategray"), Color("white")),
+        Planet(Vec2(42_000, 191_000), 1, 900, Color("navy"), Color("white")),
+    ]
 
     areas: list[Area] = [
         RefuelArea(pygame.Rect((7_000, 1_000), (200, 200))),
@@ -142,7 +142,7 @@ while True:
         player_camera.start_drawing_new_frame()
         gameover = (
             not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        )  # and not TEST_MODE
+        ) and not TEST_MODE
         if gameover:
             font = pygame.font.Font(None, int(64 / player_count))
             player_camera.draw_text("GAME OVER", None, font, Color("red"))

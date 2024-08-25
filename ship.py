@@ -60,7 +60,7 @@ class Ship(Disk):
         self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
 
-        self.ammo: int = 2000
+        self.ammo: int = 2700
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
         self.thruster_rot_left: bool = False
@@ -94,7 +94,7 @@ class Ship(Disk):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
-            self.gun_cooldown = 0.01
+            self.gun_cooldown = 0.003
             self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
@@ -346,8 +346,8 @@ class BulletEnemy(Ship):
         vel: Vec2,
         target_ship: Ship,
         shoot_cooldown: float = 0.125,
-        color: Color = Color("blue"),
-        bullet_color: Color = Color("lime"),
+        color: Color = Color("lime"),
+        bullet_color: Color = Color("hotpink"),
     ) -> None:
         """Create a new enemy ship.
 
