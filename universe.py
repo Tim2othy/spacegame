@@ -299,7 +299,7 @@ class Universe:
                     continue
                 for player_ship in self.player_ships:
                     if player_ship.intersects_point(projectile.pos):
-                        player_ship.suffer_damage(10)
+                        player_ship.suffer_damage(5)
                         enemy_ship.projectiles.remove(projectile)
                         break
 

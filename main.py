@@ -26,16 +26,16 @@ SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(100_000, 100_000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 if TEST_MODE:
 
-    """planets: list[Planet] = [
-        Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred")),
-        Planet(Vec2(2_300, 900), 1, 280, Color("green")),
-        Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple")),
-        Planet(Vec2(5_000, 9_000), 1, 380, Color("darkorange")),
-        Planet(Vec2(6_000, 400), 1, 350, Color("royalblue")),
-        Planet(Vec2(8_600, 8_700), 1, 880, Color("orange")),
-        Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray")),
-        Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow")),
-    ]"""
+    planets: list[Planet] = [
+        Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred"), Color("white")),
+        Planet(Vec2(2_300, 900), 1, 280, Color("green"), Color("white")),
+        Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple"), Color("white")),
+        Planet(Vec2(5_000, 9_000), 1, 380, Color("darkorange"), Color("white")),
+        Planet(Vec2(6_000, 400), 1, 350, Color("royalblue"), Color("white")),
+        Planet(Vec2(8_600, 8_700), 1, 880, Color("orange"), Color("white")),
+        Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray"), Color("white")),
+        Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
+    ]
     areas: list[Area] = []
     asteroids: list[Asteroid] = []
     enemy_ships: list[BulletEnemy] = []
@@ -78,7 +78,7 @@ player_ships = [
         Vec2(0, 0),
         1,
         10,
-        Color("white"),
+        Color("darkslategray"),
         Color("orange"),
         ShipInput(
             pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
@@ -88,21 +88,20 @@ player_ships = [
 
 
 asteroids: list[Asteroid] = []
-for _ in range(50):
+for _ in range(40):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vec2(random.uniform(-100, 100), random.uniform(-100, 100))
     radius = random.uniform(4, 60)
     asteroids.append(Asteroid(pos, vel, 1, radius, Color("white")))
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(50):
+for _ in range(40):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-planets = [Planet(Vec2(6_000, 1_000), 1, 300, Color("darkred"), Color("white"))]
 
 universe = Universe(
     WORLD_SIZE,
@@ -110,7 +109,7 @@ universe = Universe(
     asteroids,
     player_ships,
     areas,
-    [],  # enemy_ships,
+    enemy_ships,
     ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
 cameras: list[Camera] = []
@@ -143,7 +142,7 @@ while True:
         player_camera.start_drawing_new_frame()
         gameover = (
             not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        ) and not TEST_MODE
+        )  # and not TEST_MODE
         if gameover:
             font = pygame.font.Font(None, int(64 / player_count))
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
