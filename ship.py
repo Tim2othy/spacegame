@@ -18,10 +18,10 @@ if TYPE_CHECKING:
     from camera import Camera
 
 
-BULLET_SPEED = 1100
+BULLET_SPEED = 1500
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-ENEMY_SHOOT_RANGE = 1200
+ENEMY_SHOOT_RANGE = 1900
 
 # How long a ship should glow after taking damage
 DAMAGE_INDICATOR_TIME = 0.75
@@ -60,7 +60,7 @@ class Ship(Disk):
         self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
 
-        self.ammo: int = 2700
+        self.ammo: int = 3700
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
         self.thruster_rot_left: bool = False
@@ -69,8 +69,8 @@ class Ship(Disk):
         self.thruster_forward: bool = False
         self.max_fuel: float = 100.0
         self.fuel: float = self.max_fuel
-        self.fuel_consumption_rate: float = 1
-        self.fuel_rot_consumption_rate: float = 1
+        self.fuel_consumption_rate: float = 0.5
+        self.fuel_rot_consumption_rate: float = 0.5
 
         self.damage_indicator_timer: float = 0
 
@@ -335,7 +335,7 @@ class BulletEnemy(Ship):
         "Action",
         [
             "accelerate_to_player",
-            # "accelerate_randomly",
+            "accelerate_randomly",
             "decelerate",
         ],
     )
@@ -345,7 +345,7 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 0.125,
+        shoot_cooldown: float = 0.0125,
         color: Color = Color("lime"),
         bullet_color: Color = Color("hotpink"),
     ) -> None:
@@ -363,7 +363,7 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
-        self.thrust *= 0.2
+        self.thrust *= 0.1
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
@@ -385,7 +385,7 @@ class BulletEnemy(Ship):
         self.action_timer -= dt
         if self.action_timer <= 0:
             [self.current_action] = random.choices(
-                population=list(BulletEnemy.Action), weights=[0.8, 0.2]
+                population=list(BulletEnemy.Action), weights=[0.6, 0.2, 0.2]
             )
             self.action_timer = 6
 
@@ -395,8 +395,8 @@ class BulletEnemy(Ship):
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
-            # case BulletEnemy.Action.accelerate_randomly:
-            #     force_direction = Vector2(random.uniform(-1, 1), random.uniform(-1, 1))
+            case BulletEnemy.Action.accelerate_randomly:
+                force_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
         force = force_direction * self.thrust / force_direction.magnitude()

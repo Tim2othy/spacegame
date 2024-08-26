@@ -21,8 +21,8 @@ TEST_MODE = False
 SCREEN_SIZE = Vec2(1700, 900)
 MINIMAP_SIZE = Vec2(250, 250)
 
-WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(200_000, 200_000)
-SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(100_000, 100_000)
+WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(50_000, 50_000)
+SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(40_000, 40_000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 if TEST_MODE:
 
@@ -42,28 +42,28 @@ if TEST_MODE:
 else:
 
     planets = [
-        Planet(Vec2(67_000, 18_000), 1, 3_000, Color("darkred"), Color("white")),
-        Planet(Vec2(30_000, 32_000), 1, 3_000, Color("khaki"), Color("white")),
-        Planet(Vec2(40_000, 40_000), 1, 3_500, Color("royalblue"), Color("white")),
-        Planet(Vec2(37_000, 47_000), 1, 2_000, Color("mediumpurple"), Color("white")),
-        Planet(Vec2(100_000, 57_000), 1, 6800, Color("darkslategray"), Color("white")),
-        Planet(Vec2(87_000, 57_000), 1, 3_800, Color("plum"), Color("white")),
-        Planet(Vec2(43_000, 60_000), 1, 700, Color("crimson"), Color("white")),
-        Planet(Vec2(180_000, 60_000), 1, 5200, Color("hotpink"), Color("white")),
-        Planet(Vec2(12_000, 71_000), 1, 3_800, Color("coral"), Color("white")),
-        Planet(Vec2(26_000, 75_000), 1, 2_000, Color("gold"), Color("white")),
-        Planet(Vec2(50_000, 99_000), 1, 5_400, Color("red"), Color("white")),
-        Planet(Vec2(13_000, 110_000), 1, 2_000, Color("turquoise"), Color("white")),
-        Planet(Vec2(30_000, 129_000), 1, 4_000, Color("green"), Color("white")),
-        Planet(Vec2(53_000, 137_000), 1, 2_000, Color("deeppink"), Color("white")),
-        Planet(Vec2(90_000, 140_000), 1, 3_800, Color("darkorange"), Color("white")),
-        Planet(Vec2(37_000, 141_000), 1, 2_800, Color("orange"), Color("white")),
-        Planet(Vec2(44_000, 152_000), 1, 400, Color("yellow"), Color("white")),
-        Planet(Vec2(120_000, 160_000), 1, 5000, Color("lightblue"), Color("white")),
-        Planet(Vec2(60_000, 160_000), 1, 2_800, Color("lime"), Color("white")),
-        Planet(Vec2(64_000, 173_000), 1, 3_500, Color("blue"), Color("white")),
-        Planet(Vec2(138_000, 187_000), 1, 5_800, Color("slategray"), Color("white")),
-        Planet(Vec2(42_000, 191_000), 1, 900, Color("navy"), Color("white")),
+        Planet(Vec2(37_000, 4_000), 1, 700, Color("darkred"), Color("white")),
+        Planet(Vec2(20_000, 6_000), 1, 800, Color("khaki"), Color("white")),
+        Planet(Vec2(20_000, 12_000), 1, 900, Color("royalblue"), Color("white")),
+        Planet(Vec2(17_000, 17_000), 1, 900, Color("mediumpurple"), Color("white")),
+        Planet(Vec2(40_000, 19_000), 1, 900, Color("darkslategray"), Color("white")),
+        Planet(Vec2(37_000, 20_000), 1, 800, Color("darkgreen"), Color("white")),
+        Planet(Vec2(23_000, 21_000), 1, 400, Color("crimson"), Color("white")),
+        Planet(Vec2(10_000, 22_000), 1, 900, Color("hotpink"), Color("white")),
+        Planet(Vec2(8_000, 24_000), 1, 300, Color("coral"), Color("white")),
+        Planet(Vec2(16_000, 26_000), 1, 600, Color("gold"), Color("white")),
+        Planet(Vec2(20_000, 29_000), 1, 400, Color("blue"), Color("white")),
+        Planet(Vec2(13_000, 31_000), 1, 500, Color("turquoise"), Color("white")),
+        Planet(Vec2(20_000, 32_000), 1, 270, Color("green"), Color("white")),
+        Planet(Vec2(23_000, 34_000), 1, 300, Color("deeppink"), Color("white")),
+        Planet(Vec2(10_000, 35_000), 1, 900, Color("darkorange"), Color("white")),
+        Planet(Vec2(37_000, 36_000), 1, 800, Color("orange"), Color("white")),
+        Planet(Vec2(24_000, 37_000), 1, 100, Color("yellow"), Color("white")),
+        Planet(Vec2(10_000, 39_000), 1, 850, Color("lightblue"), Color("white")),
+        Planet(Vec2(10_000, 40_000), 1, 500, Color("lime"), Color("white")),
+        Planet(Vec2(44_000, 42_000), 1, 600, Color("plum"), Color("white")),
+        Planet(Vec2(28_000, 41_000), 1, 200, Color("slategray"), Color("white")),
+        Planet(Vec2(32_000, 45_000), 1, 700, Color("navy"), Color("white")),
     ]
 
     areas: list[Area] = [
