@@ -385,7 +385,7 @@ class BulletEnemy(Ship):
         self.action_timer -= dt
         if self.action_timer <= 0:
             [self.current_action] = random.choices(
-                population=list(BulletEnemy.Action), weights=[0.6, 0.2, 0.2]
+                population=list(BulletEnemy.Action), weights=[0.9, 0.05, 0.05]
             )
             self.action_timer = 6
 
