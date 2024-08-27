@@ -21,8 +21,8 @@ TEST_MODE = False
 SCREEN_SIZE = Vec2(1700, 900)
 MINIMAP_SIZE = Vec2(250, 250)
 
-WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(50_000, 50_000)
-SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(40_000, 40_000)
+WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
+SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 if TEST_MODE:
 
@@ -42,28 +42,26 @@ if TEST_MODE:
 else:
 
     planets = [
-        Planet(Vec2(37_000, 4_000), 1, 700, Color("darkred"), Color("white")),
-        Planet(Vec2(20_000, 6_000), 1, 800, Color("khaki"), Color("white")),
-        Planet(Vec2(20_000, 12_000), 1, 900, Color("royalblue"), Color("white")),
-        Planet(Vec2(17_000, 17_000), 1, 900, Color("mediumpurple"), Color("white")),
-        Planet(Vec2(40_000, 19_000), 1, 900, Color("darkslategray"), Color("white")),
-        Planet(Vec2(37_000, 20_000), 1, 800, Color("darkgreen"), Color("white")),
-        Planet(Vec2(23_000, 21_000), 1, 400, Color("crimson"), Color("white")),
-        Planet(Vec2(10_000, 22_000), 1, 900, Color("hotpink"), Color("white")),
-        Planet(Vec2(8_000, 24_000), 1, 300, Color("coral"), Color("white")),
-        Planet(Vec2(16_000, 26_000), 1, 600, Color("gold"), Color("white")),
-        Planet(Vec2(20_000, 29_000), 1, 400, Color("blue"), Color("white")),
-        Planet(Vec2(13_000, 31_000), 1, 500, Color("turquoise"), Color("white")),
-        Planet(Vec2(20_000, 32_000), 1, 270, Color("green"), Color("white")),
-        Planet(Vec2(23_000, 34_000), 1, 300, Color("deeppink"), Color("white")),
-        Planet(Vec2(10_000, 35_000), 1, 900, Color("darkorange"), Color("white")),
-        Planet(Vec2(37_000, 36_000), 1, 800, Color("orange"), Color("white")),
-        Planet(Vec2(24_000, 37_000), 1, 100, Color("yellow"), Color("white")),
-        Planet(Vec2(10_000, 39_000), 1, 850, Color("lightblue"), Color("white")),
-        Planet(Vec2(10_000, 40_000), 1, 500, Color("lime"), Color("white")),
-        Planet(Vec2(44_000, 42_000), 1, 600, Color("plum"), Color("white")),
-        Planet(Vec2(28_000, 41_000), 1, 200, Color("slategray"), Color("white")),
-        Planet(Vec2(32_000, 45_000), 1, 700, Color("navy"), Color("white")),
+        Planet(Vec2(27_000, 29_000), 1, 700, Color("darkred"), Color("white")),
+        Planet(Vec2(21_000, 28_000), 1, 800, Color("khaki"), Color("white")),
+        Planet(Vec2(2_000, 27_000), 1, 900, Color("royalblue"), Color("white")),
+        Planet(Vec2(17_000, 26_000), 1, 900, Color("mediumpurple"), Color("white")),
+        Planet(Vec2(14_000, 23_000), 1, 900, Color("darkslategray"), Color("white")),
+        Planet(Vec2(17_000, 22_000), 1, 800, Color("darkgreen"), Color("white")),
+        Planet(Vec2(13_000, 21_000), 1, 400, Color("crimson"), Color("white")),
+        Planet(Vec2(10_000, 20_000), 1, 900, Color("hotpink"), Color("white")),
+        Planet(Vec2(18_000, 19_000), 1, 300, Color("coral"), Color("white")),
+        Planet(Vec2(16_000, 18_000), 1, 600, Color("gold"), Color("white")),
+        Planet(Vec2(13_000, 17_000), 1, 400, Color("blue"), Color("white")),
+        Planet(Vec2(8_000, 16_000), 1, 500, Color("turquoise"), Color("white")),
+        Planet(Vec2(24_000, 15_000), 1, 270, Color("green"), Color("white")),
+        Planet(Vec2(25_000, 14_000), 1, 300, Color("deeppink"), Color("white")),
+        Planet(Vec2(18_000, 12_000), 1, 900, Color("darkorange"), Color("white")),
+        Planet(Vec2(3_000, 5_000), 1, 100, Color("yellow"), Color("white")),
+        Planet(Vec2(22_000, 4_000), 1, 850, Color("lightblue"), Color("white")),
+        Planet(Vec2(14_500, 3_000), 1, 600, Color("plum"), Color("white")),
+        Planet(Vec2(28_000, 2_000), 1, 200, Color("slategray"), Color("white")),
+        Planet(Vec2(3_000, 1_000), 1, 700, Color("navy"), Color("white")),
     ]
 
     areas: list[Area] = [
@@ -91,11 +89,11 @@ asteroids: list[Asteroid] = []
 for _ in range(40):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     vel = Vec2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(4, 60)
+    radius = random.uniform(4, 300)
     asteroids.append(Asteroid(pos, vel, 1, radius, Color("white")))
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(40):
+for _ in range(20):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))

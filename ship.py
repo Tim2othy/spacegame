@@ -363,7 +363,7 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
-        self.thrust *= 0.1
+        self.thrust *= 0.04
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
