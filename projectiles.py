@@ -40,9 +40,9 @@ class Bullet(PhysicalObject):
         camera.draw_polygon(
             self.color,
             [
-                self.pos + 2 * forward,
-                self.pos + 2 * forward.rotate(150),
-                self.pos + 2 * forward.rotate(-150),
+                self.pos + 4 * forward,
+                self.pos + 4 * forward.rotate(150),
+                self.pos + 4 * forward.rotate(-150),
             ],
         )
 

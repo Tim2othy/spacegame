@@ -18,8 +18,8 @@ pygame.init()
 pygame.display.set_caption("Space Game")
 
 TEST_MODE = False
-SCREEN_SIZE = Vec2(1700, 900)
-MINIMAP_SIZE = Vec2(250, 250)
+SCREEN_SIZE = Vec2(1800, 950)
+MINIMAP_SIZE = Vec2(350, 350)
 
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
