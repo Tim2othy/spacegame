@@ -68,99 +68,6 @@ class Asteroid(Disk):
         super().__init__(pos, vel, density, radius, Color("gray"), bullet_color)
 
 
-class Area(Rect):
-    """A rectangular area that triggers an event for a ship."""
-
-    def __init__(
-        self,
-        rect: Rect,
-        color: Color,
-        caption: str,
-    ) -> None:
-        """Create a new area.
-
-        Args:
-        ----
-            rect (Rect): Rectangular area
-            color (Color): Color
-            caption (str): Area's "Name"
-
-        """
-        super().__init__(rect)
-        self.color = color
-        self.caption = caption
-
-    def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`.
-
-        Args:
-        ----
-            camera (Camera): Camera to draw on
-
-        """
-        camera.draw_rect(self.color, self)
-
-    def event(self, ship: Ship) -> None:
-        """Trigger event for a ship entering `self`.
-
-        Args:
-        ----
-            ship (Ship): Affected `ship`
-
-        """
-
-
-class RefuelArea(Area):
-    """Refuel every ship entering this."""
-
-    def __init__(
-        self,
-        rect: Rect,
-    ) -> None:
-        """Create a RefuelArea.
-
-        Args:
-        ----
-            rect (Rect): Rectangular area
-
-        """
-        super().__init__(rect, Color("yellow"), "Refuel")
-
-    def event(self, ship: Ship) -> None:
-        """Refuel `ship`.
-
-        Args:
-        ----
-            ship (Ship): Ship to refuel
-
-        """
-        ship.fuel = ship.max_fuel
-
-
-class TrophyArea(Area):
-    """Give every ship entering this a trophy."""
-
-    def __init__(self, rect: Rect) -> None:
-        """Create a TrophyArea.
-
-        Args:
-        ----
-            rect (Rect): Rectangular area
-
-        """
-        super().__init__(rect, Color("gold"), "Trophy")
-
-    def event(self, ship: Ship) -> None:
-        """Give `ship` a trophy.
-
-        Args:
-        ----
-            ship (Ship): Ship to give a trophy to
-
-        """
-        ship.has_trophy = True
-
-
 class Universe:
     """A collection of celestial objects, forming a Universe.
 
@@ -174,7 +81,6 @@ class Universe:
         planets: list[Planet],
         asteroids: list[Asteroid],
         player_ships: list[PlayerShip],
-        areas: list[Area],
         enemy_ships: list[BulletEnemy],
         parallax_background_paths: list[str],
     ) -> None:
@@ -186,7 +92,6 @@ class Universe:
             planets (list[Planet]): Planets
             asteroids (list[Asteroid]): Asteroids
             player_ships (list[Ship]): List of player-ships
-            areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
             parallax_background_paths (list[str]): Paths to
                 background-images,increasingly far away
@@ -196,7 +101,6 @@ class Universe:
         self.planets = planets
         self.asteroids = asteroids
         self.player_ships = player_ships
-        self.areas = areas
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
             pygame.image.load(path).convert_alpha()
@@ -349,12 +253,6 @@ class Universe:
         self.apply_gravity(dt)
         self.apply_bounce()
 
-        # Areas
-        for area in self.areas:
-            for player_ship in self.player_ships:
-                if area.collidepoint(player_ship.pos):
-                    area.event(player_ship)
-
         self.collide_bullets()
 
     def draw_background(self, camera: Camera) -> None:
@@ -399,11 +297,7 @@ class Universe:
 
         """
         for pobj in (
-            self.areas
-            + self.asteroids
-            + self.planets
-            + self.enemy_ships
-            + self.player_ships
+            self.asteroids + self.planets + self.enemy_ships + self.player_ships
         ):
             pobj.draw(camera)
 
@@ -438,8 +332,7 @@ class Universe:
         # texty(f"Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}")
         texty(f"Health: {player_ship.health:.2f}")
         texty(f"Ammunition: {player_ship.ammo}")
-        # for area in self.areas:
-        #    texty(f"  Coordinates of {area.caption}: ({area.centerx}, {area.centery})")
+
         # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
         # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
         # texty(f"{player_projectile_count} player projectiles")

@@ -11,7 +11,7 @@ from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from ship import BulletEnemy, PlayerShip, RocketEnemy, ShipInput
-from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
+from universe import Asteroid, Planet, Universe
 
 # Initialize Pygame
 pygame.init()
@@ -34,7 +34,6 @@ planets: list[Planet] = [
     Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray"), Color("white")),
     Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
 ]
-areas: list[Area] = []
 asteroids: list[Asteroid] = []
 enemy_ships: list[BulletEnemy] = []
 
@@ -75,7 +74,6 @@ universe = Universe(
     planets,
     asteroids,
     player_ships,
-    areas,
     enemy_ships,
     ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
