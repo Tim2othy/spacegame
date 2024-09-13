@@ -28,7 +28,6 @@ planets: list[Planet] = [
     Planet(Vec2(2300, 900), 1, 280, Color("darkgreen")),
     Planet(Vec2(4200, 3700), 1, 280, Color("darkgreen")),
 ]
-enemy_ships: list[BulletEnemy] = []
 
 
 player_ships = [
@@ -46,9 +45,7 @@ player_ships = [
 
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(5):
-    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+enemy_ships.append(BulletEnemy(Vec2(1020, 1020), Vec2(0, 0), player_ships[0]))
 
 
 universe = Universe(
@@ -60,7 +57,6 @@ universe = Universe(
 cameras: list[Camera] = []
 
 for player_ix, player in enumerate(player_ships):
-    # TODO: Probably fix the off-by-one-error in here.
     topleft = (player_ix * SCREEN_SIZE.x, 0)
     size = (SCREEN_SIZE.x, SCREEN_SIZE.y)
     subsurface = SCREEN_SURFACE.subsurface((topleft, size))
@@ -81,16 +77,9 @@ while True:
     for player_ix, player_ship in enumerate(player_ships):
         player_camera = cameras[player_ix]
         player_camera.start_drawing_new_frame()
-        gameover = (
-            not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        )
-        if gameover:
-            font = pygame.font.Font(None, int(64 / player_count))
-            player_camera.draw_text("GAME OVER", None, font, Color("red"))
-        else:
-            universe.move_camera(player_camera, player_ix, dt)
-            universe.draw(player_camera)
-            universe.draw_text(player_camera, player_ix)
+        universe.move_camera(player_camera, player_ix, dt)
+        universe.draw(player_camera)
+        universe.draw_text(player_camera, player_ix)
 
     pygame.display.flip()
 
