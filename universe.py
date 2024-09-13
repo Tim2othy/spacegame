@@ -203,10 +203,9 @@ class Universe:
             self.text_vertical_offset += 1.0 * font_size
 
         player_ship = self.player_ships[player_ix]
-        texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
-        texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
-        texty(f"Fuel: {player_ship.fuel:.2f}")
-        # texty(f"Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}")
+        # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
+        # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
+        # texty(f"Fuel: {player_ship.fuel:.2f}")
         texty(f"Health: {player_ship.health:.2f}")
         texty(f"Ammunition: {player_ship.ammo}")
 
@@ -215,29 +214,10 @@ class Universe:
         # texty(f"{player_projectile_count} player projectiles")
         # texty(f"{enemy_projectile_count} enemy projectiles")
 
-        enemy_count = len(self.enemy_ships)
-        texty(f"Enemies left: {enemy_count}")
+        # enemy_count = len(self.enemy_ships)
+        # texty(f"Enemies left: {enemy_count}")
 
         del self.text_vertical_offset
-
-    def draw_grid(self, camera: Camera) -> None:
-        """Draw grid on `camera`.
-
-        Args:
-        ----
-            camera (Camera): Camera to draw on
-
-        """
-        grid_color = Color("darkgreen")
-        gridline_spacing = 500
-        width = self.size.x
-        height = self.size.y
-
-        for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_vertical_hairline(grid_color, x, 0, height)
-
-        for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_horizontal_hairline(grid_color, 0, width, y)
 
     def contains_point(self, vec: Vec2) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries.

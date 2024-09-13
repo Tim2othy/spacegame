@@ -25,9 +25,9 @@ SPAWNPOINT = Vec2(1000, 1000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
 planets: list[Planet] = [
-    Planet(Vec2(800, 2700), 1, 370, Color("darkred")),
-    Planet(Vec2(2300, 900), 1, 280, Color("green")),
-    Planet(Vec2(4200, 3700), 1, 280, Color("mediumpurple")),
+    Planet(Vec2(800, 2700), 1, 370, Color("darkgreen")),
+    Planet(Vec2(2300, 900), 1, 280, Color("darkgreen")),
+    Planet(Vec2(4200, 3700), 1, 280, Color("darkgreen")),
 ]
 enemy_ships: list[BulletEnemy] = []
 
@@ -94,7 +94,6 @@ while True:
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
         else:
             universe.move_camera(player_camera, player_ix, dt)
-            universe.draw_grid(player_camera)
             universe.draw(player_camera)
             universe.draw_text(player_camera, player_ix)
 

@@ -64,10 +64,10 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.max_fuel: float = 100.0
+        self.max_fuel: float = 100
         self.fuel: float = self.max_fuel
-        self.fuel_consumption_rate: float = 0.5
-        self.fuel_rot_consumption_rate: float = 0.5
+        self.fuel_consumption_rate: float = 0
+        self.fuel_rot_consumption_rate: float = 0
 
         self.damage_indicator_timer: float = 0
 
