@@ -60,11 +60,10 @@ universe = Universe(
 )
 cameras: list[Camera] = []
 
-player_count = len(player_ships)
 for player_ix, player in enumerate(player_ships):
     # TODO: Probably fix the off-by-one-error in here.
-    topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
-    size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
+    topleft = (player_ix * SCREEN_SIZE.x, 0)
+    size = (SCREEN_SIZE.x, SCREEN_SIZE.y)
     subsurface = SCREEN_SURFACE.subsurface((topleft, size))
     camera = Camera(player.pos, 1.0, subsurface)
     cameras.append(camera)
