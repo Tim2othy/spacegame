@@ -19,14 +19,14 @@ pygame.display.set_caption("Ocean Game")
 
 SCREEN_SIZE = Vec2(1800, 950)
 
-WORLD_SIZE = Vec2(5000, 5000)
-SPAWNPOINT = Vec2(1000, 1000)
+WORLD_SIZE = Vec2(1000, 1000)
+SPAWNPOINT = Vec2(500, 500)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
 planets: list[Planet] = [
-    Planet(Vec2(800, 2700), 1, 370, Color("darkgreen")),
-    Planet(Vec2(2300, 900), 1, 280, Color("darkgreen")),
-    Planet(Vec2(4200, 3700), 1, 280, Color("darkgreen")),
+    Planet(Vec2(800, 700), 1, 80, Color("darkgreen")),
+    Planet(Vec2(200, 100), 1, 40, Color("darkgreen")),
+    Planet(Vec2(400, 700), 1, 60, Color("darkgreen")),
 ]
 
 
@@ -44,7 +44,7 @@ player_ships = [
 ]
 
 
-enemy_ships = [BulletEnemy(Vec2(1020, 1020), Vec2(0, 0), player_ships[0])]
+enemy_ships = [BulletEnemy(Vec2(520, 520), Vec2(0, 0), player_ships[0])]
 
 
 universe = Universe(
