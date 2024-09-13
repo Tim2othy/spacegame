@@ -26,7 +26,7 @@ class Bullet(PhysicalObject):
 
         """
         super().__init__(pos, vel, 1.0)
-        self.color = Color(color)
+        self.color = Color("black")
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
@@ -37,11 +37,4 @@ class Bullet(PhysicalObject):
 
         """
         forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
-        camera.draw_polygon(
-            self.color,
-            [
-                self.pos + 4 * forward,
-                self.pos + 4 * forward.rotate(150),
-                self.pos + 4 * forward.rotate(-150),
-            ],
-        )
+        camera.draw_circle(self.color, self.pos, 4)

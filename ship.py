@@ -18,10 +18,10 @@ if TYPE_CHECKING:
     from camera import Camera
 
 
-BULLET_SPEED = 1500
-GUNBARREL_LENGTH = 3  # relative to radius
-GUNBARREL_WIDTH = 0.5  # relative to radius
-ENEMY_SHOOT_RANGE = 1900
+BULLET_SPEED = 300
+GUNBARREL_LENGTH = 2  # relative to radius
+GUNBARREL_WIDTH = 0.8  # relative to radius
+ENEMY_SHOOT_RANGE = 400
 
 # How long a ship should glow after taking damage
 DAMAGE_INDICATOR_TIME = 0.75
@@ -52,20 +52,19 @@ class Ship(Disk):
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
         self.angle: float = 0
-        self.health: float = 100.0
+        self.health: float = 10000
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
 
-        self.ammo: int = 3700
-        self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 230
+        self.ammo: int = 1000
+        self.thrust: float = 40 * self.mass
+        self.rotation_thrust: float = 100
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.max_fuel: float = 100
-        self.fuel: float = self.max_fuel
+        self.fuel: float = 100
         self.fuel_consumption_rate: float = 0
         self.fuel_rot_consumption_rate: float = 0
 
@@ -91,7 +90,7 @@ class Ship(Disk):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
-            self.gun_cooldown = 0.003
+            self.gun_cooldown = 0.5
             self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
@@ -356,10 +355,10 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 1, 8, color)
-        self.thrust *= 0.01
-        self.time_until_next_shot = 0
+        self.thrust *= 1
+        self.time_until_next_shot = 20
         self.action_timer = 6
-        self.health = 100
+        self.health = 10000
         self.current_action: BulletEnemy.Action = (
             BulletEnemy.Action.accelerate_to_player
         )

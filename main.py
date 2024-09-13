@@ -40,7 +40,7 @@ player_ships = [
         10,
         Color("brown"),
         ShipInput(
-            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
+            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_SPACE
         ),
     )
 ]
