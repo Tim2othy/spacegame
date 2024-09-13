@@ -44,8 +44,7 @@ player_ships = [
 ]
 
 
-enemy_ships: list[BulletEnemy] = []
-enemy_ships.append(BulletEnemy(Vec2(1020, 1020), Vec2(0, 0), player_ships[0]))
+enemy_ships = [BulletEnemy(Vec2(1020, 1020), Vec2(0, 0), player_ships[0])]
 
 
 universe = Universe(
