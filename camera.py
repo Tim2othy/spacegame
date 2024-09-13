@@ -59,7 +59,10 @@ class Camera:
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
     def smoothly_focus_rect(
-        self, rect: Rect, dt: float, transition_time: float = 0.25,
+        self,
+        rect: Rect,
+        dt: float,
+        transition_time: float = 0.25,
     ) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is
         visible entirely, but not more.
@@ -144,8 +147,8 @@ class Camera:
         return (vec - self.pos) * self.zoom
 
     def start_drawing_new_frame(self) -> None:
-        """Fill the camera's surface black to prepare for drawing a new frame."""
-        self.surface.fill(Color("black"))
+        """Fill the camera's surface blue to prepare for drawing a new frame."""
+        self.surface.fill(Color("blue"))
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw an anti-aliased worldspace-circle on screen.
@@ -226,7 +229,11 @@ class Camera:
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
     def draw_vertical_hairline(
-        self, color: Color, x: float, starty: float, endy: float,
+        self,
+        color: Color,
+        x: float,
+        starty: float,
+        endy: float,
     ) -> None:
         """Draw a vertical worldspace-line of single-pixel-thickness.
 
@@ -249,7 +256,11 @@ class Camera:
             pygame.gfxdraw.vline(self.surface, x, y1, y2, color)
 
     def draw_horizontal_hairline(
-        self, color: Color, startx: float, endx: float, y: float,
+        self,
+        color: Color,
+        startx: float,
+        endx: float,
+        y: float,
     ) -> None:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
 
@@ -287,7 +298,11 @@ class Camera:
             pygame.gfxdraw.box(self.surface, screen_rect, color)
 
     def draw_text(
-        self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color,
+        self,
+        text: str,
+        pos: Vec2 | None,
+        font: pygame.font.Font,
+        color: Color,
     ) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 

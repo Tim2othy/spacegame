@@ -75,7 +75,6 @@ universe = Universe(
     asteroids,
     player_ships,
     enemy_ships,
-    ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
 cameras: list[Camera] = []
 
@@ -113,7 +112,6 @@ while True:
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
         else:
             universe.move_camera(player_camera, player_ix, dt)
-            universe.draw_background(player_camera)
             universe.draw_grid(player_camera)
             universe.draw(player_camera)
             universe.draw_text(player_camera, player_ix)

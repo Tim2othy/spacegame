@@ -11,7 +11,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0.03
+GRAVITATIONAL_CONSTANT = 0
 
 
 class PhysicalObject:
