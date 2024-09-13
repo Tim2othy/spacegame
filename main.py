@@ -10,7 +10,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from ship import BulletEnemy, PlayerShip, RocketEnemy, ShipInput
+from ship import BulletEnemy, PlayerShip, ShipInput
 from universe import Planet, Universe
 
 # Initialize Pygame
@@ -55,10 +55,7 @@ player_ships = [
 enemy_ships: list[BulletEnemy] = []
 for _ in range(20):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    if random.random() > 0.5:
-        enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
-    else:
-        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+    enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
 
 universe = Universe(

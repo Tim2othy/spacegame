@@ -12,7 +12,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from physics import Disk
-from projectiles import Bullet, Rocket
+from projectiles import Bullet
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -363,7 +363,7 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
-        self.thrust *= 0.04
+        self.thrust *= 0.01
         self.time_until_next_shot = 0
         self.action_timer = 6
         self.health = 100
@@ -413,41 +413,3 @@ class BulletEnemy(Ship):
         ):
             self.shoot()
             self.time_until_next_shot = self.shoot_cooldown
-
-
-class RocketEnemy(BulletEnemy):
-    """An enemy ship shooting rockets, targeting a specific other ship."""
-
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        target_ship: Ship,
-        shoot_cooldown: float = 10,
-        color: Color = Color("plum"),
-    ) -> None:
-        """Create a new Rocket-Ship.
-
-        Args:
-        ----
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots.
-                Defaults to 0.5.
-            color (Color, optional): Material color. Defaults to Color("red").
-
-        """
-        super().__init__(pos, vel, target_ship, shoot_cooldown, color)
-
-    def shoot(self) -> None:
-        """Shoot a Rocket."""
-        if self.gun_cooldown <= 0 and self.ammo > 0:
-            forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(
-                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
-            )
-            self.gun_cooldown = 0.025
-            self.ammo -= 1
