@@ -20,19 +20,14 @@ pygame.display.set_caption("Ocean Game")
 SCREEN_SIZE = Vec2(1800, 950)
 MINIMAP_SIZE = Vec2(350, 350)
 
-WORLD_SIZE = Vec2(10_000, 10_000)
-SPAWNPOINT = Vec2(5_000, 5_000)
+WORLD_SIZE = Vec2(5000, 5000)
+SPAWNPOINT = Vec2(1000, 1000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
 planets: list[Planet] = [
-    Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred"), Color("white")),
-    Planet(Vec2(2_300, 900), 1, 280, Color("green"), Color("white")),
-    Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple"), Color("white")),
-    Planet(Vec2(5_000, 9_000), 1, 380, Color("darkorange"), Color("white")),
-    Planet(Vec2(6_000, 400), 1, 350, Color("royalblue"), Color("white")),
-    Planet(Vec2(8_600, 8_700), 1, 880, Color("orange"), Color("white")),
-    Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray"), Color("white")),
-    Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
+    Planet(Vec2(800, 2700), 1, 370, Color("darkred")),
+    Planet(Vec2(2300, 900), 1, 280, Color("green")),
+    Planet(Vec2(4200, 3700), 1, 280, Color("mediumpurple")),
 ]
 enemy_ships: list[BulletEnemy] = []
 
@@ -43,8 +38,7 @@ player_ships = [
         Vec2(0, 0),
         1,
         10,
-        Color("darkslategray"),
-        Color("orange"),
+        Color("brown"),
         ShipInput(
             pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
         ),
@@ -53,7 +47,7 @@ player_ships = [
 
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(20):
+for _ in range(5):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
@@ -108,7 +102,7 @@ while True:
     universe.draw(minimap_camera)
     # Draw minimap border
     # This being worldspace is a kinda bad hack.
-    MINIMAP_BORDER_COLOR = Color("aquamarine")
+    MINIMAP_BORDER_COLOR = Color("gold")
     minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
     minimap_camera.draw_horizontal_hairline(
         MINIMAP_BORDER_COLOR,

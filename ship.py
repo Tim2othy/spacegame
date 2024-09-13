@@ -37,7 +37,6 @@ class Ship(Disk):
         density: float,
         size: float,
         color: Color,
-        bullet_color: Color,
     ) -> None:
         """Create a new spaceship.
 
@@ -48,17 +47,15 @@ class Ship(Disk):
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
-            bullet_color (Color): Bullet_color
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color)
+        super().__init__(pos, vel, density, size, color)
         self.size: float = size
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
         self.gun_cooldown: float = 0
         self.has_trophy: bool = False
-        self.bullet_color = Color(bullet_color)
 
         self.ammo: int = 3700
         self.thrust: float = 250 * self.mass
@@ -93,7 +90,7 @@ class Ship(Disk):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
+            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.color))
             self.gun_cooldown = 0.003
             self.ammo -= 1
 
@@ -166,9 +163,9 @@ class Ship(Disk):
 
         # thruster_backward (active)
         if self.thruster_backward:
-            drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
+            drawy(Color("white"), [forward * 2, left * 1.25, right * 1.25])
 
-        # "For his neutral special, he wields a gun"
+        # "For his neutral special, he wields a cannon"
         camera.draw_line(
             darker_color,
             self.pos,
@@ -188,7 +185,7 @@ class Ship(Disk):
         # thruster_rot_left (active)
         if self.thruster_rot_left:
             drawy(
-                Color("orange"),
+                Color("white"),
                 [
                     1.5 * left + 1.25 * backward,
                     0.5 * left + 0.5 * backward,
@@ -208,7 +205,7 @@ class Ship(Disk):
         # thruster_rot_right (active)
         if self.thruster_rot_right:
             drawy(
-                Color("orange"),
+                Color("white"),
                 [
                     1.5 * right + 1.25 * backward,
                     0.5 * right + 0.5 * backward,
@@ -219,7 +216,7 @@ class Ship(Disk):
         # thruster_forward (flame)
         if self.thruster_forward:
             drawy(
-                Color("orange"),
+                Color("white"),
                 [
                     0.7 * left + 0.7 * backward,
                     0.5 * left + 1.5 * backward,
@@ -291,7 +288,6 @@ class PlayerShip(Ship):
         density: float,
         size: float,
         color: Color,
-        bullet_color: Color,
         spaceship_input: ShipInput,
     ) -> None:
         """Create a new player-spaceship.
@@ -303,11 +299,10 @@ class PlayerShip(Ship):
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
-            bullet_color (Color): Bullet_color
             spaceship_input (SpaceshipInput): Map from keys to actions
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color)
+        super().__init__(pos, vel, density, size, color)
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
@@ -347,7 +342,6 @@ class BulletEnemy(Ship):
         target_ship: Ship,
         shoot_cooldown: float = 0.0125,
         color: Color = Color("lime"),
-        bullet_color: Color = Color("hotpink"),
     ) -> None:
         """Create a new enemy ship.
 
@@ -359,10 +353,9 @@ class BulletEnemy(Ship):
             shoot_cooldown (float, optional): Minimum time between shots.
                 Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
-            bullet_color (Color): Color of shot projectiles
 
         """
-        super().__init__(pos, vel, 1, 8, color, bullet_color)
+        super().__init__(pos, vel, 1, 8, color)
         self.thrust *= 0.01
         self.time_until_next_shot = 0
         self.action_timer = 6

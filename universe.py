@@ -27,7 +27,6 @@ class Planet(Disk):
         density: float,
         radius: float,
         color: Color,
-        bullet_color: Color,
     ) -> None:
         """Create a new planet.
 
@@ -37,10 +36,9 @@ class Planet(Disk):
             density (float): Density
             radius (float): Radius
             color (Color): Color
-            bullet_color (Color): To be deprecated.
 
         """
-        super().__init__(pos, Vec2(0, 0), density, radius, color, bullet_color)
+        super().__init__(pos, Vec2(0, 0), density, radius, color)
 
 
 class Universe:

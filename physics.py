@@ -82,7 +82,6 @@ class Disk(PhysicalObject):
         density: float,
         radius: float,
         color: Color,
-        bullet_color: Color,
     ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
@@ -93,14 +92,12 @@ class Disk(PhysicalObject):
             density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
-            bullet_color (pygame.Color): Disk's bullet's color, it has bullets
 
         """
         mass = radius**3 * math.pi * 4 / 3 * density
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = Color(color)
-        self.bulletcolor = Color(bullet_color)
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:
