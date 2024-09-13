@@ -1,12 +1,5 @@
-Small fun game. Give us feedback if you want.
+This is a simpler version of the main Game. 
 
-Install dependencies:
-```
-pip install -r requirements.txt
-```
-Run with:
-```
-py main.py
-```
+I removed many features.
 
-Move with arrow keys, shoot with space.
+I will try to implement a more advanced enemy AI here and later add it into the main Version.
