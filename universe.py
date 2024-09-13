@@ -51,7 +51,7 @@ class Universe:
     def __init__(
         self,
         size: Vec2,
-        planets: list[Planet],
+        island: list[Planet],
         player: list[PlayerShip],
         enemy: list[BulletEnemy],
     ) -> None:
@@ -60,44 +60,16 @@ class Universe:
         Args:
         ----
             size (Vec2): Width and height
-            planets (list[Planet]): Planets
+            island (list[Planet]): island
             player (list[Ship]): List of player-ships
             enemy (list[BulletEnemy]): Enemy fleet
 
 
         """
         self.size = Vec2(size)
-        self.planets = planets
+        self.island = island
         self.player = player
         self.enemy = enemy
-
-    def apply_bounce_to_disk(self, disk: Disk) -> float | None:
-        """Bounce a disk off of each of `self`s objects.
-
-        Args:
-        ----
-            disk (Disk): Disk to bounce
-
-        Returns:
-        -------
-            float | None: If float, impact velocity of first bounce.
-                If None, no impact occured.
-
-        """
-        for body in self.planets:
-            damage = disk.bounce_off_of_disk(body)
-            if damage is not None:
-                return damage
-        return None
-
-    def apply_bounce(self) -> None:
-        """Run all bounce-interactions within `self`."""
-        for player_ship in self.player:
-            damage = self.apply_bounce_to_disk(player_ship)
-            if damage is not None:
-                player_ship.suffer_damage(damage)
-        for enemy_ship in self.enemy:
-            self.apply_bounce_to_disk(enemy_ship)
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
@@ -163,7 +135,6 @@ class Universe:
             ship.step(dt)
 
         # Physics
-        self.apply_bounce()
 
         self.collide_bullets()
 
@@ -175,7 +146,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self.planets + self.enemy + self.player:
+        for pobj in self.island + self.enemy + self.player:
             pobj.draw(camera)
 
     def draw_text(self, camera: Camera, player_ix: int) -> None:

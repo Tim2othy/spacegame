@@ -23,11 +23,7 @@ WORLD_SIZE = Vec2(1000, 1000)
 SPAWNPOINT = Vec2(500, 500)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
-planets: list[Planet] = [
-    Planet(Vec2(800, 700), 1, 80, Color("darkgreen")),
-    Planet(Vec2(200, 100), 1, 40, Color("darkgreen")),
-    Planet(Vec2(400, 700), 1, 60, Color("darkgreen")),
-]
+island: list[Planet] = [Planet(Vec2(800, 700), 1, 80, Color("darkgreen"))]
 
 
 player = [
@@ -49,7 +45,7 @@ enemy = [BulletEnemy(Vec2(520, 520), Vec2(0, 0), player[0])]
 
 universe = Universe(
     WORLD_SIZE,
-    planets,
+    island,
     player,
     enemy,
 )
