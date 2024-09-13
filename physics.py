@@ -11,8 +11,6 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0
-
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity,
@@ -63,24 +61,6 @@ class PhysicalObject:
 
         """
         self.add_impulse(force * dt)
-
-    def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
-        """Calculate gravitational force between `pobj` and `self` affecting `self`.
-
-        Args:
-        ----
-            pobj (PhysicalObject): Other PhysicalObject to gravitate towards
-
-        Returns:
-        -------
-            Vec2: Resulting force to apply to `self`
-
-        """
-        delta = pobj.pos - self.pos  # point from `self` to `pobj`
-        dist_squared = delta.magnitude_squared()
-        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
-        normalised_delta = delta / math.sqrt(dist_squared)
-        return normalised_delta * force_magnitude
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`. Implemented by subclasses.

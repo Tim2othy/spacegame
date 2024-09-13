@@ -11,11 +11,11 @@ from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from ship import BulletEnemy, PlayerShip, RocketEnemy, ShipInput
-from universe import Asteroid, Planet, Universe
+from universe import Planet, Universe
 
 # Initialize Pygame
 pygame.init()
-pygame.display.set_caption("Space Game")
+pygame.display.set_caption("Ocean Game")
 
 SCREEN_SIZE = Vec2(1800, 950)
 MINIMAP_SIZE = Vec2(350, 350)
@@ -34,7 +34,6 @@ planets: list[Planet] = [
     Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray"), Color("white")),
     Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
 ]
-asteroids: list[Asteroid] = []
 enemy_ships: list[BulletEnemy] = []
 
 
@@ -53,13 +52,6 @@ player_ships = [
 ]
 
 
-asteroids: list[Asteroid] = []
-for _ in range(40):
-    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    vel = Vec2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(4, 300)
-    asteroids.append(Asteroid(pos, vel, 1, radius, Color("white")))
-
 enemy_ships: list[BulletEnemy] = []
 for _ in range(20):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
@@ -72,7 +64,6 @@ for _ in range(20):
 universe = Universe(
     WORLD_SIZE,
     planets,
-    asteroids,
     player_ships,
     enemy_ships,
 )

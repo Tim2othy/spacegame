@@ -43,31 +43,6 @@ class Planet(Disk):
         super().__init__(pos, Vec2(0, 0), density, radius, color, bullet_color)
 
 
-class Asteroid(Disk):
-    """A gray disk that doesn't exert gravitational force, and isn't stationary."""
-
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        density: float,
-        radius: float,
-        bullet_color: Color,
-    ) -> None:
-        """Create a new Asteroid.
-
-        Args:
-        ----
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            density (float): Density
-            radius (float): Radius
-            bullet_color (Color): To be deprecated.
-
-        """
-        super().__init__(pos, vel, density, radius, Color("gray"), bullet_color)
-
-
 class Universe:
     """A collection of celestial objects, forming a Universe.
 
@@ -79,7 +54,6 @@ class Universe:
         self,
         size: Vec2,
         planets: list[Planet],
-        asteroids: list[Asteroid],
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
     ) -> None:
@@ -89,7 +63,6 @@ class Universe:
         ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
-            asteroids (list[Asteroid]): Asteroids
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
 
@@ -97,34 +70,8 @@ class Universe:
         """
         self.size = Vec2(size)
         self.planets = planets
-        self.asteroids = asteroids
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
-
-    def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
-        """Affect pobj by `self`'s entire gravity.
-
-        Args:
-        ----
-            dt (float): Passed time
-            pobj (PhysicalObject): Object to affect
-
-        """
-        force_sum = Vec2(0, 0)
-        for body in self.planets:
-            force_sum += pobj.gravitational_force(body)
-        pobj.apply_force(force_sum, dt)
-
-    def apply_gravity(self, dt: float) -> None:
-        """Apply gravity to all of `self`'s objects.
-
-        Args:
-        ----
-            dt (float): Passed time
-
-        """
-        for pobj in self.player_ships + self.enemy_ships + self.asteroids:
-            self.apply_gravity_to_obj(dt, pobj)
 
     def apply_bounce_to_disk(self, disk: Disk) -> float | None:
         """Bounce a disk off of each of `self`s objects.
@@ -139,7 +86,7 @@ class Universe:
                 If None, no impact occured.
 
         """
-        for body in self.asteroids + self.planets:
+        for body in self.planets:
             damage = disk.bounce_off_of_disk(body)
             if damage is not None:
                 return damage
@@ -153,34 +100,12 @@ class Universe:
                 player_ship.suffer_damage(damage)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
-        for asteroid in self.asteroids:
-            other_asteroids = [ast for ast in self.asteroids if ast != asteroid]
-            for disk in other_asteroids + self.planets:
-                asteroid.bounce_off_of_disk(disk)
-
-    def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
-        """Test whether any of `self`'s planets or asteroids intersect `vec`.
-
-        Args:
-        ----
-            vec (Vec2): Position to test for intersection
-
-        Returns:
-        -------
-            bool: True iff any intersect
-
-        """
-        return any(planet.intersects_point(vec) for planet in self.planets) or any(
-            asteroid.intersects_point(vec) for asteroid in self.asteroids
-        )
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
         for player_ship in self.player_ships:
             for projectile in player_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
+                if not self.contains_point(projectile.pos):
                     player_ship.projectiles.remove(projectile)
                     continue
                 for enemy_ship in self.enemy_ships:
@@ -190,9 +115,7 @@ class Universe:
                         break
         for enemy_ship in self.enemy_ships:
             for projectile in enemy_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
+                if not self.contains_point(projectile.pos):
                     enemy_ship.projectiles.remove(projectile)
                     continue
                 for player_ship in self.player_ships:
@@ -240,11 +163,8 @@ class Universe:
         # Call `step` on everything
         for ship in self.player_ships + self.enemy_ships:
             ship.step(dt)
-        for asteroid in self.asteroids:
-            asteroid.step(dt)
 
         # Physics
-        self.apply_gravity(dt)
         self.apply_bounce()
 
         self.collide_bullets()
@@ -257,9 +177,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in (
-            self.asteroids + self.planets + self.enemy_ships + self.player_ships
-        ):
+        for pobj in self.planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
     def draw_text(self, camera: Camera, player_ix: int) -> None:
