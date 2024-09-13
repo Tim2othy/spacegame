@@ -30,7 +30,7 @@ planets: list[Planet] = [
 ]
 
 
-player_ships = [
+player = [
     PlayerShip(
         SPAWNPOINT + Vec2(100, 0),
         Vec2(0, 0),
@@ -44,22 +44,22 @@ player_ships = [
 ]
 
 
-enemy_ships = [BulletEnemy(Vec2(520, 520), Vec2(0, 0), player_ships[0])]
+enemy = [BulletEnemy(Vec2(520, 520), Vec2(0, 0), player[0])]
 
 
 universe = Universe(
     WORLD_SIZE,
     planets,
-    player_ships,
-    enemy_ships,
+    player,
+    enemy,
 )
 cameras: list[Camera] = []
 
-for player_ix, player in enumerate(player_ships):
+for player_ix, players in enumerate(player):
     topleft = (player_ix * SCREEN_SIZE.x, 0)
     size = (SCREEN_SIZE.x, SCREEN_SIZE.y)
     subsurface = SCREEN_SURFACE.subsurface((topleft, size))
-    camera = Camera(player.pos, 1.0, subsurface)
+    camera = Camera(players.pos, 1.0, subsurface)
     cameras.append(camera)
 
 
@@ -73,7 +73,7 @@ while True:
     universe.handle_input(pygame.key.get_pressed())
     universe.step(dt)
 
-    for player_ix, player_ship in enumerate(player_ships):
+    for player_ix, player_ship in enumerate(player):
         player_camera = cameras[player_ix]
         player_camera.start_drawing_new_frame()
         universe.move_camera(player_camera, player_ix, dt)

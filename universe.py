@@ -52,8 +52,8 @@ class Universe:
         self,
         size: Vec2,
         planets: list[Planet],
-        player_ships: list[PlayerShip],
-        enemy_ships: list[BulletEnemy],
+        player: list[PlayerShip],
+        enemy: list[BulletEnemy],
     ) -> None:
         """Create a new universe (not in the big-bang way, sadly).
 
@@ -61,15 +61,15 @@ class Universe:
         ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
-            player_ships (list[Ship]): List of player-ships
-            enemy_ships (list[BulletEnemy]): Enemy fleet
+            player (list[Ship]): List of player-ships
+            enemy (list[BulletEnemy]): Enemy fleet
 
 
         """
         self.size = Vec2(size)
         self.planets = planets
-        self.player_ships = player_ships
-        self.enemy_ships = enemy_ships
+        self.player = player
+        self.enemy = enemy
 
     def apply_bounce_to_disk(self, disk: Disk) -> float | None:
         """Bounce a disk off of each of `self`s objects.
@@ -92,31 +92,31 @@ class Universe:
 
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        for player_ship in self.player_ships:
+        for player_ship in self.player:
             damage = self.apply_bounce_to_disk(player_ship)
             if damage is not None:
                 player_ship.suffer_damage(damage)
-        for enemy_ship in self.enemy_ships:
+        for enemy_ship in self.enemy:
             self.apply_bounce_to_disk(enemy_ship)
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
-        for player_ship in self.player_ships:
+        for player_ship in self.player:
             for projectile in player_ship.projectiles:
                 if not self.contains_point(projectile.pos):
                     player_ship.projectiles.remove(projectile)
                     continue
-                for enemy_ship in self.enemy_ships:
+                for enemy_ship in self.enemy:
                     if enemy_ship.intersects_point(projectile.pos):
-                        self.enemy_ships.remove(enemy_ship)
+                        self.enemy.remove(enemy_ship)
                         player_ship.projectiles.remove(projectile)
                         break
-        for enemy_ship in self.enemy_ships:
+        for enemy_ship in self.enemy:
             for projectile in enemy_ship.projectiles:
                 if not self.contains_point(projectile.pos):
                     enemy_ship.projectiles.remove(projectile)
                     continue
-                for player_ship in self.player_ships:
+                for player_ship in self.player:
                     if player_ship.intersects_point(projectile.pos):
                         player_ship.suffer_damage(5)
                         enemy_ship.projectiles.remove(projectile)
@@ -130,11 +130,11 @@ class Universe:
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
-        for player_ship in self.player_ships:
+        for player_ship in self.player:
             player_ship.handle_input(keys)
 
     def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
-        """Move the camera to `self.player_ships[player_ix]`.
+        """Move the camera to `self.player[player_ix]`.
 
         Args:
         ----
@@ -143,7 +143,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        ship = self.player_ships[player_ix]
+        ship = self.player[player_ix]
         camera.smoothly_focus_points(
             [ship.pos, ship.pos + 1.0 * ship.vel],
             500,
@@ -159,7 +159,7 @@ class Universe:
 
         """
         # Call `step` on everything
-        for ship in self.player_ships + self.enemy_ships:
+        for ship in self.player + self.enemy:
             ship.step(dt)
 
         # Physics
@@ -175,7 +175,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self.planets + self.enemy_ships + self.player_ships:
+        for pobj in self.planets + self.enemy + self.player:
             pobj.draw(camera)
 
     def draw_text(self, camera: Camera, player_ix: int) -> None:
@@ -202,19 +202,19 @@ class Universe:
                 )
             self.text_vertical_offset += 1.0 * font_size
 
-        player_ship = self.player_ships[player_ix]
+        player_ship = self.player[player_ix]
         # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
         # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
         # texty(f"Fuel: {player_ship.fuel:.2f}")
         texty(f"Health: {player_ship.health:.2f}")
         texty(f"Ammunition: {player_ship.ammo}")
 
-        # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
-        # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
+        # player_projectile_count = sum(len(p.projectiles) for p in self.player)
+        # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy)
         # texty(f"{player_projectile_count} player projectiles")
         # texty(f"{enemy_projectile_count} enemy projectiles")
 
-        # enemy_count = len(self.enemy_ships)
+        # enemy_count = len(self.enemy)
         # texty(f"Enemies left: {enemy_count}")
 
         del self.text_vertical_offset
