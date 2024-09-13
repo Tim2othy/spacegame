@@ -18,7 +18,6 @@ pygame.init()
 pygame.display.set_caption("Ocean Game")
 
 SCREEN_SIZE = Vec2(1800, 950)
-MINIMAP_SIZE = Vec2(350, 350)
 
 WORLD_SIZE = Vec2(5000, 5000)
 SPAWNPOINT = Vec2(1000, 1000)
@@ -67,10 +66,7 @@ for player_ix, player in enumerate(player_ships):
     subsurface = SCREEN_SURFACE.subsurface((topleft, size))
     camera = Camera(player.pos, 1.0, subsurface)
     cameras.append(camera)
-minimap_surface = SCREEN_SURFACE.subsurface(
-    ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE),
-)
-minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
+
 
 clock = pygame.time.Clock()
 while True:
@@ -95,19 +91,6 @@ while True:
             universe.move_camera(player_camera, player_ix, dt)
             universe.draw(player_camera)
             universe.draw_text(player_camera, player_ix)
-
-    minimap_camera.start_drawing_new_frame()
-    universe.draw(minimap_camera)
-    # Draw minimap border
-    # This being worldspace is a kinda bad hack.
-    MINIMAP_BORDER_COLOR = Color("gold")
-    minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y)
-    minimap_camera.draw_horizontal_hairline(
-        MINIMAP_BORDER_COLOR,
-        0,
-        WORLD_SIZE.x,
-        WORLD_SIZE.y - 1,
-    )
 
     pygame.display.flip()
 
