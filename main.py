@@ -18,9 +18,9 @@ pygame.init()
 pygame.display.set_caption("Space Game")
 
 TEST_MODE = True
+
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
-
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
@@ -120,9 +120,8 @@ else:
 asteroids: list[Asteroid] = []
 for _ in range(40):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    vel = Vec2(random.uniform(-100, 100), random.uniform(-100, 100))
-    radius = random.uniform(4, 300)
-    asteroids.append(Asteroid(pos, vel, 1, radius, Color("white")))
+    radius = random.uniform(10, 200)
+    asteroids.append(Asteroid(pos, Vec2(0, 0), 1, radius, Color("white")))
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(20):
