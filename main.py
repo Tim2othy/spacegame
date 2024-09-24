@@ -24,6 +24,7 @@ MINIMAP_SIZE = Vec2(350, 350)
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
+
 if TEST_MODE:
 
     planets: list[Planet] = [
@@ -39,6 +40,25 @@ if TEST_MODE:
     areas: list[Area] = []
     asteroids: list[Asteroid] = []
     enemy_ships: list[BulletEnemy] = []
+
+    player_ships = [
+        PlayerShip(
+            SPAWNPOINT + Vec2(-50, 0),
+            Vec2(0, 0),
+            1,
+            10,
+            Color("darkslategray"),
+            Color("orange"),
+            ShipInput(
+                pygame.K_RIGHT,
+                pygame.K_LEFT,
+                pygame.K_UP,
+                pygame.K_DOWN,
+                pygame.K_RETURN,
+            ),
+        ),
+    ]
+
 else:
 
     planets = [
@@ -69,29 +89,32 @@ else:
         TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
     ]
 
-
-player_ships = [
-    PlayerShip(
-        SPAWNPOINT + Vec2(100, 0),
-        Vec2(0, 0),
-        1,
-        10,
-        Color("darkslategray"),
-        Color("orange"),
-        ShipInput(
-            pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN
+    player_ships = [
+        PlayerShip(
+            SPAWNPOINT + Vec2(-50, 0),
+            Vec2(0, 0),
+            1,
+            10,
+            Color("darkslategray"),
+            Color("orange"),
+            ShipInput(
+                pygame.K_RIGHT,
+                pygame.K_LEFT,
+                pygame.K_UP,
+                pygame.K_DOWN,
+                pygame.K_RETURN,
+            ),
         ),
-    ),
-    PlayerShip(
-        SPAWNPOINT + Vec2(100, 100),
-        Vec2(0, 0),
-        1,
-        10,
-        Color("blue"),
-        Color("yellow"),
-        ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
-    ),
-]
+        PlayerShip(
+            SPAWNPOINT + Vec2(50, 0),
+            Vec2(0, 0),
+            1,
+            10,
+            Color("blue"),
+            Color("yellow"),
+            ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
+        ),
+    ]
 
 
 asteroids: list[Asteroid] = []
