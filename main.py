@@ -17,8 +17,8 @@ from universe import Area, Asteroid, Planet, RefuelArea, TrophyArea, Universe
 pygame.init()
 pygame.display.set_caption("Space Game")
 
-TEST_MODE = False
-SCREEN_SIZE = Vec2(1800, 950)
+TEST_MODE = True
+SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
 
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
