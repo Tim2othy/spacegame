@@ -38,8 +38,6 @@ if TEST_MODE:
         Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
     ]
     areas: list[Area] = []
-    asteroids: list[Asteroid] = []
-    enemy_ships: list[BulletEnemy] = []
 
     player_ships = [
         PlayerShip(
@@ -89,7 +87,7 @@ else:
         TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
     ]
 
-    player_ships = [
+    player_ships: list[PlayerShip] = [
         PlayerShip(
             SPAWNPOINT + Vec2(-50, 0),
             Vec2(0, 0),
@@ -151,12 +149,15 @@ for player_ix, player in enumerate(player_ships):
     subsurface = SCREEN_SURFACE.subsurface((topleft, size))
     camera = Camera(player.pos, 1.0, subsurface)
     cameras.append(camera)
+
 minimap_surface = SCREEN_SURFACE.subsurface(
     ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE),
 )
+
 minimap_camera = Camera(WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface)
 
 clock = pygame.time.Clock()
+
 while True:
     dt = clock.tick() / 1_000
 
@@ -194,7 +195,6 @@ while True:
         WORLD_SIZE.x,
         WORLD_SIZE.y - 1,
     )
-
     pygame.display.flip()
 
 pygame.quit()
