@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import random
+
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import PlayerShip, ShipInput
+from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
+from universe import Area, Asteroid, RefuelArea, TrophyArea, Planet
 
-from universe import Planet
 
 TEST_MODE = True
 
@@ -99,7 +101,27 @@ player_ships_play: list[PlayerShip] = [
 if TEST_MODE:
     planets = planets_test
     player_ships = player_ships_test
+    areas: list[Area] = []
+
 else:
     planets = planets_play
-
     player_ships = player_ships_play
+    areas: list[Area] = [
+        RefuelArea(pygame.Rect((7_000, 1_000), (200, 200))),
+        TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
+    ]
+
+
+asteroids: list[Asteroid] = []
+for _ in range(40):
+    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
+    radius = random.uniform(10, 200)
+    asteroids.append(Asteroid(pos, Vec2(0, 0), 1, radius, Color("white")))
+
+enemy_ships: list[BulletEnemy] = []
+for _ in range(20):
+    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
+    if random.random() > 0.5:
+        enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+    else:
+        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))

@@ -2,25 +2,24 @@
 
 from __future__ import annotations
 
-import random
 import sys
 
 import pygame
 from pygame import Color
-from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from ship import BulletEnemy, RocketEnemy, ShipInput
-from universe import Area, Asteroid, RefuelArea, TrophyArea, Universe
+from universe import Universe
 
 from variables import (
     TEST_MODE,
     SCREEN_SIZE,
     MINIMAP_SIZE,
     WORLD_SIZE,
-    SPAWNPOINT,
     planets,
     player_ships,
+    asteroids,
+    enemy_ships,
+    areas,
 )
 
 # Initialize Pygame
@@ -30,30 +29,6 @@ pygame.display.set_caption("Space Game")
 
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
-
-asteroids: list[Asteroid] = []
-for _ in range(40):
-    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    radius = random.uniform(10, 200)
-    asteroids.append(Asteroid(pos, Vec2(0, 0), 1, radius, Color("white")))
-
-enemy_ships: list[BulletEnemy] = []
-for _ in range(20):
-    pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    if random.random() > 0.5:
-        enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
-    else:
-        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
-
-
-areas: list[Area] = []
-
-"""
-areas: list[Area] = [
-    RefuelArea(pygame.Rect((7_000, 1_000), (200, 200))),
-    TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
-]
-"""
 
 universe = Universe(
     WORLD_SIZE,
