@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import random
 
 import pygame
@@ -9,9 +7,12 @@ from pygame.math import Vector2 as Vec2
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from universe import Area, Asteroid, RefuelArea, TrophyArea, Planet
 
+"""
+All the unintresting code just defining the variables and differentiating between test and playmode are now here.
+Hopefully this makes main.py more compact and doesn't add any confusion
+"""
 
 TEST_MODE = True
-
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
@@ -29,7 +30,6 @@ planets_test: list[Planet] = [
     Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray"), Color("white")),
     Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow"), Color("white")),
 ]
-
 
 planets_play: list[Planet] = [
     Planet(Vec2(27_000, 29_000), 1, 700, Color("darkred"), Color("white")),
@@ -53,6 +53,7 @@ planets_play: list[Planet] = [
     Planet(Vec2(28_000, 2_000), 1, 200, Color("slategray"), Color("white")),
     Planet(Vec2(3_000, 1_000), 1, 700, Color("navy"), Color("white")),
 ]
+
 player_ships_test: list[PlayerShip] = [
     PlayerShip(
         SPAWNPOINT + Vec2(-50, 0),
@@ -70,6 +71,7 @@ player_ships_test: list[PlayerShip] = [
         ),
     ),
 ]
+
 player_ships_play: list[PlayerShip] = [
     PlayerShip(
         SPAWNPOINT + Vec2(-50, 0),
@@ -99,18 +101,16 @@ player_ships_play: list[PlayerShip] = [
 
 
 if TEST_MODE:
-    planets = planets_test
-    player_ships = player_ships_test
+    planets: list[Planet] = planets_test
+    player_ships: list[PlayerShip] = player_ships_test
     areas: list[Area] = []
-
 else:
     planets = planets_play
     player_ships = player_ships_play
     areas: list[Area] = [
-        RefuelArea(pygame.Rect((7_000, 1_000), (200, 200))),
-        TrophyArea(pygame.Rect((3_000, 8_000), (200, 200))),
+        RefuelArea(pygame.Rect((10_000, 20_000), (500, 500))),
+        TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
     ]
-
 
 asteroids: list[Asteroid] = []
 for _ in range(40):
