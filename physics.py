@@ -11,7 +11,9 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-from variables import GRAVITATIONAL_CONSTANT, SMOL
+GRAVITATIONAL_CONSTANT = 0.03
+SMOL = 0.001
+
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity,
