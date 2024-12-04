@@ -11,8 +11,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0.03
-
+from variables import GRAVITATIONAL_CONSTANT, SMOL
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity,
@@ -51,7 +50,10 @@ class PhysicalObject:
             impulse (Vec2): Impulse to apply
 
         """
-        self.vel += impulse / self.mass
+        if self.mass != 0:
+            self.vel += impulse / self.mass
+        else:
+            self.vel += impulse / SMOL
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.

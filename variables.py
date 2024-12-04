@@ -19,6 +19,8 @@ MINIMAP_SIZE = Vec2(350, 350)
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
 
+GRAVITATIONAL_CONSTANT = 0.03
+SMOL = 0.001
 
 planets_test: list[Planet] = [
     Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred"), Color("white")),
