@@ -82,8 +82,12 @@ class PhysicalObject:
         """
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
-        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
-        normalised_delta = delta / math.sqrt(dist_squared)
+        if dist_squared != 0:
+            force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+            normalised_delta = delta / math.sqrt(dist_squared)
+        else:
+            force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / SMOL
+            normalised_delta = delta / math.sqrt(SMOL)
         return normalised_delta * force_magnitude
 
     def draw(self, camera: Camera) -> None:
