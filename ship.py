@@ -400,6 +400,7 @@ class BulletEnemy(Ship):
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
+
             case BulletEnemy.Action.accelerate_randomly:
                 direction_x = random.uniform(-1, 1)
                 direction_y = random.uniform(-1, 1)
@@ -412,7 +413,7 @@ class BulletEnemy(Ship):
             self.apply_force(force, dt)
 
         super().step(dt)
-        self.angle = math.degrees(math.atan2(self.vel.y, self.vel.x))
+        self.angle = math.degrees(math.atan2(delta_target_ship.y, delta_target_ship.x))
 
         # Shooting logic
         self.time_until_next_shot -= 1
