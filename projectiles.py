@@ -11,6 +11,12 @@ from physics import PhysicalObject
 if TYPE_CHECKING:
     from ship import Ship
 
+from constants import (
+    ROCKET_HOMING_DURATION,
+    ROCKET_NONHOMING_DURATION,
+    ROCKET_HOMING_THRUST,
+)
+
 
 class Bullet(PhysicalObject):
     """A triangular bullet."""
@@ -63,10 +69,10 @@ class Rocket(Bullet):
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
-        self.homing_thrust = 200 * self.mass
+        self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
         self.homing_timer = 0
-        self.homing_duration = 3
-        self.nonhoming_duration = 9
+        self.homing_duration = ROCKET_HOMING_DURATION
+        self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._total_duration = self.homing_duration + self.nonhoming_duration
         self.color = Color("red")
 
