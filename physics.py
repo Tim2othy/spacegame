@@ -11,11 +11,14 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-GRAVITATIONAL_CONSTANT = 0.03
-SMOL = 0.001                        # Smallest number to avoid division by zero, not sure if this is the best way
-BOUNCINESS = 0.97                   # 0 <= BOUNCINESS <= 1. At BOUNCINESS == 1.0, collisions cause no damage.
-BOUNCE_DAMAGE_THRESHOLD = 1300000
-BOUNCE_DAMAGE_SCALAR = 6e-4
+from constants import (
+    GRAVITATIONAL_CONSTANT,
+    BOUNCINESS,
+    SMOL,
+    BOUNCE_DAMAGE_THRESHOLD,
+    BOUNCE_DAMAGE_SCALAR,
+)
+
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity,
@@ -85,7 +88,9 @@ class PhysicalObject:
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         dist_squared = delta.magnitude_squared()
         if dist_squared != 0:
-            force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+            force_magnitude = (
+                GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+            )
             normalised_delta = delta / math.sqrt(dist_squared)
         else:
             force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / SMOL
@@ -198,12 +203,18 @@ class Disk(PhysicalObject):
         if self.mass != 0 and disk.mass != 0:
             impulse_scalar /= 1 / self.mass + 1 / disk.mass
         else:
-            impulse_scalar /= 1 / (self.mass + SMOL) + 1 / (disk.mass + SMOL) # You probably don't like this but I think it's fine...
+            impulse_scalar /= 1 / (self.mass + SMOL) + 1 / (
+                disk.mass + SMOL
+            )  # You probably don't like this but I think it's fine...
         self.add_impulse(delta.normalize() * impulse_scalar)
 
         # This allows the ship to land on the planet.
         # If impulse is small there is no damage
-        damage = (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD )) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
+        damage = (
+            (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD))
+            * (1 - BOUNCINESS)
+            * BOUNCE_DAMAGE_SCALAR
+        )
 
         # Move self outside other
         overlap = self.radius + disk.radius - delta.magnitude()

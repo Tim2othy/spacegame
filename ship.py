@@ -14,17 +14,16 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk
 from projectiles import Bullet, Rocket
 
+from constants import (
+    BULLET_SPEED,
+    DAMAGE_INDICATOR_TIME,
+    GUNBARREL_LENGTH,
+    GUNBARREL_WIDTH,
+    ENEMY_SHOOT_RANGE,
+)
+
 if TYPE_CHECKING:
     from camera import Camera
-
-
-BULLET_SPEED = 1500
-GUNBARREL_LENGTH = 3  # relative to radius
-GUNBARREL_WIDTH = 0.5  # relative to radius
-ENEMY_SHOOT_RANGE = 1900
-
-# How long a ship should glow after taking damage
-DAMAGE_INDICATOR_TIME = 0.75
 
 
 class Ship(Disk):
