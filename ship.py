@@ -20,6 +20,12 @@ from constants import (
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     ENEMY_SHOOT_RANGE,
+    ENEMY_SHOOT_COOLDOWN,
+    ENEMY_THRUST_MULTIPLIER,
+    ENEMY_ACTION_TIMER,
+    ENEMY_HEALTH,
+    ENEMY_ACTION_WEIGHTS,
+    ENEMY_ROCKET_COOLDOWN,
 )
 
 if TYPE_CHECKING:
@@ -344,7 +350,7 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 0.0125,
+        shoot_cooldown: float = ENEMY_SHOOT_COOLDOWN,
         color: Color = Color("lime"),
         bullet_color: Color = Color("hotpink"),
     ) -> None:
@@ -362,10 +368,10 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
-        self.thrust *= 0.04
+        self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.time_until_next_shot = 0
-        self.action_timer = 6
-        self.health = 100
+        self.action_timer = ENEMY_ACTION_TIMER
+        self.health = ENEMY_HEALTH
         self.current_action: BulletEnemy.Action = (
             BulletEnemy.Action.accelerate_to_player
         )
@@ -384,7 +390,7 @@ class BulletEnemy(Ship):
         self.action_timer -= dt
         if self.action_timer <= 0:
             [self.current_action] = random.choices(
-                population=list(BulletEnemy.Action), weights=[0.9, 0.05, 0.05]
+                population=list(BulletEnemy.Action), weights=ENEMY_ACTION_WEIGHTS
             )
             self.action_timer = 6
 
@@ -450,5 +456,5 @@ class RocketEnemy(BulletEnemy):
             self.projectiles.append(
                 Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
             )
-            self.gun_cooldown = 0.025
+            self.gun_cooldown = ENEMY_ROCKET_COOLDOWN
             self.ammo -= 1
