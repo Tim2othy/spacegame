@@ -27,6 +27,7 @@ from constants import (
     ENEMY_ROCKET_COOLDOWN,
     GUN_COOLDOWN,
     ENEMY_VISUAL_RANGE,
+    WORLD_SIZE,
 )
 
 if TYPE_CHECKING:
@@ -379,6 +380,7 @@ class BulletEnemy(Ship):
         self.target_ship = target_ship
         self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
+        self.random_point = Vec2(0, 0)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
@@ -392,6 +394,12 @@ class BulletEnemy(Ship):
         delta_target_ship = self.target_ship.pos - self.pos
 
         if self.action_timer <= 0:
+            self.random_point = Vec2(
+                random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y)
+            )
+            print(self.current_action)
+            print(self.random_point)
+
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
                 force_direction = delta_target_ship
@@ -405,9 +413,9 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship  # This never happens, but If I remove it there is a bug
             case BulletEnemy.Action.accelerate_randomly:
-                direction_x = random.uniform(-1, 1)
-                direction_y = random.uniform(-1, 1)
-                force_direction = Vec2(direction_x, direction_y)
+
+                delta_random_point = self.random_point - self.pos
+                force_direction = delta_random_point
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
         if force_direction.magnitude() != 0:
