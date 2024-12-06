@@ -188,29 +188,23 @@ class Disk(PhysicalObject):
         if not self.intersects_disk(disk):
             return None
 
-        # When rewriting this: The pygame.math module already has
-        # methods for normal-vector calculation.
-
         # 0 <= bounciness <= 1.
         # At bounciness == 1.0, collisions cause no damage.
         bounciness = 0.97
 
         # Calculate normal vector
         delta = self.pos - disk.pos
-        delta_magnitude = delta.magnitude()
-        normal_vector = delta / delta_magnitude
-        self_vel_along_normal = self.vel.dot(normal_vector)
-
+        self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + bounciness) * self_vel_along_normal
         impulse_scalar /= 1 / self.mass + 1 / disk.mass
-        self.add_impulse(normal_vector * impulse_scalar)
+        self.add_impulse(delta.normalize() * impulse_scalar)
 
         # This allows the ship to land on the planet.
         # If impulse is small there is no damage
         damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 6e-4
 
         # Move self outside other
-        overlap = self.radius + disk.radius - delta_magnitude
-        self.pos += normal_vector * overlap
+        overlap = self.radius + disk.radius - delta.magnitude()
+        self.pos += delta.normalize() * overlap
 
         return damage
