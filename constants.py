@@ -15,16 +15,15 @@ BULLET_SPEED = 700
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 DAMAGE_INDICATOR_TIME = 0.75  # How long a ship should glow after taking damage
-
-GUN_COOLDOWN = 0.2
+GUN_COOLDOWN = 0.1  # Both for the player and the gun enemies
 
 # BulletEnemy constants
-ENEMY_SHOOT_RANGE = 1900
+ENEMY_SHOOT_RANGE = 1700
 ENEMY_THRUST_MULTIPLIER = 0.2
 ENEMY_ACTION_TIMER = 10
 ENEMY_HEALTH = 100
 ENEMY_ACTION_WEIGHTS = [1, 0, 0]
-ENEMY_ROCKET_COOLDOWN = 4
+ENEMY_ROCKET_COOLDOWN = 0.3
 
 # physics constants
 GRAVITATIONAL_CONSTANT = 0.03
