@@ -10,7 +10,7 @@ from pygame import Color
 from camera import Camera
 from universe import Universe
 
-from variables import (
+from constants import (
     TEST_MODE,
     SCREEN_SIZE,
     MINIMAP_SIZE,
