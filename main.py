@@ -10,15 +10,9 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-import pygame
-from pygame import Color
-
 from camera import Camera
-from universe import Universe
-
+from universe import Universe, Area, Asteroid, RefuelArea, TrophyArea, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
-from universe import Area, Asteroid, RefuelArea, TrophyArea, Planet
-
 from constants import (
     TEST_MODE,
     SCREEN_SIZE,
@@ -115,7 +109,6 @@ planets_play: list[Planet] = [
     Planet(Vec2(28_000, 2_000), 1, 200, Color("slategray"), Color("white")),
     Planet(Vec2(3_000, 1_000), 1, 700, Color("navy"), Color("white")),
 ]
-
 
 if TEST_MODE:
     planets: list[Planet] = planets_test

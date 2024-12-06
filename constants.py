@@ -1,25 +1,14 @@
-from __future__ import annotations
+"""Staging-grounds for the constans"""
 
-import random
-
-
-import pygame
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-
-"""
-All the constants, differentiating between test and playmode, and listing the planets .etc are here.
-Hopefully this makes main.py more compact and doesn't add any confusion
-"""
-
+# Switch between the two modes, in test mode you can't die, the world is smaller, etc.
 TEST_MODE = True
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
 WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = Vec2(5_000, 5_000) if TEST_MODE else Vec2(20_000, 20_000)
-
 
 # ship constants
 BULLET_SPEED = 1500
@@ -36,7 +25,7 @@ BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 # if impulse scalar is smaller than this collisions cause no damage.
 BOUNCE_DAMAGE_SCALAR = 6e-4
 
-# Constants only being used here
+# Constants for main, where these objects are created
 NUMBER_OF_ASTEROIDS = 40
 NUMBER_OF_ENEMIES = 20
 ASTEROID_MIN_SIZE = 20
