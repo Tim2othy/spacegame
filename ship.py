@@ -399,8 +399,10 @@ class BulletEnemy(Ship):
                 force_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1))
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
-        force = force_direction * self.thrust / force_direction.magnitude()
-        self.apply_force(force, dt)
+
+        if force_direction.magnitude() != 0:
+            force = force_direction * self.thrust / force_direction.magnitude()
+            self.apply_force(force, dt)
 
         super().step(dt)
         self.angle = math.degrees(math.atan2(self.vel.y, self.vel.x))
