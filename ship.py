@@ -400,7 +400,6 @@ class BulletEnemy(Ship):
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
-
             case BulletEnemy.Action.accelerate_randomly:
                 direction_x = random.uniform(-1, 1)
                 direction_y = random.uniform(-1, 1)
