@@ -12,8 +12,10 @@ if TYPE_CHECKING:
     from camera import Camera
 
 GRAVITATIONAL_CONSTANT = 0.03
-SMOL = 0.001
-
+SMOL = 0.001                        # Smallest number to avoid division by zero, not sure if this is the best way
+BOUNCINESS = 0.97                   # 0 <= BOUNCINESS <= 1. At BOUNCINESS == 1.0, collisions cause no damage.
+BOUNCE_DAMAGE_THRESHOLD = 1300000
+BOUNCE_DAMAGE_SCALAR = 6e-4
 
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity,
@@ -188,20 +190,16 @@ class Disk(PhysicalObject):
         if not self.intersects_disk(disk):
             return None
 
-        # 0 <= bounciness <= 1.
-        # At bounciness == 1.0, collisions cause no damage.
-        bounciness = 0.97
-
         # Calculate normal vector
         delta = self.pos - disk.pos
         self_vel_along_normal = self.vel.dot(delta.normalize())
-        impulse_scalar = -(1 + bounciness) * self_vel_along_normal
+        impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
         impulse_scalar /= 1 / self.mass + 1 / disk.mass
         self.add_impulse(delta.normalize() * impulse_scalar)
 
         # This allows the ship to land on the planet.
         # If impulse is small there is no damage
-        damage = (max(0, impulse_scalar - 1300000)) * (1 - bounciness) * 6e-4
+        damage = (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD )) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
 
         # Move self outside other
         overlap = self.radius + disk.radius - delta.magnitude()
