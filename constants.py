@@ -27,13 +27,19 @@ GUNBARREL_WIDTH = 0.5  # relative to radius
 ENEMY_SHOOT_RANGE = 1900
 DAMAGE_INDICATOR_TIME = 0.75  # How long a ship should glow after taking damage
 
-# Physics constants
+# physics constants
 GRAVITATIONAL_CONSTANT = 0.03
 SMOL = 1e-3  # Small number to avoid division by zero
 BOUNCINESS = 0.97  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
 BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 # if impulse scalar is smaller than this collisions cause no damage.
 BOUNCE_DAMAGE_SCALAR = 6e-4
+
+# Constants only being used here
+NUMBER_OF_ASTEROIDS = 40
+NUMBER_OF_ENEMIES = 20
+ASTEROID_MIN_SIZE = 20
+ASTEROID_MAX_SIZE = 80
 
 planets_test: list[Planet] = [
     Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred"), Color("white")),
@@ -128,13 +134,13 @@ else:
     ]
 
 asteroids: list[Asteroid] = []
-for _ in range(40):
+for _ in range(NUMBER_OF_ASTEROIDS):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    radius = random.uniform(10, 200)
+    radius = random.uniform(ASTEROID_MIN_SIZE, ASTEROID_MAX_SIZE)
     asteroids.append(Asteroid(pos, Vec2(0, 0), 1, radius, Color("white")))
 
 enemy_ships: list[BulletEnemy] = []
-for _ in range(20):
+for _ in range(NUMBER_OF_ENEMIES):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
