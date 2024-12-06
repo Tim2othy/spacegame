@@ -20,12 +20,12 @@ from constants import (
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     ENEMY_SHOOT_RANGE,
-    ENEMY_SHOOT_COOLDOWN,
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_ACTION_TIMER,
     ENEMY_HEALTH,
     ENEMY_ACTION_WEIGHTS,
     ENEMY_ROCKET_COOLDOWN,
+    GUN_COOLDOWN,
 )
 
 if TYPE_CHECKING:
@@ -61,7 +61,9 @@ class Ship(Disk):
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown: float = 0
+        self.gun_cooldown: float = (
+            0  # This just just determines cooldown once at the very start.
+        )
         self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
 
@@ -76,7 +78,6 @@ class Ship(Disk):
         self.fuel: float = self.max_fuel
         self.fuel_consumption_rate: float = 0.5
         self.fuel_rot_consumption_rate: float = 0.5
-
         self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vec2:
@@ -99,7 +100,7 @@ class Ship(Disk):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
             self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
-            self.gun_cooldown = 0.003
+            self.gun_cooldown = GUN_COOLDOWN
             self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
@@ -350,7 +351,7 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = ENEMY_SHOOT_COOLDOWN,
+        shoot_cooldown: float = 0,
         color: Color = Color("lime"),
         bullet_color: Color = Color("hotpink"),
     ) -> None:
@@ -362,7 +363,6 @@ class BulletEnemy(Ship):
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
             shoot_cooldown (float, optional): Minimum time between shots.
-                Defaults to 0.125.
             color (Color, optional): Material color. Defaults to Color("purple").
             bullet_color (Color): Color of shot projectiles
 
