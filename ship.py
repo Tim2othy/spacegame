@@ -397,8 +397,8 @@ class BulletEnemy(Ship):
             self.random_point = Vec2(
                 random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y)
             )
-            print(self.current_action)
-            print(self.random_point)
+            # print(self.current_action)
+            # print(self.random_point)
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
