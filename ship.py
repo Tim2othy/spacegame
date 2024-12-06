@@ -26,6 +26,7 @@ from constants import (
     ENEMY_ACTION_WEIGHTS,
     ENEMY_ROCKET_COOLDOWN,
     GUN_COOLDOWN,
+    ENEMY_VISUAL_RANGE,
 )
 
 if TYPE_CHECKING:
@@ -388,25 +389,27 @@ class BulletEnemy(Ship):
 
         """
         self.action_timer -= dt
-        if self.action_timer <= 0:
-            [self.current_action] = random.choices(
-                population=list(BulletEnemy.Action), weights=ENEMY_ACTION_WEIGHTS
-            )
-            self.action_timer = 6
-
         delta_target_ship = self.target_ship.pos - self.pos
 
+        if self.action_timer <= 0:
+            if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
+                self.current_action = BulletEnemy.Action.accelerate_to_player
+                force_direction = delta_target_ship
+            else:
+                [self.current_action] = random.choices(
+                    population=list(BulletEnemy.Action), weights=ENEMY_ACTION_WEIGHTS
+                )
+            self.action_timer = ENEMY_ACTION_TIMER
         force_direction: Vec2
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = delta_target_ship
+                force_direction = delta_target_ship  # This never happens, but If I remove it there is a bug
             case BulletEnemy.Action.accelerate_randomly:
                 direction_x = random.uniform(-1, 1)
                 direction_y = random.uniform(-1, 1)
                 force_direction = Vec2(direction_x, direction_y)
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
-
         if force_direction.magnitude() != 0:
             force = force_direction * self.thrust / force_direction.magnitude()
             self.apply_force(force, dt)
