@@ -63,7 +63,6 @@ class Rocket(Bullet):
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
-        self.vel *= 0  # Sholud have the velocity of the shooting ship but nothing else.
         self.homing_thrust = 200 * self.mass
         self.homing_timer = 0
         self.homing_duration = 3

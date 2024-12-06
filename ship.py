@@ -454,7 +454,7 @@ class RocketEnemy(BulletEnemy):
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel + forward * BULLET_SPEED
+            bullet_vel = self.vel
             self.projectiles.append(
                 Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
             )
