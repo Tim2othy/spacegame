@@ -268,6 +268,19 @@ class Universe:
                 player_ship.suffer_damage(damage)
         for enemy_ship in self.enemy_ships:
             self.apply_bounce_to_disk(enemy_ship)
+
+        # Create a new list to store asteroids that have not collided
+        remaining_asteroids = []
+        for asteroid in self.asteroids:
+            collided = False
+            for planet in self.planets:
+                if asteroid.intersects_disk(planet):
+                    collided = True
+                    break
+            if not collided:
+                remaining_asteroids.append(asteroid)
+        self.asteroids = remaining_asteroids
+
         for asteroid in self.asteroids:
             other_asteroids = [ast for ast in self.asteroids if ast != asteroid]
             for disk in other_asteroids + self.planets:
@@ -457,6 +470,7 @@ class Universe:
         # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
         # texty(f"{player_projectile_count} player projectiles")
         # texty(f"{enemy_projectile_count} enemy projectiles")
+        texty(f"Number of Asteroids: {len(self.asteroids)}")
 
         enemy_count = len(self.enemy_ships)
         texty(f"Enemies left: {enemy_count}")
