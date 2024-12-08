@@ -59,7 +59,7 @@ class Ship(Disk):
             bullet_color (Color): Bullet_color
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color)
+        super().__init__(pos, vel, density, size, color)
         self.size: float = size
         self.angle: float = 0
         self.health: float = 100.0
