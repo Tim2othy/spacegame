@@ -150,23 +150,29 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-radius_planet = 500
-pos_planet = Vec2(4_000, 4_000)
-offset = Vec2(radius_planet + 100, radius_planet + 190)
+radius_planet = random.uniform(200, 1000)
+radius_asteroid = random.uniform(20, radius_planet * 0.7)
+
+pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
+
+offset_magnitude = radius_planet + radius_asteroid + random.uniform(0, 300)
+offset_direction = Vec2(random.uniform(1, -1), random.uniform(1, -1)).normalize()
+offset = offset_direction * offset_magnitude
+
 pos_asteroid = pos_planet + offset
-r_p = pos_asteroid.distance_to(pos_planet)
-r_a = r_p + 1000
+r_p = offset_magnitude
+r_a = r_p + random.uniform(0, 3000)
 a_semi_major_axis = (r_p + r_a) / 2
 mass_planet = radius_planet**3 * 3.1416 * 4 / 3
+
 E_total_specific_energy = (
     -GRAVITATIONAL_CONSTANT * mass_planet / (2 * a_semi_major_axis)
 )
-
 v_orbital_velocity = (
     2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + E_total_specific_energy)
 ) ** 0.5
 
-radial_vector = (pos_asteroid - pos_planet).normalize()
+radial_vector = offset_direction
 tangential_vector = radial_vector.rotate(90)
 velocity_asteroid = tangential_vector * v_orbital_velocity
 
@@ -175,7 +181,7 @@ if ORBIT_MODE:
         Planet(pos_planet, 1, radius_planet, Color("darkred")),
     ]
     asteroids = [
-        Asteroid(pos_asteroid, velocity_asteroid, 1, 100),
+        Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
     ]
 
 universe = Universe(
