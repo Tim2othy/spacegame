@@ -19,7 +19,14 @@ if TYPE_CHECKING:
     from camera import Camera
     from ship import BulletEnemy, PlayerShip, Ship
 
-from constants import GRAVITATIONAL_CONSTANT
+from constants import (
+    GRAVITATIONAL_CONSTANT,
+    ASTEROID_MIN_SIZE,
+    ASTEROID_MAX_PLANET_MULTIPLIER,
+    ASTEROID_ORBIT_MIN,
+    ASTEROID_ORBIT_MAX,
+    ASTEROID_ORBIT_ELIPSIS_LENGTH,
+)
 
 
 class Planet(Disk):
@@ -520,18 +527,22 @@ def generate_asteroid(
     None, but it creates a fucking asteroid!
     """
 
-    radius_asteroid = random.uniform(2, radius_planet * 0.005)
-
-    # Generating orbit values
-    r_p = radius_planet + radius_asteroid + random.uniform(10, 300)
-    r_a = r_p + random.uniform(0, 3000)
+    # Generating random values
+    radius_asteroid = random.uniform(
+        ASTEROID_MIN_SIZE, radius_planet * ASTEROID_MAX_PLANET_MULTIPLIER
+    )
+    r_p = (
+        radius_planet
+        + radius_asteroid
+        + random.uniform(ASTEROID_ORBIT_MIN, ASTEROID_ORBIT_MAX)
+    )
+    r_a = r_p + random.uniform(0, ASTEROID_ORBIT_ELIPSIS_LENGTH)
     true_anomaly = random.uniform(0, 2 * math.pi)
     orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
 
     # Calculating orbit values
     semi_major_axis = (r_p + r_a) / 2
     eccentricity = (r_a - r_p) / (r_a + r_p)
-
     r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
         1 + eccentricity * math.cos(true_anomaly)
     )

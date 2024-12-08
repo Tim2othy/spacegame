@@ -2,7 +2,7 @@
 
 from pygame.math import Vector2 as Vec2
 
-# Switch between the two modes, in test mode you can't die, the world is smaller, etc.
+# Switch between the modes, in test mode you can't die, the world is smaller, etc.
 TEST_MODE = True
 MULTI_MODE = False
 ORBIT_MODE = True
@@ -46,7 +46,10 @@ BOUNCE_DAMAGE_SCALAR = 6e-4
 ASTEROIDS_PER_PLANET = 5
 NUMBER_OF_ENEMIES = 8 if TEST_MODE else 20
 ASTEROID_MIN_SIZE = 20
-ASTEROID_MAX_SIZE = 80
+ASTEROID_MAX_PLANET_MULTIPLIER = 0.005
+ASTEROID_ORBIT_MIN = 10
+ASTEROID_ORBIT_MAX = 300
+ASTEROID_ORBIT_ELIPSIS_LENGTH = 3000
 
 if ORBIT_MODE:
     NUMBER_OF_ENEMIES = 0
