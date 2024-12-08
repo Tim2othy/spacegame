@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dis
 import sys
 
 import random
@@ -14,6 +15,7 @@ from camera import Camera
 from universe import Universe, Area, Asteroid, RefuelArea, TrophyArea, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from constants import (
+    GRAVITATIONAL_CONSTANT,
     ORBIT_MODE,
     TEST_MODE,
     MULTI_MODE,
@@ -148,12 +150,19 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
+pos_planet = Vec2(4_000, 4_000)
+pos_asteroid = Vec2(4_900, 4_000)
+distance = pos_asteroid.distance_to(pos_planet)
+radius_planet = 500
+mass = radius_planet**3 * 3.1416 * 4 / 3
+v_orbital_velocity = (GRAVITATIONAL_CONSTANT * mass / distance) ** 0.5
+
 if ORBIT_MODE:
     planets = [
-        Planet(Vec2(4_000, 4_000), 1, 500, Color("darkred")),
+        Planet(pos_planet, 1, radius_planet, Color("darkred")),
     ]
     asteroids = [
-        Asteroid(Vec2(4_700, 4_000), Vec2(0, 0), 1, 100),
+        Asteroid(pos_asteroid, Vec2(0, v_orbital_velocity), 1, 100),
     ]
 
 universe = Universe(
