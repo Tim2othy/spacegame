@@ -151,11 +151,17 @@ for _ in range(NUMBER_OF_ENEMIES):
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
 pos_planet = Vec2(4_000, 4_000)
-pos_asteroid = Vec2(4_900, 4_000)
-distance = pos_asteroid.distance_to(pos_planet)
+pos_asteroid = Vec2(4_700, 4_000)
+r_p = pos_asteroid.distance_to(pos_planet)
+r_a = r_p + 1300
+a_semi_major_axis = (r_p + r_a) / 2
 radius_planet = 500
 mass = radius_planet**3 * 3.1416 * 4 / 3
-v_orbital_velocity = (GRAVITATIONAL_CONSTANT * mass / distance) ** 0.5
+E_total_specific_energy = -GRAVITATIONAL_CONSTANT * mass / (2 * a_semi_major_axis)
+
+v_orbital_velocity = (
+    2 * (GRAVITATIONAL_CONSTANT * mass / r_p + E_total_specific_energy)
+) ** 0.5
 
 if ORBIT_MODE:
     planets = [
