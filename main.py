@@ -158,26 +158,32 @@ pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
 mass_planet = radius_planet**3 * math.pi * 4 / 3
 
 # Generating offset
-offset_magnitude = radius_planet + radius_asteroid + random.uniform(0, 300)
-offset_direction = Vec2(random.uniform(1, -1), random.uniform(1, -1)).normalize()
-offset = offset_direction * offset_magnitude
+orbit_direction = Vec2(random.uniform(1, -1), random.uniform(1, -1)).normalize()
 
 # Setting up asteroid
-pos_asteroid = pos_planet + offset
-r_p = offset_magnitude
+r_p = radius_planet + radius_asteroid + random.uniform(0, 300)  # Periapsis distance
 r_a = r_p + random.uniform(0, 3000)
 
 # Calculating velocity
 semi_major_axis = (r_p + r_a) / 2
+eccentricity = (r_a - r_p) / (r_a + r_p)  # Orbital eccentricity
+
+true_anomaly = random.uniform(0, 2 * math.pi)
+
+r = (semi_major_axis * (1 - eccentricity**2)) / (
+    1 + eccentricity * math.cos(true_anomaly)
+)
 
 total_specific_energy = -GRAVITATIONAL_CONSTANT * mass_planet / (2 * semi_major_axis)
 orbital_velocity = (
-    2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + total_specific_energy)
+    2 * (GRAVITATIONAL_CONSTANT * mass_planet / r + total_specific_energy)
 ) ** 0.5
 
-radial_vector = offset_direction
+radial_vector = orbit_direction.rotate(math.degrees(true_anomaly)).normalize()
 tangential_vector = radial_vector.rotate(90)
 velocity_asteroid = tangential_vector * orbital_velocity
+
+pos_asteroid = pos_planet + radial_vector * r
 
 if ORBIT_MODE:
     planets = [
