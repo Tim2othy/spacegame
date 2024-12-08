@@ -151,29 +151,26 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-# Generating Values
+# Generating celestialbody Values
 radius_planet = random.uniform(200, 1000)
 radius_asteroid = random.uniform(20, radius_planet * 0.5)
 pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
-mass_planet = radius_planet**3 * math.pi * 4 / 3
 
-# Generating offset
-orbit_direction = Vec2(random.uniform(1, -1), random.uniform(1, -1)).normalize()
-
-# Setting up asteroid
-r_p = radius_planet + radius_asteroid + random.uniform(0, 300)  # Periapsis distance
+# Generating orbit values
+r_p = radius_planet + radius_asteroid + random.uniform(0, 300)
 r_a = r_p + random.uniform(0, 3000)
-
-# Calculating velocity
-semi_major_axis = (r_p + r_a) / 2
-eccentricity = (r_a - r_p) / (r_a + r_p)  # Orbital eccentricity
-
 true_anomaly = random.uniform(0, 2 * math.pi)
+orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
+
+# Calculating orbit values
+semi_major_axis = (r_p + r_a) / 2
+eccentricity = (r_a - r_p) / (r_a + r_p)
 
 r = (semi_major_axis * (1 - eccentricity**2)) / (
     1 + eccentricity * math.cos(true_anomaly)
 )
 
+mass_planet = radius_planet**3 * math.pi * 4 / 3
 total_specific_energy = -GRAVITATIONAL_CONSTANT * mass_planet / (2 * semi_major_axis)
 orbital_velocity = (
     2 * (GRAVITATIONAL_CONSTANT * mass_planet / r + total_specific_energy)
