@@ -24,6 +24,7 @@ from constants import (
     ORBIT_MODE,
     TEST_MODE,
     MULTI_MODE,
+    INVINCIBLE_MODE,
     SCREEN_SIZE,
     MINIMAP_SIZE,
     WORLD_SIZE,
@@ -118,7 +119,7 @@ planets_play: list[Planet] = [
 
 planets_orbit: list[Planet] = [
     Planet(
-        Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000)),
+        Vec2(random.uniform(3000, 7000), random.uniform(3000, 7000)),
         1,
         random.uniform(200, 1000),
         Color("darkred"),
@@ -195,7 +196,7 @@ while True:
         player_camera.start_drawing_new_frame()
         gameover = (
             not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-        ) and not TEST_MODE
+        ) and not INVINCIBLE_MODE
         if gameover:
             font = pygame.font.Font(None, int(64 / player_count))
             player_camera.draw_text("GAME OVER", None, font, Color("red"))
