@@ -150,31 +150,33 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
+# Generating Values
 radius_planet = random.uniform(200, 1000)
-radius_asteroid = random.uniform(20, radius_planet * 0.7)
-
+radius_asteroid = random.uniform(20, radius_planet * 0.5)
 pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
+mass_planet = radius_planet**3 * 3.1416 * 4 / 3
 
+# Generating offset
 offset_magnitude = radius_planet + radius_asteroid + random.uniform(0, 300)
 offset_direction = Vec2(random.uniform(1, -1), random.uniform(1, -1)).normalize()
 offset = offset_direction * offset_magnitude
 
+# Setting up asteroid
 pos_asteroid = pos_planet + offset
 r_p = offset_magnitude
 r_a = r_p + random.uniform(0, 3000)
-a_semi_major_axis = (r_p + r_a) / 2
-mass_planet = radius_planet**3 * 3.1416 * 4 / 3
 
-E_total_specific_energy = (
-    -GRAVITATIONAL_CONSTANT * mass_planet / (2 * a_semi_major_axis)
-)
-v_orbital_velocity = (
-    2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + E_total_specific_energy)
+# Calculating velocity
+semi_major_axis = (r_p + r_a) / 2
+
+total_specific_energy = -GRAVITATIONAL_CONSTANT * mass_planet / (2 * semi_major_axis)
+orbital_velocity = (
+    2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + total_specific_energy)
 ) ** 0.5
 
 radial_vector = offset_direction
 tangential_vector = radial_vector.rotate(90)
-velocity_asteroid = tangential_vector * v_orbital_velocity
+velocity_asteroid = tangential_vector * orbital_velocity
 
 if ORBIT_MODE:
     planets = [
