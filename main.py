@@ -15,6 +15,7 @@ from universe import Universe, Area, Asteroid, RefuelArea, TrophyArea, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from constants import (
     TEST_MODE,
+    MULTI_MODE,
     SCREEN_SIZE,
     MINIMAP_SIZE,
     WORLD_SIZE,
@@ -31,7 +32,7 @@ pygame.display.set_caption("Space Game")
 
 SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
-player_ships_test: list[PlayerShip] = [
+player_ships_single: list[PlayerShip] = [
     PlayerShip(
         SPAWNPOINT + Vec2(-50, 0),
         Vec2(0, 0),
@@ -49,7 +50,7 @@ player_ships_test: list[PlayerShip] = [
     ),
 ]
 
-player_ships_play: list[PlayerShip] = [
+player_ships_multi: list[PlayerShip] = [
     PlayerShip(
         SPAWNPOINT + Vec2(-50, 0),
         Vec2(0, 0),
@@ -110,13 +111,16 @@ planets_play: list[Planet] = [
     Planet(Vec2(3_000, 1_000), 1, 700, Color("navy"), Color("white")),
 ]
 
+if MULTI_MODE:
+    player_ships: list[PlayerShip] = player_ships_multi
+else:
+    player_ships: list[PlayerShip] = player_ships_single
+
 if TEST_MODE:
     planets: list[Planet] = planets_test
-    player_ships: list[PlayerShip] = player_ships_test
     areas: list[Area] = []
 else:
     planets = planets_play
-    player_ships = player_ships_play
     areas: list[Area] = [
         RefuelArea(pygame.Rect((10_000, 20_000), (500, 500))),
         TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
