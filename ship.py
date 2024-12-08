@@ -437,7 +437,11 @@ class BulletEnemy(Ship):
 
     def shoot(self) -> None:
         """Shoot a bullet."""
-        if self.gun_cooldown <= 0 and self.ammo > 0:
+        if (
+            self.gun_cooldown <= 0
+            and self.ammo > 0
+            and self.current_action == BulletEnemy.Action.accelerate_to_player
+        ):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel + forward * BULLET_SPEED
@@ -473,7 +477,11 @@ class RocketEnemy(BulletEnemy):
 
     def shoot(self) -> None:
         """Shoot a Rocket."""
-        if self.gun_cooldown <= 0 and self.ammo > 0:
+        if (
+            self.gun_cooldown <= 0
+            and self.ammo > 0
+            and self.current_action == BulletEnemy.Action.accelerate_to_player
+        ):
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel
