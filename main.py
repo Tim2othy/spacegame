@@ -142,7 +142,7 @@ if ORBIT_MODE:
 asteroids: list[Asteroid] = []
 for planet in planets:
     for _ in range(ASTEROIDS_PER_PLANET):
-        generate_asteroid(planet.radius, planet.pos, asteroids)
+        generate_asteroid(planet, asteroids)
 
 enemy_ships: list[BulletEnemy] = []
 for _ in range(NUMBER_OF_ENEMIES):

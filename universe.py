@@ -511,16 +511,12 @@ class Universe:
         return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
 
 
-def generate_asteroid(
-    radius_planet: float, pos_planet: Vec2, asteroids: list[Asteroid]
-) -> None:
+def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     """Creates an asteroid orbiting a planet.
 
     Args:
     ----
-    radius_planet (float): The radius of the planet.
-    pos_planet (Vec2): The position of the planet.
-    asteroids (list[Asteroid]): The list of asteroids to append to.
+    planet (Planet): The planet to orbit
 
     Returns:
     -------
@@ -529,10 +525,10 @@ def generate_asteroid(
 
     # Generating random values
     radius_asteroid = random.uniform(
-        ASTEROID_MIN_SIZE, radius_planet * ASTEROID_MAX_PLANET_MULTIPLIER
+        ASTEROID_MIN_SIZE, planet.radius * ASTEROID_MAX_PLANET_MULTIPLIER
     )
     r_p = (
-        radius_planet
+        planet.radius
         + radius_asteroid
         + random.uniform(ASTEROID_ORBIT_MIN, ASTEROID_ORBIT_MAX)
     )
@@ -546,20 +542,18 @@ def generate_asteroid(
     r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
         1 + eccentricity * math.cos(true_anomaly)
     )
-
-    mass_planet = radius_planet**3 * math.pi * 4 / 3
     total_specific_energy = (
-        -GRAVITATIONAL_CONSTANT * mass_planet / (2 * semi_major_axis)
+        -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
     )
     orbital_velocity = (
-        2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_initial + total_specific_energy)
+        2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
     ) ** 0.5
 
     radial_vector = orbit_direction.rotate(math.degrees(true_anomaly)).normalize()
     tangential_vector = radial_vector.rotate(random.choice([90, 270]))
     velocity_asteroid = tangential_vector * orbital_velocity
 
-    pos_asteroid = pos_planet + radial_vector * r_initial
+    pos_asteroid = planet.pos + radial_vector * r_initial
 
     asteroids.append(
         Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
