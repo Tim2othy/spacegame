@@ -127,11 +127,6 @@ else:
         TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
     ]
 
-if ORBIT_MODE:
-    planets = [
-        Planet(Vec2(4_000, 4_000), 1, 500, Color("darkred")),
-    ]
-
 asteroids: list[Asteroid] = []
 for _ in range(NUMBER_OF_ASTEROIDS):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
@@ -152,6 +147,14 @@ for _ in range(NUMBER_OF_ENEMIES):
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+
+if ORBIT_MODE:
+    planets = [
+        Planet(Vec2(4_000, 4_000), 1, 500, Color("darkred")),
+    ]
+    asteroids = [
+        Asteroid(Vec2(4_700, 4_000), Vec2(0, 0), 1, 100),
+    ]
 
 universe = Universe(
     WORLD_SIZE,
