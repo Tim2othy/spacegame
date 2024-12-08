@@ -5,7 +5,7 @@ from pygame.math import Vector2 as Vec2
 # Switch between the two modes, in test mode you can't die, the world is smaller, etc.
 TEST_MODE = True
 MULTI_MODE = False
-ORBIT_MODE = True
+ORBIT_MODE = False
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
