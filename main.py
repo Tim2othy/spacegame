@@ -15,10 +15,7 @@ from pygame.math import Vector2 as Vec2
 from camera import Camera
 from universe import (
     Universe,
-    Area,
     Asteroid,
-    RefuelArea,
-    TrophyArea,
     Planet,
     generate_asteroid,
 )
@@ -31,7 +28,7 @@ from constants import (
     MINIMAP_SIZE,
     WORLD_SIZE,
     SPAWNPOINT,
-    NUMBER_OF_ASTEROIDS,
+    ASTEROIDS_PER_PLANET,
     NUMBER_OF_ENEMIES,
 )
 
@@ -120,25 +117,31 @@ planets_play: list[Planet] = [
     Planet(Vec2(3_000, 1_000), 1, 700, Color("navy")),
 ]
 
+planets_orbit: list[Planet] = [
+    Planet(
+        Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000)),
+        1,
+        random.uniform(200, 1000),
+        Color("darkred"),
+    ),
+]
+
 if MULTI_MODE:
     player_ships: list[PlayerShip] = player_ships_multi
 else:
     player_ships: list[PlayerShip] = player_ships_single
 
 if TEST_MODE:
-    planets: list[Planet] = planets_test
+    planets = planets_test
 else:
     planets = planets_play
 
 if ORBIT_MODE:
-    pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
-    planets = [
-        Planet(pos_planet, 1, random.uniform(200, 1000), Color("darkred")),
-    ]
+    planets = planets_orbit
 
 asteroids: list[Asteroid] = []
 for planet in planets:
-    for _ in range(NUMBER_OF_ASTEROIDS):
+    for _ in range(ASTEROIDS_PER_PLANET):
         generate_asteroid(planet.radius, planet.pos, asteroids)
 
 enemy_ships: list[BulletEnemy] = []
@@ -149,7 +152,7 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-areas: list[Area] = []
+areas = []
 
 universe = Universe(
     WORLD_SIZE,
