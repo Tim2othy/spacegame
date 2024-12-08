@@ -17,6 +17,7 @@ from projectiles import Bullet, Rocket
 from constants import (
     BULLET_SPEED,
     DAMAGE_INDICATOR_TIME,
+    ENEMY_BULLET_COOLDOWN,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     ENEMY_SHOOT_RANGE,
@@ -63,12 +64,10 @@ class Ship(Disk):
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown: float = (
-            0  # This just just determines cooldown once at the very start.
-        )
+        self.gun_cooldown: float = 0
+        # This just just determines cooldown once at the very start.
         self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
-
         self.ammo: int = 3700
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
@@ -433,6 +432,16 @@ class BulletEnemy(Ship):
         ):
             self.shoot()
             self.time_until_next_shot = self.shoot_cooldown
+
+    def shoot(self) -> None:
+        """Try to shoot a bullet."""
+        if self.gun_cooldown <= 0 and self.ammo > 0:
+            forward = self.get_faced_direction()
+            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
+            bullet_vel = self.vel + forward * BULLET_SPEED
+            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
+            self.gun_cooldown = ENEMY_BULLET_COOLDOWN
+            self.ammo -= 1
 
 
 class RocketEnemy(BulletEnemy):
