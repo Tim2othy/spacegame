@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum
+from re import S
 from typing import TYPE_CHECKING
 
 import pygame
@@ -29,6 +30,7 @@ from constants import (
     GUN_COOLDOWN,
     ENEMY_VISUAL_RANGE,
     WORLD_SIZE,
+    SMOL,
 )
 
 if TYPE_CHECKING:
@@ -398,6 +400,8 @@ class BulletEnemy(Ship):
             )
             # print(self.current_action)
             # print(self.random_point)
+            if delta_target_ship == Vec2(0, 0):
+                delta_target_ship = Vec2(SMOL, SMOL)
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
                 force_direction = delta_target_ship

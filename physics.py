@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
+from cycler import V
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
@@ -86,15 +87,11 @@ class PhysicalObject:
 
         """
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
+        if delta == Vec2(0, 0):
+            return Vec2(0, 0)
         dist_squared = delta.magnitude_squared()
-        if dist_squared != 0:
-            force_magnitude = (
-                GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
-            )
-            normalised_delta = delta / math.sqrt(dist_squared)
-        else:
-            force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / SMOL
-            normalised_delta = delta / math.sqrt(SMOL)
+        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+        normalised_delta = delta / math.sqrt(dist_squared)
         return normalised_delta * force_magnitude
 
     def draw(self, camera: Camera) -> None:
@@ -194,6 +191,10 @@ class Disk(PhysicalObject):
 
         # Calculate normal vector
         delta = self.pos - disk.pos
+        if delta == Vec2(0, 0):
+            delta = Vec2(
+                SMOL, SMOL
+            )  # I also tried using return here, but this gives better results
         self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
 
@@ -202,7 +203,7 @@ class Disk(PhysicalObject):
         else:
             impulse_scalar /= 1 / (self.mass + SMOL) + 1 / (
                 disk.mass + SMOL
-            )  # You probably don't like this but I think it's fine...
+            )  # You probably don't like this but it probably works for now
         self.add_impulse(delta.normalize() * impulse_scalar)
 
         # This allows the ship to land on the planet.
