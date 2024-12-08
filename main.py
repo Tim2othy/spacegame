@@ -84,14 +84,13 @@ player_ships_multi: list[PlayerShip] = [
 ]
 
 planets_test: list[Planet] = [
-    Planet(Vec2(1_800, 6_700), 1, 370, Color("darkred")),
-    Planet(Vec2(2_300, 900), 1, 280, Color("green")),
+    Planet(Vec2(1_800, 6_700), 1, 320, Color("darkred")),
+    Planet(Vec2(2_300, 900), 1, 300, Color("green")),
     Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple")),
-    Planet(Vec2(5_000, 9_000), 1, 380, Color("darkorange")),
-    Planet(Vec2(6_000, 400), 1, 350, Color("royalblue")),
-    Planet(Vec2(8_600, 8_700), 1, 880, Color("orange")),
-    Planet(Vec2(6_700, 7_200), 1, 380, Color("darkslategray")),
-    Planet(Vec2(9_200, 4_400), 1, 540, Color("yellow")),
+    Planet(Vec2(5_000, 9_000), 1, 310, Color("darkorange")),
+    Planet(Vec2(6_000, 400), 1, 340, Color("royalblue")),
+    Planet(Vec2(6_700, 7_200), 1, 280, Color("darkslategray")),
+    Planet(Vec2(9_200, 4_400), 1, 260, Color("yellow")),
 ]
 
 planets_play: list[Planet] = [
