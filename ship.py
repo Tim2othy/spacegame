@@ -398,21 +398,23 @@ class BulletEnemy(Ship):
             )
             # print(self.current_action)
             # print(self.random_point)
-
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
                 force_direction = delta_target_ship
             else:
                 [self.current_action] = random.choices(
-                    population=list(BulletEnemy.Action), weights=ENEMY_ACTION_WEIGHTS
+                    population=[
+                        BulletEnemy.Action.accelerate_randomly,
+                        BulletEnemy.Action.decelerate,
+                    ],
+                    weights=ENEMY_ACTION_WEIGHTS,
                 )
             self.action_timer = ENEMY_ACTION_TIMER
         force_direction: Vec2
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = delta_target_ship  # This never happens, but If I remove it there is a bug
+                force_direction = delta_target_ship
             case BulletEnemy.Action.accelerate_randomly:
-
                 delta_random_point = self.random_point - self.pos
                 force_direction = delta_random_point
             case BulletEnemy.Action.decelerate:
@@ -434,7 +436,7 @@ class BulletEnemy(Ship):
             self.time_until_next_shot = self.shoot_cooldown
 
     def shoot(self) -> None:
-        """Try to shoot a bullet."""
+        """Shoot a bullet."""
         if self.gun_cooldown <= 0 and self.ammo > 0:
             forward = self.get_faced_direction()
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
