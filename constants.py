@@ -3,8 +3,9 @@
 from pygame.math import Vector2 as Vec2
 
 # Switch between the two modes, in test mode you can't die, the world is smaller, etc.
-TEST_MODE = False
+TEST_MODE = True
 MULTI_MODE = False
+ORBIT_MODE = True
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
@@ -46,3 +47,7 @@ NUMBER_OF_ASTEROIDS = 15 if TEST_MODE else 40
 NUMBER_OF_ENEMIES = 8 if TEST_MODE else 20
 ASTEROID_MIN_SIZE = 20
 ASTEROID_MAX_SIZE = 80
+
+if ORBIT_MODE:
+    NUMBER_OF_ASTEROIDS = 0
+    NUMBER_OF_ENEMIES = 0

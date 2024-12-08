@@ -14,6 +14,7 @@ from camera import Camera
 from universe import Universe, Area, Asteroid, RefuelArea, TrophyArea, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from constants import (
+    ORBIT_MODE,
     TEST_MODE,
     MULTI_MODE,
     SCREEN_SIZE,
@@ -124,6 +125,11 @@ else:
     areas: list[Area] = [
         RefuelArea(pygame.Rect((10_000, 20_000), (500, 500))),
         TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
+    ]
+
+if ORBIT_MODE:
+    planets = [
+        Planet(Vec2(4_000, 4_000), 1, 500, Color("darkred")),
     ]
 
 asteroids: list[Asteroid] = []
