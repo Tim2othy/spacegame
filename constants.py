@@ -35,7 +35,7 @@ ROCKET_NONHOMING_DURATION = 5
 ROCKET_HOMING_THRUST = 200
 
 # physics constants
-GRAVITATIONAL_CONSTANT = 0.02
+GRAVITATIONAL_CONSTANT = 0.02 * 100
 SMOL = 1e-3  # Small number to avoid division by zero
 BOUNCINESS = 0.97  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
 BOUNCE_DAMAGE_THRESHOLD = 1.3e6

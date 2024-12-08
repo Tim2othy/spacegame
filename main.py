@@ -5,6 +5,7 @@ from __future__ import annotations
 import dis
 import sys
 
+import math
 import random
 
 import pygame
@@ -154,7 +155,7 @@ for _ in range(NUMBER_OF_ENEMIES):
 radius_planet = random.uniform(200, 1000)
 radius_asteroid = random.uniform(20, radius_planet * 0.5)
 pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
-mass_planet = radius_planet**3 * 3.1416 * 4 / 3
+mass_planet = radius_planet**3 * math.pi * 4 / 3
 
 # Generating offset
 offset_magnitude = radius_planet + radius_asteroid + random.uniform(0, 300)
