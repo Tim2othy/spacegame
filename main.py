@@ -152,9 +152,10 @@ for _ in range(NUMBER_OF_ENEMIES):
 
 radius_planet = 500
 pos_planet = Vec2(4_000, 4_000)
-pos_asteroid = pos_planet + Vec2(radius_planet + 80, 0)
+offset = Vec2(radius_planet + 100, radius_planet + 190)
+pos_asteroid = pos_planet + offset
 r_p = pos_asteroid.distance_to(pos_planet)
-r_a = r_p + 200
+r_a = r_p + 1000
 a_semi_major_axis = (r_p + r_a) / 2
 mass_planet = radius_planet**3 * 3.1416 * 4 / 3
 E_total_specific_energy = (
@@ -165,12 +166,16 @@ v_orbital_velocity = (
     2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + E_total_specific_energy)
 ) ** 0.5
 
+radial_vector = (pos_asteroid - pos_planet).normalize()
+tangential_vector = radial_vector.rotate(90)
+velocity_asteroid = tangential_vector * v_orbital_velocity
+
 if ORBIT_MODE:
     planets = [
         Planet(pos_planet, 1, radius_planet, Color("darkred")),
     ]
     asteroids = [
-        Asteroid(pos_asteroid, Vec2(0, v_orbital_velocity), 1, 20),
+        Asteroid(pos_asteroid, velocity_asteroid, 1, 100),
     ]
 
 universe = Universe(
