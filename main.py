@@ -150,17 +150,19 @@ for _ in range(NUMBER_OF_ENEMIES):
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
 
-pos_planet = Vec2(4_000, 4_000)
-pos_asteroid = Vec2(4_700, 4_000)
-r_p = pos_asteroid.distance_to(pos_planet)
-r_a = r_p + 1300
-a_semi_major_axis = (r_p + r_a) / 2
 radius_planet = 500
-mass = radius_planet**3 * 3.1416 * 4 / 3
-E_total_specific_energy = -GRAVITATIONAL_CONSTANT * mass / (2 * a_semi_major_axis)
+pos_planet = Vec2(4_000, 4_000)
+pos_asteroid = pos_planet + Vec2(radius_planet + 80, 0)
+r_p = pos_asteroid.distance_to(pos_planet)
+r_a = r_p + 200
+a_semi_major_axis = (r_p + r_a) / 2
+mass_planet = radius_planet**3 * 3.1416 * 4 / 3
+E_total_specific_energy = (
+    -GRAVITATIONAL_CONSTANT * mass_planet / (2 * a_semi_major_axis)
+)
 
 v_orbital_velocity = (
-    2 * (GRAVITATIONAL_CONSTANT * mass / r_p + E_total_specific_energy)
+    2 * (GRAVITATIONAL_CONSTANT * mass_planet / r_p + E_total_specific_energy)
 ) ** 0.5
 
 if ORBIT_MODE:
@@ -168,7 +170,7 @@ if ORBIT_MODE:
         Planet(pos_planet, 1, radius_planet, Color("darkred")),
     ]
     asteroids = [
-        Asteroid(pos_asteroid, Vec2(0, v_orbital_velocity), 1, 100),
+        Asteroid(pos_asteroid, Vec2(0, v_orbital_velocity), 1, 20),
     ]
 
 universe = Universe(
