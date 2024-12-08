@@ -176,8 +176,11 @@ orbital_velocity = (
     2 * (GRAVITATIONAL_CONSTANT * mass_planet / r + total_specific_energy)
 ) ** 0.5
 
+orbit_sign = random.choice([1, -1])
+
 radial_vector = orbit_direction.rotate(math.degrees(true_anomaly)).normalize()
 tangential_vector = radial_vector.rotate(90)
+tangential_vector *= orbit_sign
 velocity_asteroid = tangential_vector * orbital_velocity
 
 pos_asteroid = pos_planet + radial_vector * r
