@@ -24,7 +24,6 @@ from universe import (
 )
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from constants import (
-    GRAVITATIONAL_CONSTANT,
     ORBIT_MODE,
     TEST_MODE,
     MULTI_MODE,
@@ -34,8 +33,6 @@ from constants import (
     SPAWNPOINT,
     NUMBER_OF_ASTEROIDS,
     NUMBER_OF_ENEMIES,
-    ASTEROID_MAX_SIZE,
-    ASTEROID_MIN_SIZE,
 )
 
 # Initialize Pygame
@@ -138,6 +135,13 @@ else:
         TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
     ]
 
+
+if ORBIT_MODE:
+    pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
+    planets = [
+        Planet(pos_planet, 1, random.uniform(200, 1000), Color("darkred")),
+    ]
+
 asteroids: list[Asteroid] = []
 for planet in planets:
     for _ in range(NUMBER_OF_ASTEROIDS):
@@ -150,18 +154,6 @@ for _ in range(NUMBER_OF_ENEMIES):
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
-
-# Generating celestialbody Values
-radius_planet = random.uniform(200, 1000)
-pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
-
-if ORBIT_MODE:
-    planets = [
-        Planet(pos_planet, 1, radius_planet, Color("darkred")),
-    ]
-    asteroids: list[Asteroid] = []
-    for _ in range(5):
-        generate_asteroid(radius_planet, pos_planet, asteroids)
 
 universe = Universe(
     WORLD_SIZE,

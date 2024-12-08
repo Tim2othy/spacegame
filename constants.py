@@ -5,7 +5,7 @@ from pygame.math import Vector2 as Vec2
 # Switch between the two modes, in test mode you can't die, the world is smaller, etc.
 TEST_MODE = True
 MULTI_MODE = False
-ORBIT_MODE = False
+ORBIT_MODE = True
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
@@ -35,7 +35,7 @@ ROCKET_NONHOMING_DURATION = 5
 ROCKET_HOMING_THRUST = 200
 
 # physics constants
-GRAVITATIONAL_CONSTANT = 0.02 * 100
+GRAVITATIONAL_CONSTANT = 0.02
 SMOL = 1e-3  # Small number to avoid division by zero
 BOUNCINESS = 0.97  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
 BOUNCE_DAMAGE_THRESHOLD = 1.3e6
@@ -43,11 +43,10 @@ BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 BOUNCE_DAMAGE_SCALAR = 6e-4
 
 # Constants for main, where these objects are created
-NUMBER_OF_ASTEROIDS = 15 if TEST_MODE else 40
+NUMBER_OF_ASTEROIDS = 5
 NUMBER_OF_ENEMIES = 8 if TEST_MODE else 20
 ASTEROID_MIN_SIZE = 20
 ASTEROID_MAX_SIZE = 80
 
 if ORBIT_MODE:
-    NUMBER_OF_ASTEROIDS = 0
     NUMBER_OF_ENEMIES = 0
