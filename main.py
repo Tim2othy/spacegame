@@ -127,14 +127,8 @@ else:
 
 if TEST_MODE:
     planets: list[Planet] = planets_test
-    areas: list[Area] = []
 else:
     planets = planets_play
-    areas: list[Area] = [
-        RefuelArea(pygame.Rect((10_000, 20_000), (500, 500))),
-        TrophyArea(pygame.Rect((20_000, 10_000), (500, 500))),
-    ]
-
 
 if ORBIT_MODE:
     pos_planet = Vec2(random.uniform(1000, 8000), random.uniform(1000, 8000))
@@ -154,6 +148,8 @@ for _ in range(NUMBER_OF_ENEMIES):
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
         enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+
+areas: list[Area] = []
 
 universe = Universe(
     WORLD_SIZE,
