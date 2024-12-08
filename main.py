@@ -34,7 +34,7 @@ SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
 player_ships_single: list[PlayerShip] = [
     PlayerShip(
-        SPAWNPOINT + Vec2(-50, 0),
+        SPAWNPOINT,
         Vec2(0, 0),
         1,
         10,
@@ -52,7 +52,7 @@ player_ships_single: list[PlayerShip] = [
 
 player_ships_multi: list[PlayerShip] = [
     PlayerShip(
-        SPAWNPOINT + Vec2(-50, 0),
+        SPAWNPOINT,
         Vec2(0, 0),
         1,
         10,
