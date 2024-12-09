@@ -418,7 +418,15 @@ class BulletEnemy(Ship):
         force_direction: Vec2
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = delta_target_ship
+                desired_velocity = (
+                    delta_target_ship * self.thrust / delta_target_ship.magnitude()
+                )
+                perfect_multiplier = max(
+                    self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude()
+                )
+                perfect_velocity = desired_velocity.normalize() * perfect_multiplier
+                required_acceleration = perfect_velocity - self.vel
+                force_direction = required_acceleration
             case BulletEnemy.Action.accelerate_randomly:
                 delta_random_point = self.random_point - self.pos
                 force_direction = delta_random_point
