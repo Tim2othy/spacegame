@@ -17,6 +17,7 @@ from constants import (
     ROCKET_HOMING_THRUST,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
+    MISSILE_PREFERRED_SPEED,
 )
 
 
@@ -168,17 +169,20 @@ class Missile(Bullet):
 
         """
         self.homing_timer = self.homing_timer + dt
-        direction = self.target_ship.pos - self.pos
-        if direction != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
-
-            desired_velocity = direction * self.homing_thrust / direction.magnitude()
-            perfect_multiplier = max(
-                self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude()
+        delta_target_ship = self.target_ship.pos - self.pos
+        if (
+            delta_target_ship != Vec2(0, 0)
+            and self.homing_timer <= self.homing_duration
+        ):
+            target_ship_direction = delta_target_ship.normalize()
+            multiplier = max(
+                self.target_ship.vel.magnitude() * 1.1,
+                MISSILE_PREFERRED_SPEED,
             )
-            perfect_velocity = desired_velocity.normalize() * perfect_multiplier
-            required_acceleration = (perfect_velocity - self.vel).normalize()
-            self.apply_force(required_acceleration * self.homing_thrust, dt)
-
+            preferred_velocity = target_ship_direction * multiplier
+            required_force = preferred_velocity - self.vel
+            force = required_force * self.homing_thrust / required_force.magnitude()
+            self.apply_force(force, dt)
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
