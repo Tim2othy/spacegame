@@ -168,13 +168,20 @@ class Missile(Bullet):
 
         """
         self.homing_timer = self.homing_timer + dt
+        direction = self.target_ship.pos - self.pos
+        if direction != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
 
-        if self.homing_timer <= self.homing_duration:
-            # Target the ship
-            direction = self.target_ship.pos - self.pos
-            if direction != Vec2(0, 0):
-                direction.normalize_ip()
-                self.apply_force(direction * self.homing_thrust, dt)
+            # Calculate the desired velocity to reach the target
+            desired_velocity = direction.normalize() * self.homing_thrust
+
+            # Calculate the required acceleration to adjust the current velocity towards the desired velocity
+            required_acceleration = (desired_velocity - self.vel) / dt
+
+            # Apply the acceleration
+            self.apply_force(required_acceleration * self.mass, dt)
+
+            direction.normalize_ip()
+            self.apply_force(direction * self.homing_thrust, dt)
 
         super().step(dt)
 
@@ -191,8 +198,25 @@ class Missile(Bullet):
         right = -left
         backward = -forward
 
-        # Spooky homing body
-        self.color = Color("orange")
+        # homing body
+        distance = (self.target_ship.pos - self.pos).magnitude()
+
+        if distance > 200:
+            self.color = Color("orange")
+            camera.draw_polygon(
+                self.color,
+                [
+                    self.pos + 3 * (left + 2 * forward),
+                    self.pos + 3 * (left + 2 * backward),
+                    self.pos + 3 * (right + 2 * backward),
+                    self.pos + 3 * (right + 2 * forward),
+                    self.pos + 2 * (5 * forward),
+                ],
+            )
+        else:
+            self.color = Color("gray")
+
+        # Dead body
         camera.draw_polygon(
             self.color,
             [
