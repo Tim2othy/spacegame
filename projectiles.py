@@ -165,6 +165,7 @@ class Missile(Bullet):
         self.homing_duration = MISSILE_HOMING_DURATION
         self.color = Color("red")
         self.image = pygame.image.load(image_path)
+        self.original_image = self.image  # Keep the original image for rotation
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`.
@@ -174,10 +175,11 @@ class Missile(Bullet):
             camera (Camera): Camera to draw on
 
         """
-        # Convert the image to a format suitable for the camera
+        forward = self.vel.normalize()
+        angle = forward.angle_to(Vec2(1, 0))
 
-        # Draw the image at the missile's position
-        camera.draw_image(self.image, self.pos)
+        rotated_image = pygame.transform.rotate(self.original_image, -angle)
+        camera.draw_image(rotated_image, self.pos)
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logic.
