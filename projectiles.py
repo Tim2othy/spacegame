@@ -1,9 +1,11 @@
 """Projectiles, shooting through space."""
 
 from typing import TYPE_CHECKING
+from PIL import Image
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2
+import pygame
 
 from camera import Camera
 from physics import PhysicalObject
@@ -142,7 +144,9 @@ class Rocket(Bullet):
 class Missile(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
+    def __init__(
+        self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship", image_path: str
+    ) -> None:
         """Create a new Missile targeting `target_ship`.
 
         Args:
@@ -151,6 +155,7 @@ class Missile(Bullet):
             vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
             target_ship (Ship): Ship to home in on
+            image_path (str): Path to the image file
 
         """
         super().__init__(pos, vel, color)
@@ -159,6 +164,7 @@ class Missile(Bullet):
         self.homing_timer = 0
         self.homing_duration = MISSILE_HOMING_DURATION
         self.color = Color("red")
+        self.image = pygame.image.load(image_path)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`.
@@ -168,32 +174,10 @@ class Missile(Bullet):
             camera (Camera): Camera to draw on
 
         """
-        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
-        left = Vec2(-forward.y, forward.x)
-        right = -left
-        backward = -forward
+        # Convert the image to a format suitable for the camera
 
-        self.color = Color("orange")
-        camera.draw_polygon(
-            self.color,
-            [
-                self.pos + 3 * (left + 2 * forward),
-                self.pos + 3 * (left + 2 * backward),
-                self.pos + 3 * (right + 2 * backward),
-                self.pos + 3 * (right + 2 * forward),
-                self.pos + 2 * (6 * forward),
-                self.pos + 2 * (4 * forward + left),
-                self.pos + 2 * (4 * forward + right),
-                self.pos + 2 * (2 * forward + 2 * left),
-                self.pos + 2 * (2 * forward + 2 * right),
-                self.pos + 2 * (backward + left),
-                self.pos + 2 * (backward + right),
-                self.pos + 1 * (3 * forward + left),
-                self.pos + 1 * (3 * forward + right),
-                self.pos + 1 * (5 * forward + 0.5 * left),
-                self.pos + 1 * (5 * forward + 0.5 * right),
-            ],
-        )
+        # Draw the image at the missile's position
+        camera.draw_image(self.image, self.pos)
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logic.

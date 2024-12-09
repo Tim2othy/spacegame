@@ -539,7 +539,13 @@ class MissileEnemy(BulletEnemy):
             bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
             bullet_vel = self.vel
             self.projectiles.append(
-                Missile(bullet_pos, bullet_vel, self.color, self.target_ship),
+                Missile(
+                    bullet_pos,
+                    bullet_vel,
+                    self.color,
+                    self.target_ship,
+                    "assets/missile.png",
+                ),
             )
             self.gun_cooldown = ENEMY_MISSILE_COOLDOWN
             self.ammo -= 1

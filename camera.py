@@ -59,7 +59,10 @@ class Camera:
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
     def smoothly_focus_rect(
-        self, rect: Rect, dt: float, transition_time: float = 0.25,
+        self,
+        rect: Rect,
+        dt: float,
+        transition_time: float = 0.25,
     ) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is
         visible entirely, but not more.
@@ -226,7 +229,11 @@ class Camera:
             pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
 
     def draw_vertical_hairline(
-        self, color: Color, x: float, starty: float, endy: float,
+        self,
+        color: Color,
+        x: float,
+        starty: float,
+        endy: float,
     ) -> None:
         """Draw a vertical worldspace-line of single-pixel-thickness.
 
@@ -249,7 +256,11 @@ class Camera:
             pygame.gfxdraw.vline(self.surface, x, y1, y2, color)
 
     def draw_horizontal_hairline(
-        self, color: Color, startx: float, endx: float, y: float,
+        self,
+        color: Color,
+        startx: float,
+        endx: float,
+        y: float,
     ) -> None:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
 
@@ -287,7 +298,11 @@ class Camera:
             pygame.gfxdraw.box(self.surface, screen_rect, color)
 
     def draw_text(
-        self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color,
+        self,
+        text: str,
+        pos: Vec2 | None,
+        font: pygame.font.Font,
+        color: Color,
     ) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 
@@ -308,6 +323,17 @@ class Camera:
                 (height - rendered.get_height()) / 2,
             )
         self.surface.blit(rendered, pos)
+
+    def draw_image(self, image: pygame.Surface, pos: Vec2) -> None:
+        """Draw an image on screen at screenspace-position.
+
+        Args:
+        ----
+            image (pygame.Surface): Image to draw
+            pos (Vec2): Screenspace-position of the image's top-left-corner
+
+        """
+        self.surface.blit(image, self.world_to_screen(pos))
 
 
 def _get_enclosing_rect(points: list[Vec2]) -> Rect:
