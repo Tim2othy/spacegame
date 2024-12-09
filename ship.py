@@ -349,12 +349,114 @@ class PlayerShip(Ship):
 
         """
         forward = self.get_faced_direction()
+
+        right = Vec2(-forward.y, forward.x)
+        left = -right
+        backward = -forward
+
+        base_color: Color = self.color.lerp(Color("red"), self.damage_indicator_timer)
+        darker_color: Color = base_color.lerp(Color("black"), 0.5)
+
+        # Helper function for drawing polygons relative to the ship-position
+        def drawy(color: Color, points: list[Vec2]) -> None:
+            camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
+
+        # thruster_backward (active)
+        if self.thruster_backward:
+            drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
+
+        # "For his neutral special, he wields a gun"
+        camera.draw_line(
+            darker_color,
+            self.pos,
+            self.pos + forward * self.radius * GUNBARREL_LENGTH,
+            GUNBARREL_WIDTH * self.radius,
+        )
+
+        # thruster_rot_left (material)
+        drawy(
+            darker_color,
+            [
+                0.7 * left + 0.7 * forward,
+                0.5 * left + 0.5 * backward,
+                2.0 * left + 1.0 * backward,
+            ],
+        )
+        # thruster_rot_left (active)
+        if self.thruster_rot_left:
+            drawy(
+                Color("orange"),
+                [
+                    1.5 * left + 1.25 * backward,
+                    0.5 * left + 0.5 * backward,
+                    2.0 * left + 1.0 * backward,
+                ],
+            )
+
+        # thruster_rot_right (material)
+        drawy(
+            darker_color,
+            [
+                0.7 * right + 0.7 * forward,
+                0.5 * right + 0.5 * backward,
+                2.0 * right + 1.0 * backward,
+            ],
+        )
+        # thruster_rot_right (active)
+        if self.thruster_rot_right:
+            drawy(
+                Color("orange"),
+                [
+                    1.5 * right + 1.25 * backward,
+                    0.5 * right + 0.5 * backward,
+                    2.0 * right + 1.0 * backward,
+                ],
+            )
+
+        # thruster_forward (flame)
+        if self.thruster_forward:
+            drawy(
+                Color("orange"),
+                [
+                    0.7 * left + 0.7 * backward,
+                    0.5 * left + 1.5 * backward,
+                    1.25 * backward,
+                    0.5 * right + 1.5 * backward,
+                    0.7 * right + 0.7 * backward,
+                ],
+            )
+        # thruster_forward (material)
+        drawy(
+            darker_color,
+            [
+                0.7 * left + 0.7 * backward,
+                0.5 * left + 1.25 * backward,
+                1.0 * backward,
+                0.5 * right + 1.25 * backward,
+                0.7 * right + 0.7 * backward,
+            ],
+        )
+
         angle = forward.angle_to(Vec2(0, -1))
         rotated_image = pygame.transform.rotate(self.image, angle)
-        camera.draw_image(rotated_image, self.pos)
+
+        # Get the width and height of the rotated image
+        image_rect = rotated_image.get_rect()
+        center_offset = Vec2(image_rect.width / 2, image_rect.height / 2)
+
+        # Adjust the position to center the image
+        adjusted_pos = self.pos - center_offset
+
+        # Ugly hack
+        backup_self_color = Color(self.color)
+        self.color = base_color
+        super().draw(camera)  # Draw circular body ("hitbox")
+        self.color = backup_self_color
 
         for projectile in self.projectiles:
             projectile.draw(camera)
+
+        camera.draw_image(rotated_image, adjusted_pos)
 
 
 class BulletEnemy(Ship):
