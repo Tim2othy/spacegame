@@ -22,7 +22,7 @@ from universe import (
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
 from constants import (
     ORBIT_MODE,
-    TEST_MODE,
+    SMALL_MODE,
     MULTI_MODE,
     INVINCIBLE_MODE,
     SCREEN_SIZE,
@@ -84,7 +84,7 @@ player_ships_multi: list[PlayerShip] = [
     ),
 ]
 
-planets_test: list[Planet] = [
+planets_small: list[Planet] = [
     Planet(Vec2(1_800, 6_700), 1, 320, Color("darkred")),
     Planet(Vec2(2_300, 900), 1, 300, Color("green")),
     Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple")),
@@ -131,8 +131,8 @@ if MULTI_MODE:
 else:
     player_ships: list[PlayerShip] = player_ships_single
 
-if TEST_MODE:
-    planets = planets_test
+if SMALL_MODE:
+    planets = planets_small
 else:
     planets = planets_play
 

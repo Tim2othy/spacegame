@@ -3,14 +3,14 @@
 from pygame.math import Vector2 as Vec2
 
 # Switch between the modes, in test mode you can't die, the world is smaller, etc.
-TEST_MODE = True
+SMALL_MODE = True
 MULTI_MODE = False
 ORBIT_MODE = True
 INVINCIBLE_MODE = False
 
 SCREEN_SIZE = Vec2(1600, 900)
 MINIMAP_SIZE = Vec2(350, 350)
-WORLD_SIZE = Vec2(10_000, 10_000) if TEST_MODE else Vec2(30_000, 30_000)
+WORLD_SIZE = Vec2(10_000, 10_000) if SMALL_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = WORLD_SIZE / 2
 
 # ship constants
@@ -52,4 +52,4 @@ ASTEROID_ORBIT_MAX = 300
 ASTEROID_ORBIT_ELIPSIS_LENGTH = 9000
 
 # Number of enemies in the game
-NUMBER_OF_ENEMIES = 8 if TEST_MODE else 20
+NUMBER_OF_ENEMIES = 8 if SMALL_MODE else 20
