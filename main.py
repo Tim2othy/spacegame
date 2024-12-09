@@ -19,7 +19,7 @@ from universe import (
     Planet,
     generate_asteroid,
 )
-from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy
+from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
     ORBIT_MODE,
     SMALL_MODE,
@@ -150,7 +150,15 @@ for _ in range(NUMBER_OF_ENEMIES):
     if random.random() > 0.5:
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
-        enemy_ships.append(RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
+        if random.random() > 0.3:
+            enemy_ships.append(
+                RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships))
+            )
+        else:
+            enemy_ships.append(
+                MissileEnemy(pos, Vec2(0, 0), random.choice(player_ships))
+            )
+
 
 areas = []
 

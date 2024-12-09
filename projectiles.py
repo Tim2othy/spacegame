@@ -15,6 +15,8 @@ from constants import (
     ROCKET_HOMING_DURATION,
     ROCKET_NONHOMING_DURATION,
     ROCKET_HOMING_THRUST,
+    MISSILE_HOMING_DURATION,
+    MISSILE_HOMING_THRUST,
 )
 
 
@@ -132,5 +134,72 @@ class Rocket(Bullet):
                 self.pos + 3 * (right + backward),
                 self.pos + 3 * (right + forward),
                 self.pos + 2 * (3 * forward),
+            ],
+        )
+
+
+class Missile(Bullet):
+    """A pentagonal bullet, homing on a target-ship."""
+
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
+        """Create a new Missile targeting `target_ship`.
+
+        Args:
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            color (Color): Border- and fill-color
+            target_ship (Ship): Ship to home in on
+
+        """
+        super().__init__(pos, vel, color)
+        self.target_ship = target_ship
+        self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
+        self.homing_timer = 0
+        self.homing_duration = MISSILE_HOMING_DURATION
+        self.color = Color("red")
+
+    def step(self, dt: float) -> None:
+        """Apply homing and physics-logic.
+
+        Args:
+        ----
+            dt (float): Passed time
+
+        """
+        self.homing_timer = self.homing_timer + dt
+
+        if self.homing_timer <= self.homing_duration:
+            # Target the ship
+            direction = self.target_ship.pos - self.pos
+            if direction != Vec2(0, 0):
+                direction.normalize_ip()
+                self.apply_force(direction * self.homing_thrust, dt)
+
+        super().step(dt)
+
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` to `camera`.
+
+        Args:
+        ----
+            camera (Camera): Camera to draw on
+
+        """
+        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        left = Vec2(-forward.y, forward.x)
+        right = -left
+        backward = -forward
+
+        # Spooky homing body
+        self.color = Color("orange")
+        camera.draw_polygon(
+            self.color,
+            [
+                self.pos + 3 * (left + 2 * forward),
+                self.pos + 3 * (left + 2 * backward),
+                self.pos + 3 * (right + 2 * backward),
+                self.pos + 3 * (right + 2 * forward),
+                self.pos + 2 * (5 * forward),
             ],
         )

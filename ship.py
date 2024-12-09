@@ -13,7 +13,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from physics import Disk
-from projectiles import Bullet, Rocket
+from projectiles import Bullet, Rocket, Missile
 
 from constants import (
     BULLET_SPEED,
@@ -31,6 +31,7 @@ from constants import (
     ENEMY_VISUAL_RANGE,
     WORLD_SIZE,
     SMOL,
+    ENEMY_MISSILE_COOLDOWN,
 )
 
 if TYPE_CHECKING:
@@ -462,7 +463,7 @@ class RocketEnemy(BulletEnemy):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 10,
+        shoot_cooldown: float = 0,
         color: Color = Color("plum"),
     ) -> None:
         """Create a new Rocket-Ship.
@@ -472,8 +473,7 @@ class RocketEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots.
-                Defaults to 0.5.
+            shoot_cooldown (float, optional): Minimum time before first shot.
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
@@ -493,4 +493,45 @@ class RocketEnemy(BulletEnemy):
                 Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
             )
             self.gun_cooldown = ENEMY_ROCKET_COOLDOWN
+            self.ammo -= 1
+
+
+class MissileEnemy(BulletEnemy):
+    """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
+
+    def __init__(
+        self,
+        pos: Vec2,
+        vel: Vec2,
+        target_ship: Ship,
+        shoot_cooldown: float = 0,
+        color: Color = Color("blue"),
+    ) -> None:
+        """Create a new Missile-Ship.
+
+        Args:
+        ----
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            target_ship (Ship): Ship to target
+            shoot_cooldown (float, optional): Minimum time before first shot.
+            color (Color, optional): Material color. Defaults to Color("red").
+
+        """
+        super().__init__(pos, vel, target_ship, shoot_cooldown, color)
+
+    def shoot(self) -> None:
+        """Shoot a smart Missile."""
+        if (
+            self.gun_cooldown <= 0
+            and self.ammo > 0
+            and self.current_action == BulletEnemy.Action.accelerate_to_player
+        ):
+            forward = self.get_faced_direction()
+            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
+            bullet_vel = self.vel
+            self.projectiles.append(
+                Missile(bullet_pos, bullet_vel, self.color, self.target_ship),
+            )
+            self.gun_cooldown = ENEMY_MISSILE_COOLDOWN
             self.ammo -= 1
