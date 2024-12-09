@@ -1,14 +1,11 @@
-from curses.ascii import SI
 from PIL import Image
 from collections import Counter
 import numpy as np
 
-old_x = 134
-old_y = 158
+old_size = 741
 
-new_x = 34
-new_y = 40
-name = "images"
+new_size = 247
+name = "profile_ship"
 
 
 def most_common_color(pixels):
@@ -18,14 +15,14 @@ def most_common_color(pixels):
 
 
 def downscale_image(input_path, output_path):
-    """Downscale image to new_x * new_y using the most common color in each grid."""
-    original = Image.open(input_path)
-    original = original.resize((old_x, old_y))
-    grid_size = old_x // new_x  # Grid size for SIZExSIZE
+    """Downscale image to new_size * new_size using the most common color in each grid."""
+    original = Image.open("assets/" + input_path)
+    original = original.resize((old_size, old_size))
+    grid_size = old_size // new_size  # Grid size for SIZExSIZE
 
-    result_image = Image.new("RGB", (new_x, new_y))
-    for i in range(new_x):
-        for j in range(new_y):
+    result_image = Image.new("RGB", (new_size, new_size))
+    for i in range(new_size):
+        for j in range(new_size):
             # Crop the region for the current grid
             left, upper = j * grid_size, i * grid_size
             right, lower = left + grid_size, upper + grid_size
@@ -39,9 +36,9 @@ def downscale_image(input_path, output_path):
             # Set the color in the result image
             result_image.putpixel((j, i), common_color)
 
-    result_image.save(output_path)
+    result_image.save("assets/" + output_path)
     print(f"Image saved to {output_path}")
 
 
 # Usage example
-downscale_image(name + ".png", name + "_in_" + str(new_x) + ".png")
+downscale_image(name + ".png", name + "_in_" + str(new_size) + ".png")

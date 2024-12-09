@@ -54,6 +54,7 @@ player_ships_single: list[PlayerShip] = [
             pygame.K_DOWN,
             pygame.K_RETURN,
         ),
+        "assets/player_ship.png",
     ),
 ]
 
@@ -72,6 +73,7 @@ player_ships_multi: list[PlayerShip] = [
             pygame.K_DOWN,
             pygame.K_RETURN,
         ),
+        "assets/player_ship.png",
     ),
     PlayerShip(
         SPAWNPOINT + Vec2(50, 0),
@@ -81,6 +83,7 @@ player_ships_multi: list[PlayerShip] = [
         Color("blue"),
         Color("yellow"),
         ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
+        "assets/player_ship.png",
     ),
 ]
 

@@ -303,6 +303,7 @@ class PlayerShip(Ship):
         color: Color,
         bullet_color: Color,
         spaceship_input: ShipInput,
+        image_path: str,
     ) -> None:
         """Create a new player-spaceship.
 
@@ -315,10 +316,12 @@ class PlayerShip(Ship):
             color (Color): Material color
             bullet_color (Color): Bullet_color
             spaceship_input (SpaceshipInput): Map from keys to actions
+            image_path (str): Path to image
 
         """
         super().__init__(pos, vel, density, size, color, bullet_color)
         self.spaceship_input = spaceship_input
+        self.image = pygame.image.load(image_path)
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -336,6 +339,22 @@ class PlayerShip(Ship):
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         if keys[self.spaceship_input.shoot]:
             self.shoot()
+
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` on `camera.
+
+        Args:
+        ----
+            camera (Camera): Camera to draw on
+
+        """
+        forward = self.get_faced_direction()
+        angle = forward.angle_to(Vec2(0, -1))
+        rotated_image = pygame.transform.rotate(self.image, angle)
+        camera.draw_image(rotated_image, self.pos)
+
+        for projectile in self.projectiles:
+            projectile.draw(camera)
 
 
 class BulletEnemy(Ship):
