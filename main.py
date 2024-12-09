@@ -147,10 +147,10 @@ for planet in planets:
 enemy_ships: list[BulletEnemy] = []
 for _ in range(NUMBER_OF_ENEMIES):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-    if random.random() > 0.5:
+    if random.random() > 0.6:
         enemy_ships.append(BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships)))
     else:
-        if random.random() > 0.3:
+        if random.random() > 0.5:
             enemy_ships.append(
                 RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships))
             )
@@ -158,7 +158,6 @@ for _ in range(NUMBER_OF_ENEMIES):
             enemy_ships.append(
                 MissileEnemy(pos, Vec2(0, 0), random.choice(player_ships))
             )
-
 
 areas = []
 
