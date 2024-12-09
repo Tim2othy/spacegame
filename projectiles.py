@@ -175,10 +175,12 @@ class Missile(Bullet):
             camera (Camera): Camera to draw on
 
         """
+        if self.vel == Vec2(0, 0):
+            return
         forward = self.vel.normalize()
-        angle = forward.angle_to(Vec2(1, 0))
+        angle = forward.angle_to(Vec2(0, -1))
 
-        rotated_image = pygame.transform.rotate(self.original_image, -angle)
+        rotated_image = pygame.transform.rotate(self.original_image, angle)
         camera.draw_image(rotated_image, self.pos)
 
     def step(self, dt: float) -> None:
