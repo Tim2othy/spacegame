@@ -92,7 +92,7 @@ class Rocket(Bullet):
             # Target the ship
             direction = self.target_ship.pos - self.pos
             if direction != Vec2(0, 0):
-                direction.normalize_ip()
+                direction = (self.target_ship.pos - self.pos).normalize()
                 self.apply_force(direction * self.homing_thrust, dt)
 
         super().step(dt)
@@ -171,17 +171,13 @@ class Missile(Bullet):
         direction = self.target_ship.pos - self.pos
         if direction != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
 
-            # Calculate the desired velocity to reach the target
-            desired_velocity = direction.normalize() * self.homing_thrust
-
-            # Calculate the required acceleration to adjust the current velocity towards the desired velocity
-            required_acceleration = (desired_velocity - self.vel) / dt
-
-            # Apply the acceleration
-            self.apply_force(required_acceleration * self.mass, dt)
-
-            direction.normalize_ip()
-            self.apply_force(direction * self.homing_thrust, dt)
+            desired_velocity = direction * self.homing_thrust / direction.magnitude()
+            perfect_multiplier = max(
+                self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude()
+            )
+            perfect_velocity = desired_velocity.normalize() * perfect_multiplier
+            required_acceleration = (perfect_velocity - self.vel).normalize()
+            self.apply_force(required_acceleration * self.homing_thrust, dt)
 
         super().step(dt)
 
@@ -199,9 +195,8 @@ class Missile(Bullet):
         backward = -forward
 
         # homing body
-        distance = (self.target_ship.pos - self.pos).magnitude()
 
-        if distance > 200:
+        if self.homing_timer <= self.homing_duration:
             self.color = Color("orange")
             camera.draw_polygon(
                 self.color,
