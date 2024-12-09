@@ -173,42 +173,27 @@ class Missile(Bullet):
         right = -left
         backward = -forward
 
-        if self.homing_timer <= self.homing_duration:
-            # Active body
-            self.color = Color("orange")
-            camera.draw_polygon(
-                self.color,
-                [
-                    self.pos + 3 * (left + 2 * forward),
-                    self.pos + 3 * (left + 2 * backward),
-                    self.pos + 3 * (right + 2 * backward),
-                    self.pos + 3 * (right + 2 * forward),
-                    self.pos + 2 * (6 * forward),
-                    self.pos + 2 * (4 * forward + left),
-                    self.pos + 2 * (4 * forward + right),
-                    self.pos + 2 * (2 * forward + 2 * left),
-                    self.pos + 2 * (2 * forward + 2 * right),
-                    self.pos + 2 * (backward + left),
-                    self.pos + 2 * (backward + right),
-                    self.pos + 1 * (3 * forward + left),
-                    self.pos + 1 * (3 * forward + right),
-                    self.pos + 1 * (5 * forward + 0.5 * left),
-                    self.pos + 1 * (5 * forward + 0.5 * right),
-                ],
-            )
-        else:
-            # Dead body
-            self.color = Color("gray")
-            camera.draw_polygon(
-                self.color,
-                [
-                    self.pos + 3 * (left + 2 * forward),
-                    self.pos + 3 * (left + 2 * backward),
-                    self.pos + 3 * (right + 2 * backward),
-                    self.pos + 3 * (right + 2 * forward),
-                    self.pos + 2 * (6 * forward),
-                ],
-            )
+        self.color = Color("orange")
+        camera.draw_polygon(
+            self.color,
+            [
+                self.pos + 3 * (left + 2 * forward),
+                self.pos + 3 * (left + 2 * backward),
+                self.pos + 3 * (right + 2 * backward),
+                self.pos + 3 * (right + 2 * forward),
+                self.pos + 2 * (6 * forward),
+                self.pos + 2 * (4 * forward + left),
+                self.pos + 2 * (4 * forward + right),
+                self.pos + 2 * (2 * forward + 2 * left),
+                self.pos + 2 * (2 * forward + 2 * right),
+                self.pos + 2 * (backward + left),
+                self.pos + 2 * (backward + right),
+                self.pos + 1 * (3 * forward + left),
+                self.pos + 1 * (3 * forward + right),
+                self.pos + 1 * (5 * forward + 0.5 * left),
+                self.pos + 1 * (5 * forward + 0.5 * right),
+            ],
+        )
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logic.
