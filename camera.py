@@ -333,7 +333,11 @@ class Camera:
             pos (Vec2): Screenspace-position of the image's top-left-corner
 
         """
-        self.surface.blit(image, self.world_to_screen(pos))
+        zoomed_image = pygame.transform.scale(
+            image,
+            (int(image.get_width() * self.zoom), int(image.get_height() * self.zoom)),
+        )
+        self.surface.blit(zoomed_image, self.world_to_screen(pos))
 
 
 def _get_enclosing_rect(points: list[Vec2]) -> Rect:
