@@ -476,7 +476,6 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 0,
         color: Color = Color("lime"),
         bullet_color: Color = Color("hotpink"),
     ) -> None:
@@ -494,14 +493,12 @@ class BulletEnemy(Ship):
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
-        self.time_until_next_shot = 0
         self.action_timer = ENEMY_ACTION_TIMER
         self.health = ENEMY_HEALTH
         self.current_action: BulletEnemy.Action = (
             BulletEnemy.Action.accelerate_to_player
         )
         self.target_ship = target_ship
-        self.shoot_cooldown = shoot_cooldown
         self.projectiles: list[Bullet] = []
         self.random_point = Vec2(0, 0)
 
@@ -561,13 +558,10 @@ class BulletEnemy(Ship):
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
         # Shooting logic
-        self.time_until_next_shot -= 1
         if (
             delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2
-            and self.time_until_next_shot <= 0
         ):
             self.shoot()
-            self.time_until_next_shot = self.shoot_cooldown
 
     def shoot(self) -> None:
         """Shoot a bullet."""
@@ -606,7 +600,7 @@ class RocketEnemy(BulletEnemy):
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
-        super().__init__(pos, vel, target_ship, shoot_cooldown, color)
+        super().__init__(pos, vel, target_ship, color)
 
     def shoot(self) -> None:
         """Shoot a Rocket."""
@@ -633,7 +627,6 @@ class MissileEnemy(BulletEnemy):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 0,
         color: Color = Color("blue"),
     ) -> None:
         """Create a new Missile-Ship.
@@ -647,7 +640,7 @@ class MissileEnemy(BulletEnemy):
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
-        super().__init__(pos, vel, target_ship, shoot_cooldown, color)
+        super().__init__(pos, vel, target_ship, color)
 
     def shoot(self) -> None:
         """Shoot a smart Missile."""
