@@ -437,8 +437,7 @@ class PlayerShip(Ship):
             ],
         )
 
-        angle = forward.angle_to(Vec2(0, -1))
-        rotated_image = pygame.transform.rotate(self.image, angle)
+        rotated_image = pygame.transform.rotate(self.image, -self.angle - 90)
 
         # Get the width and height of the rotated image
         image_rect = rotated_image.get_rect()
