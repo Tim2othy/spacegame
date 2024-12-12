@@ -486,17 +486,16 @@ class BulletEnemy(Ship):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time between shots.
             color (Color, optional): Material color. Defaults to Color("purple").
             bullet_color (Color): Color of shot projectiles
 
         """
         super().__init__(pos, vel, 1, 8, color, bullet_color)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
-        self.action_timer = ENEMY_ACTION_TIMER
+        self.action_timer = 0
         self.health = ENEMY_HEALTH
         self.current_action: BulletEnemy.Action = (
-            BulletEnemy.Action.accelerate_to_player
+            BulletEnemy.Action.accelerate_randomly
         )
         self.target_ship = target_ship
         self.projectiles: list[Bullet] = []
@@ -521,9 +520,9 @@ class BulletEnemy(Ship):
             # print(self.random_point)
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(SMOL, SMOL)
+
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
-                force_direction = delta_target_ship
             else:
                 [self.current_action] = random.choices(
                     population=[
@@ -532,8 +531,10 @@ class BulletEnemy(Ship):
                     ],
                     weights=ENEMY_ACTION_WEIGHTS,
                 )
+
             self.action_timer = ENEMY_ACTION_TIMER
-        force_direction: Vec2
+
+
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 desired_velocity = (
@@ -545,11 +546,12 @@ class BulletEnemy(Ship):
                 perfect_velocity = desired_velocity.normalize() * perfect_multiplier
                 required_acceleration = perfect_velocity - self.vel
                 force_direction = required_acceleration
+            case BulletEnemy.Action.decelerate:
+                force_direction = -self.vel
             case BulletEnemy.Action.accelerate_randomly:
                 delta_random_point = self.random_point - self.pos
                 force_direction = delta_random_point
-            case BulletEnemy.Action.decelerate:
-                force_direction = -self.vel
+
         if force_direction.magnitude() != 0:
             force = force_direction * self.thrust / force_direction.magnitude()
             self.apply_force(force, dt)
@@ -586,7 +588,6 @@ class RocketEnemy(BulletEnemy):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        shoot_cooldown: float = 0,
         color: Color = Color("plum"),
     ) -> None:
         """Create a new Rocket-Ship.
@@ -596,7 +597,6 @@ class RocketEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time before first shot.
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
@@ -636,7 +636,6 @@ class MissileEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            shoot_cooldown (float, optional): Minimum time before first shot.
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
