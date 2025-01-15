@@ -537,6 +537,19 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     None, but it creates a fucking asteroid!
     """
 
+    # Trying to understand orbit code (again)
+    """
+    values that could be randomly generated:        this corresponds to:    status:
+    - asteroid size                                 radius_asteroid         good
+    - closest distance to planet                    r_a                     good
+    - furthest distance to to planet                r_p                     good
+    - where in it's orbit the asteroid is           true_anomaly (I think)  good
+    - if it goes counter clockwise or not           tangencial_vector       good
+
+    other random numbers:
+    - orbit_direction               not sure what this does, TODO investigate
+    """
+
     # Generating random values
     radius_asteroid = random.uniform(
         ASTEROID_MIN_SIZE,
@@ -567,7 +580,9 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
         2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
     ) ** 0.5
 
-    radial_vector = orbit_direction.rotate(math.degrees(true_anomaly)).normalize()
+    radial_vector = orbit_direction.rotate(
+        math.degrees(true_anomaly)
+    ).normalize()  # TODO something here isn't right, why is the orbit_direction a random number, and is then rotated a certain way? what's the point?
     tangential_vector = radial_vector.rotate(random.choice([90, 270]))
     velocity_asteroid = tangential_vector * orbital_velocity
 
