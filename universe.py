@@ -544,13 +544,15 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     - closest distance to planet                    r_a                     good
     - furthest distance to to planet                r_p                     good
     - where in it's orbit the asteroid is           true_anomaly (I think)  good
-    - if it goes counter clockwise or not           tangencial_vector       good
+    - if it goes counter clockwise or not           asteroid_angle          good
 
     other random numbers:
     - orbit_direction               not sure what this does, TODO investigate
     """
 
     # Generating random values
+
+    # GOT radius_asteroid
     radius_asteroid = random.uniform(
         ASTEROID_MIN_SIZE,
         ASTEROID_MIN_SIZE + planet.radius * ASTEROID_MAX_PLANET_MULTIPLIER,
@@ -565,14 +567,25 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     r_a = r_p + random.uniform(0, ASTEROID_ORBIT_MAX_ELIPSIS_LENGTH)
 
     true_anomaly = random.uniform(0, 2 * math.pi)
+
     orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
 
-    # Calculating orbit values
+    asteroid_angle = random.choice([90, 270])
+
+    # Calculating everything needed for pos_asteroid
     semi_major_axis = (r_p + r_a) / 2
     eccentricity = (r_a - r_p) / (r_a + r_p)
     r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
         1 + eccentricity * math.cos(true_anomaly)
     )
+    radial_vector = orbit_direction.rotate(
+        math.degrees(true_anomaly)
+    ).normalize()  # TODO something here isn't right, why is the orbit_direction a random number, and is then rotated a certain way? what's the point?
+
+    pos_asteroid = planet.pos + radial_vector * r_initial
+    # GOT pos_asteoroid
+
+    # calculating everything needed for velocity_asteroid
     total_specific_energy = (
         -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
     )
@@ -580,13 +593,8 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
         2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
     ) ** 0.5
 
-    radial_vector = orbit_direction.rotate(
-        math.degrees(true_anomaly)
-    ).normalize()  # TODO something here isn't right, why is the orbit_direction a random number, and is then rotated a certain way? what's the point?
-    tangential_vector = radial_vector.rotate(random.choice([90, 270]))
+    tangential_vector = radial_vector.rotate(asteroid_angle)
     velocity_asteroid = tangential_vector * orbital_velocity
-
-    pos_asteroid = planet.pos + radial_vector * r_initial
 
     asteroids.append(
         Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
