@@ -29,7 +29,7 @@ from constants import (
     MINIMAP_SIZE,
     WORLD_SIZE,
     SPAWNPOINT,
-    ASTEROIDS_PER_PLANET,
+    ASTS_PER_PLANET,
     NUMBER_OF_ENEMIES,
 )
 
@@ -144,7 +144,7 @@ if ORBIT_MODE:
 
 asteroids: list[Asteroid] = []
 for planet in planets:
-    for _ in range(ASTEROIDS_PER_PLANET):
+    for _ in range(ASTS_PER_PLANET):
         generate_asteroid(planet, asteroids)
 
 enemy_ships: list[BulletEnemy] = []
