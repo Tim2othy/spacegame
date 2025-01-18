@@ -538,16 +538,17 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     """
 
     # Trying to understand orbit code (again)
+
     """
-    values that could be randomly generated:        this corresponds to:    status:
+    values that should be randomly generated:       this corresponds to:    status:
+
     - asteroid size                                 radius_asteroid         good
     - closest distance to planet                    r_a                     good
     - furthest distance to to planet                r_p                     good
     - where in it's orbit the asteroid is           true_anomaly (I think)  good
     - if it goes counter clockwise or not           asteroid_angle          good
-
-    other random numbers:
-    - orbit_direction               not sure what this does, TODO investigate
+    - in what direction relative to the             orbit_direction         probably TODO understand
+      planet the asteroids appears
     """
 
     # Generating random values
