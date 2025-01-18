@@ -536,8 +536,6 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     None, but it creates a fucking asteroid!
     """
 
-    # Trying to understand orbit code (again)
-
     """
     values that should be randomly generated:       this corresponds to:    status:
 
@@ -553,14 +551,11 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     # region --- random values ---
     asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
     radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
-    # GOT radius_asteroid YAY
     r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
     r_a = r_p + random.expovariate(AST_ELLIPSIS_PARAM)
-
     true_anomaly = random.uniform(0, 2 * math.pi)
     orbit_direction = random.uniform(0, 2 * math.pi)
     asteroid_angle = random.choice([90, 270])
-
     # endregion
 
     # region --- getting pos_asteroid ---
@@ -570,9 +565,7 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
         1 + eccentricity * math.cos(true_anomaly)
     )
     radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-
-    pos_asteroid = planet.pos + radial_vector * r_initial
-    # GOT pos_asteoroid YAY
+    pos_asteroid = planet.pos + radial_vector * r_initial  # GOT pos_asteoroid YAY
     # endregion
 
     # region --- getting velocity_asteroid ---
@@ -582,7 +575,6 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     orbital_velocity = (
         2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
     ) ** 0.5
-
     tangential_vector = radial_vector.rotate(asteroid_angle)
     velocity_asteroid = tangential_vector * orbital_velocity
     # GOT velocity_asteroid YAY
