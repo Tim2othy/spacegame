@@ -493,9 +493,7 @@ class BulletEnemy(Ship):
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0
         self.health = ENEMY_HEALTH
-        self.current_action: BulletEnemy.Action = (
-            BulletEnemy.Action.accelerate_randomly
-        )
+        self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
         self.projectiles: list[Bullet] = []
         self.random_point = Vec2(0, 0)
@@ -533,7 +531,6 @@ class BulletEnemy(Ship):
 
             self.action_timer = ENEMY_ACTION_TIMER
 
-
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 desired_velocity = (
@@ -558,9 +555,7 @@ class BulletEnemy(Ship):
         super().step(dt)
 
         # Shooting logic
-        if (
-            delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2
-        ):
+        if delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2:
             self.shoot()
 
     def shoot(self) -> None:
