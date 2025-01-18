@@ -547,33 +547,29 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     - furthest distance to to planet                r_p                     good
     - where in it's orbit the asteroid is           true_anomaly (I think)  good
     - if it goes counter clockwise or not           asteroid_angle          good
-    - in what direction relative to the             orbit_direction         probably TODO understand
+    - in what direction relative to the             orbit_direction         probably, TODO understand
       planet the asteroids appears
     """
 
-    # Generating random values
+    # region --- random values ---
 
-    # GOT radius_asteroid
     radius_asteroid = random.uniform(
         ASTEROID_MIN_SIZE,
         ASTEROID_MIN_SIZE + planet.radius * ASTEROID_MAX_PLANET_MULTIPLIER,
-    )
-    # closest the asteroid comes to the planet
+    )  # GOT radius_asteroid YAY
     r_p = (
         planet.radius
         + radius_asteroid
         + random.uniform(ASTEROID_ORBIT_MIN, ASTEROID_ORBIT_MAX)
     )
-    # furthest distance between asteroid and planet
     r_a = r_p + random.uniform(0, ASTEROID_ORBIT_MAX_ELIPSIS_LENGTH)
-
     true_anomaly = random.uniform(0, 2 * math.pi)
-
     orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
-
     asteroid_angle = random.choice([90, 270])
 
-    # Calculating everything needed for pos_asteroid
+    # endregion
+
+    # region --- getting pos_asteroid ---
     semi_major_axis = (r_p + r_a) / 2
     eccentricity = (r_a - r_p) / (r_a + r_p)
     r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
@@ -584,9 +580,10 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     ).normalize()  # TODO something here isn't right, why is the orbit_direction a random number, and is then rotated a certain way? what's the point?
 
     pos_asteroid = planet.pos + radial_vector * r_initial
-    # GOT pos_asteoroid
+    # GOT pos_asteoroid YAY
+    # endregion
 
-    # calculating everything needed for velocity_asteroid
+    # region --- getting velocity_asteroid ---
     total_specific_energy = (
         -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
     )
@@ -596,6 +593,8 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
 
     tangential_vector = radial_vector.rotate(asteroid_angle)
     velocity_asteroid = tangential_vector * orbital_velocity
+    # GOT velocity_asteroid YAY
+    # endregion
 
     asteroids.append(
         Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
