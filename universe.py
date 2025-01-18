@@ -537,18 +537,15 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     """
 
     """
-    values that should be randomly generated:       this corresponds to:    status:
-
-    - asteroid size                                 radius_asteroid         good
-    - closest distance to planet                    r_a                     good
-    - furthest distance to to planet                r_p                     good
-    - where in it's orbit the asteroid is           true_anomaly (I think)  good
-    - if it goes counter clockwise or not           asteroid_angle          good
-    - in what direction relative to the             orbit_direction         probably, TODO understand
-      planet the asteroids appears
+    What the random variables do:
+    - radius_asteroid - pretty obvious
+    - r_a             - shortest distance to planet during orbit
+    - r_p             - largest distance to planet during orbit
+    - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
+    - orbit_direction - in which direction (in degrees) of the planet it starts
+    - asteroid_angle  - does it go clockwise or anticlockwise
     """
-
-    # region --- random values ---
+    # region --- random variables ---
     asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
     radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
     r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
@@ -565,7 +562,7 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
         1 + eccentricity * math.cos(true_anomaly)
     )
     radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-    pos_asteroid = planet.pos + radial_vector * r_initial  # GOT pos_asteoroid YAY
+    pos_asteroid = planet.pos + radial_vector * r_initial
     # endregion
 
     # region --- getting velocity_asteroid ---
@@ -577,7 +574,6 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     ) ** 0.5
     tangential_vector = radial_vector.rotate(asteroid_angle)
     velocity_asteroid = tangential_vector * orbital_velocity
-    # GOT velocity_asteroid YAY
     # endregion
 
     asteroids.append(
