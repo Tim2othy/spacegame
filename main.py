@@ -122,8 +122,14 @@ planets_orbit: list[Planet] = [
     Planet(
         Vec2(random.uniform(3000, 7000), random.uniform(3000, 7000)),
         1,
-        random.uniform(200, 1000),
+        random.uniform(100, 800),
         Color("darkred"),
+    ),
+    Planet(
+        Vec2(random.uniform(3000, 7000), random.uniform(3000, 7000)),
+        1,
+        random.uniform(100, 800),
+        Color("green"),
     ),
 ]
 
