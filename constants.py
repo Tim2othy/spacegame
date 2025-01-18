@@ -10,7 +10,7 @@ INVINCIBLE_MODE = True
 
 SCREEN_SIZE = Vec2(1400, 700)
 MINIMAP_SIZE = Vec2(350, 350)
-WORLD_SIZE = Vec2(10_000, 10_000) if SMALL_MODE else Vec2(30_000, 30_000)
+WORLD_SIZE = Vec2(15_000, 15_000) if SMALL_MODE else Vec2(30_000, 30_000)
 SPAWNPOINT = WORLD_SIZE / 2
 
 # ship constants
@@ -44,17 +44,17 @@ MISSILE_PREFERRED_SPEED = 300
 # physics constants
 GRAVITATIONAL_CONSTANT = 0.4
 SMOL = 1e-3  # Small number to avoid division by zero
-BOUNCINESS = 0.92  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
+BOUNCINESS = 0.7  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
 BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 # if impulse scalar is smaller than this collisions cause no damage.
-BOUNCE_DAMAGE_SCALAR = 6e-4
+BOUNCE_DAMAGE_SCALAR = 1e-4
 
 # Asteroid related constants
-ASTS_PER_PLANET = 5
+ASTS_PER_PLANET = 50
 AST_MIN_SIZE = 20
-AST_RADIUS_PARAM = 0.04
-AST_ORBIT_PARAM = 0.0037
-AST_ELLIPSIS_PARAM = 0.00022
+AST_RADIUS_PARAM = 0.05
+AST_ORBIT_PARAM = 0.0004
+AST_ELLIPSIS_PARAM = 0.0001
 
 # Number of enemies in the game
-NUMBER_OF_ENEMIES = 0 if SMALL_MODE else 20
+NUMBER_OF_ENEMIES = 10 if SMALL_MODE else 20
