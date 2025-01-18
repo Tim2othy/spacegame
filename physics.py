@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING
 
-from cycler import V
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 

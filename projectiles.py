@@ -1,7 +1,6 @@
 """Projectiles, shooting through space."""
 
 from typing import TYPE_CHECKING
-from PIL import Image
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2

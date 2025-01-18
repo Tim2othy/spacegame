@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from ast import List
-import dis
+
 import sys
 
 import random

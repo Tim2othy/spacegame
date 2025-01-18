@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import math
 import random
 from enum import Enum
-from re import S
 from typing import TYPE_CHECKING
 
 import pygame
