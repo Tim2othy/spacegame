@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 from constants import (
     GRAVITATIONAL_CONSTANT,
     AST_MIN_SIZE,
-    AST_MAX_PLANET_MULTIPLIER,
+    AST_RADIUS_PARAM,
     AST_ORBIT_MAX_ELIPSIS_LENGTH,
     AST_ORBIT_PARAM,
 )
@@ -552,11 +552,9 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     """
 
     # region --- random values ---
-
-    radius_asteroid = random.uniform(
-        AST_MIN_SIZE,
-        AST_MIN_SIZE + planet.radius * AST_MAX_PLANET_MULTIPLIER,
-    )  # GOT radius_asteroid YAY
+    asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
+    radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
+    # GOT radius_asteroid YAY
     r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
     r_a = r_p + random.uniform(0, AST_ORBIT_MAX_ELIPSIS_LENGTH)
     true_anomaly = random.uniform(0, 2 * math.pi)
