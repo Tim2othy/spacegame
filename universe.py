@@ -9,7 +9,6 @@ import random
 import math
 from typing import TYPE_CHECKING
 
-from matplotlib.pylab import exponential
 import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
