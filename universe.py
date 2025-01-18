@@ -24,7 +24,7 @@ from constants import (
     GRAVITATIONAL_CONSTANT,
     AST_MIN_SIZE,
     AST_RADIUS_PARAM,
-    AST_ORBIT_MAX_ELIPSIS_LENGTH,
+    AST_ELLIPSIS_PARAM,
     AST_ORBIT_PARAM,
 )
 
@@ -556,7 +556,8 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
     # GOT radius_asteroid YAY
     r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
-    r_a = r_p + random.uniform(0, AST_ORBIT_MAX_ELIPSIS_LENGTH)
+    r_a = r_p + random.expovariate(AST_ELLIPSIS_PARAM)
+
     true_anomaly = random.uniform(0, 2 * math.pi)
     orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
     asteroid_angle = random.choice([90, 270])
