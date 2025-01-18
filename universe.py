@@ -9,6 +9,7 @@ import random
 import math
 from typing import TYPE_CHECKING
 
+from matplotlib.pylab import exponential
 import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
@@ -23,9 +24,8 @@ from constants import (
     GRAVITATIONAL_CONSTANT,
     ASTEROID_MIN_SIZE,
     ASTEROID_MAX_PLANET_MULTIPLIER,
-    ASTEROID_ORBIT_MIN,
-    ASTEROID_ORBIT_MAX,
     ASTEROID_ORBIT_MAX_ELIPSIS_LENGTH,
+    ASTEROID_ORBIT_PARAM,
 )
 
 
@@ -557,11 +557,7 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
         ASTEROID_MIN_SIZE,
         ASTEROID_MIN_SIZE + planet.radius * ASTEROID_MAX_PLANET_MULTIPLIER,
     )  # GOT radius_asteroid YAY
-    r_p = (
-        planet.radius
-        + radius_asteroid
-        + random.uniform(ASTEROID_ORBIT_MIN, ASTEROID_ORBIT_MAX)
-    )
+    r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAM)
     r_a = r_p + random.uniform(0, ASTEROID_ORBIT_MAX_ELIPSIS_LENGTH)
     true_anomaly = random.uniform(0, 2 * math.pi)
     orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
