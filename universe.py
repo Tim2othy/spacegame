@@ -559,7 +559,7 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     r_a = r_p + random.expovariate(AST_ELLIPSIS_PARAM)
 
     true_anomaly = random.uniform(0, 2 * math.pi)
-    orbit_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
+    orbit_direction = random.uniform(0, 2 * math.pi)
     asteroid_angle = random.choice([90, 270])
 
     # endregion
@@ -570,9 +570,7 @@ def generate_asteroid(planet: Planet, asteroids: list[Asteroid]) -> None:
     r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
         1 + eccentricity * math.cos(true_anomaly)
     )
-    radial_vector = orbit_direction.rotate(
-        math.degrees(true_anomaly)
-    ).normalize()  # TODO something here isn't right, why is the orbit_direction a random number, and is then rotated a certain way? what's the point?
+    radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
 
     pos_asteroid = planet.pos + radial_vector * r_initial
     # GOT pos_asteoroid YAY
