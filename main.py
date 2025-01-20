@@ -120,13 +120,13 @@ planets_play: list[Planet] = [
 
 planets_orbit: list[Planet] = [
     Planet(
-        Vec2(random.uniform(3000, 7000), random.uniform(3000, 7000)),
+        Vec2(random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])),
         1,
         random.uniform(100, 800),
         Color("darkred"),
     ),
     Planet(
-        Vec2(random.uniform(3000, 7000), random.uniform(3000, 7000)),
+        Vec2(random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])),
         1,
         random.uniform(100, 800),
         Color("green"),
