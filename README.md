@@ -1,3 +1,5 @@
+![Screenshot of a 2D space-videogame](./banner.png)
+
 Fun small game we're making. Give us feedback, or just play the game.
 
 # How to start the game
