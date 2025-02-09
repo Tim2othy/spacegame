@@ -10,14 +10,14 @@ import math
 from typing import TYPE_CHECKING
 
 import pygame
-from pygame import Color, Rect
+from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 
 if TYPE_CHECKING:
     from camera import Camera
-    from ship import BulletEnemy, PlayerShip, Ship
+    from ship import BulletEnemy, PlayerShip
 
 from constants import (
     GRAVITATIONAL_CONSTANT,
