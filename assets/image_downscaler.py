@@ -2,6 +2,8 @@ from PIL import Image
 from collections import Counter
 import numpy as np
 
+# If you want to downscale an image to a smaller size, you can use this file
+# The png has to be square, set old_size and new_size to the desired values
 old_size = 741
 
 new_size = 247
