@@ -107,7 +107,7 @@ async def main():
             Planet(Vec2(9_200, 4_400), 1, 260, Color("yellow")),
         ]
 
-        planets_play: list[Planet] = [
+        planets_large: list[Planet] = [
             Planet(Vec2(27_000, 29_000), 1, 700, Color("darkred")),
             Planet(Vec2(21_000, 28_000), 1, 800, Color("khaki")),
             Planet(Vec2(2_000, 27_000), 1, 900, Color("royalblue")),
@@ -136,7 +136,7 @@ async def main():
                     random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
                 ),
                 1,
-                random.uniform(100, 800),
+                random.uniform(100, 400),
                 Color("darkred"),
             ),
             Planet(
@@ -144,7 +144,7 @@ async def main():
                     random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
                 ),
                 1,
-                random.uniform(100, 800),
+                random.uniform(100, 400),
                 Color("green"),
             ),
         ]
@@ -157,7 +157,7 @@ async def main():
         if SMALL_MODE:
             planets = planets_small
         else:
-            planets = planets_play
+            planets = planets_large
 
         if ORBIT_MODE:
             planets = planets_orbit
