@@ -1,0 +1,19 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+</head>
+<script src="https://pygame-web.github.io/archives/0.9/pythons.js" data-os="vtx,fs,gui" type=module id="__main__" async
+    defer>#<!--
+PYGBAG_FS=26
+# fmt: off
+__import__('os').chdir(__import__('tempfile').gettempdir())
+def fs_decode(fsname, o248):
+    from pathlib import Path
+    filename = Path.cwd() / fsname
+    if not filename.is_file():
+        filename.parent.mkdir(parents=True, exist_ok=True)
+        with open(fsname,"wb") as fs:
+            for input in o248.split("\n"):
+                if not input: continue
+                fs.write(bytes([ord(c) - 248 for c in input]))
