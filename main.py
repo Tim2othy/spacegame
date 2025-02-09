@@ -177,7 +177,7 @@ async def main():
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
 
-        show_loading("Starting game...")
+        show_loading("Adding Enemies...")
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
@@ -198,6 +198,8 @@ async def main():
 
         universe.enemy_ships = enemy_ships
 
+        show_loading("Adding Players...")
+
         # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
         cameras: list[Camera] = []
         player_count = len(player_ships)
@@ -210,7 +212,7 @@ async def main():
             camera = Camera(player.pos, 1.0, cam_surface)
             cameras.append(camera)
 
-        # Create minimap surface similarly
+        show_loading("Creating Minimap...")
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
         minimap_camera = Camera(
@@ -278,10 +280,7 @@ async def main():
     except Exception as e:
         if SCREEN_SURFACE:
             SCREEN_SURFACE.fill((0, 0, 0))
-            # Use font if defined; otherwise fallback_font will be available because it was defined after pygame.init()
-            err_font = pygame.font.Font(None, 36)
-
-            error_text = err_font.render(f"Error: {str(e)}", True, (255, 0, 0))
+            error_text = font.render(f"Error: {str(e)}", True, (255, 0, 0))
             error_rect = error_text.get_rect(
                 center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
             )
