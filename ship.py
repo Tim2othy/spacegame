@@ -5,6 +5,7 @@ from __future__ import annotations
 import random
 from enum import Enum
 from typing import TYPE_CHECKING
+import math
 
 import pygame
 from pygame import Color
@@ -551,6 +552,7 @@ class BulletEnemy(Ship):
             self.apply_force(force, dt)
 
         super().step(dt)
+        self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
         # Shooting logic
         if delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2:
