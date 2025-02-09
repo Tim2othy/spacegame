@@ -7,7 +7,6 @@ screenspace == Coordinates on the screen
 from __future__ import annotations
 
 import pygame
-import pygame.gfxdraw
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
@@ -167,8 +166,7 @@ class Camera:
         # soft check for circle-screen-intersection:
         enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
         if self._rectangle_intersects_screen(enclosing_rect):
-            pygame.gfxdraw.aacircle(self.surface, x, y, r, color)
-            pygame.gfxdraw.filled_circle(self.surface, x, y, r, color)
+            pygame.draw.circle(self.surface, color, (x, y), r)
 
     def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
         """Draw an anti-aliased worldspace-polygon on screen.
@@ -183,8 +181,7 @@ class Camera:
         # Soft check for points-screen-intersection:
         enclosing_rect = _get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
-            pygame.gfxdraw.aapolygon(self.surface, cpoints, color)
-            pygame.gfxdraw.filled_polygon(self.surface, cpoints, color)
+            pygame.draw.polygon(self.surface, color, cpoints)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw an anti-aliased worldspace-line with a given thickness.
@@ -226,7 +223,7 @@ class Camera:
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x1, y1), (x2, y2)) = clipped_line
-            pygame.gfxdraw.line(self.surface, x1, y1, x2, y2, color)
+            pygame.draw.line(self.surface, color, (x1, y1), (x2, y2))
 
     def draw_vertical_hairline(
         self,
@@ -253,7 +250,7 @@ class Camera:
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x, y1), (_, y2)) = clipped_line
-            pygame.gfxdraw.vline(self.surface, x, y1, y2, color)
+            pygame.draw.line(self.surface, color, (x, y1), (x, y2))
 
     def draw_horizontal_hairline(
         self,
@@ -280,7 +277,7 @@ class Camera:
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x1, y), (x2, _)) = clipped_line
-            pygame.gfxdraw.hline(self.surface, x1, x2, y, color)
+            pygame.draw.line(self.surface, color, (x1, y), (x2, y))
 
     def draw_rect(self, color: Color, rect: Rect) -> None:
         """Draw an anti-aliased worldspace-rectangle.
@@ -295,7 +292,7 @@ class Camera:
         tbottomright = self.world_to_screen(Vec2(rect.bottomright))
         screen_rect = Rect(ttopleft, tbottomright - ttopleft)
         if self._rectangle_intersects_screen(screen_rect):
-            pygame.gfxdraw.box(self.surface, screen_rect, color)
+            pygame.draw.rect(self.surface, color, screen_rect)
 
     def draw_text(
         self,
