@@ -2,7 +2,7 @@
 
 from pygame.math import Vector2 as Vec2
 
-# Switch between the modes, in test mode you can't die, the world is smaller, etc.
+# Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
 SMALL_MODE = True
 MULTI_MODE = False
 ORBIT_MODE = True
@@ -23,7 +23,7 @@ GUN_COOLDOWN = 0.05  #  for the player only
 # BulletEnemy constants
 ENEMY_SHOOT_RANGE = 1700
 ENEMY_VISUAL_RANGE = 5000
-ENEMY_THRUST_MULTIPLIER = 0.3
+ENEMY_THRUST_MULTIPLIER = 0.3  # relative to player
 ENEMY_ACTION_TIMER = 6
 ENEMY_HEALTH = 100  # ???
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
@@ -52,9 +52,10 @@ BOUNCE_DAMAGE_SCALAR = 1e-4
 # Asteroid related constants
 ASTS_PER_PLANET = 50
 AST_MIN_SIZE = 20
-AST_RADIUS_PARAM = 0.05
-AST_ORBIT_PARAM = 0.0004
-AST_ELLIPSIS_PARAM = 0.0001
+# these are parameters for exponential distributions
+AST_RADIUS_PARAM = 0.05  # of the radii
+AST_ORBIT_PARAM = 0.0004  # orbit sizes
+AST_ELLIPSIS_PARAM = 0.0001  # and orbit ellipticities
 
 # Number of enemies in the game
 NUMBER_OF_ENEMIES = 10 if SMALL_MODE else 20
