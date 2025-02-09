@@ -67,22 +67,7 @@ async def main():
         ]
 
         player_ships_multi: list[PlayerShip] = [
-            PlayerShip(
-                SPAWNPOINT,
-                Vec2(0, 0),
-                1,
-                10,
-                Color("darkslategray"),
-                Color("orange"),
-                ShipInput(
-                    pygame.K_RIGHT,
-                    pygame.K_LEFT,
-                    pygame.K_UP,
-                    pygame.K_DOWN,
-                    pygame.K_RETURN,
-                ),
-                "assets/player_ship.png",
-            ),
+            player_ships_single[0],
             PlayerShip(
                 SPAWNPOINT + Vec2(50, 0),
                 Vec2(0, 0),
