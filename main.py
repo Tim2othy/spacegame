@@ -149,18 +149,12 @@ async def main():
             ),
         ]
 
-        if MULTI_MODE:
-            player_ships: list[PlayerShip] = player_ships_multi
-        else:
-            player_ships: list[PlayerShip] = player_ships_single
-
-        if SMALL_MODE:
-            planets = planets_small
-        else:
-            planets = planets_large
-
-        if ORBIT_MODE:
-            planets = planets_orbit
+        player_ships = player_ships_multi if MULTI_MODE else player_ships_single
+        planets = (
+            planets_orbit
+            if ORBIT_MODE
+            else (planets_small if SMALL_MODE else planets_large)
+        )
 
         show_loading("Setting up universe...")
         universe = Universe(
