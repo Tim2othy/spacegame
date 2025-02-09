@@ -349,17 +349,16 @@ class Universe:
             self.text_vertical_offset += 1.0 * font_size
 
         player_ship = self.player_ships[player_ix]
-        texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
-        texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
+        # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
+        # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
         texty(f"Fuel: {player_ship.fuel:.2f}")
-        # texty(f"Trophy: {"Collected" if player_ship.has_trophy else "Not collected"}")
         texty(f"Health: {player_ship.health:.2f}")
         texty(f"Ammunition: {player_ship.ammo}")
         # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
         # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
         # texty(f"{player_projectile_count} player projectiles")
         # texty(f"{enemy_projectile_count} enemy projectiles")
-        texty(f"Number of Asteroids: {len(self.asteroids)}")
+        # texty(f"Number of Asteroids: {len(self.asteroids)}")
 
         enemy_count = len(self.enemy_ships)
         texty(f"Enemies left: {enemy_count}")
