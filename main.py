@@ -30,15 +30,11 @@ async def main():
     """Main async game loop."""
     SCREEN_SURFACE = None
     try:
-        pygame.init()  # Initialize all modules (including font)
+        pygame.init()
         pygame.display.set_caption("Space Game")
         SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
-        await asyncio.sleep(0.1)  # Wait for display initialization
+        await asyncio.sleep(0.1)
 
-        if sys.platform == "emscripten":
-            platform.window.canvas.style.imageRendering = "pixelated"
-
-        # Initialize fonts after display is active
         font = pygame.font.Font(None, 36)
         debug_font = pygame.font.Font(None, 24)
 
@@ -56,9 +52,7 @@ async def main():
             pygame.display.flip()
 
         show_loading("Initializing game...", "Debug: Starting initialization")
-        await asyncio.sleep(0.5)
 
-        show_loading("Creating player ships...", "Debug: Initializing ships")
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
                 SPAWNPOINT,
@@ -77,7 +71,6 @@ async def main():
                 "assets/player_ship.png",
             ),
         ]
-        await asyncio.sleep(0.1)
 
         player_ships_multi: list[PlayerShip] = [
             PlayerShip(
@@ -183,18 +176,13 @@ async def main():
             [],
             ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
         )
-        await asyncio.sleep(0.1)
 
         show_loading("Generating asteroids...", "Debug: Starting asteroid generation")
         for i, planet in enumerate(planets):
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
-                await asyncio.sleep(0)
-            show_loading(f"Generating asteroids... ({i+1}/{len(planets)} planets)")
-            await asyncio.sleep(0)
 
         show_loading("Starting game...", "Debug: Initialization complete")
-        await asyncio.sleep(0.5)
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
