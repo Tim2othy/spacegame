@@ -176,19 +176,10 @@ async def main():
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
             pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
-            if random.random() > 0.6:
-                enemy_ships.append(
-                    BulletEnemy(pos, Vec2(0, 0), random.choice(player_ships))
-                )
-            else:
-                if random.random() > 0.5:
-                    enemy_ships.append(
-                        RocketEnemy(pos, Vec2(0, 0), random.choice(player_ships))
-                    )
-                else:
-                    enemy_ships.append(
-                        MissileEnemy(pos, Vec2(0, 0), random.choice(player_ships))
-                    )
+            enemy_type = random.choices(
+                [BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2]
+            )[0]
+            enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
         universe.enemy_ships = enemy_ships
 
