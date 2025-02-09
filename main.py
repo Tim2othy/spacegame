@@ -36,22 +36,17 @@ async def main():
         await asyncio.sleep(0.1)
 
         font = pygame.font.Font(None, 36)
-        debug_font = pygame.font.Font(None, 24)
 
-        def show_loading(message: str, debug_info: str = ""):
+        def show_loading(message: str):
             SCREEN_SURFACE.fill((0, 0, 0))
             loading_text = font.render(message, True, (255, 255, 255))
             text_rect = loading_text.get_rect(
                 center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
             )
             SCREEN_SURFACE.blit(loading_text, text_rect)
-            if debug_info:
-                debug_text = debug_font.render(debug_info, True, (128, 128, 128))
-                debug_rect = debug_text.get_rect(bottomleft=(10, SCREEN_SIZE[1] - 10))
-                SCREEN_SURFACE.blit(debug_text, debug_rect)
             pygame.display.flip()
 
-        show_loading("Initializing game...", "Debug: Starting initialization")
+        show_loading("Initializing game...")
 
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
@@ -168,7 +163,7 @@ async def main():
         if ORBIT_MODE:
             planets = planets_orbit
 
-        show_loading("Setting up universe...", "Debug: Creating universe components")
+        show_loading("Setting up universe...")
         universe = Universe(
             WORLD_SIZE,
             planets,
@@ -177,12 +172,13 @@ async def main():
             ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
         )
 
-        show_loading("Generating asteroids...", "Debug: Starting asteroid generation")
+        show_loading("Generating asteroids...")
+
         for i, planet in enumerate(planets):
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
 
-        show_loading("Starting game...", "Debug: Initialization complete")
+        show_loading("Starting game...")
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
