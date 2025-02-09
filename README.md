@@ -1,9 +1,8 @@
 ![Screenshot of a 2D space-videogame](./banner.png)
 
-
-You can play the game here in the world wide web [here](https://tim2othy.github.io/spacegame/build/web) or locally by following our instructions on how to run the game.
-
 Fun small game we're making. Give us feedback, or just play the game.
+
+You can play the game in the web [here](https://tim2othy.github.io/spacegame/build/web) or locally by following the instructions below.
 
 ## How to Play
 - If there is one player, move with arrow keys, shoot with return.
