@@ -233,13 +233,11 @@ async def main():
                     universe.draw_grid(player_camera)
                     universe.draw(player_camera)
                     universe.draw_text(player_camera, player_ix)
-                # Blit the camera's view to the appropriate region in SCREEN_SURFACE
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                 SCREEN_SURFACE.blit(player_camera.surface, topleft)
 
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
-            # Blit the minimap to SCREEN_SURFACE
             SCREEN_SURFACE.blit(
                 minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0)
             )
@@ -258,9 +256,6 @@ async def main():
             pygame.display.flip()
             await asyncio.sleep(0)
 
-        pygame.quit()
-        sys.exit()
-
     except Exception as e:
         if SCREEN_SURFACE:
             SCREEN_SURFACE.fill((0, 0, 0))
@@ -272,6 +267,9 @@ async def main():
             pygame.display.flip()
             await asyncio.sleep(5)
         raise
+    finally:
+        pygame.quit()
+        sys.exit()
 
 
 if __name__ == "__main__":
