@@ -50,7 +50,7 @@ BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 BOUNCE_DAMAGE_SCALAR = 1e-4
 
 # Asteroid related constants
-ASTS_PER_PLANET = 50
+ASTS_PER_PLANET = 5
 AST_MIN_SIZE = 20
 # these are parameters for exponential distributions
 AST_RADIUS_PARAM = 0.05  # of the radii
