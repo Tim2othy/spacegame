@@ -159,13 +159,10 @@ for _ in range(NUMBER_OF_ENEMIES):
                 MissileEnemy(pos, Vec2(0, 0), random.choice(player_ships))
             )
 
-areas = []
-
 universe = Universe(
     WORLD_SIZE,
     planets,
     player_ships,
-    areas,
     enemy_ships,
     ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
