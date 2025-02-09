@@ -287,9 +287,11 @@ async def main():
                 MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y
             )
             minimap_camera.draw_horizontal_hairline(
-                MINIMAP_BORDER_COLOR, 0, WORLD_SIZE.x, WORLD_SIZE.y - 1
+                MINIMAP_BORDER_COLOR,
+                0,
+                WORLD_SIZE.x,
+                WORLD_SIZE.y - 1,
             )
-
             pygame.display.flip()
             await asyncio.sleep(0)
 
