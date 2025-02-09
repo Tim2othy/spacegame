@@ -149,7 +149,24 @@ async def main():
             Planet(Vec2(3_000, 1_000), 1, 700, Color("navy")),
         ]
 
-        planets_orbit: list[Planet] = []
+        planets_orbit: list[Planet] = [
+            Planet(
+                Vec2(
+                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
+                ),
+                1,
+                random.uniform(100, 800),
+                Color("darkred"),
+            ),
+            Planet(
+                Vec2(
+                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
+                ),
+                1,
+                random.uniform(100, 800),
+                Color("green"),
+            ),
+        ]
 
         if MULTI_MODE:
             player_ships: list[PlayerShip] = player_ships_multi
