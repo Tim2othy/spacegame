@@ -166,8 +166,7 @@ async def main():
         )
 
         show_loading("Generating asteroids...")
-
-        for i, planet in enumerate(planets):
+        for planet in planets:
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
 
