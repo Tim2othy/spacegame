@@ -184,7 +184,6 @@ class Universe:
         self,
         size: Vec2,
         planets: list[Planet],
-        asteroids: list[Asteroid],
         player_ships: list[PlayerShip],
         areas: list[Area],
         enemy_ships: list[BulletEnemy],
@@ -196,7 +195,7 @@ class Universe:
         ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
-            asteroids (list[Asteroid]): Asteroids
+            asteroids (list[Asteroid]): Asteroids but starts out empty
             player_ships (list[Ship]): List of player-ships
             areas (list[Area]): Areas
             enemy_ships (list[BulletEnemy]): Enemy fleet
@@ -206,7 +205,7 @@ class Universe:
         """
         self.size = Vec2(size)
         self.planets = planets
-        self.asteroids = asteroids
+        self.asteroids: list[Asteroid] = []
         self.player_ships = player_ships
         self.areas = areas
         self.enemy_ships = enemy_ships
@@ -528,11 +527,12 @@ class Universe:
 
         Args:
         ----
-        planet (Planet): The planet to orbit
+            planet (Planet): The planet to orbit
 
         Returns:
         -------
-        None, but it creates a fucking asteroid!
+            None, but it creates a fucking asteroid!
+
         """
 
         """

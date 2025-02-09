@@ -13,7 +13,6 @@ from pygame.math import Vector2 as Vec2
 from camera import Camera
 from universe import (
     Universe,
-    Asteroid,
     Planet,
 )
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
@@ -165,14 +164,12 @@ areas = []
 universe = Universe(
     WORLD_SIZE,
     planets,
-    [],
     player_ships,
     areas,
     enemy_ships,
     ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
 
-asteroids: list[Asteroid] = []
 for planet in planets:
     for _ in range(ASTS_PER_PLANET):
         universe.generate_asteroid(planet)
