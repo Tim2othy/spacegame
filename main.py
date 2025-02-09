@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 import random
 import asyncio
-
+import platform
 import pygame
 import pygame.constants  # Add this import at the top with other imports
 from pygame import Color
@@ -33,46 +33,28 @@ from constants import (
 
 async def main():
     """Main async game loop."""
+    SCREEN_SURFACE = None
     try:
-        await asyncio.sleep(0.1)  # Wait before initialization
-        pygame.init()
+        pygame.init()  # Initialize all modules (including font)
+        fallback_font = pygame.font.Font(None, 36)  # Now safe to create fonts
         pygame.display.set_caption("Space Game")
+        SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
+        await asyncio.sleep(0.1)  # Wait for display initialization
 
-        # Try different display modes in order of preference
-        display_modes = [
-            (pygame.SCALED | pygame.RESIZABLE, "Scaled & Resizable"),
-            (pygame.SCALED, "Scaled only"),
-            (pygame.RESIZABLE, "Resizable only"),
-            (0, "Default"),
-        ]
+        if sys.platform == "emscripten":
+            platform.window.canvas.style.imageRendering = "pixelated"
 
-        SCREEN_SURFACE = None
-        for flags, mode_name in display_modes:
-            try:
-                SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE, flags)
-                print(f"Successfully initialized display with {mode_name} mode")
-                break
-            except pygame.error:
-                continue
-
-        if not SCREEN_SURFACE:
-            raise pygame.error("Could not initialize display with any mode")
-
-        await asyncio.sleep(0.3)  # Give more time for display to stabilize
-
-        # Initialize fonts before use
+        # Initialize fonts after display is active
         font = pygame.font.Font(None, 36)
         debug_font = pygame.font.Font(None, 24)
 
         def show_loading(message: str, debug_info: str = ""):
             SCREEN_SURFACE.fill((0, 0, 0))
-            # Main loading message
             loading_text = font.render(message, True, (255, 255, 255))
             text_rect = loading_text.get_rect(
                 center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
             )
             SCREEN_SURFACE.blit(loading_text, text_rect)
-            # Debug info at bottom
             if debug_info:
                 debug_text = debug_font.render(debug_info, True, (128, 128, 128))
                 debug_rect = debug_text.get_rect(bottomleft=(10, SCREEN_SIZE[1] - 10))
@@ -167,24 +149,7 @@ async def main():
             Planet(Vec2(3_000, 1_000), 1, 700, Color("navy")),
         ]
 
-        planets_orbit: list[Planet] = [
-            Planet(
-                Vec2(
-                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
-                ),
-                1,
-                random.uniform(100, 800),
-                Color("darkred"),
-            ),
-            Planet(
-                Vec2(
-                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
-                ),
-                1,
-                random.uniform(100, 800),
-                Color("green"),
-            ),
-        ]
+        planets_orbit: list[Planet] = []
 
         if MULTI_MODE:
             player_ships: list[PlayerShip] = player_ships_multi
@@ -213,12 +178,9 @@ async def main():
         for i, planet in enumerate(planets):
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
-            if i % 2 == 0:
-                show_loading(
-                    f"Generating asteroids... ({i+1}/{len(planets)} planets)",
-                    f"Debug: Generated asteroids for planet {i+1}",
-                )
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0)
+            show_loading(f"Generating asteroids... ({i+1}/{len(planets)} planets)")
+            await asyncio.sleep(0)
 
         show_loading("Starting game...", "Debug: Initialization complete")
         await asyncio.sleep(0.5)
@@ -242,20 +204,20 @@ async def main():
 
         universe.enemy_ships = enemy_ships
 
+        # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
         cameras: list[Camera] = []
-
         player_count = len(player_ships)
         for player_ix, player in enumerate(player_ships):
-            # TODO: Probably fix the off-by-one-error in here.
-            topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
-            size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
-            subsurface = SCREEN_SURFACE.subsurface((topleft, size))
-            camera = Camera(player.pos, 1.0, subsurface)
+            topleft = (player_ix * SCREEN_SIZE[0] / player_count, 0)
+            size = (SCREEN_SIZE[0] / player_count, SCREEN_SIZE[1])
+            # Create a new surface instead of SCREEN_SURFACE.subsurface(...)
+            cam_surface = pygame.Surface((int(size[0]), int(size[1]))).convert()
+
+            camera = Camera(player.pos, 1.0, cam_surface)
             cameras.append(camera)
 
-        minimap_surface = SCREEN_SURFACE.subsurface(
-            ((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE),
-        )
+        # Create minimap surface similarly
+        minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
         minimap_camera = Camera(
             WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface
@@ -272,6 +234,7 @@ async def main():
             universe.handle_input(pygame.key.get_pressed())
             universe.step(dt)
 
+            # Draw each camera's view and then blit it into SCREEN_SURFACE
             for player_ix, player_ship in enumerate(player_ships):
                 player_camera = cameras[player_ix]
                 player_camera.start_drawing_new_frame()
@@ -280,46 +243,55 @@ async def main():
                     or player_ship.health <= 0
                 ) and not INVINCIBLE_MODE
                 if gameover:
-                    font = pygame.font.Font(None, int(64 / player_count))
-                    player_camera.draw_text("GAME OVER", None, font, Color("red"))
+                    gameover_font = pygame.font.Font(None, int(64 / player_count))
+                    player_camera.draw_text(
+                        "GAME OVER", None, gameover_font, Color("red")
+                    )
                 else:
                     universe.move_camera(player_camera, player_ix, dt)
                     universe.draw_background(player_camera)
                     universe.draw_grid(player_camera)
                     universe.draw(player_camera)
                     universe.draw_text(player_camera, player_ix)
+                # Blit the camera's view to the appropriate region in SCREEN_SURFACE
+                topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
+                SCREEN_SURFACE.blit(player_camera.surface, topleft)
 
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
-            # Draw minimap border
-            # This being worldspace is a kinda bad hack.
+            # Blit the minimap to SCREEN_SURFACE
+            SCREEN_SURFACE.blit(
+                minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0)
+            )
+
+            # Draw minimap borders directly on SCREEN_SURFACE if needed
             MINIMAP_BORDER_COLOR = Color("aquamarine")
             minimap_camera.draw_vertical_hairline(
                 MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y
             )
             minimap_camera.draw_horizontal_hairline(
-                MINIMAP_BORDER_COLOR,
-                0,
-                WORLD_SIZE.x,
-                WORLD_SIZE.y - 1,
+                MINIMAP_BORDER_COLOR, 0, WORLD_SIZE.x, WORLD_SIZE.y - 1
             )
+
             pygame.display.flip()
-            await asyncio.sleep(0)  # Give control back to browser
+            await asyncio.sleep(0)
 
         pygame.quit()
         sys.exit()
 
     except Exception as e:
-        # Show error on screen if something goes wrong
-        SCREEN_SURFACE.fill((0, 0, 0))
-        error_text = font.render(f"Error: {str(e)}", True, (255, 0, 0))
-        error_rect = error_text.get_rect(
-            center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-        )
-        SCREEN_SURFACE.blit(error_text, error_rect)
-        pygame.display.flip()
-        await asyncio.sleep(5)  # Show error for 5 seconds
-        raise  # Re-raise the exception for debug console
+        if SCREEN_SURFACE:
+            SCREEN_SURFACE.fill((0, 0, 0))
+            # Use font if defined; otherwise fallback_font will be available because it was defined after pygame.init()
+            err_font = font if "font" in locals() else fallback_font
+            error_text = err_font.render(f"Error: {str(e)}", True, (255, 0, 0))
+            error_rect = error_text.get_rect(
+                center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
+            )
+            SCREEN_SURFACE.blit(error_text, error_rect)
+            pygame.display.flip()
+            await asyncio.sleep(5)
+        raise
 
 
 if __name__ == "__main__":
