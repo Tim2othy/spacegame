@@ -36,7 +36,6 @@ async def main():
     SCREEN_SURFACE = None
     try:
         pygame.init()  # Initialize all modules (including font)
-        fallback_font = pygame.font.Font(None, 36)  # Now safe to create fonts
         pygame.display.set_caption("Space Game")
         SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
         await asyncio.sleep(0.1)  # Wait for display initialization
@@ -302,7 +301,8 @@ async def main():
         if SCREEN_SURFACE:
             SCREEN_SURFACE.fill((0, 0, 0))
             # Use font if defined; otherwise fallback_font will be available because it was defined after pygame.init()
-            err_font = font if "font" in locals() else fallback_font
+            err_font = pygame.font.Font(None, 36)
+
             error_text = err_font.render(f"Error: {str(e)}", True, (255, 0, 0))
             error_rect = error_text.get_rect(
                 center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
