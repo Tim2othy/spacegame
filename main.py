@@ -15,7 +15,6 @@ from universe import (
     Universe,
     Asteroid,
     Planet,
-    generate_asteroid,
 )
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
@@ -146,11 +145,6 @@ else:
 if ORBIT_MODE:
     planets = planets_orbit
 
-asteroids: list[Asteroid] = []
-for planet in planets:
-    for _ in range(ASTS_PER_PLANET):
-        generate_asteroid(planet, asteroids)
-
 enemy_ships: list[BulletEnemy] = []
 for _ in range(NUMBER_OF_ENEMIES):
     pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
@@ -171,12 +165,19 @@ areas = []
 universe = Universe(
     WORLD_SIZE,
     planets,
-    asteroids,
+    [],
     player_ships,
     areas,
     enemy_ships,
     ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
 )
+
+asteroids: list[Asteroid] = []
+for planet in planets:
+    for _ in range(ASTS_PER_PLANET):
+        universe.generate_asteroid(planet)
+
+
 cameras: list[Camera] = []
 
 player_count = len(player_ships)
