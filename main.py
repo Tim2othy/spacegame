@@ -29,13 +29,12 @@ from constants import (
 async def main():
     """Main async game loop."""
     SCREEN_SURFACE = None
+    pygame.init()
+    font = pygame.font.Font(None, 36)
+
     try:
-        pygame.init()
         pygame.display.set_caption("Space Game")
         SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
-        await asyncio.sleep(0.1)
-
-        font = pygame.font.Font(None, 36)
 
         def show_loading(message: str):
             SCREEN_SURFACE.fill((0, 0, 0))
