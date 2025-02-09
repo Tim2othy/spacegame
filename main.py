@@ -5,17 +5,12 @@ from __future__ import annotations
 import sys
 import random
 import asyncio
-import platform
 import pygame
-import pygame.constants  # Add this import at the top with other imports
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from universe import (
-    Universe,
-    Planet,
-)
+from universe import Universe, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
     ORBIT_MODE,
