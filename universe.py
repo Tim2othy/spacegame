@@ -351,8 +351,8 @@ class Universe:
         player_ship = self.player_ships[player_ix]
         # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
         # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
-        texty(f"Fuel: {player_ship.fuel:.2f}")
-        texty(f"Health: {player_ship.health:.2f}")
+        texty(f"Fuel: {player_ship.fuel:.0f}")
+        texty(f"Health: {player_ship.health:.0f}")
         texty(f"Ammunition: {player_ship.ammo}")
         # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
         # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
