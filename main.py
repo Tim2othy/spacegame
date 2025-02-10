@@ -46,7 +46,7 @@ async def main():
             SCREEN_SURFACE.blit(loading_text, text_rect)
             pygame.display.flip()
 
-        show_loading("Initializing game...")
+        show_loading("Initializing game")
 
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
@@ -128,7 +128,7 @@ async def main():
         player_ships = player_ships_multi if MULTI_MODE else player_ships_single
         planets = planets_small if SMALL_MODE else planets_large
 
-        show_loading("Setting up universe...")
+        show_loading("Setting up universe")
         universe = Universe(
             WORLD_SIZE,
             planets,
@@ -137,12 +137,12 @@ async def main():
             ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
         )
 
-        show_loading("Generating asteroids...")
+        show_loading("Generating asteroids")
         for planet in planets:
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
 
-        show_loading("Adding Enemies...")
+        show_loading("Adding Enemies")
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
@@ -154,7 +154,7 @@ async def main():
 
         universe.enemy_ships = enemy_ships
 
-        show_loading("Adding Players...")
+        show_loading("Adding Players")
 
         # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
         cameras: list[Camera] = []
@@ -168,7 +168,7 @@ async def main():
             camera = Camera(player.pos, 1.0, cam_surface)
             cameras.append(camera)
 
-        show_loading("Creating Minimap...")
+        show_loading("Creating Minimap")
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
         minimap_camera = Camera(
