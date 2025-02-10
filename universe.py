@@ -34,9 +34,9 @@ class Planet(Disk):
     def __init__(
         self,
         pos: Vec2,
-        density: float,
         radius: float,
         color: Color,
+        density: float = 1,
     ) -> None:
         """Create a new planet.
 
