@@ -3,7 +3,7 @@
 from pygame.math import Vector2 as Vec2
 
 # Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
-SMALL_MODE = True
+SMALL_MODE = False
 MULTI_MODE = False
 INVINCIBLE_MODE = False
 
@@ -60,4 +60,4 @@ AST_ORBIT_PARAM = 0.0004  # orbit sizes
 AST_ELLIPSIS_PARAM = 0.0001  # and orbit ellipticities
 
 # Number of enemies in the game
-NUMBER_OF_ENEMIES = 10 if SMALL_MODE else 20
+NUMBER_OF_ENEMIES = 20 if SMALL_MODE else 40
