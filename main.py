@@ -22,6 +22,8 @@ from constants import (
     SPAWNPOINT,
     ASTS_PER_PLANET,
     NUMBER_OF_ENEMIES,
+    PLANET_RADIUS_SIGMA,
+    PLANET_RADIUS_MU,
 )
 
 
@@ -110,7 +112,7 @@ async def main():
                     random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
                 ),
                 1,
-                random.uniform(100, 400),
+                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
             for color in [
