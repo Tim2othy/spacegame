@@ -18,6 +18,7 @@ from constants import (
     BULLET_SPEED,
     DAMAGE_INDICATOR_TIME,
     ENEMY_BULLET_COOLDOWN,
+    GUN_COOLDOWN,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     ENEMY_SHOOT_RANGE,
@@ -26,11 +27,9 @@ from constants import (
     ENEMY_HEALTH,
     ENEMY_ACTION_WEIGHTS,
     ENEMY_ROCKET_COOLDOWN,
-    GUN_COOLDOWN,
     ENEMY_VISUAL_RANGE,
     WORLD_SIZE,
     SMOL,
-    ENEMY_MISSILE_COOLDOWN,
 )
 
 if TYPE_CHECKING:
@@ -48,6 +47,8 @@ class Ship(Disk):
         size: float,
         color: Color,
         bullet_color: Color,
+        gun_cooldown: float,
+        bullet_speed: float,
     ) -> None:
         """Create a new spaceship.
 
@@ -66,10 +67,12 @@ class Ship(Disk):
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown: float = 0
-        # This just just determines cooldown once at the very start.
+        self.gun_cooldown: float = gun_cooldown
+        self.gun_cooldown_timer: float = 0
+        self.shooting: bool = False
         self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
+        self.bullet_speed = bullet_speed
         self.ammo: int = 3700
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
@@ -96,15 +99,42 @@ class Ship(Disk):
         direction.from_polar((1, self.angle))
         return direction
 
-    def shoot(self) -> None:
-        """Try to shoot a bullet."""
-        if self.gun_cooldown <= 0 and self.ammo > 0:
-            forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
-            self.gun_cooldown = GUN_COOLDOWN
-            self.ammo -= 1
+    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
+        """Create a new bullet at `pos` with velocity `vel`."""
+        return Bullet(pos, vel, self.bullet_color)
+
+    def shoot(self, dt: float) -> None:
+        """Handle bullet-shooting."""
+        if not self.shooting:
+            # The ship doesn't want to shoot at the moment,
+            # so just decrease the cooldown if it's > 0.
+            # If it's <= 0, don't decrease the cooldown further.
+            if self.gun_cooldown_timer > 0:
+                self.gun_cooldown_timer = max(0, self.gun_cooldown_timer - dt)
+        else:
+            # The ship wants to shoot.
+            self.gun_cooldown_timer -= dt
+
+            # To handle multiple shots per frame:
+            while self.gun_cooldown_timer < 0 and self.ammo > 0:
+                forward = self.get_faced_direction()
+                bullet_vel = self.vel + forward * BULLET_SPEED
+
+                # When multiple shots are fired per frame,
+                # but we spawn them all at the end of the gunbarrel,
+                # they'd all spawn on top of each other, see issue #47.
+                # To mitigate this, we offset the spawn-position
+                # by the (time since the shot was fired) * bullet_vel.
+                # The time since the shot was fired is simply the
+                # negative of the current gun_cooldown.
+                gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
+                bullet_pos = (
+                    self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
+                )
+
+                self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
+                self.gun_cooldown_timer += self.gun_cooldown
+                self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
@@ -151,7 +181,7 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.step(dt)
 
-        self.gun_cooldown = max(0, self.gun_cooldown - dt)
+        self.shoot(dt)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera.
@@ -318,7 +348,9 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color)
+        super().__init__(
+            pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED
+        )
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -336,8 +368,7 @@ class PlayerShip(Ship):
         self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
-        if keys[self.spaceship_input.shoot]:
-            self.shoot()
+        self.shooting = keys[self.spaceship_input.shoot]
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera.
@@ -474,6 +505,8 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
+        gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
+        bullet_speed: float = BULLET_SPEED,
         color: Color = Color("lime"),
         bullet_color: Color = Color("hotpink"),
     ) -> None:
@@ -488,14 +521,16 @@ class BulletEnemy(Ship):
             bullet_color (Color): Color of shot projectiles
 
         """
-        super().__init__(pos, vel, 1, 8, color, bullet_color)
+        super().__init__(
+            pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed
+        )
         self.thrust *= ENEMY_THRUST_MULTIPLIER
-        self.action_timer = 0
+        self.action_timer = 0.0
         self.health = ENEMY_HEALTH
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
         self.projectiles: list[Bullet] = []
-        self.random_point = Vec2(0, 0)
+        self.random_point = Vec2(0.0, 0.0)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
@@ -551,26 +586,13 @@ class BulletEnemy(Ship):
             force = force_direction * self.thrust / force_direction.magnitude()
             self.apply_force(force, dt)
 
-        super().step(dt)
+        self.shooting = (
+            self.current_action == BulletEnemy.Action.accelerate_to_player
+            and delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2
+        )
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
-        # Shooting logic
-        if delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2:
-            self.shoot()
-
-    def shoot(self) -> None:
-        """Shoot a bullet."""
-        if (
-            self.gun_cooldown <= 0
-            and self.ammo > 0
-            and self.current_action == BulletEnemy.Action.accelerate_to_player
-        ):
-            forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel + forward * BULLET_SPEED
-            self.projectiles.append(Bullet(bullet_pos, bullet_vel, self.bullet_color))
-            self.gun_cooldown = ENEMY_BULLET_COOLDOWN
-            self.ammo -= 1
+        super().step(dt)
 
 
 class RocketEnemy(BulletEnemy):
@@ -593,23 +615,11 @@ class RocketEnemy(BulletEnemy):
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
-        super().__init__(pos, vel, target_ship, color)
+        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, 0, color)
 
-    def shoot(self) -> None:
-        """Shoot a Rocket."""
-        if (
-            self.gun_cooldown <= 0
-            and self.ammo > 0
-            and self.current_action == BulletEnemy.Action.accelerate_to_player
-        ):
-            forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel
-            self.projectiles.append(
-                Rocket(bullet_pos, bullet_vel, self.color, self.target_ship),
-            )
-            self.gun_cooldown = ENEMY_ROCKET_COOLDOWN
-            self.ammo -= 1
+    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
+        """Create a new rocket targeting `self.target_ship`."""
+        return Rocket(pos, vel, self.color, self.target_ship)
 
 
 class MissileEnemy(BulletEnemy):
@@ -632,26 +642,8 @@ class MissileEnemy(BulletEnemy):
             color (Color, optional): Material color. Defaults to Color("red").
 
         """
-        super().__init__(pos, vel, target_ship, color)
+        super().__init__(pos, vel, target_ship, ENEMY_BULLET_COOLDOWN, 0, color)
 
-    def shoot(self) -> None:
-        """Shoot a smart Missile."""
-        if (
-            self.gun_cooldown <= 0
-            and self.ammo > 0
-            and self.current_action == BulletEnemy.Action.accelerate_to_player
-        ):
-            forward = self.get_faced_direction()
-            bullet_pos = self.pos + forward * self.radius * GUNBARREL_LENGTH
-            bullet_vel = self.vel
-            self.projectiles.append(
-                Missile(
-                    bullet_pos,
-                    bullet_vel,
-                    self.color,
-                    self.target_ship,
-                    "assets/missile.png",
-                ),
-            )
-            self.gun_cooldown = ENEMY_MISSILE_COOLDOWN
-            self.ammo -= 1
+    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
+        """Create a new missile targeting `self.target_ship`."""
+        return Missile(pos, vel, self.color, self.target_ship, "assets/missile.png")
