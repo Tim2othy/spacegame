@@ -47,15 +47,7 @@ async def main():
             pygame.display.flip()
 
         show_menu(SCREEN_SURFACE, font)
-        # Wait for the player to press Enter to start the game
-        waiting = True
-        while waiting:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    waiting = False
+        await wait_for_enter()
 
         show_loading("Initializing game")
 
@@ -205,6 +197,13 @@ async def main():
                     player_camera.draw_text(
                         "GAME OVER", None, gameover_font, Color("red")
                     )
+                    topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
+                    SCREEN_SURFACE.blit(player_camera.surface, topleft)
+                    pygame.display.flip()
+                    await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
+                    show_menu(SCREEN_SURFACE, font)
+                    await wait_for_enter()
+                    break
                 else:
                     universe.move_camera(player_camera, player_ix, dt)
                     universe.draw_background(player_camera)
@@ -260,6 +259,18 @@ def show_menu(screen, font):
     screen.blit(title_text, title_rect)
     screen.blit(start_text, start_rect)
     pygame.display.flip()
+
+
+async def wait_for_enter():
+    """Wait for the player to press Enter to continue."""
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                waiting = False
 
 
 if __name__ == "__main__":
