@@ -46,6 +46,17 @@ async def main():
             SCREEN_SURFACE.blit(loading_text, text_rect)
             pygame.display.flip()
 
+        show_menu(SCREEN_SURFACE, font)
+        # Wait for the player to press Enter to start the game
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    waiting = False
+
         show_loading("Initializing game")
 
         player_ships_single: list[PlayerShip] = [
@@ -237,6 +248,18 @@ async def main():
     finally:
         pygame.quit()
         sys.exit()
+
+
+def show_menu(screen, font):
+    """Display the main menu."""
+    screen.fill((0, 0, 0))
+    title_text = font.render("Space Game", True, (255, 255, 255))
+    start_text = font.render("Press Enter to Start", True, (255, 255, 255))
+    title_rect = title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3))
+    start_rect = start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
+    screen.blit(title_text, title_rect)
+    screen.blit(start_text, start_rect)
+    pygame.display.flip()
 
 
 if __name__ == "__main__":
