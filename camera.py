@@ -279,21 +279,6 @@ class Camera:
             ((x1, y), (x2, _)) = clipped_line
             pygame.draw.line(self.surface, color, (x1, y), (x2, y))
 
-    def draw_rect(self, color: Color, rect: Rect) -> None:
-        """Draw an anti-aliased worldspace-rectangle.
-
-        Args:
-        ----
-            color (Color): Border- and fill-color
-            rect (Rect): Worldspace rectangle to draw
-
-        """
-        ttopleft = self.world_to_screen(Vec2(rect.topleft))
-        tbottomright = self.world_to_screen(Vec2(rect.bottomright))
-        screen_rect = Rect(ttopleft, tbottomright - ttopleft)
-        if self._rectangle_intersects_screen(screen_rect):
-            pygame.draw.rect(self.surface, color, screen_rect)
-
     def draw_text(
         self,
         text: str,
