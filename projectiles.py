@@ -74,7 +74,7 @@ class Rocket(Bullet):
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
         self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
-        self.homing_timer = 0
+        self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._total_duration = self.homing_duration + self.nonhoming_duration
@@ -160,7 +160,7 @@ class Missile(Bullet):
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
-        self.homing_timer = 0
+        self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
         self.color = Color("red")
         self.image = pygame.image.load(image_path)
