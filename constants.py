@@ -5,8 +5,7 @@ from pygame.math import Vector2 as Vec2
 # Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
 SMALL_MODE = True
 MULTI_MODE = False
-ORBIT_MODE = True
-INVINCIBLE_MODE = True
+INVINCIBLE_MODE = False
 
 SCREEN_SIZE = Vec2(1400, 700)
 MINIMAP_SIZE = Vec2(350, 350)

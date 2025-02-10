@@ -13,7 +13,6 @@ from camera import Camera
 from universe import Universe, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
-    ORBIT_MODE,
     SMALL_MODE,
     MULTI_MODE,
     INVINCIBLE_MODE,
@@ -82,16 +81,6 @@ async def main():
             ),
         ]
 
-        planets_small: list[Planet] = [
-            Planet(Vec2(1_800, 6_700), 1, 320, Color("darkred")),
-            Planet(Vec2(2_300, 900), 1, 300, Color("green")),
-            Planet(Vec2(4_200, 3_700), 1, 280, Color("mediumpurple")),
-            Planet(Vec2(5_000, 9_000), 1, 310, Color("darkorange")),
-            Planet(Vec2(6_000, 400), 1, 340, Color("royalblue")),
-            Planet(Vec2(6_700, 7_200), 1, 280, Color("darkslategray")),
-            Planet(Vec2(9_200, 4_400), 1, 260, Color("yellow")),
-        ]
-
         planets_large: list[Planet] = [
             Planet(Vec2(27_000, 29_000), 1, 700, Color("darkred")),
             Planet(Vec2(21_000, 28_000), 1, 800, Color("khaki")),
@@ -115,31 +104,27 @@ async def main():
             Planet(Vec2(3_000, 1_000), 1, 700, Color("navy")),
         ]
 
-        planets_orbit: list[Planet] = [
+        planets_small: list[Planet] = [
             Planet(
                 Vec2(
                     random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
                 ),
                 1,
                 random.uniform(100, 400),
+                color,
+            )
+            for color in [
                 Color("darkred"),
-            ),
-            Planet(
-                Vec2(
-                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
-                ),
-                1,
-                random.uniform(100, 400),
                 Color("green"),
-            ),
+                Color("mediumpurple"),
+                Color("darkorange"),
+                Color("royalblue"),
+                Color("yellow"),
+            ]
         ]
 
         player_ships = player_ships_multi if MULTI_MODE else player_ships_single
-        planets = (
-            planets_orbit
-            if ORBIT_MODE
-            else (planets_small if SMALL_MODE else planets_large)
-        )
+        planets = planets_small if SMALL_MODE else planets_large
 
         show_loading("Setting up universe...")
         universe = Universe(
