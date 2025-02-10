@@ -346,7 +346,7 @@ class Universe:
                     font,
                     Color("white"),
                 )
-            self.text_vertical_offset += 1.0 * font_size
+            self.text_vertical_offset += font_size
 
         player_ship = self.player_ships[player_ix]
         # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
