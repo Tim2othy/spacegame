@@ -5,7 +5,6 @@ everything else, you must first invent the universe.
 from __future__ import annotations
 
 import random
-
 import math
 from typing import TYPE_CHECKING
 
@@ -422,9 +421,6 @@ class Universe:
         -------
             None, but it creates a fucking asteroid!
 
-        """
-
-        """
         What the random variables do:
         - radius_asteroid - pretty obvious
         - r_a             - shortest distance to planet during orbit
@@ -433,7 +429,7 @@ class Universe:
         - orbit_direction - in which direction (in degrees) of the planet it starts
         - asteroid_angle  - does it go clockwise or anticlockwise
         """
-        # region --- random variables ---
+        # random variables
         asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
         radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
         r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
@@ -441,9 +437,8 @@ class Universe:
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
         asteroid_angle = random.choice([90, 270])
-        # endregion
 
-        # region --- getting pos_asteroid ---
+        # pos_asteroid
         semi_major_axis = (r_p + r_a) / 2
         eccentricity = (r_a - r_p) / (r_a + r_p)
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
@@ -451,9 +446,8 @@ class Universe:
         )
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
         pos_asteroid = planet.pos + radial_vector * r_initial
-        # endregion
 
-        # region --- getting velocity_asteroid ---
+        # velocity_asteroid
         total_specific_energy = (
             -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
         )
@@ -463,7 +457,6 @@ class Universe:
         ) ** 0.5
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
-        # endregion
 
         self.asteroids.append(
             Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
