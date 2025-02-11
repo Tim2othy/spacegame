@@ -35,23 +35,11 @@ async def main():
     SCREEN_SURFACE = None
     pygame.init()
     font = pygame.font.Font(None, 36)
-
     try:
         pygame.display.set_caption("Space Game")
         SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
 
-        def show_loading(message: str):
-            SCREEN_SURFACE.fill((0, 0, 0))
-            loading_text = font.render(message, True, (255, 255, 255))
-            text_rect = loading_text.get_rect(
-                center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-            )
-            SCREEN_SURFACE.blit(loading_text, text_rect)
-            pygame.display.flip()
-
         await show_menu(SCREEN_SURFACE, font)
-
-        show_loading("Initializing game")
 
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
@@ -129,7 +117,6 @@ async def main():
         player_ships = player_ships_multi if multiplayer_mode else player_ships_single
         planets = planets_small if small_mode else planets_large
 
-        show_loading("Setting up universe")
         universe = Universe(
             world_size_vec,
             planets,
@@ -138,12 +125,9 @@ async def main():
             ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
         )
 
-        show_loading("Generating asteroids")
         for planet in planets:
             for _ in range(ASTS_PER_PLANET):
                 universe.generate_asteroid(planet)
-
-        show_loading("Adding Enemies")
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(num_enemies):
@@ -156,10 +140,7 @@ async def main():
             enemy_ships.append(
                 enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec)
             )
-
         universe.enemy_ships = enemy_ships
-
-        show_loading("Adding Players")
 
         # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
         cameras: list[Camera] = []
@@ -173,7 +154,6 @@ async def main():
             camera = Camera(player.pos, 1.0, cam_surface)
             cameras.append(camera)
 
-        show_loading("Creating Minimap")
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
         minimap_camera = Camera(
