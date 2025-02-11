@@ -70,7 +70,6 @@ class Ship(Disk):
         self.gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
-        self.has_trophy: bool = False
         self.bullet_color = Color(bullet_color)
         self.bullet_speed = bullet_speed
         self.ammo: int = 3700
