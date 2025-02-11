@@ -25,10 +25,8 @@ small_mode = False
 multiplayer_mode = False
 invincible_mode = False
 
-SIZE_INT = 15000 if small_mode else 30000
-WORLD_SIZE = Vec2(SIZE_INT, SIZE_INT)
-SPAWNPOINT = WORLD_SIZE / 2
-
+WORLD_SIZE = 15000 if small_mode else 30000
+WORLD_SIZE_VEC = Vec2(WORLD_SIZE, WORLD_SIZE)
 NUMBER_OF_ENEMIES = 20 if small_mode else 40
 
 
@@ -57,7 +55,7 @@ async def main():
 
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
-                SPAWNPOINT,
+                WORLD_SIZE_VEC / 2,
                 Vec2(0, 0),
                 1,
                 10,
@@ -77,7 +75,7 @@ async def main():
         player_ships_multi: list[PlayerShip] = [
             player_ships_single[0],
             PlayerShip(
-                SPAWNPOINT + Vec2(50, 0),
+                WORLD_SIZE_VEC / 2 + Vec2(50, 0),
                 Vec2(0, 0),
                 1,
                 10,
@@ -112,7 +110,8 @@ async def main():
         planets_small: list[Planet] = [
             Planet(
                 Vec2(
-                    random.uniform(0, WORLD_SIZE[1]), random.uniform(0, WORLD_SIZE[1])
+                    random.uniform(0, WORLD_SIZE_VEC[1]),
+                    random.uniform(0, WORLD_SIZE_VEC[1]),
                 ),
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
@@ -132,7 +131,7 @@ async def main():
 
         show_loading("Setting up universe")
         universe = Universe(
-            WORLD_SIZE,
+            WORLD_SIZE_VEC,
             planets,
             player_ships,
             [],
@@ -148,12 +147,14 @@ async def main():
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(NUMBER_OF_ENEMIES):
-            pos = Vec2(random.uniform(0, WORLD_SIZE.x), random.uniform(0, WORLD_SIZE.y))
+            pos = Vec2(
+                random.uniform(0, WORLD_SIZE_VEC.x), random.uniform(0, WORLD_SIZE_VEC.y)
+            )
             enemy_type = random.choices(
                 [BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2]
             )[0]
             enemy_ships.append(
-                enemy_type(pos, Vec2(0, 0), random.choice(player_ships), WORLD_SIZE)
+                enemy_type(pos, Vec2(0, 0), random.choice(player_ships), WORLD_SIZE_VEC)
             )
 
         universe.enemy_ships = enemy_ships
@@ -176,7 +177,7 @@ async def main():
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
         minimap_camera = Camera(
-            WORLD_SIZE / 2, MINIMAP_SIZE.x / WORLD_SIZE.x, minimap_surface
+            WORLD_SIZE_VEC / 2, MINIMAP_SIZE.x / WORLD_SIZE_VEC.x, minimap_surface
         )
 
         clock = pygame.time.Clock()
@@ -227,13 +228,13 @@ async def main():
             # Draw minimap borders directly on SCREEN_SURFACE if needed
             MINIMAP_BORDER_COLOR = Color("aquamarine")
             minimap_camera.draw_vertical_hairline(
-                MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE.y
+                MINIMAP_BORDER_COLOR, 0, 0, WORLD_SIZE_VEC.y
             )
             minimap_camera.draw_horizontal_hairline(
                 MINIMAP_BORDER_COLOR,
                 0,
-                WORLD_SIZE.x,
-                WORLD_SIZE.y - 1,
+                WORLD_SIZE_VEC.x,
+                WORLD_SIZE_VEC.y - 1,
             )
             pygame.display.flip()
             await asyncio.sleep(0)
