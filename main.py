@@ -265,11 +265,10 @@ async def show_menu(screen, font) -> None:
     global small_mode, multiplayer_mode, invincible_mode
 
     options = [
-        ("Small Mode", small_mode),
-        ("Multiplayer Mode", multiplayer_mode),
-        ("Invincible Mode", invincible_mode),
+        {"name": "Small Mode", "value": small_mode},
+        {"name": "Multiplayer Mode", "value": multiplayer_mode},
+        {"name": "Invincible Mode", "value": invincible_mode},
     ]
-    mode_vars = [small_mode, multiplayer_mode, invincible_mode]
     selected_option = 0
 
     def draw_menu():
@@ -280,10 +279,10 @@ async def show_menu(screen, font) -> None:
             title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)),
         )
 
-        for i, (option, value) in enumerate(options):
+        for i, option in enumerate(options):
             color = (255, 255, 255) if i == selected_option else (100, 100, 100)
             option_text = font.render(
-                f"{option}: {'On' if value else 'Off'}", True, color
+                f"{option['name']}: {'On' if option['value'] else 'Off'}", True, color
             )
             screen.blit(
                 option_text,
@@ -314,13 +313,14 @@ async def show_menu(screen, font) -> None:
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(options)
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                    mode_vars[selected_option] = not mode_vars[selected_option]
-                    options[selected_option] = (
-                        options[selected_option][0],
-                        mode_vars[selected_option],
-                    )
+                    options[selected_option]["value"] = not options[selected_option][
+                        "value"
+                    ]
 
-    small_mode, multiplayer_mode, invincible_mode = mode_vars
+    # Update the global variables with the new values
+    small_mode = options[0]["value"]
+    multiplayer_mode = options[1]["value"]
+    invincible_mode = options[2]["value"]
 
 
 if __name__ == "__main__":
