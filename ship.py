@@ -548,8 +548,6 @@ class BulletEnemy(Ship):
                 random.uniform(0, self.world_size.x),
                 random.uniform(0, self.world_size.y),
             )
-            # print(self.current_action)
-            # print(self.random_point)
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(SMOL, SMOL)
 
