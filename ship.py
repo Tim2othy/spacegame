@@ -517,8 +517,6 @@ class BulletEnemy(Ship):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            color (Color, optional): Material color. Defaults to Color("purple").
-            bullet_color (Color): Color of shot projectiles
 
         """
         super().__init__(
@@ -612,7 +610,6 @@ class RocketEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            color (Color, optional): Material color. Defaults to Color("red").
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, 0, color)
@@ -639,7 +636,6 @@ class MissileEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            color (Color, optional): Material color. Defaults to Color("red").
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_BULLET_COOLDOWN, 0, color)
