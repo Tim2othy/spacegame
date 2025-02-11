@@ -46,8 +46,7 @@ async def main():
             SCREEN_SURFACE.blit(loading_text, text_rect)
             pygame.display.flip()
 
-        show_menu(SCREEN_SURFACE, font)
-        await wait_for_enter()
+        await show_menu(SCREEN_SURFACE, font)
 
         show_loading("Initializing game")
 
@@ -201,8 +200,7 @@ async def main():
                     SCREEN_SURFACE.blit(player_camera.surface, topleft)
                     pygame.display.flip()
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
-                    show_menu(SCREEN_SURFACE, font)
-                    await wait_for_enter()
+                    await show_menu(SCREEN_SURFACE, font)
                     break
                 else:
                     universe.move_camera(player_camera, player_ix, dt)
@@ -249,8 +247,15 @@ async def main():
         sys.exit()
 
 
-def show_menu(screen, font):
-    """Display the main menu."""
+async def show_menu(screen, font) -> None:
+    """Display the main menu until player presses Enter
+
+    Args:
+    ----
+        screen: To fill and render text on
+        font: Font to use for rendering
+    """
+
     screen.fill((0, 0, 0))
     title_text = font.render("Space Game", True, (255, 255, 255))
     start_text = font.render("Press Enter to Start", True, (255, 255, 255))
@@ -259,10 +264,6 @@ def show_menu(screen, font):
     screen.blit(title_text, title_rect)
     screen.blit(start_text, start_rect)
     pygame.display.flip()
-
-
-async def wait_for_enter():
-    """Wait for the player to press Enter to continue."""
     waiting = True
     while waiting:
         for event in pygame.event.get():
