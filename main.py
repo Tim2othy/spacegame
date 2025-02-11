@@ -20,16 +20,16 @@ from constants import (
     PLANET_RADIUS_MU,
 )
 
-# Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
-SMALL_MODE = False
-MULTI_MODE = False
-INVINCIBLE_MODE = False
 
-SIZE_INT = 15000 if SMALL_MODE else 30000
+small_mode = False
+multiplayer_mode = False
+invincible_mode = False
+
+SIZE_INT = 15000 if small_mode else 30000
 WORLD_SIZE = Vec2(SIZE_INT, SIZE_INT)
 SPAWNPOINT = WORLD_SIZE / 2
 
-NUMBER_OF_ENEMIES = 20 if SMALL_MODE else 40
+NUMBER_OF_ENEMIES = 20 if small_mode else 40
 
 
 async def main():
@@ -127,8 +127,8 @@ async def main():
             ]
         ]
 
-        player_ships = player_ships_multi if MULTI_MODE else player_ships_single
-        planets = planets_small if SMALL_MODE else planets_large
+        player_ships = player_ships_multi if multiplayer_mode else player_ships_single
+        planets = planets_small if small_mode else planets_large
 
         show_loading("Setting up universe")
         universe = Universe(
@@ -197,7 +197,7 @@ async def main():
                 gameover = (
                     not universe.contains_point(player_ship.pos)
                     or player_ship.health <= 0
-                ) and not INVINCIBLE_MODE
+                ) and not invincible_mode
                 if gameover:
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text(
@@ -262,12 +262,12 @@ async def show_menu(screen, font) -> None:
         screen: To fill and render text on
         font: Font to use for rendering
     """
-    global SMALL_MODE, MULTI_MODE, INVINCIBLE_MODE
+    global small_mode, multiplayer_mode, invincible_mode
 
     options = [
-        ("Small Mode", SMALL_MODE),
-        ("Multiplayer Mode", MULTI_MODE),
-        ("Invincible Mode", INVINCIBLE_MODE),
+        ("Small Mode", small_mode),
+        ("Multiplayer Mode", multiplayer_mode),
+        ("Invincible Mode", invincible_mode),
     ]
     selected_option = 0
 
@@ -314,11 +314,11 @@ async def show_menu(screen, font) -> None:
                     selected_option = (selected_option + 1) % len(options)
                 elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     if selected_option == 0:
-                        SMALL_MODE = not SMALL_MODE
+                        small_mode = not small_mode
                     elif selected_option == 1:
-                        MULTI_MODE = not MULTI_MODE
+                        multiplayer_mode = not multiplayer_mode
                     elif selected_option == 2:
-                        INVINCIBLE_MODE = not INVINCIBLE_MODE
+                        invincible_mode = not invincible_mode
                     options[selected_option] = (
                         options[selected_option][0],
                         not options[selected_option][1],
