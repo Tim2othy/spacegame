@@ -269,6 +269,7 @@ async def show_menu(screen, font) -> None:
         ("Multiplayer Mode", multiplayer_mode),
         ("Invincible Mode", invincible_mode),
     ]
+    mode_vars = [small_mode, multiplayer_mode, invincible_mode]
     selected_option = 0
 
     def draw_menu():
@@ -312,17 +313,14 @@ async def show_menu(screen, font) -> None:
                     selected_option = (selected_option - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(options)
-                elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    if selected_option == 0:
-                        small_mode = not small_mode
-                    elif selected_option == 1:
-                        multiplayer_mode = not multiplayer_mode
-                    elif selected_option == 2:
-                        invincible_mode = not invincible_mode
+                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                    mode_vars[selected_option] = not mode_vars[selected_option]
                     options[selected_option] = (
                         options[selected_option][0],
-                        not options[selected_option][1],
+                        mode_vars[selected_option],
                     )
+
+    small_mode, multiplayer_mode, invincible_mode = mode_vars
 
 
 if __name__ == "__main__":
