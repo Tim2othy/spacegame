@@ -28,6 +28,7 @@ from constants import (
     ENEMY_ACTION_WEIGHTS,
     ENEMY_ROCKET_COOLDOWN,
     ENEMY_VISUAL_RANGE,
+    ENEMY_MISSILE_COOLDOWN,
     SMOL,
 )
 
@@ -647,7 +648,7 @@ class MissileEnemy(BulletEnemy):
 
         """
         super().__init__(
-            pos, vel, target_ship, world_size, ENEMY_BULLET_COOLDOWN, 0, color
+            pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color
         )
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
