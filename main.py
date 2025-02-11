@@ -262,23 +262,67 @@ async def show_menu(screen, font) -> None:
         screen: To fill and render text on
         font: Font to use for rendering
     """
+    global SMALL_MODE, MULTI_MODE, INVINCIBLE_MODE
 
-    screen.fill((0, 0, 0))
-    title_text = font.render("Space Game", True, (255, 255, 255))
-    start_text = font.render("Press Enter to Start", True, (255, 255, 255))
-    title_rect = title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3))
-    start_rect = start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
-    screen.blit(title_text, title_rect)
-    screen.blit(start_text, start_rect)
-    pygame.display.flip()
+    options = [
+        ("Small Mode", SMALL_MODE),
+        ("Multiplayer Mode", MULTI_MODE),
+        ("Invincible Mode", INVINCIBLE_MODE),
+    ]
+    selected_option = 0
+
+    def draw_menu():
+        screen.fill((0, 0, 0))
+        title_text = font.render("Space Game", True, (255, 255, 255))
+        screen.blit(
+            title_text,
+            title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)),
+        )
+
+        for i, (option, value) in enumerate(options):
+            color = (255, 255, 255) if i == selected_option else (100, 100, 100)
+            option_text = font.render(
+                f"{option}: {'On' if value else 'Off'}", True, color
+            )
+            screen.blit(
+                option_text,
+                option_text.get_rect(
+                    center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)
+                ),
+            )
+
+        start_text = font.render("Press Enter to Start", True, (255, 255, 255))
+        screen.blit(
+            start_text,
+            start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)),
+        )
+        pygame.display.flip()
+
     waiting = True
     while waiting:
+        draw_menu()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                waiting = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    waiting = False
+                elif event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(options)
+                elif event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                    if selected_option == 0:
+                        SMALL_MODE = not SMALL_MODE
+                    elif selected_option == 1:
+                        MULTI_MODE = not MULTI_MODE
+                    elif selected_option == 2:
+                        INVINCIBLE_MODE = not INVINCIBLE_MODE
+                    options[selected_option] = (
+                        options[selected_option][0],
+                        not options[selected_option][1],
+                    )
 
 
 if __name__ == "__main__":
