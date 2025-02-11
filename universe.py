@@ -43,7 +43,6 @@ class Planet(Disk):
         Args:
         ----
             pos (Vec2): Fixed position
-            density (float): Density
             radius (float): Radius
             color (Color): Color
 
