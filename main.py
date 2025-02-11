@@ -13,18 +13,23 @@ from camera import Camera
 from universe import Universe, Planet
 from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
-    SMALL_MODE,
-    MULTI_MODE,
-    INVINCIBLE_MODE,
     SCREEN_SIZE,
     MINIMAP_SIZE,
-    WORLD_SIZE,
-    SPAWNPOINT,
     ASTS_PER_PLANET,
-    NUMBER_OF_ENEMIES,
     PLANET_RADIUS_SIGMA,
     PLANET_RADIUS_MU,
 )
+
+# Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
+SMALL_MODE = False
+MULTI_MODE = False
+INVINCIBLE_MODE = False
+
+SIZE_INT = 15000 if SMALL_MODE else 30000
+WORLD_SIZE = Vec2(SIZE_INT, SIZE_INT)
+SPAWNPOINT = WORLD_SIZE / 2
+
+NUMBER_OF_ENEMIES = 20 if SMALL_MODE else 40
 
 
 async def main():

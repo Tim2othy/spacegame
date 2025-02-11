@@ -2,16 +2,10 @@
 
 from pygame.math import Vector2 as Vec2
 
-# Switch between the modes SMALL_MODE makes world smaller, MULTI_MODE adds second player, ORBIT_MODE makes there just be 1 planet, INVINCIBLE_MODE: can't die
-SMALL_MODE = False
-MULTI_MODE = False
-INVINCIBLE_MODE = False
-
 SCREEN_SIZE = Vec2(1400, 700)
 MINIMAP_SIZE = Vec2(350, 350)
-SIZE_INT = 15000 if SMALL_MODE else 30000
-WORLD_SIZE = Vec2(SIZE_INT, SIZE_INT)
-SPAWNPOINT = WORLD_SIZE / 2
+
+# planet constants
 PLANET_RADIUS_MU = 6.2
 PLANET_RADIUS_SIGMA = 0.2
 
@@ -58,6 +52,3 @@ AST_MIN_SIZE = 20
 AST_RADIUS_PARAM = 0.05  # of the radii
 AST_ORBIT_PARAM = 0.0004  # orbit sizes
 AST_ELLIPSIS_PARAM = 0.0001  # and orbit ellipticities
-
-# Number of enemies in the game
-NUMBER_OF_ENEMIES = 20 if SMALL_MODE else 40
