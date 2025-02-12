@@ -328,28 +328,25 @@ class Universe:
         font_size = 32
         font = pygame.font.Font(None, font_size)
 
-        self.text_vertical_offset = 10
-
-        def texty(text: str | None = None) -> None:
+        def texty(vertical_offset: int, text: str | None = None) -> int:
             if text is not None:
                 camera.draw_text(
                     text,
-                    Vec2(10, self.text_vertical_offset),
+                    Vec2(10, vertical_offset),
                     font,
                     Color("white"),
                 )
-            self.text_vertical_offset += font_size
+            return vertical_offset + font_size
 
+        text_v = 10
         player_ship = self.player_ships[player_ix]
-        texty(f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
-        texty(f"Fuel: {player_ship.fuel:.0f}")
-        texty(f"Health: {player_ship.health:.0f}")
-        texty(f"Ammunition: {player_ship.ammo}")
+        text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
+        text_v = texty(text_v, f"Fuel: {player_ship.fuel:.0f}")
+        text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
+        text_v = texty(text_v, f"Ammunition: {player_ship.ammo}")
 
         enemy_count = len(self.enemy_ships)
-        texty(f"Enemies left: {enemy_count}")
-
-        del self.text_vertical_offset
+        texty(text_v, f"Enemies left: {enemy_count}")
 
     def draw_grid(self, camera: Camera) -> None:
         """Draw grid on `camera`.
