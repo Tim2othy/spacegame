@@ -28,6 +28,7 @@ type Options = dict[str, bool]
 
 
 def universe_from_options(options: Options) -> Universe:
+    """Create a universe from `options`."""
     num_enemies = 20 if options["small"] else 40
     world_size = 15000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
