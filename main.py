@@ -27,6 +27,104 @@ from universe import Planet, Universe
 type Options = dict[str, bool]
 
 
+def universe_from_options(options: Options) -> Universe:
+    num_enemies = 20 if options["small"] else 40
+    world_size = 15000 if options["small"] else 30000
+    world_size_vec = Vec2(world_size, world_size)
+
+    player_ships: list[PlayerShip] = [
+        PlayerShip(
+            world_size_vec / 2,
+            Vec2(0, 0),
+            1,
+            10,
+            Color("darkslategray"),
+            Color("orange"),
+            ShipInput(
+                pygame.K_RIGHT,
+                pygame.K_LEFT,
+                pygame.K_UP,
+                pygame.K_DOWN,
+                pygame.K_RETURN,
+            ),
+            "assets/player_ship.png",
+        ),
+    ]
+    if options["splitscreen"]:
+        player_ships.append(
+            PlayerShip(
+                world_size_vec / 2 + Vec2(50, 0),
+                Vec2(0, 0),
+                1,
+                10,
+                Color("blue"),
+                Color("yellow"),
+                ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
+                "assets/player_ship.png",
+            ),
+        )
+    planets: list[Planet] = (
+        [
+            Planet(
+                Vec2(
+                    random.uniform(0, world_size_vec[1]),
+                    random.uniform(0, world_size_vec[1]),
+                ),
+                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
+                color,
+            )
+            for color in [
+                Color("darkred"),
+                Color("green"),
+                Color("mediumpurple"),
+                Color("darkorange"),
+                Color("royalblue"),
+                Color("yellow"),
+            ]
+        ]
+        if options["small"]
+        else [
+            Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
+            Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
+            Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
+            Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
+            Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
+            Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
+            Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
+            Planet(Vec2(18_000, 19_000), 300, Color("coral")),
+            Planet(Vec2(13_000, 17_000), 400, Color("blue")),
+            Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
+            Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
+            Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
+            Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
+            Planet(Vec2(14_500, 3_000), 600, Color("plum")),
+            Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
+            Planet(Vec2(3_000, 1_000), 700, Color("navy")),
+        ]
+    )
+
+    universe = Universe(
+        world_size_vec,
+        planets,
+        player_ships,
+        [],
+        ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
+    )
+
+    for planet in planets:
+        for _ in range(ASTS_PER_PLANET):
+            universe.generate_asteroid(planet)
+
+    enemy_ships: list[BulletEnemy] = []
+    for _ in range(num_enemies):
+        pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
+        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
+        enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec))
+    universe.enemy_ships = enemy_ships
+
+    return universe
+
+
 async def main() -> None:
     """Run the game."""
     screen_surface = None
@@ -40,116 +138,24 @@ async def main() -> None:
         screen_surface = pygame.display.set_mode(SCREEN_SIZE)
 
         options = await show_menu(screen_surface, options, font)
+        universe = universe_from_options(options)
+        player_ships = universe.player_ships
 
-        num_enemies = 20 if options["small"] else 40
-        world_size = 15000 if options["small"] else 30000
-        world_size_vec = Vec2(world_size, world_size)
-
-        player_ships: list[PlayerShip] = [
-            PlayerShip(
-                world_size_vec / 2,
-                Vec2(0, 0),
-                1,
-                10,
-                Color("darkslategray"),
-                Color("orange"),
-                ShipInput(
-                    pygame.K_RIGHT,
-                    pygame.K_LEFT,
-                    pygame.K_UP,
-                    pygame.K_DOWN,
-                    pygame.K_RETURN,
-                ),
-                "assets/player_ship.png",
-            ),
-        ]
-        if options["splitscreen"]:
-            player_ships.append(
-                PlayerShip(
-                    world_size_vec / 2 + Vec2(50, 0),
-                    Vec2(0, 0),
-                    1,
-                    10,
-                    Color("blue"),
-                    Color("yellow"),
-                    ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
-                    "assets/player_ship.png",
-                ),
-            )
-        planets: list[Planet] = (
-            [
-                Planet(
-                    Vec2(
-                        random.uniform(0, world_size_vec[1]),
-                        random.uniform(0, world_size_vec[1]),
-                    ),
-                    random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-                    color,
-                )
-                for color in [
-                    Color("darkred"),
-                    Color("green"),
-                    Color("mediumpurple"),
-                    Color("darkorange"),
-                    Color("royalblue"),
-                    Color("yellow"),
-                ]
-            ]
-            if options["small"]
-            else [
-                Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
-                Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
-                Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
-                Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
-                Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
-                Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
-                Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
-                Planet(Vec2(18_000, 19_000), 300, Color("coral")),
-                Planet(Vec2(13_000, 17_000), 400, Color("blue")),
-                Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
-                Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
-                Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
-                Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
-                Planet(Vec2(14_500, 3_000), 600, Color("plum")),
-                Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
-                Planet(Vec2(3_000, 1_000), 700, Color("navy")),
-            ]
-        )
-
-        universe = Universe(
-            world_size_vec,
-            planets,
-            player_ships,
-            [],
-            ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
-        )
-
-        for planet in planets:
-            for _ in range(ASTS_PER_PLANET):
-                universe.generate_asteroid(planet)
-
-        enemy_ships: list[BulletEnemy] = []
-        for _ in range(num_enemies):
-            pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
-            enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec))
-        universe.enemy_ships = enemy_ships
-
-        # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
         cameras: list[Camera] = []
         player_count = len(player_ships)
         for player_ix, player in enumerate(player_ships):
             topleft = (player_ix * SCREEN_SIZE[0] / player_count, 0)
             size = (SCREEN_SIZE[0] / player_count, SCREEN_SIZE[1])
             # Create a new surface instead of SCREEN_SURFACE.subsurface(...)
+            # TODO(asked by lumi_a): Why do that instead of subsurfacing? With subsurfacing,
+            #   we wouldn't need to blit later.
             cam_surface = pygame.Surface((int(size[0]), int(size[1]))).convert()
 
             camera = Camera(player.pos, 1.0, cam_surface)
             cameras.append(camera)
 
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
-
-        minimap_camera = Camera(world_size_vec / 2, MINIMAP_SIZE.x / world_size_vec.x, minimap_surface)
+        minimap_camera = Camera(universe.size / 2, MINIMAP_SIZE.x / universe.size.x, minimap_surface)
 
         clock = pygame.time.Clock()
 
@@ -195,12 +201,12 @@ async def main() -> None:
             screen_surface.blit(minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0))
 
             # Draw minimap borders directly on SCREEN_SURFACE if needed
-            minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, world_size_vec.y)
+            minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, universe.size.y)
             minimap_camera.draw_horizontal_hairline(
                 MINIMAP_BORDER_COLOR,
                 0,
-                world_size_vec.x,
-                world_size_vec.y - 1,
+                universe.size.x,
+                universe.size.y - 1,
             )
             pygame.display.flip()
             await asyncio.sleep(0)
