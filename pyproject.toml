@@ -19,7 +19,8 @@ ignore = [
 
 [dependency-groups]
 dev = [
-  "pillow"
+  "pillow",
+  "pygbag"
 ]
 lint = [
   "ruff"

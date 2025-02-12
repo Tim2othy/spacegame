@@ -18,3 +18,7 @@ Requires [uv](https://docs.astral.sh/uv/). Running the game locally (automatical
 ```sh
 uv run main.py
 ```
+Build the game to web using pygbag (also automatically installed):
+```sh
+uv run pygbag .
+```
