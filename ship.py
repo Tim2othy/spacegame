@@ -2,35 +2,34 @@
 
 from __future__ import annotations
 
+import math
 import random
 from enum import Enum
 from typing import TYPE_CHECKING
-import math
 
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk
-from projectiles import Bullet, Rocket, Missile
-
 from constants import (
     BULLET_SPEED,
     DAMAGE_INDICATOR_TIME,
+    ENEMY_ACTION_TIMER,
+    ENEMY_ACTION_WEIGHTS,
     ENEMY_BULLET_COOLDOWN,
+    ENEMY_HEALTH,
+    ENEMY_MISSILE_COOLDOWN,
+    ENEMY_ROCKET_COOLDOWN,
+    ENEMY_SHOOT_RANGE,
+    ENEMY_THRUST_MULTIPLIER,
+    ENEMY_VISUAL_RANGE,
     GUN_COOLDOWN,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    ENEMY_SHOOT_RANGE,
-    ENEMY_THRUST_MULTIPLIER,
-    ENEMY_ACTION_TIMER,
-    ENEMY_HEALTH,
-    ENEMY_ACTION_WEIGHTS,
-    ENEMY_ROCKET_COOLDOWN,
-    ENEMY_VISUAL_RANGE,
-    ENEMY_MISSILE_COOLDOWN,
     SMOL,
 )
+from physics import Disk
+from projectiles import Bullet, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera

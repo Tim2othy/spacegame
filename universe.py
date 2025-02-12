@@ -4,8 +4,8 @@ everything else, you must first invent the universe.
 
 from __future__ import annotations
 
-import random
 import math
+import random
 from typing import TYPE_CHECKING
 
 import pygame
@@ -19,11 +19,11 @@ if TYPE_CHECKING:
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
-    GRAVITATIONAL_CONSTANT,
-    AST_MIN_SIZE,
-    AST_RADIUS_PARAM,
     AST_ELLIPSIS_PARAM,
+    AST_MIN_SIZE,
     AST_ORBIT_PARAM,
+    AST_RADIUS_PARAM,
+    GRAVITATIONAL_CONSTANT,
 )
 
 
@@ -422,6 +422,7 @@ class Universe:
         - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
         - orbit_direction - in which direction (in degrees) of the planet it starts
         - asteroid_angle  - does it go clockwise or anticlockwise
+
         """
         # random variables
         asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)

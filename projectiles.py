@@ -2,9 +2,9 @@
 
 from typing import TYPE_CHECKING
 
+import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
-import pygame
 
 from camera import Camera
 from physics import PhysicalObject
@@ -13,12 +13,12 @@ if TYPE_CHECKING:
     from ship import Ship
 
 from constants import (
-    ROCKET_HOMING_DURATION,
-    ROCKET_NONHOMING_DURATION,
-    ROCKET_HOMING_THRUST,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
     MISSILE_PREFERRED_SPEED,
+    ROCKET_HOMING_DURATION,
+    ROCKET_HOMING_THRUST,
+    ROCKET_NONHOMING_DURATION,
 )
 
 

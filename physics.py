@@ -12,11 +12,11 @@ if TYPE_CHECKING:
     from camera import Camera
 
 from constants import (
-    GRAVITATIONAL_CONSTANT,
-    BOUNCINESS,
-    SMOL,
-    BOUNCE_DAMAGE_THRESHOLD,
     BOUNCE_DAMAGE_SCALAR,
+    BOUNCE_DAMAGE_THRESHOLD,
+    BOUNCINESS,
+    GRAVITATIONAL_CONSTANT,
+    SMOL,
 )
 
 

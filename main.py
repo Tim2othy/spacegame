@@ -2,24 +2,24 @@
 
 from __future__ import annotations
 
-import sys
-import random
 import asyncio
+import random
+import sys
+
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from universe import Universe, Planet
-from ship import PlayerShip, ShipInput, BulletEnemy, RocketEnemy, MissileEnemy
 from constants import (
-    SCREEN_SIZE,
-    MINIMAP_SIZE,
     ASTS_PER_PLANET,
-    PLANET_RADIUS_SIGMA,
+    MINIMAP_SIZE,
     PLANET_RADIUS_MU,
+    PLANET_RADIUS_SIGMA,
+    SCREEN_SIZE,
 )
-
+from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
+from universe import Planet, Universe
 
 small_mode = False
 multiplayer_mode = False
@@ -184,12 +184,11 @@ async def main():
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
                     await show_menu(SCREEN_SURFACE, font)
                     break
-                else:
-                    universe.move_camera(player_camera, player_ix, dt)
-                    universe.draw_background(player_camera)
-                    universe.draw_grid(player_camera)
-                    universe.draw(player_camera)
-                    universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
+                universe.move_camera(player_camera, player_ix, dt)
+                universe.draw_background(player_camera)
+                universe.draw_grid(player_camera)
+                universe.draw(player_camera)
+                universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                 SCREEN_SURFACE.blit(player_camera.surface, topleft)
 
@@ -212,7 +211,7 @@ async def main():
     except Exception as e:
         if SCREEN_SURFACE:
             SCREEN_SURFACE.fill((0, 0, 0))
-            error_text = font.render(f"Error: {str(e)}", True, (255, 0, 0))
+            error_text = font.render(f"Error: {e!s}", True, (255, 0, 0))
             error_rect = error_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
             SCREEN_SURFACE.blit(error_text, error_rect)
             pygame.display.flip()
@@ -230,6 +229,7 @@ async def show_menu(screen, font) -> None:
     ----
         screen: To fill and render text on
         font: Font to use for rendering
+
     """
     global small_mode, multiplayer_mode, invincible_mode
 
