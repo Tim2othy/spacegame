@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import random
 import sys
+from collections import deque
 
 import pygame
 from pygame import Color
@@ -13,6 +14,8 @@ from pygame.math import Vector2 as Vec2
 from camera import Camera
 from constants import (
     ASTS_PER_PLANET,
+    FPS_HISTORY_LENGTH,
+    MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
@@ -31,16 +34,16 @@ num_enemies = 20 if small_mode else 40
 
 
 async def main():
-    """Main async game loop."""
-    SCREEN_SURFACE = None
+    """Run the game."""
+    screen_surface = None
     pygame.display.init()
     pygame.font.init()
     font = pygame.font.Font(None, 36)
     try:
         pygame.display.set_caption("Space Game")
-        SCREEN_SURFACE = pygame.display.set_mode(SCREEN_SIZE)
+        screen_surface = pygame.display.set_mode(SCREEN_SIZE)
 
-        await show_menu(SCREEN_SURFACE, font)
+        await show_menu(screen_surface, font)
 
         player_ships_single: list[PlayerShip] = [
             PlayerShip(
@@ -153,7 +156,7 @@ async def main():
 
         clock = pygame.time.Clock()
 
-        fps = []
+        fps = deque()
 
         while True:
             if any(e.type == pygame.QUIT for e in pygame.event.get()):
@@ -161,10 +164,8 @@ async def main():
 
             dt = clock.tick() / 1_000
             fps.append(clock.get_fps())
-            # TODO: Externalize 180 to variable that's also mentioned in
-            # the HUD-text "fps (average over past 180 frames)"
-            if len(fps) > 180:
-                fps = fps[1:]  # TODO: Use a queue
+            if len(fps) > FPS_HISTORY_LENGTH:
+                fps.popleft()
 
             universe.handle_input(pygame.key.get_pressed())
             universe.step(dt)
@@ -180,9 +181,9 @@ async def main():
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
-                    SCREEN_SURFACE.blit(player_camera.surface, topleft)
+                    screen_surface.blit(player_camera.surface, topleft)
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
-                    await show_menu(SCREEN_SURFACE, font)
+                    await show_menu(screen_surface, font)
                     break
                 universe.move_camera(player_camera, player_ix, dt)
                 universe.draw_background(player_camera)
@@ -190,14 +191,13 @@ async def main():
                 universe.draw(player_camera)
                 universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
-                SCREEN_SURFACE.blit(player_camera.surface, topleft)
+                screen_surface.blit(player_camera.surface, topleft)
 
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
-            SCREEN_SURFACE.blit(minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0))
+            screen_surface.blit(minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0))
 
             # Draw minimap borders directly on SCREEN_SURFACE if needed
-            MINIMAP_BORDER_COLOR = Color("aquamarine")
             minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, world_size_vec.y)
             minimap_camera.draw_horizontal_hairline(
                 MINIMAP_BORDER_COLOR,
@@ -209,11 +209,11 @@ async def main():
             await asyncio.sleep(0)
 
     except Exception as e:
-        if SCREEN_SURFACE:
-            SCREEN_SURFACE.fill((0, 0, 0))
-            error_text = font.render(f"Error: {e!s}", True, (255, 0, 0))
+        if screen_surface:
+            screen_surface.fill((0, 0, 0))
+            error_text = font.render(f"Error: {e!s}", antialias=True, color=Color("White"))
             error_rect = error_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
-            SCREEN_SURFACE.blit(error_text, error_rect)
+            screen_surface.blit(error_text, error_rect)
             pygame.display.flip()
             await asyncio.sleep(5)
         raise
@@ -223,7 +223,7 @@ async def main():
 
 
 async def show_menu(screen, font) -> None:
-    """Display the main menu until player presses Enter
+    """Display the main menu until player presses Enter.
 
     Args:
     ----

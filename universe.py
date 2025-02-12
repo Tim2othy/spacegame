@@ -23,6 +23,7 @@ from constants import (
     AST_MIN_SIZE,
     AST_ORBIT_PARAM,
     AST_RADIUS_PARAM,
+    FPS_HISTORY_LENGTH,
     GRAVITATIONAL_CONSTANT,
 )
 
@@ -342,7 +343,7 @@ class Universe:
         player_ship = self.player_ships[player_ix]
         # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
         # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
-        texty(f"{fps:.0f} fps (average over past 180 frames)")
+        texty(f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
         texty(f"Fuel: {player_ship.fuel:.0f}")
         texty(f"Health: {player_ship.health:.0f}")
         texty(f"Ammunition: {player_ship.ammo}")
