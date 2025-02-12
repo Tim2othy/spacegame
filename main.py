@@ -33,7 +33,8 @@ num_enemies = 20 if small_mode else 40
 async def main():
     """Main async game loop."""
     SCREEN_SURFACE = None
-    pygame.init()
+    pygame.display.init()
+    pygame.font.init()
     font = pygame.font.Font(None, 36)
     try:
         pygame.display.set_caption("Space Game")
