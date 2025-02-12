@@ -1,0 +1,9 @@
+[project]
+name = "spacegame"
+version = "0.1.0"
+description = "2D Space Shooter"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    pygame-ce
+]
