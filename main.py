@@ -163,11 +163,18 @@ async def main():
 
         clock = pygame.time.Clock()
 
-        while True:
-            dt = clock.tick() / 1_000
+        fps = []
 
+        while True:
             if any(e.type == pygame.QUIT for e in pygame.event.get()):
                 break
+
+            dt = clock.tick() / 1_000
+            fps.append(clock.get_fps())
+            # TODO: Externalize 180 to variable that's also mentioned in
+            # the HUD-text "fps (average over past 180 frames)"
+            if len(fps) > 180:
+                fps = fps[1:]  # TODO: Use a queue
 
             universe.handle_input(pygame.key.get_pressed())
             universe.step(dt)
@@ -196,7 +203,7 @@ async def main():
                     universe.draw_background(player_camera)
                     universe.draw_grid(player_camera)
                     universe.draw(player_camera)
-                    universe.draw_text(player_camera, player_ix)
+                    universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                 SCREEN_SURFACE.blit(player_camera.surface, topleft)
 

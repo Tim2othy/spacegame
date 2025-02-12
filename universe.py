@@ -322,7 +322,7 @@ class Universe:
         ):
             pobj.draw(camera)
 
-    def draw_text(self, camera: Camera, player_ix: int) -> None:
+    def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
         """Draw "debugging" text on `camera`.
 
         Args:
@@ -349,6 +349,7 @@ class Universe:
         player_ship = self.player_ships[player_ix]
         # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
         # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
+        texty(f"{fps:.0f} fps (average over past 180 frames)")
         texty(f"Fuel: {player_ship.fuel:.0f}")
         texty(f"Health: {player_ship.health:.0f}")
         texty(f"Ammunition: {player_ship.ammo}")
