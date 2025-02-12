@@ -191,9 +191,7 @@ class Disk(PhysicalObject):
         # Calculate normal vector
         delta = self.pos - disk.pos
         if delta == Vec2(0, 0):
-            delta = Vec2(
-                SMOL, SMOL
-            )  # I also tried using return here, but this gives better results
+            delta = Vec2(SMOL, SMOL)  # I also tried using return here, but this gives better results
         self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
 
@@ -207,11 +205,7 @@ class Disk(PhysicalObject):
 
         # This allows the ship to land on the planet.
         # If impulse is small there is no damage
-        damage = (
-            (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD))
-            * (1 - BOUNCINESS)
-            * BOUNCE_DAMAGE_SCALAR
-        )
+        damage = (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD)) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
 
         # Move self outside other
         overlap = self.radius + disk.radius - delta.magnitude()

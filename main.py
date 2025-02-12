@@ -70,9 +70,7 @@ async def main():
                 10,
                 Color("blue"),
                 Color("yellow"),
-                ShipInput(
-                    pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE
-                ),
+                ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
                 "assets/player_ship.png",
             ),
         ]
@@ -132,15 +130,9 @@ async def main():
 
         enemy_ships: list[BulletEnemy] = []
         for _ in range(num_enemies):
-            pos = Vec2(
-                random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y)
-            )
-            enemy_type = random.choices(
-                [BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2]
-            )[0]
-            enemy_ships.append(
-                enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec)
-            )
+            pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
+            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
+            enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec))
         universe.enemy_ships = enemy_ships
 
         # --- Instead of subsurfaces from SCREEN_SURFACE, create independent surfaces ---
@@ -157,9 +149,7 @@ async def main():
 
         minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
 
-        minimap_camera = Camera(
-            world_size_vec / 2, MINIMAP_SIZE.x / world_size_vec.x, minimap_surface
-        )
+        minimap_camera = Camera(world_size_vec / 2, MINIMAP_SIZE.x / world_size_vec.x, minimap_surface)
 
         clock = pygame.time.Clock()
 
@@ -184,14 +174,11 @@ async def main():
                 player_camera = cameras[player_ix]
                 player_camera.start_drawing_new_frame()
                 gameover = (
-                    not universe.contains_point(player_ship.pos)
-                    or player_ship.health <= 0
+                    not universe.contains_point(player_ship.pos) or player_ship.health <= 0
                 ) and not invincible_mode
                 if gameover:
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
-                    player_camera.draw_text(
-                        "GAME OVER", None, gameover_font, Color("red")
-                    )
+                    player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                     SCREEN_SURFACE.blit(player_camera.surface, topleft)
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
@@ -208,15 +195,11 @@ async def main():
 
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
-            SCREEN_SURFACE.blit(
-                minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0)
-            )
+            SCREEN_SURFACE.blit(minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0))
 
             # Draw minimap borders directly on SCREEN_SURFACE if needed
             MINIMAP_BORDER_COLOR = Color("aquamarine")
-            minimap_camera.draw_vertical_hairline(
-                MINIMAP_BORDER_COLOR, 0, 0, world_size_vec.y
-            )
+            minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, world_size_vec.y)
             minimap_camera.draw_horizontal_hairline(
                 MINIMAP_BORDER_COLOR,
                 0,
@@ -230,9 +213,7 @@ async def main():
         if SCREEN_SURFACE:
             SCREEN_SURFACE.fill((0, 0, 0))
             error_text = font.render(f"Error: {str(e)}", True, (255, 0, 0))
-            error_rect = error_text.get_rect(
-                center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2)
-            )
+            error_rect = error_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
             SCREEN_SURFACE.blit(error_text, error_rect)
             pygame.display.flip()
             await asyncio.sleep(5)
@@ -269,14 +250,10 @@ async def show_menu(screen, font) -> None:
 
         for i, option in enumerate(options):
             color = (255, 255, 255) if i == selected_option else (100, 100, 100)
-            option_text = font.render(
-                f"{option['name']}: {'On' if option['value'] else 'Off'}", True, color
-            )
+            option_text = font.render(f"{option['name']}: {'On' if option['value'] else 'Off'}", True, color)
             screen.blit(
                 option_text,
-                option_text.get_rect(
-                    center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)
-                ),
+                option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)),
             )
 
         start_text = font.render("Press Enter to Start", True, (255, 255, 255))
@@ -301,9 +278,7 @@ async def show_menu(screen, font) -> None:
                 elif event.key == pygame.K_DOWN:
                     selected_option = (selected_option + 1) % len(options)
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                    options[selected_option]["value"] = not options[selected_option][
-                        "value"
-                    ]
+                    options[selected_option]["value"] = not options[selected_option]["value"]
 
     # Update the global variables with the new values
     small_mode = options[0]["value"]

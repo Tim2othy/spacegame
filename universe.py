@@ -112,8 +112,7 @@ class Universe:
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
-            pygame.image.load(path).convert_alpha()
-            for path in parallax_background_paths
+            pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
@@ -294,12 +293,8 @@ class Universe:
             scaled_background = pygame.transform.smoothscale_by(background, zoom)
             (bg_width, bg_height) = Vec2(background.get_size()) * zoom
 
-            draw_start_x = (
-                camera_pos_x / (background_count - ix + 0.5) % bg_width
-            ) - bg_width
-            draw_start_y = (
-                camera_pos_y / (background_count - ix + 0.5) % bg_height
-            ) - bg_height
+            draw_start_x = (camera_pos_x / (background_count - ix + 0.5) % bg_width) - bg_width
+            draw_start_y = (camera_pos_y / (background_count - ix + 0.5) % bg_height) - bg_height
             repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
             repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
 
@@ -317,9 +312,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in (
-            self.asteroids + self.planets + self.enemy_ships + self.player_ships
-        ):
+        for pobj in self.asteroids + self.planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
     def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
@@ -442,19 +435,14 @@ class Universe:
         # pos_asteroid
         semi_major_axis = (r_p + r_a) / 2
         eccentricity = (r_a - r_p) / (r_a + r_p)
-        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
-            1 + eccentricity * math.cos(true_anomaly)
-        )
+        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
         pos_asteroid = planet.pos + radial_vector * r_initial
 
         # velocity_asteroid
-        total_specific_energy = (
-            -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
-        )
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
         orbital_velocity = (
-            2
-            * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
+            2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
         ) ** 0.5
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity

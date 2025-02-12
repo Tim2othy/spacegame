@@ -127,9 +127,7 @@ class Ship(Disk):
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
                 gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = (
-                    self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
-                )
+                bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self.gun_cooldown
@@ -347,9 +345,7 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
-        super().__init__(
-            pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED
-        )
+        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -520,9 +516,7 @@ class BulletEnemy(Ship):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(
-            pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed
-        )
+        super().__init__(pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = ENEMY_HEALTH
@@ -566,12 +560,8 @@ class BulletEnemy(Ship):
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                desired_velocity = (
-                    delta_target_ship * self.thrust / delta_target_ship.magnitude()
-                )
-                perfect_multiplier = max(
-                    self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude()
-                )
+                desired_velocity = delta_target_ship * self.thrust / delta_target_ship.magnitude()
+                perfect_multiplier = max(self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude())
                 perfect_velocity = desired_velocity.normalize() * perfect_multiplier
                 required_acceleration = perfect_velocity - self.vel
                 force_direction = required_acceleration
@@ -616,9 +606,7 @@ class RocketEnemy(BulletEnemy):
 
 
         """
-        super().__init__(
-            pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color
-        )
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -646,9 +634,7 @@ class MissileEnemy(BulletEnemy):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(
-            pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color
-        )
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
