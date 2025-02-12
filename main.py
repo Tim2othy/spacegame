@@ -8,7 +8,7 @@ import sys
 from collections import deque
 
 import pygame
-from pygame import Color
+from pygame import Color, Font, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
@@ -24,13 +24,7 @@ from constants import (
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
 from universe import Planet, Universe
 
-small_mode = False
-multiplayer_mode = False
-invincible_mode = False
-
-world_size = 15000 if small_mode else 30000
-world_size_vec = Vec2(world_size, world_size)
-num_enemies = 20 if small_mode else 40
+type Options = dict[str, bool]
 
 
 async def main():
@@ -39,13 +33,19 @@ async def main():
     pygame.display.init()
     pygame.font.init()
     font = pygame.font.Font(None, 36)
+    options: Options = {"small": False, "splitscreen": False, "invincible": False}
+
     try:
         pygame.display.set_caption("Space Game")
         screen_surface = pygame.display.set_mode(SCREEN_SIZE)
 
-        await show_menu(screen_surface, font)
+        options = await show_menu(screen_surface, options, font)
 
-        player_ships_single: list[PlayerShip] = [
+        num_enemies = 20 if options["small"] else 40
+        world_size = 15000 if options["small"] else 30000
+        world_size_vec = Vec2(world_size, world_size)
+
+        player_ships: list[PlayerShip] = [
             PlayerShip(
                 world_size_vec / 2,
                 Vec2(0, 0),
@@ -63,61 +63,58 @@ async def main():
                 "assets/player_ship.png",
             ),
         ]
-
-        player_ships_multi: list[PlayerShip] = [
-            player_ships_single[0],
-            PlayerShip(
-                world_size_vec / 2 + Vec2(50, 0),
-                Vec2(0, 0),
-                1,
-                10,
-                Color("blue"),
-                Color("yellow"),
-                ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
-                "assets/player_ship.png",
-            ),
-        ]
-
-        planets_large: list[Planet] = [
-            Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
-            Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
-            Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
-            Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
-            Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
-            Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
-            Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
-            Planet(Vec2(18_000, 19_000), 300, Color("coral")),
-            Planet(Vec2(13_000, 17_000), 400, Color("blue")),
-            Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
-            Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
-            Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
-            Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
-            Planet(Vec2(14_500, 3_000), 600, Color("plum")),
-            Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
-            Planet(Vec2(3_000, 1_000), 700, Color("navy")),
-        ]
-
-        planets_small: list[Planet] = [
-            Planet(
-                Vec2(
-                    random.uniform(0, world_size_vec[1]),
-                    random.uniform(0, world_size_vec[1]),
+        if options["splitscreen"]:
+            player_ships.append(
+                PlayerShip(
+                    world_size_vec / 2 + Vec2(50, 0),
+                    Vec2(0, 0),
+                    1,
+                    10,
+                    Color("blue"),
+                    Color("yellow"),
+                    ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
+                    "assets/player_ship.png",
                 ),
-                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-                color,
             )
-            for color in [
-                Color("darkred"),
-                Color("green"),
-                Color("mediumpurple"),
-                Color("darkorange"),
-                Color("royalblue"),
-                Color("yellow"),
+        planets: list[Planet] = (
+            [
+                Planet(
+                    Vec2(
+                        random.uniform(0, world_size_vec[1]),
+                        random.uniform(0, world_size_vec[1]),
+                    ),
+                    random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
+                    color,
+                )
+                for color in [
+                    Color("darkred"),
+                    Color("green"),
+                    Color("mediumpurple"),
+                    Color("darkorange"),
+                    Color("royalblue"),
+                    Color("yellow"),
+                ]
             ]
-        ]
-
-        player_ships = player_ships_multi if multiplayer_mode else player_ships_single
-        planets = planets_small if small_mode else planets_large
+            if options["small"]
+            else [
+                Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
+                Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
+                Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
+                Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
+                Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
+                Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
+                Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
+                Planet(Vec2(18_000, 19_000), 300, Color("coral")),
+                Planet(Vec2(13_000, 17_000), 400, Color("blue")),
+                Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
+                Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
+                Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
+                Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
+                Planet(Vec2(14_500, 3_000), 600, Color("plum")),
+                Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
+                Planet(Vec2(3_000, 1_000), 700, Color("navy")),
+            ]
+        )
 
         universe = Universe(
             world_size_vec,
@@ -176,14 +173,14 @@ async def main():
                 player_camera.start_drawing_new_frame()
                 gameover = (
                     not universe.contains_point(player_ship.pos) or player_ship.health <= 0
-                ) and not invincible_mode
+                ) and not options["invincible"]
                 if gameover:
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                     screen_surface.blit(player_camera.surface, topleft)
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
-                    await show_menu(screen_surface, font)
+                    options = await show_menu(screen_surface, font)
                     break
                 universe.move_camera(player_camera, player_ix, dt)
                 universe.draw_background(player_camera)
@@ -222,47 +219,51 @@ async def main():
         sys.exit()
 
 
-async def show_menu(screen, font) -> None:
+async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
     """Display the main menu until player presses Enter.
 
     Args:
     ----
-        screen: To fill and render text on
-        font: Font to use for rendering
+        screen (Surface): To fill and render text on
+        options (Options): Current options
+        font (Font): Font to use for rendering
+
+    Returns:
+    -------
+        Options: Updated options
 
     """
-    global small_mode, multiplayer_mode, invincible_mode
-
-    options = [
-        {"name": "Small Mode", "value": small_mode},
-        {"name": "Multiplayer Mode", "value": multiplayer_mode},
-        {"name": "Invincible Mode", "value": invincible_mode},
-    ]
-    selected_option = 0
+    option_selection_ix = 0
+    title_text = font.render("Space Game", antialias=True, color=Color("White"))
+    start_text = font.render("Press Enter to Start", antialias=True, color=Color("White"))
 
     def draw_menu():
-        screen.fill((0, 0, 0))
-        title_text = font.render("Space Game", True, (255, 255, 255))
+        screen.fill(Color("Black"))
+
         screen.blit(
             title_text,
             title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)),
         )
 
-        for i, option in enumerate(options):
-            color = (255, 255, 255) if i == selected_option else (100, 100, 100)
-            option_text = font.render(f"{option['name']}: {'On' if option['value'] else 'Off'}", True, color)
+        for i, (name, value) in enumerate(options.items()):
+            color = (255, 255, 255) if i == option_selection_ix else (100, 100, 100)
+            option_text = font.render(
+                f"{name}: <{'On' if value else 'Off'}>",
+                antialias=True,
+                color=color,
+            )
             screen.blit(
                 option_text,
                 option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)),
             )
 
-        start_text = font.render("Press Enter to Start", True, (255, 255, 255))
         screen.blit(
             start_text,
             start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)),
         )
         pygame.display.flip()
 
+    option_names = list(options.keys())
     waiting = True
     while waiting:
         draw_menu()
@@ -274,16 +275,15 @@ async def show_menu(screen, font) -> None:
                 if event.key == pygame.K_RETURN:
                     waiting = False
                 elif event.key == pygame.K_UP:
-                    selected_option = (selected_option - 1) % len(options)
+                    option_selection_ix = (option_selection_ix - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options)
+                    option_selection_ix = (option_selection_ix + 1) % len(options)
                 elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
-                    options[selected_option]["value"] = not options[selected_option]["value"]
+                    options[option_names[option_selection_ix]] = not options[
+                        option_names[option_selection_ix]
+                    ]
 
-    # Update the global variables with the new values
-    small_mode = options[0]["value"]
-    multiplayer_mode = options[1]["value"]
-    invincible_mode = options[2]["value"]
+    return options
 
 
 if __name__ == "__main__":
