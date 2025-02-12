@@ -194,7 +194,6 @@ async def main():
                     )
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                     SCREEN_SURFACE.blit(player_camera.surface, topleft)
-                    pygame.display.flip()
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
                     await show_menu(SCREEN_SURFACE, font)
                     break
