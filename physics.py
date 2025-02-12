@@ -21,9 +21,7 @@ from constants import (
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic velocity,
-    and constant nonzero mass.
-    """
+    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
 
     def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
