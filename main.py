@@ -27,7 +27,7 @@ from universe import Planet, Universe
 type Options = dict[str, bool]
 
 
-async def main():
+async def main() -> None:
     """Run the game."""
     screen_surface = None
     pygame.display.init()
@@ -153,7 +153,7 @@ async def main():
 
         clock = pygame.time.Clock()
 
-        fps = deque()
+        fps: deque[float] = deque()
 
         while True:
             if any(e.type == pygame.QUIT for e in pygame.event.get()):
@@ -180,7 +180,7 @@ async def main():
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                     screen_surface.blit(player_camera.surface, topleft)
                     await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
-                    options = await show_menu(screen_surface, font)
+                    options = await show_menu(screen_surface, options, font)
                     break
                 universe.move_camera(player_camera, player_ix, dt)
                 universe.draw_background(player_camera)
@@ -237,7 +237,7 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
     title_text = font.render("Space Game", antialias=True, color=Color("White"))
     start_text = font.render("Press Enter to Start", antialias=True, color=Color("White"))
 
-    def draw_menu():
+    def draw_menu() -> None:
         screen.fill(Color("Black"))
 
         screen.blit(
