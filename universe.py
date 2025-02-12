@@ -1,6 +1,4 @@
-"""If you wish to collect celestial bodies, spaceships, and
-everything else, you must first invent the universe.
-"""
+"""A collection of celestial objects, forming a Universe."""
 
 from __future__ import annotations
 
@@ -45,6 +43,7 @@ class Planet(Disk):
             pos (Vec2): Fixed position
             radius (float): Radius
             color (Color): Color
+            density (float): Density
 
         """
         super().__init__(
@@ -323,6 +322,7 @@ class Universe:
         ----
             camera (Camera): Camera to draw on
             player_ix (int): Player to display information about
+            fps (float): Current fps
 
         """
         font_size = 32
@@ -341,17 +341,10 @@ class Universe:
             self.text_vertical_offset += font_size
 
         player_ship = self.player_ships[player_ix]
-        # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
-        # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
         texty(f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
         texty(f"Fuel: {player_ship.fuel:.0f}")
         texty(f"Health: {player_ship.health:.0f}")
         texty(f"Ammunition: {player_ship.ammo}")
-        # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
-        # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
-        # texty(f"{player_projectile_count} player projectiles")
-        # texty(f"{enemy_projectile_count} enemy projectiles")
-        # texty(f"Number of Asteroids: {len(self.asteroids)}")
 
         enemy_count = len(self.enemy_ships)
         texty(f"Enemies left: {enemy_count}")
@@ -406,15 +399,11 @@ class Universe:
         return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
 
     def generate_asteroid(self, planet: Planet) -> None:
-        """Creates an asteroid orbiting a planet.
+        """Create an asteroid orbiting a planet.
 
         Args:
         ----
             planet (Planet): The planet to orbit
-
-        Returns:
-        -------
-            None, but it creates a fucking asteroid!
 
         What the random variables do:
         - radius_asteroid - pretty obvious

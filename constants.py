@@ -1,4 +1,4 @@
-"""Staging-grounds for the constans"""
+"""Constants for the game."""
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2
