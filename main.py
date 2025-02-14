@@ -164,10 +164,12 @@ async def main() -> None:
 
         fps: deque[float] = deque()
         profiler = Profiler()
+        running = True
 
-        while True:
+        while running:
             profiler.start("other")
             if any(e.type == pygame.QUIT for e in pygame.event.get()):
+                running = False
                 break
 
             dt = clock.tick() / 1_000
@@ -196,6 +198,7 @@ async def main() -> None:
                     # TODO: Deal with remainder of issue #35
                     # await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
                     # options = await show_menu(screen_surface, options, font)
+                    running = False
                     break
                 profiler.start("universe.move_camera")
                 universe.move_camera(player_camera, player_ix, dt)
@@ -240,9 +243,10 @@ async def main() -> None:
             await asyncio.sleep(5)
         raise
     finally:
-        print(profiler.log())
+        profiler_stats = profiler.log()
+        print(profiler_stats)
         if sys.platform == "emscripten":
-            platform.console.log("logged message")
+            platform.console.log(profiler_stats)
 
         pygame.quit()
         sys.exit()
