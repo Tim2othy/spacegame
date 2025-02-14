@@ -28,7 +28,7 @@ class Profiler:
         """Show the current state of the profiler."""
         total_time = sum(self.times[name] for name in self.times)
         outputs: list[str] = []
-            outputs.append(f"{name}: {t / total_time * 100:.2f}%")
         for name, t in sorted(self.times.items(), key=lambda entry: entry[1]):
+            outputs.append(f"{t / total_time * 100:.2f}% {name}")
 
         return "\n".join(outputs)
