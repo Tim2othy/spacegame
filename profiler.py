@@ -9,6 +9,7 @@ class Profiler:
     def __init__(self) -> None:
         """Start the profiler."""
         self.most_recent_time = time.time()
+        self.most_recent_action = "setup"
         self.times: dict[str, float] = {}
 
     def start(self, name: str) -> None:
@@ -18,10 +19,11 @@ class Profiler:
         """
         now = time.time()
         delta = now - self.most_recent_time
-        if name in self.times:
-            self.times[name] = self.times[name] + delta
+        self.most_recent_action, action = name, self.most_recent_action
+        if action in self.times:
+            self.times[action] = self.times[action] + delta
         else:
-            self.times[name] = delta
+            self.times[action] = delta
         self.most_recent_time = now
 
     def log(self) -> str:
