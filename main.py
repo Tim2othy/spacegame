@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import platform
 import random
 import sys
 from collections import deque
@@ -188,6 +189,7 @@ async def main() -> None:
                     not universe.contains_point(player_ship.pos) or player_ship.health <= 0
                 ) and not options["invincible"]
                 if gameover:
+                    profiler.start("gameover")
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
@@ -239,6 +241,9 @@ async def main() -> None:
         raise
     finally:
         print(profiler.log())
+        if sys.platform == "emscripten":
+            platform.console.log("logged message")
+
         pygame.quit()
         sys.exit()
 
