@@ -189,13 +189,13 @@ async def main() -> None:
                     not universe.contains_point(player_ship.pos) or player_ship.health <= 0
                 ) and not options["invincible"]
                 if gameover:
-                    profiler.start("gameover")
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                     screen_surface.blit(player_camera.surface, topleft)
-                    await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
-                    options = await show_menu(screen_surface, options, font)
+                    # TODO: Deal with remainder of issue #35
+                    # await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
+                    # options = await show_menu(screen_surface, options, font)
                     break
                 profiler.start("universe.move_camera")
                 universe.move_camera(player_camera, player_ix, dt)
