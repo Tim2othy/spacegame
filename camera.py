@@ -63,8 +63,7 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ) -> None:
-        """Smoothly move the camera so that a worldspace-rectangle is
-        visible entirely, but not more.
+        """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
 
         Args:
         ----
@@ -99,8 +98,7 @@ class Camera:
         dt: float,
         transition_time: float = 0.25,
     ) -> None:
-        """Smoothly focus camera so that a list of worldspace-points is
-        visible, with an additional buffer.
+        """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
 
         Args:
         ----
@@ -297,7 +295,7 @@ class Camera:
             color (Color): Text's fill color
 
         """
-        rendered = font.render(text, True, color)
+        rendered = font.render(text, antialias=True, color=color)
         if pos is None:
             width, height = self.surface.get_size()
             pos = Vec2(

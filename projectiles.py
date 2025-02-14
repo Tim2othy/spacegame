@@ -2,9 +2,9 @@
 
 from typing import TYPE_CHECKING
 
+import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
-import pygame
 
 from camera import Camera
 from physics import PhysicalObject
@@ -13,12 +13,12 @@ if TYPE_CHECKING:
     from ship import Ship
 
 from constants import (
-    ROCKET_HOMING_DURATION,
-    ROCKET_NONHOMING_DURATION,
-    ROCKET_HOMING_THRUST,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
     MISSILE_PREFERRED_SPEED,
+    ROCKET_HOMING_DURATION,
+    ROCKET_HOMING_THRUST,
+    ROCKET_NONHOMING_DURATION,
 )
 
 
@@ -143,9 +143,7 @@ class Rocket(Bullet):
 class Missile(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(
-        self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship", image_path: str
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship", image_path: str) -> None:
         """Create a new Missile targeting `target_ship`.
 
         Args:
@@ -192,10 +190,7 @@ class Missile(Bullet):
         """
         self.homing_timer = self.homing_timer + dt
         delta_target_ship = self.target_ship.pos - self.pos
-        if (
-            delta_target_ship != Vec2(0, 0)
-            and self.homing_timer <= self.homing_duration
-        ):
+        if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
             target_ship_direction = delta_target_ship.normalize()
             multiplier = max(
                 self.target_ship.vel.magnitude() * 1.1,

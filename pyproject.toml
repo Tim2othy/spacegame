@@ -1,0 +1,28 @@
+[project]
+name = "spacegame"
+version = "0.1.0"
+description = "2D Space Shooter"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pygame-ce>=2.5.3",
+]
+
+[tool.ruff]
+line-length = 110
+select = ["ALL"]
+ignore = [
+    "S311", # suspicious-non-cryptographic-random-usage
+    "D203", # incorrect-blank-line-before-class
+    "D213", # multi-line-summary-second-line 
+]
+
+[dependency-groups]
+dev = [
+  "pygbag",
+  "pillow",
+  "numpy"
+]
+lint = [
+  "ruff"
+]

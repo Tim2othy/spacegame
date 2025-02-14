@@ -1,11 +1,9 @@
-"""If you wish to collect celestial bodies, spaceships, and
-everything else, you must first invent the universe.
-"""
+"""A collection of celestial objects, forming a Universe."""
 
 from __future__ import annotations
 
-import random
 import math
+import random
 from typing import TYPE_CHECKING
 
 import pygame
@@ -19,11 +17,12 @@ if TYPE_CHECKING:
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
-    GRAVITATIONAL_CONSTANT,
-    AST_MIN_SIZE,
-    AST_RADIUS_PARAM,
     AST_ELLIPSIS_PARAM,
+    AST_MIN_SIZE,
     AST_ORBIT_PARAM,
+    AST_RADIUS_PARAM,
+    FPS_HISTORY_LENGTH,
+    GRAVITATIONAL_CONSTANT,
 )
 
 
@@ -44,6 +43,7 @@ class Planet(Disk):
             pos (Vec2): Fixed position
             radius (float): Radius
             color (Color): Color
+            density (float): Density
 
         """
         super().__init__(
@@ -112,8 +112,7 @@ class Universe:
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
-            pygame.image.load(path).convert_alpha()
-            for path in parallax_background_paths
+            pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
@@ -294,12 +293,8 @@ class Universe:
             scaled_background = pygame.transform.smoothscale_by(background, zoom)
             (bg_width, bg_height) = Vec2(background.get_size()) * zoom
 
-            draw_start_x = (
-                camera_pos_x / (background_count - ix + 0.5) % bg_width
-            ) - bg_width
-            draw_start_y = (
-                camera_pos_y / (background_count - ix + 0.5) % bg_height
-            ) - bg_height
+            draw_start_x = (camera_pos_x / (background_count - ix + 0.5) % bg_width) - bg_width
+            draw_start_y = (camera_pos_y / (background_count - ix + 0.5) % bg_height) - bg_height
             repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
             repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
 
@@ -317,9 +312,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in (
-            self.asteroids + self.planets + self.enemy_ships + self.player_ships
-        ):
+        for pobj in self.asteroids + self.planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
     def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
@@ -329,40 +322,31 @@ class Universe:
         ----
             camera (Camera): Camera to draw on
             player_ix (int): Player to display information about
+            fps (float): Current fps
 
         """
         font_size = 32
         font = pygame.font.Font(None, font_size)
 
-        self.text_vertical_offset = 10
-
-        def texty(text: str | None = None) -> None:
+        def texty(vertical_offset: int, text: str | None = None) -> int:
             if text is not None:
                 camera.draw_text(
                     text,
-                    Vec2(10, self.text_vertical_offset),
+                    Vec2(10, vertical_offset),
                     font,
                     Color("white"),
                 )
-            self.text_vertical_offset += font_size
+            return vertical_offset + font_size
 
+        text_v = 10
         player_ship = self.player_ships[player_ix]
-        # texty(f"({int(player_ship.pos.x)}, {int(player_ship.pos.y)})")
-        # texty(f"Velocity: ({int(player_ship.vel.x)}, {int(player_ship.vel.y)})")
-        texty(f"{fps:.0f} fps (average over past 180 frames)")
-        texty(f"Fuel: {player_ship.fuel:.0f}")
-        texty(f"Health: {player_ship.health:.0f}")
-        texty(f"Ammunition: {player_ship.ammo}")
-        # player_projectile_count = sum(len(p.projectiles) for p in self.player_ships)
-        # enemy_projectile_count = sum(len(e.projectiles) for e in self.enemy_ships)
-        # texty(f"{player_projectile_count} player projectiles")
-        # texty(f"{enemy_projectile_count} enemy projectiles")
-        # texty(f"Number of Asteroids: {len(self.asteroids)}")
+        text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
+        text_v = texty(text_v, f"Fuel: {player_ship.fuel:.0f}")
+        text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
+        text_v = texty(text_v, f"Ammunition: {player_ship.ammo}")
 
         enemy_count = len(self.enemy_ships)
-        texty(f"Enemies left: {enemy_count}")
-
-        del self.text_vertical_offset
+        texty(text_v, f"Enemies left: {enemy_count}")
 
     def draw_grid(self, camera: Camera) -> None:
         """Draw grid on `camera`.
@@ -412,15 +396,11 @@ class Universe:
         return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
 
     def generate_asteroid(self, planet: Planet) -> None:
-        """Creates an asteroid orbiting a planet.
+        """Create an asteroid orbiting a planet.
 
         Args:
         ----
             planet (Planet): The planet to orbit
-
-        Returns:
-        -------
-            None, but it creates a fucking asteroid!
 
         What the random variables do:
         - radius_asteroid - pretty obvious
@@ -429,6 +409,7 @@ class Universe:
         - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
         - orbit_direction - in which direction (in degrees) of the planet it starts
         - asteroid_angle  - does it go clockwise or anticlockwise
+
         """
         # random variables
         asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
@@ -442,19 +423,14 @@ class Universe:
         # pos_asteroid
         semi_major_axis = (r_p + r_a) / 2
         eccentricity = (r_a - r_p) / (r_a + r_p)
-        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (
-            1 + eccentricity * math.cos(true_anomaly)
-        )
+        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
         pos_asteroid = planet.pos + radial_vector * r_initial
 
         # velocity_asteroid
-        total_specific_energy = (
-            -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
-        )
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
         orbital_velocity = (
-            2
-            * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
+            2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
         ) ** 0.5
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity

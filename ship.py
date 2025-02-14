@@ -2,35 +2,34 @@
 
 from __future__ import annotations
 
+import math
 import random
 from enum import Enum
 from typing import TYPE_CHECKING
-import math
 
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk
-from projectiles import Bullet, Rocket, Missile
-
 from constants import (
     BULLET_SPEED,
     DAMAGE_INDICATOR_TIME,
+    ENEMY_ACTION_TIMER,
+    ENEMY_ACTION_WEIGHTS,
     ENEMY_BULLET_COOLDOWN,
+    ENEMY_HEALTH,
+    ENEMY_MISSILE_COOLDOWN,
+    ENEMY_ROCKET_COOLDOWN,
+    ENEMY_SHOOT_RANGE,
+    ENEMY_THRUST_MULTIPLIER,
+    ENEMY_VISUAL_RANGE,
     GUN_COOLDOWN,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    ENEMY_SHOOT_RANGE,
-    ENEMY_THRUST_MULTIPLIER,
-    ENEMY_ACTION_TIMER,
-    ENEMY_HEALTH,
-    ENEMY_ACTION_WEIGHTS,
-    ENEMY_ROCKET_COOLDOWN,
-    ENEMY_VISUAL_RANGE,
-    ENEMY_MISSILE_COOLDOWN,
     SMOL,
 )
+from physics import Disk
+from projectiles import Bullet, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -127,9 +126,7 @@ class Ship(Disk):
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
                 gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = (
-                    self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
-                )
+                bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self.gun_cooldown
@@ -202,7 +199,7 @@ class Ship(Disk):
         def drawy(color: Color, points: list[Vec2]) -> None:
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
-        # thruster_backward (active)
+        # thruster_backward
         if self.thruster_backward:
             drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
 
@@ -214,7 +211,7 @@ class Ship(Disk):
             GUNBARREL_WIDTH * self.radius,
         )
 
-        # thruster_rot_left (material)
+        # thruster_rot_left, material
         drawy(
             darker_color,
             [
@@ -223,8 +220,8 @@ class Ship(Disk):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        # thruster_rot_left (active)
         if self.thruster_rot_left:
+            # thruster_rot_left, active
             drawy(
                 Color("orange"),
                 [
@@ -234,7 +231,7 @@ class Ship(Disk):
                 ],
             )
 
-        # thruster_rot_right (material)
+        # thruster_rot_right, material
         drawy(
             darker_color,
             [
@@ -243,8 +240,8 @@ class Ship(Disk):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        # thruster_rot_right (active)
         if self.thruster_rot_right:
+            # thruster_rot_right, active
             drawy(
                 Color("orange"),
                 [
@@ -254,7 +251,7 @@ class Ship(Disk):
                 ],
             )
 
-        # thruster_forward (flame)
+        # thruster_forward, active
         if self.thruster_forward:
             drawy(
                 Color("orange"),
@@ -266,7 +263,7 @@ class Ship(Disk):
                     0.7 * right + 0.7 * backward,
                 ],
             )
-        # thruster_forward (material)
+        # thruster_forward, material
         drawy(
             darker_color,
             [
@@ -347,9 +344,7 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
-        super().__init__(
-            pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED
-        )
+        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -390,7 +385,7 @@ class PlayerShip(Ship):
         def drawy(color: Color, points: list[Vec2]) -> None:
             camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
 
-        # thruster_backward (active)
+        # thruster_backward, active
         if self.thruster_backward:
             drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
 
@@ -402,7 +397,7 @@ class PlayerShip(Ship):
             GUNBARREL_WIDTH * self.radius,
         )
 
-        # thruster_rot_left (material)
+        # thruster_rot_left, material
         drawy(
             darker_color,
             [
@@ -411,7 +406,7 @@ class PlayerShip(Ship):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        # thruster_rot_left (active)
+        # thruster_rot_left, active
         if self.thruster_rot_left:
             drawy(
                 Color("orange"),
@@ -422,7 +417,7 @@ class PlayerShip(Ship):
                 ],
             )
 
-        # thruster_rot_right (material)
+        # thruster_rot_right, material
         drawy(
             darker_color,
             [
@@ -431,7 +426,7 @@ class PlayerShip(Ship):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        # thruster_rot_right (active)
+        # thruster_rot_right, active
         if self.thruster_rot_right:
             drawy(
                 Color("orange"),
@@ -442,7 +437,7 @@ class PlayerShip(Ship):
                 ],
             )
 
-        # thruster_forward (flame)
+        # thruster_forward, flame
         if self.thruster_forward:
             drawy(
                 Color("orange"),
@@ -454,7 +449,7 @@ class PlayerShip(Ship):
                     0.7 * right + 0.7 * backward,
                 ],
             )
-        # thruster_forward (material)
+        # thruster_forward, material
         drawy(
             darker_color,
             [
@@ -487,6 +482,10 @@ class PlayerShip(Ship):
         camera.draw_image(rotated_image, adjusted_pos)
 
 
+LIME = Color("lime")
+PINK = Color("hotpink")
+
+
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
@@ -507,8 +506,8 @@ class BulletEnemy(Ship):
         world_size: Vec2,
         gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
         bullet_speed: float = BULLET_SPEED,
-        color: Color = Color("lime"),
-        bullet_color: Color = Color("hotpink"),
+        color: Color = LIME,
+        bullet_color: Color = PINK,
     ) -> None:
         """Create a new enemy ship.
 
@@ -520,9 +519,7 @@ class BulletEnemy(Ship):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(
-            pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed
-        )
+        super().__init__(pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = ENEMY_HEALTH
@@ -566,12 +563,8 @@ class BulletEnemy(Ship):
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                desired_velocity = (
-                    delta_target_ship * self.thrust / delta_target_ship.magnitude()
-                )
-                perfect_multiplier = max(
-                    self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude()
-                )
+                desired_velocity = delta_target_ship * self.thrust / delta_target_ship.magnitude()
+                perfect_multiplier = max(self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude())
                 perfect_velocity = desired_velocity.normalize() * perfect_multiplier
                 required_acceleration = perfect_velocity - self.vel
                 force_direction = required_acceleration
@@ -594,6 +587,9 @@ class BulletEnemy(Ship):
         super().step(dt)
 
 
+PLUM = Color("Plum")
+
+
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
@@ -603,7 +599,7 @@ class RocketEnemy(BulletEnemy):
         vel: Vec2,
         target_ship: Ship,
         world_size: Vec2,
-        color: Color = Color("plum"),
+        color: Color = PLUM,
     ) -> None:
         """Create a new Rocket-Ship.
 
@@ -616,13 +612,14 @@ class RocketEnemy(BulletEnemy):
 
 
         """
-        super().__init__(
-            pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color
-        )
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
         return Rocket(pos, vel, self.color, self.target_ship)
+
+
+BLUE = Color("Blue")
 
 
 class MissileEnemy(BulletEnemy):
@@ -634,7 +631,7 @@ class MissileEnemy(BulletEnemy):
         vel: Vec2,
         target_ship: Ship,
         world_size: Vec2,
-        color: Color = Color("blue"),
+        color: Color = BLUE,
     ) -> None:
         """Create a new Missile-Ship.
 
@@ -646,9 +643,7 @@ class MissileEnemy(BulletEnemy):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(
-            pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color
-        )
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""

@@ -1,9 +1,12 @@
-"""Staging-grounds for the constans"""
+"""Constants for the game."""
 
+from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 SCREEN_SIZE = Vec2(1400, 700)
 MINIMAP_SIZE = Vec2(350, 350)
+FPS_HISTORY_LENGTH = 180  # how many frames to keep for FPS calculation
+MINIMAP_BORDER_COLOR = Color("aquamarine")
 
 # planet constants
 PLANET_RADIUS_MU = 6.2

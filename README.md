@@ -13,13 +13,13 @@ You can play the game in the web [here](https://tim2othy.github.io/spacegame/bui
 In `constants.py` you can control the size of the map (`SMALL_MODE`), whether there are one or two players (`MULTI_MODE`), if there is just one or multiple planets (`ORBIT_MODE`), and whether one can die (`INVINCIBLE_MODE`).
 
 
-## Running
-
-Install dependencies:
+## Building
+Requires [uv](https://docs.astral.sh/uv/). Running the game locally (automatically installs python and dependencies):
+```sh
+uv run main.py
 ```
-pip install -r requirements.txt
+Build the game for the web using pygbag (also automatically installed):
+```sh
+uv run pygbag .
 ```
-Run with:
-```
-py main.py
-```
+Then open <localhost:8000>.
