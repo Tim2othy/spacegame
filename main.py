@@ -132,7 +132,7 @@ async def main() -> None:
     pygame.display.init()
     pygame.font.init()
     font = pygame.font.Font(None, 36)
-    options: Options = {"small": False, "splitscreen": False, "invincible": False, "profiling": False}
+    options: Options = {"small": False, "splitscreen": False, "invincible": False}
 
     try:
         pygame.display.set_caption("Space Game")
