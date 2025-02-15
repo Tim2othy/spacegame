@@ -200,7 +200,8 @@ class Disk(PhysicalObject):
     def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
 
-        After this, the two disks should be flush.
+        If a bounce occurs, this changes `self.pos` so that it's flush with `disk`,
+        and has velocity in the opposite direction.
 
         Calculates intensity that `self` moved towards `disk` at moment of collision and
         returns calculated impact-damage.

@@ -86,3 +86,13 @@ def test_disk_drawing():
     assert abs((circle_area - drawn) / rect_area) < threshold
 
     camera.surface.unlock()
+
+
+def test_disk_bounce():
+    disk_a = Disk(Vec2(0, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
+    disk_b = Disk(Vec2(3, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
+    disk_a.bounce_off_of_disk(disk_b)
+
+    # No bounce for non-intersecting disks
+    assert disk_a.pos == Vec2(0, 0)
+    assert disk_a.vel == Vec2(0, 0)
