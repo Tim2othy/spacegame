@@ -2,7 +2,6 @@
 
 import functools
 import time
-from statistics import median, stdev
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -11,6 +10,29 @@ from dataclasses import dataclass, field
 # of main's time we profile in total, lest we
 # end up optimising things that aren't great drains
 # to begin with.
+
+
+# As importing `statistics` breaks pygbag for some
+# reason, we need to roll our own
+def median(values: list[float]) -> float:
+    """Return the median of a list of values.
+
+    >>> median([1,2,3])
+    2
+    >>> median([1,2,3,4])
+    2.5
+
+    """
+    sorted_values = sorted(values)
+    mid = len(values) // 2
+    if len(sorted_values) % 2 == 0:
+        return sum(sorted_values[mid - 1 : mid + 1]) / 2
+    return sorted_values[mid]
+
+
+def stdev(values: list[float], mean: float) -> float:
+    """Return the standard deviation of a list of values."""
+    return sum((x - mean) ** 2 for x in values) ** 0.5
 
 
 @dataclass
