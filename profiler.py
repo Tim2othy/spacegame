@@ -7,6 +7,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 
+# TODO: We should have a way of checking how much
+# of main's time we profile in total, lest we
+# end up optimising things that aren't great drains
+# to begin with.
+
+
 @dataclass
 class MethodProfile:
     """Stores profiling information for a method."""
