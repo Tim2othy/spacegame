@@ -1,11 +1,12 @@
 import random
-from universe import Universe
-from ship import PlayerShip, BulletEnemy, RocketEnemy, MissileEnemy, ShipInput
-from pygame.math import Vector2 as Vec2
-from pygame import Color
+
 import pygame
+from pygame import Color
+from pygame.math import Vector2 as Vec2
 
 from constants import ENEMY_VISUAL_RANGE
+from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
+from universe import Universe
 
 
 def new_player_ship(pos: Vec2) -> PlayerShip:
@@ -27,7 +28,7 @@ def new_player_ship(pos: Vec2) -> PlayerShip:
     )
 
 
-def test_combat():
+def test_enemy_hostility():
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
     player_ship = new_player_ship(world / 2)
