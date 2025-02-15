@@ -150,6 +150,14 @@ class Disk(PhysicalObject):
         -------
             bool: True iff `vec` is in `self`
 
+        >>> disk = Disk(Vec2(0,0), Vec2(0, 0), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk.intersects_point(Vec2(0, 0))
+        True
+        >>> disk.intersects_point(Vec2(1, -1))
+        True
+        >>> disk.intersects_point(Vec2(2, 1))
+        False
+
         """
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
