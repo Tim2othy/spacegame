@@ -90,9 +90,38 @@ def test_disk_drawing():
 
 def test_disk_bounce():
     disk_a = Disk(Vec2(0, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
-    disk_b = Disk(Vec2(3, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
-    disk_a.bounce_off_of_disk(disk_b)
+    disk_b = Disk(Vec2(4, 0), Vec2(0, 0), density=1, radius=2, color=Color(0, 0, 0))
 
     # No bounce for non-intersecting disks
-    assert disk_a.pos == Vec2(0, 0)
-    assert disk_a.vel == Vec2(0, 0)
+    assert disk_a.bounce_off_of_disk(disk_b) is None
+
+    disk_c = Disk(Vec2(0, 1), Vec2(1, 0), density=1, radius=1, color=Color(0, 0, 0))
+
+    bounce_count = 0
+    for _ in range(200):
+        disk_c.step(0.01)
+        disk_b.step(0.01)
+        bounce = disk_c.bounce_off_of_disk(disk_b)
+        if bounce is not None:
+            bounce_count += 1
+            # Because these are small disks, the bounce
+            # will be clamped to 0 (capping damage)
+            assert bounce == 0.0
+
+            # disk_c is flush with disk_b right now
+            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) < EPSILON
+        else:
+            # disk_c is not flush with disk_b
+            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) > EPSILON
+        if bounce_count <= 0:
+            assert disk_c.vel == Vec2(1, 0)
+            assert disk_b.vel == Vec2(0, 0)
+        if bounce_count >= 1:
+            # Check rough angle of disk_c bouncing
+            assert disk_c.vel.x < 0
+            assert disk_c.vel.y > 0
+
+            # Nothing happened to disk_b, I hope?
+            assert disk_b.vel == Vec2(0, 0)
+
+    assert bounce_count == 1
