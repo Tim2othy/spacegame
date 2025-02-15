@@ -57,8 +57,8 @@ class Profiler:
     def log_stats(self) -> str:
         """Return statistics for all profiled methods."""
         output = [
-            f"{'Method':<32} {'Calls':>5} {'Total (ns)':>12} {'Avg (ns)':>8} {'Mdn (ns)':>8} {'StDev (ns)':>10}",
-            "-" * 80,
+            f"{'Method':<32} {'Calls':>5} {'Total(μs)':>9} {'Avg(μs)':>7} {'Mdn(μs)':>7} {'StDev(μs)':>9}",
+            "─" * 74,
         ]
 
         for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True):
@@ -75,10 +75,10 @@ class Profiler:
                     [
                         f"{p.name[:32]:<32}",
                         f"{p.call_count:>5}",
-                        f"{p.total_time:12.0f}",
-                        f"{average_t:8.0f}",
-                        f"{median_t:8.0f}",
-                        f"{stdev_t:10.0f}",
+                        f"{p.total_time / 1000:9.0f}",
+                        f"{average_t / 1000:7.0f}",
+                        f"{median_t / 1000:7.0f}",
+                        f"{stdev_t / 1000:9.0f}",
                     ]
                 )
             )
