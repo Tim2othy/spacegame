@@ -21,7 +21,8 @@ ignore = [
 dev = [
   "pygbag",
   "pillow",
-  "numpy"
+  "numpy",
+  "pytest>=8.3.4",
 ]
 lint = [
   "ruff"
