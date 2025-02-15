@@ -240,8 +240,6 @@ class Disk(PhysicalObject):
 
         self.add_impulse(delta_normalized * impulse_scalar)
 
-        # This allows the ship to land on the planet.
-        # If impulse is small there is no damage
-        damage = max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
-
-        return damage
+        # Return damage.
+        # Clamping in case of small impulses allows the ship to land on the planet.
+        return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
