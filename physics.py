@@ -138,7 +138,7 @@ class Disk(PhysicalObject):
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:
-        """Draw anti-aliased `self`.
+        """Draw `self`.
 
         Args:
         ----

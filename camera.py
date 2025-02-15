@@ -148,7 +148,7 @@ class Camera:
         self.surface.fill(Color("black"))
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
-        """Draw an anti-aliased worldspace-circle on screen.
+        """Draw a worldspace-circle on screen.
 
         Args:
         ----
@@ -167,7 +167,7 @@ class Camera:
             pygame.draw.circle(self.surface, color, (x, y), r)
 
     def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
-        """Draw an anti-aliased worldspace-polygon on screen.
+        """Draw a worldspace-polygon on screen.
 
         Args:
         ----
@@ -182,7 +182,7 @@ class Camera:
             pygame.draw.polygon(self.surface, color, cpoints)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
-        """Draw an anti-aliased worldspace-line with a given thickness.
+        """Draw a worldspace-line with a given thickness.
 
         Args:
         ----
@@ -207,7 +207,7 @@ class Camera:
         self.draw_polygon(color, points)
 
     def draw_hairline(self, color: Color, start: Vec2, end: Vec2) -> None:
-        """Draw an anti-aliased worldspace-line of single-pixel-thickness.
+        """Draw a worldspace-line of single-pixel-thickness.
 
         Args:
         ----
