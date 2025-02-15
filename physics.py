@@ -158,7 +158,7 @@ class Disk(PhysicalObject):
         -------
             bool: True iff `vec` is in `self`
 
-        >>> disk = Disk(Vec2(0,0), Vec2(0, 0), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
         >>> disk.intersects_point(Vec2(0, 0))
         True
         >>> disk.intersects_point(Vec2(1, -1))
@@ -172,6 +172,9 @@ class Disk(PhysicalObject):
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
 
+        a.intersects_disk(b) should always return the same as b.intersects_disk(a),
+        barring floating-point rounding-errors.
+
         Args:
         ----
             disk (Disk): Other disk
@@ -179,6 +182,17 @@ class Disk(PhysicalObject):
         Returns:
         -------
             bool: True iff the two disks intersect
+
+        >>> disk_a = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk_b = Disk(Vec2(2,1), Vec2(), density=1, radius=1, color=Color(0, 0, 0))
+        >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
+        True
+        >>> disk_c = Disk(Vec2(3,1), Vec2(), density=1, radius=0.5, color=Color(0, 0, 0))
+        >>> disk_a.intersects_disk(disk_c) or disk_c.intersects_disk(disk_a)
+        False
+        >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
+        True
+
 
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
