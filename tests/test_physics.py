@@ -38,7 +38,9 @@ def test_threedimensional_disk_mass_scaling():
     double_size_disk = Disk(Vec2(), Vec2(), density, radius * 2, Color(0, 0, 0))
 
     assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
-    assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON
+    assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
+        "Scaling radius should increase mass by a factor scale**3"
+    )
 
 
 def test_disk_drawing():
@@ -77,13 +79,15 @@ def test_disk_drawing():
                     bad += 1
 
     threshold = 0.02
-    # The two circles *mostly* agree
-    assert good / (good + bad) > 1 - threshold
+    assert good / (good + bad) > 1 - threshold, (
+        "The drawn circle should mostly agree with the idealised circle"
+    )
 
-    # We did draw roughly the required area
     rect_area = width * height
     circle_area = disk.radius**2 * math.pi
-    assert abs((circle_area - drawn) / rect_area) < threshold
+    assert abs((circle_area - drawn) / rect_area) < threshold, (
+        "The area we drew should be close in size to the circle's idealised area"
+    )
 
     camera.surface.unlock()
 
@@ -92,8 +96,7 @@ def test_disk_bounce():
     disk_a = Disk(Vec2(0, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
     disk_b = Disk(Vec2(4, 0), Vec2(0, 0), density=1, radius=2, color=Color(0, 0, 0))
 
-    # No bounce for non-intersecting disks
-    assert disk_a.bounce_off_of_disk(disk_b) is None
+    assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 
     disk_c = Disk(Vec2(0, 1), Vec2(1, 0), density=1, radius=1, color=Color(0, 0, 0))
 
@@ -104,24 +107,22 @@ def test_disk_bounce():
         bounce = disk_c.bounce_off_of_disk(disk_b)
         if bounce is not None:
             bounce_count += 1
-            # Because these are small disks, the bounce
-            # will be clamped to 0 (capping damage)
-            assert bounce == 0.0
+            assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
 
-            # disk_c is flush with disk_b right now
-            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) < EPSILON
+            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) < EPSILON, (
+                "Disks should be flush"
+            )
         else:
-            # disk_c is not flush with disk_b
-            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) > EPSILON
+            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) > EPSILON, (
+                "Disks should not be flush"
+            )
         if bounce_count <= 0:
             assert disk_c.vel == Vec2(1, 0)
             assert disk_b.vel == Vec2(0, 0)
         if bounce_count >= 1:
-            # Check rough angle of disk_c bouncing
-            assert disk_c.vel.x < 0
-            assert disk_c.vel.y > 0
+            assert disk_c.vel.x < 0, "Disk should be moving to the left"
+            assert disk_c.vel.y > 0, "Disk should be moving up"
 
-            # Nothing happened to disk_b, I hope?
-            assert disk_b.vel == Vec2(0, 0)
+        assert disk_b.vel == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1
