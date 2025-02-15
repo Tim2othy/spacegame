@@ -40,3 +40,12 @@ def test_shooting():
         previous_projectile_pos = p.pos
 
 
+def test_movement():
+    ship = Ship(Vec2(0, 0), Vec2(0, 0), 1, 1, Color(0, 0, 0), Color(0, 0, 0), 1, 1)
+    ship.thruster_rot_left = True
+    ship.step(0.01)
+    ship.thruster_rot_left = False
+    ship.thruster_forward = True
+    ship.step(0.01)
+    assert ship.vel.x > 0, "Ship should be moving forward"
+    assert ship.vel.y > 0, "Ship should be moving forward"
