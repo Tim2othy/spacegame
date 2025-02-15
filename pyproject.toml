@@ -17,6 +17,13 @@ ignore = [
     "D213", # multi-line-summary-second-line 
 ]
 
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = [
+    "S101", # Allow asserts in tests
+    "D", # Disable all doc in tests
+    "ANN201", # Disable return-type-annotation
+]
+
 [dependency-groups]
 dev = [
   "pygbag",
