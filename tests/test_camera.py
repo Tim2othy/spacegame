@@ -1,4 +1,5 @@
 import pygame
+from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
@@ -45,3 +46,21 @@ def test_smoothly_focus_rectangle():
 
     assert camera.pos == rect_topleft
     assert abs(1 - camera.zoom * size) < EPSILON
+
+
+def test_smoothly_focus_points():
+    width, height = 10, 10
+    buff = 2
+    points_and_colors = [
+        (Vec2(5, 5), Color(1, 1, 1)),
+        (Vec2(8, 8), Color(2, 2, 2)),
+        (Vec2(2, 8), Color(3, 3, 3)),
+        (Vec2(8, 2), Color(4, 4, 4)),
+        (Vec2(2, 2), Color(5, 5, 5)),
+    ]
+    camera = Camera(Vec2(width, height) / 2, 1, pygame.Surface((width, height)))
+
+    camera.smoothly_focus_points([p for p, _ in points_and_colors], buff, 1, 1)
+
+    assert camera.pos == Vec2(0, 0)
+    assert camera.zoom == 1
