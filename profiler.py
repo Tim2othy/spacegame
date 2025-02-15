@@ -79,7 +79,7 @@ class Profiler:
     def log_stats(self) -> str:
         """Return statistics for all profiled methods."""
         output = [
-            f"{'Method':<32} {'Calls':>5} {'Total(μs)':>9} {'Avg(μs)':>7} {'Mdn(μs)':>7} {'StDev(μs)':>9}",
+            f"{'Method':<32} {'Calls':>5} {'Total(μs)':>9} {'Avg(μs)':>7} {'Mdn(μs)':>7} {'StdDev':>9}",
             "─" * 74,
         ]
 
@@ -88,7 +88,7 @@ class Profiler:
                 average_t = p.total_time / p.call_count
                 # TODO: Test that this equals sum(profile.times) / len(profile.times)
                 median_t = median(p.times)
-                stdev_t = stdev(p.times)
+                stdev_t = stdev(p.times, average_t)
             else:
                 average_t = median_t = stdev_t = 0.0
 
