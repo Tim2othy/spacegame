@@ -14,7 +14,7 @@ In `constants.py` you can control the size of the map (`SMALL_MODE`), whether th
 
 
 ## Building
-Requires [uv](https://docs.astral.sh/uv/), which installs all dependencies automatically. Running the game locally:
+Requires [uv](https://docs.astral.sh/uv/), which installs all dependencies, including python, automatically. Running the game locally:
 
 ```sh
 uv run main.py
