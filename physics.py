@@ -34,8 +34,8 @@ class PhysicalObject:
 
         """
         self.pos = Vec2(pos)
-        self.mass = mass
         self.vel = Vec2(vel)
+        self.mass = mass
 
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
@@ -43,6 +43,11 @@ class PhysicalObject:
         Args:
         ----
             dt (float): Passed time
+
+        >>> obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
+        >>> obj.step(0.25)
+        >>> obj.pos == Vec2(0.25, -0.25)
+        True
 
         """
         self.pos += dt * self.vel
