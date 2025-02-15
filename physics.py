@@ -95,6 +95,21 @@ class PhysicalObject:
         -------
             Vec2: Resulting force to apply to `self`
 
+        >>> obj = PhysicalObject(Vec2(), Vec2(), 1)
+        >>> small_force = obj.gravitational_force(PhysicalObject(Vec2(1,2), Vec2(), 1))
+        >>> large_force = obj.gravitational_force(PhysicalObject(Vec2(-1,2), Vec2(), 2))
+        >>> double_distance_force = obj.gravitational_force(PhysicalObject(Vec2(2,4), Vec2(), 1))
+        >>> small_force.x > 0 and small_force.y > 0
+        True
+        >>> large_force.x < 0 and large_force.y > 0
+        True
+        >>> double_distance_force.x > 0 and double_distance_force.y > 0
+        True
+        >>> abs(2 - large_force.magnitude()/small_force.magnitude()) < 1e-8
+        True
+        >>> abs(4 - small_force.magnitude()/double_distance_force.magnitude()) < 1e-8
+        True
+
         """
         delta = pobj.pos - self.pos  # point from `self` to `pobj`
         if delta == Vec2(0, 0):
