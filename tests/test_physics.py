@@ -1,6 +1,7 @@
 from pygame.math import Vector2 as Vec2
+from pygame import Color
 
-from physics import PhysicalObject
+from physics import PhysicalObject, Disk
 
 EPSILON = 1e-8
 
@@ -24,3 +25,14 @@ def test_gravitational_force():
     assert double_distance_force.y > 0
     assert abs(2 - large_force.magnitude() / small_force.magnitude()) < EPSILON
     assert abs(4 - small_force.magnitude() / double_distance_force.magnitude()) < EPSILON
+
+
+def test_threedimensional_disk_mass_scaling():
+    density = 9.87
+    radius = 1.23
+    disk = Disk(Vec2(), Vec2(), density, radius, Color(0, 0, 0))
+    double_density_disk = Disk(Vec2(), Vec2(), density * 2, radius, Color(0, 0, 0))
+    double_size_disk = Disk(Vec2(), Vec2(), density, radius * 2, Color(0, 0, 0))
+
+    assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
+    assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON
