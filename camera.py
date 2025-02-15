@@ -158,8 +158,7 @@ class Camera:
 
         """
         ccenter, cradius = self.world_to_screen(center), radius * self.zoom
-        # ??? Why only ints?
-        x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
+        x, y, r = ccenter.x, ccenter.y, cradius
 
         # soft check for circle-screen-intersection:
         enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
