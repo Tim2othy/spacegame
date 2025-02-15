@@ -200,8 +200,14 @@ class Disk(PhysicalObject):
     def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
 
-        Calculates intensity that `self` moved towards `disk`
-        at moment of collision. Returns calculated impact-damage.
+        After this, the two disks should be flush.
+
+        Calculates intensity that `self` moved towards `disk` at moment of collision and
+        returns calculated impact-damage.
+
+        If the two disks have exactly the same center, they are treated as if they
+        were slightly offset from each other, with no guarantee about this behavior's
+        stability.
 
         Args:
         ----
@@ -219,7 +225,7 @@ class Disk(PhysicalObject):
         # Calculate normal vector
         delta = self.pos - disk.pos
         if delta == Vec2(0, 0):
-            delta = Vec2(SMOL, SMOL)  # I also tried using return here, but this gives better results
+            delta = Vec2(SMOL, SMOL)
         self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
 
