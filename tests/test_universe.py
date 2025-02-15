@@ -24,6 +24,7 @@ def test_mutual_bounce():
     assert asteroid_moving_rightward.vel.y == asteroid_moving_leftward.vel.y == 0, (
         "The asteroid shouldn't move vertically at all"
     )
+    # Test related to https://github.com/Tim2othy/spacegame/issues/9
     assert 0 < asteroid_moving_rightward.vel.x < start_vel * 0.99, (
         "The right asteroid should be moving to the right with less speed"
     )
