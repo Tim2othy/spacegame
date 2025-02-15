@@ -82,7 +82,7 @@ def test_bullet_paths():
         player_ship.projectiles.append(bullet_right)
         player_ship.projectiles.append(bullet_up)
 
-        # Try shooting the enemy on the right with enemy bullets
+        # Also try shooting the enemy on the right with enemy bullets (hopefully won't work)
         enemy_up.new_bullet(enemy_right.pos - Vec2(1, 0), Vec2(0.1, 0))
         enemy_right.new_bullet(enemy_right.pos - Vec2(1, 0), Vec2(0.1, 0))
 
