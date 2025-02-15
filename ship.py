@@ -23,7 +23,7 @@ from constants import (
     ENEMY_SHOOT_RANGE,
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
-    GUN_COOLDOWN,
+    GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     EPSILON,
@@ -344,7 +344,7 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED)
+        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN_PLAYER, BULLET_SPEED)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 

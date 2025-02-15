@@ -14,7 +14,7 @@ from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from constants import (
-    ASTS_PER_PLANET,
+    ASTEROIDS_PER_PLANET,
     FPS_HISTORY_LENGTH,
     MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
@@ -115,7 +115,7 @@ def universe_from_options(options: Options) -> Universe:
     )
 
     for planet in planets:
-        for _ in range(ASTS_PER_PLANET):
+        for _ in range(ASTEROIDS_PER_PLANET):
             universe.generate_asteroid(planet)
 
     enemy_ships: list[BulletEnemy] = []
