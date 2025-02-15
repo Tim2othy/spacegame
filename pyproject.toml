@@ -10,11 +10,14 @@ dependencies = [
 
 [tool.ruff]
 line-length = 110
+
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "S311", # suspicious-non-cryptographic-random-usage
-    "D203", # incorrect-blank-line-before-class
-    "D213", # multi-line-summary-second-line 
+    "S311",   # suspicious-non-cryptographic-random-usage
+    "D203",   # incorrect-blank-line-before-class
+    "D213",   # multi-line-summary-second-line 
+    "COM812", # missing-trailing-comma, see https://docs.astral.sh/ruff/rules/missing-trailing-comma/
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]
