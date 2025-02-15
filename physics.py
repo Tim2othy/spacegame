@@ -230,12 +230,7 @@ class Disk(PhysicalObject):
         self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
 
-        if self.mass != 0 and disk.mass != 0:
-            impulse_scalar /= 1 / self.mass + 1 / disk.mass
-        else:
-            impulse_scalar /= 1 / (self.mass + EPSILON) + 1 / (
-                disk.mass + EPSILON
-            )  # You probably don't like this but it probably works for now
+        impulse_scalar /= 1 / self.mass + 1 / disk.mass
         self.add_impulse(delta.normalize() * impulse_scalar)
 
         # This allows the ship to land on the planet.
