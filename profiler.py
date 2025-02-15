@@ -2,6 +2,7 @@
 
 import functools
 import time
+from statistics import median, stdev
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -50,28 +51,28 @@ class Profiler:
     def log_stats(self) -> str:
         """Return statistics for all profiled methods."""
         output = [
-            f"{'Method':<16} {'Calls':<8} {'Total':<10} {'Avg (ns)':<10} {'Min (ns)':<10} {'Max (ns)':<10}",
+            f"{'Method':<32} {'Calls':>5} {'Total (ns)':>12} {'Avg (ns)':>8} {'Mdn (ns)':>8} {'StDev (ns)':>10}",
             "-" * 80,
         ]
 
         for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True):
             if p.times:
-                avg_t = p.total_time / p.call_count
+                average_t = p.total_time / p.call_count
                 # TODO: Test that this equals sum(profile.times) / len(profile.times)
-                min_t = min(p.times)
-                max_t = max(p.times)
+                median_t = median(p.times)
+                stdev_t = stdev(p.times)
             else:
-                avg_t = min_t = max_t = 0.0
+                average_t = median_t = stdev_t = 0.0
 
             output.append(
                 " ".join(
                     [
-                        f"{p.name[:16]:<16}",
-                        f"{p.call_count:<8}",
-                        f"{p.total_time:<10.0f}",
-                        f"{avg_t:<10.1f}",
-                        f"{min_t:<10.0f}",
-                        f"{max_t:<10.0f}",
+                        f"{p.name[:32]:<32}",
+                        f"{p.call_count:>5}",
+                        f"{p.total_time:12.0f}",
+                        f"{average_t:8.0f}",
+                        f"{median_t:8.0f}",
+                        f"{stdev_t:10.0f}",
                     ]
                 )
             )
