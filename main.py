@@ -22,7 +22,7 @@ from constants import (
     PLANET_RADIUS_SIGMA,
     SCREEN_SIZE,
 )
-from profiler import Profiler
+from profiler import global_profiler
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
 from universe import Planet, Universe
 
@@ -159,11 +159,9 @@ async def main() -> None:
         clock = pygame.time.Clock()
 
         fps: deque[float] = deque()
-        profiler = Profiler()
         running = True
 
         while running:
-            profiler.start("other")
             if any(e.type == pygame.QUIT for e in pygame.event.get()):
                 running = False
                 break
@@ -174,15 +172,12 @@ async def main() -> None:
                 fps.popleft()
 
             universe.handle_input(pygame.key.get_pressed())
-            profiler.start("universe.step")
             universe.step(dt)
 
             # Draw each camera's view and then blit it into SCREEN_SURFACE
             for player_ix, player_ship in enumerate(player_ships):
                 player_camera = cameras[player_ix]
-                profiler.start("player_camera.start_drawing_new_frame")
                 player_camera.start_drawing_new_frame()
-                profiler.start("gameover_check")
                 gameover = (
                     not universe.contains_point(player_ship.pos) or player_ship.health <= 0
                 ) and not options["invincible"]
@@ -190,26 +185,18 @@ async def main() -> None:
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
-                    screen_surface.blit(player_camera.surface, topleft)
                     # TODO: Deal with remainder of issue #35
                     # await asyncio.sleep(5)  # Show "GAME OVER" for 5 seconds
                     # options = await show_menu(screen_surface, options, font)
                     running = False
                     break
-                profiler.start("universe.move_camera")
                 universe.move_camera(player_camera, player_ix, dt)
-                profiler.start("universe.draw_background")
                 universe.draw_background(player_camera)
-                profiler.start("universe.draw_grid")
                 universe.draw_grid(player_camera)
-                profiler.start("universe.draw(player_camera)")
                 universe.draw(player_camera)
-                profiler.start("universe.draw_text")
                 universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
-                profiler.start("screen_surface.blit(player_camera.surface)")
 
-            profiler.start("minimap")
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
 
@@ -222,9 +209,7 @@ async def main() -> None:
                 universe.size.y - 1,
             )
 
-            profiler.start("pygame.display.flip()")
             pygame.display.flip()
-            profiler.start("asyncio.sleep(0)")
             await asyncio.sleep(0)
 
     except Exception as e:
@@ -237,7 +222,7 @@ async def main() -> None:
             await asyncio.sleep(5)
         raise
     finally:
-        profiler_stats = profiler.log()
+        profiler_stats = global_profiler.log_stats()
         print(profiler_stats)
         if sys.platform == "emscripten":
             platform.console.log(profiler_stats)

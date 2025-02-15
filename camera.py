@@ -9,6 +9,7 @@ from __future__ import annotations
 import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
+from profiler import global_profiler
 
 
 class Camera:
@@ -143,6 +144,7 @@ class Camera:
         """
         return (vec - self.pos) * self.zoom
 
+    @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
