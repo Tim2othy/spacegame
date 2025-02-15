@@ -1,7 +1,10 @@
+import math
 from pygame.math import Vector2 as Vec2
 from pygame import Color
+from pygame import Surface
 
 from physics import PhysicalObject, Disk
+from camera import Camera
 
 EPSILON = 1e-8
 
@@ -36,3 +39,50 @@ def test_threedimensional_disk_mass_scaling():
 
     assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
     assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON
+
+
+def test_disk_drawing():
+    width, height = 50, 50
+    color = Color(255, 0, 0)
+    black = Color(0, 0, 0)
+    camera_center = Vec2(-3, 4)
+    camera = Camera(
+        camera_center,
+        1,
+        Surface((width, height)),
+    )
+    disk = Disk(Vec2(1, 0), Vec2(0, 0), density=1, radius=10, color=color)
+    disk.draw(camera)
+    camera.surface.lock()
+
+    good = 0
+    bad = 0
+    drawn = 0
+
+    for y in range(height):
+        for x in range(width):
+            pixel = camera.surface.get_at((x, y))
+            # Ignore anti-aliasing
+            if pixel in (color, black):
+                pixel_circle = pixel == color
+                worldcoor = Vec2(x, y) + camera_center - Vec2(width, height) / 2
+                coordinate_circle = disk.pos.distance_to(worldcoor) < disk.radius
+
+                if pixel_circle:
+                    drawn += 1
+
+                if pixel_circle == coordinate_circle:
+                    good += 1
+                else:
+                    bad += 1
+
+    threshold = 0.02
+    # The two circles *mostly* agree
+    assert good / (good + bad) > 1 - threshold
+
+    # We did draw roughly the required area
+    rect_area = width * height
+    circle_area = disk.radius**2 * math.pi
+    assert abs((circle_area - drawn) / rect_area) < threshold
+
+    camera.surface.unlock()
