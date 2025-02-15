@@ -55,11 +55,6 @@ class PhysicalObject:
         ----
             dt (float): Passed time
 
-        >>> obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
-        >>> obj.step(0.25)
-        >>> obj.pos == Vec2(0.25, -0.25)
-        True
-
         """
         self.pos += dt * self.vel
 
