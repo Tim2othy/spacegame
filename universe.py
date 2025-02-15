@@ -17,10 +17,10 @@ if TYPE_CHECKING:
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
-    AST_ELLIPSIS_PARAM,
-    AST_MIN_SIZE,
-    AST_ORBIT_PARAM,
-    AST_RADIUS_PARAM,
+    ASTEROID_ELLIPSIS_PARAMETER,
+    ASTEROID_SIZE_MIN,
+    ASTEROID_ORBIT_PARAMETER,
+    ASTEROID_RADIUS_PARAMETER,
     FPS_HISTORY_LENGTH,
     GRAVITATIONAL_CONSTANT,
 )
@@ -412,10 +412,10 @@ class Universe:
 
         """
         # random variables
-        asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
-        radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
-        r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
-        r_a = r_p + random.expovariate(AST_ELLIPSIS_PARAM)
+        asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * planet.radius)
+        radius_asteroid = ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda)
+        r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
+        r_a = r_p + random.expovariate(ASTEROID_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
         asteroid_angle = random.choice([90, 270])
