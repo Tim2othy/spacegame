@@ -23,10 +23,10 @@ from constants import (
     ENEMY_SHOOT_RANGE,
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
+    EPSILON,
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    EPSILON,
 )
 from physics import Disk
 from projectiles import Bullet, Missile, Rocket

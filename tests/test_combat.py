@@ -4,10 +4,9 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from constants import BULLET_SPEED, ENEMY_VISUAL_RANGE
-from projectiles import Bullet
+from constants import ENEMY_VISUAL_RANGE
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
-from universe import Asteroid, Planet, Universe
+from universe import Asteroid, Universe
 
 
 def new_player_ship(pos: Vec2) -> PlayerShip:

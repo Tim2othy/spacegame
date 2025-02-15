@@ -1,5 +1,6 @@
-from universe import Universe, Asteroid
 from pygame.math import Vector2 as Vec2
+
+from universe import Asteroid, Universe
 
 
 def test_mutual_bounce():

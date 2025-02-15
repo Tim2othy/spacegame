@@ -1,9 +1,9 @@
 from math import tau
+
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import Ship, BulletEnemy, RocketEnemy, MissileEnemy, ShipInput
-
+from ship import BulletEnemy, MissileEnemy, RocketEnemy, Ship
 
 EPSILON = 1e-8
 
