@@ -1,10 +1,10 @@
 import math
-from pygame.math import Vector2 as Vec2
-from pygame import Color
-from pygame import Surface
 
-from physics import PhysicalObject, Disk
+from pygame import Color, Surface
+from pygame.math import Vector2 as Vec2
+
 from camera import Camera
+from physics import Disk, PhysicalObject
 
 EPSILON = 1e-8
 
