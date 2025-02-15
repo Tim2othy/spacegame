@@ -42,7 +42,7 @@ MISSILE_PREFERRED_SPEED = 500.0
 
 # physics constants
 GRAVITATIONAL_CONSTANT = 0.2
-SMOL = 1e-3  # Small number to avoid division by zero
+EPSILON = 1e-3  # Small number to avoid division by zero
 BOUNCINESS = 0.7  # 0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage.
 BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 # if impulse scalar is smaller than this collisions cause no damage.

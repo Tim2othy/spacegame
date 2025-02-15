@@ -26,7 +26,7 @@ from constants import (
     GUN_COOLDOWN,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    SMOL,
+    EPSILON,
 )
 from physics import Disk
 from projectiles import Bullet, Missile, Rocket
@@ -546,7 +546,7 @@ class BulletEnemy(Ship):
                 random.uniform(0, self.world_size.y),
             )
             if delta_target_ship == Vec2(0, 0):
-                delta_target_ship = Vec2(SMOL, SMOL)
+                delta_target_ship = Vec2(EPSILON, EPSILON)
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player

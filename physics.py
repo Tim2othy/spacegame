@@ -16,7 +16,7 @@ from constants import (
     BOUNCE_DAMAGE_THRESHOLD,
     BOUNCINESS,
     GRAVITATIONAL_CONSTANT,
-    SMOL,
+    EPSILON,
 )
 
 
@@ -225,15 +225,15 @@ class Disk(PhysicalObject):
         # Calculate normal vector
         delta = self.pos - disk.pos
         if delta == Vec2(0, 0):
-            delta = Vec2(SMOL, SMOL)
+            delta = Vec2(EPSILON, EPSILON)
         self_vel_along_normal = self.vel.dot(delta.normalize())
         impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
 
         if self.mass != 0 and disk.mass != 0:
             impulse_scalar /= 1 / self.mass + 1 / disk.mass
         else:
-            impulse_scalar /= 1 / (self.mass + SMOL) + 1 / (
-                disk.mass + SMOL
+            impulse_scalar /= 1 / (self.mass + EPSILON) + 1 / (
+                disk.mass + EPSILON
             )  # You probably don't like this but it probably works for now
         self.add_impulse(delta.normalize() * impulse_scalar)
 
