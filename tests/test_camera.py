@@ -33,3 +33,15 @@ def test_smoothly_transition_to():
     # Test we're really close to our target
     assert camera.pos.distance_to(target_pos) < EPSILON
     assert abs(camera.zoom - target_zoom) < EPSILON
+
+
+def test_smoothly_focus_rectangle():
+    camera = Camera(Vec2(1, 1), 1, pygame.Surface((1, 1)))
+
+    rect_topleft = Vec2(-70, -60)
+    # Only testing squares here
+    size = 123
+    camera.smoothly_focus_rect(pygame.Rect(rect_topleft.x, rect_topleft.y, size, size), 1, 1)
+
+    assert camera.pos == rect_topleft
+    assert abs(1 - camera.zoom * size) < EPSILON
