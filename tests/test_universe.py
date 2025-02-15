@@ -1,6 +1,32 @@
 from pygame.math import Vector2 as Vec2
+from pygame import Color
 
-from universe import Asteroid, Universe
+from physics import Disk, PhysicalObject
+from universe import Asteroid, Universe, Planet
+from ship import PlayerShip, BulletEnemy
+
+
+def test_planet_gravitation():
+    world = Vec2(3000, 3000)
+    planet = Planet(world / 2, 1000, Color(0, 0, 0), 1)
+    player = PlayerShip(
+        world / 4, Vec2(100, -200), 1, 17, Color(0, 0, 0), Color(0, 0, 0), None, "assets/player_ship.png"
+    )
+    enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player, world)
+
+    universe = Universe(world, [planet], [player], [enemy], [])
+    asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 1, 10)
+    universe.asteroids.append(asteroid)
+
+    for _ in range(60 * 100):
+        universe.step(0.01)
+
+    epsilon = 1e-2
+    disks: list[Disk] = [player, enemy, asteroid]
+    for disk in disks:
+        assert abs(1 - (disk.radius + planet.radius) / disk.pos.distance_to(planet.pos)) < epsilon, (
+            "Gravity should have pulled the object to the planet's surface within a minute"
+        )
 
 
 def test_mutual_bounce():
