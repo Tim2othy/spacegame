@@ -147,17 +147,13 @@ async def main() -> None:
         cameras: list[Camera] = []
         player_count = len(player_ships)
         for player_ix, player in enumerate(player_ships):
-            topleft = (player_ix * SCREEN_SIZE[0] / player_count, 0)
-            size = (SCREEN_SIZE[0] / player_count, SCREEN_SIZE[1])
-            # Create a new surface instead of SCREEN_SURFACE.subsurface(...)
-            # TODO(asked by lumi_a): Why do that instead of subsurfacing? With subsurfacing,
-            #   we wouldn't need to blit later.
-            cam_surface = pygame.Surface((int(size[0]), int(size[1]))).convert()
-
-            camera = Camera(player.pos, 1.0, cam_surface)
+            topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
+            size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
+            subsurface = screen_surface.subsurface((topleft, size))
+            camera = Camera(player.pos, 1.0, subsurface)
             cameras.append(camera)
 
-        minimap_surface = pygame.Surface((MINIMAP_SIZE.x, MINIMAP_SIZE.y)).convert()
+        minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
         minimap_camera = Camera(universe.size / 2, MINIMAP_SIZE.x / universe.size.x, minimap_surface)
 
         clock = pygame.time.Clock()
@@ -212,12 +208,10 @@ async def main() -> None:
                 universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                 topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                 profiler.start("screen_surface.blit(player_camera.surface)")
-                screen_surface.blit(player_camera.surface, topleft)
 
             profiler.start("minimap")
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)
-            screen_surface.blit(minimap_camera.surface, (SCREEN_SIZE[0] - MINIMAP_SIZE.x, 0))
 
             # Draw minimap borders directly on SCREEN_SURFACE if needed
             minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, universe.size.y)
