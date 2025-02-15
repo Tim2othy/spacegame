@@ -51,6 +51,8 @@ class Ship(Disk):
     ) -> None:
         """Create a new spaceship.
 
+        Raises a ValueError if `gun_cooldown` is not strictly positive.
+
         Args:
         ----
             pos (Vec2): Initial position
@@ -66,6 +68,8 @@ class Ship(Disk):
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
+        if gun_cooldown <= 0:
+            raise ValueError
         self.gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
