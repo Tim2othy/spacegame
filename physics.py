@@ -21,20 +21,31 @@ from constants import (
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
+    """A physical object with dynamic position, dynamic velocity, and constant strictly positive mass."""
 
     def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
+
+        Raises a ValueError if the mass is not strictly positive.
 
         Args:
         ----
             pos (Vec2): Object's position, usually its center
             vel (Vec2): Object's velocity (ignore relativity please)
-            mass (float): Object's mass
+            mass (float): Object's mass. Must be strictly positive.
+
+        >>> PhysicalObject(Vec2(), Vec2(), 1).mass
+        1
+        >>> PhysicalObject(Vec2(), Vec2(), -1).mass
+        Traceback (most recent call last):
+        ...
+        ValueError
 
         """
         self.pos = Vec2(pos)
         self.vel = Vec2(vel)
+        if mass <= 0:
+            raise ValueError
         self.mass = mass
 
     def step(self, dt: float) -> None:
@@ -60,10 +71,7 @@ class PhysicalObject:
             impulse (Vec2): Impulse to apply
 
         """
-        if self.mass != 0:
-            self.vel += impulse / self.mass
-        else:
-            self.vel += impulse / SMOL
+        self.vel += impulse / self.mass
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.
