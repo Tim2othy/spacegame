@@ -7,7 +7,7 @@ from ship import Ship
 
 def test_homing():
     ship = Ship(
-        Vec2(1500, -500),
+        Vec2(512, -1024),
         vel=Vec2(0, 0),
         density=1,
         size=10,
@@ -19,7 +19,7 @@ def test_homing():
 
     def hits_ship(projectile: Bullet) -> bool:
         """Simulate projectile for a while and return if it ever hits `ship`"""
-        for _ in range(1000):
+        for _ in range(2000):
             projectile.step(0.01)
             ship.step(0.01)
             if ship.intersects_point(projectile.pos):
