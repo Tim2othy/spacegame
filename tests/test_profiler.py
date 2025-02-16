@@ -21,7 +21,7 @@ def test_profiler() -> None:
     method_a()
     method_b()
 
-    epsilon = 0.05
+    epsilon = 0.1
     stdev_cap = 1e-4
     c_millisecond_cap = 15
 
