@@ -24,7 +24,7 @@ def test_shooting():
     ]
 
     for ship in ships:
-        ship.gun_cooldown = gun_cooldown
+        ship._gun_cooldown = gun_cooldown
         ship.angle = tau / 8
         ship.shooting = True
         ship.shoot(bullet_count * gun_cooldown)

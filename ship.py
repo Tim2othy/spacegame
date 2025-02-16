@@ -78,7 +78,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         if gun_cooldown <= 0:
             raise ValueError
-        self.gun_cooldown: float = gun_cooldown
+        self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
         self.bullet_color = Color(bullet_color)
@@ -141,7 +141,7 @@ class Ship(Disk):
                 bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self.gun_cooldown
+                self.gun_cooldown_timer += self._gun_cooldown
                 self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
