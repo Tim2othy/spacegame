@@ -45,6 +45,18 @@ class MethodProfile:
     times: list[float] = field(default_factory=list)
 
 
+@dataclass
+class MethodStats:
+    """Stores statistical information for a method."""
+
+    name: str
+    call_count: int
+    total_time: float
+    average_time: float
+    median_time: float
+    standard_deviation: float
+
+
 class Profiler:
     """A class to profile methods and display statistics."""
 
@@ -76,6 +88,32 @@ class Profiler:
 
         return wrapper
 
+    def get_stats(self) -> list[MethodStats]:
+        """Return statistical information for all profiled methods.
+
+        The list is sorted by total execution time, highest to lowest.
+        """
+
+        def to_stat(profile: MethodProfile) -> MethodStats:
+            if profile.times:
+                average_t = profile.total_time / profile.call_count
+                # TODO: Test that this equals sum(profile.times) / len(profile.times)
+                median_t = median(profile.times)
+                stdev_t = stdev(profile.times, average_t)
+            else:
+                average_t = median_t = stdev_t = 0.0
+
+            return MethodStats(
+                name=profile.name,
+                call_count=profile.call_count,
+                total_time=profile.total_time,
+                average_time=average_t,
+                median_time=median_t,
+                standard_deviation=stdev_t,
+            )
+
+        return [to_stat(p) for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True)]
+
     def log_stats(self) -> str:
         """Return statistics for all profiled methods."""
         output = [
@@ -83,27 +121,19 @@ class Profiler:
             "-" * 81,
         ]
 
-        for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True):
-            if p.times:
-                average_t = p.total_time / p.call_count
-                # TODO: Test that this equals sum(profile.times) / len(profile.times)
-                median_t = median(p.times)
-                stdev_t = stdev(p.times, average_t)
-            else:
-                average_t = median_t = stdev_t = 0.0
-
-            output.append(
-                " ".join(
-                    [
-                        f"{p.name[:32]:<32}",
-                        f"{p.call_count:>5}",
-                        f"{p.total_time * 1e-6:>9.3f}",
-                        f"{average_t * 1e-6:>9.3f}",
-                        f"{median_t * 1e-6:>9.3f}",
-                        f"{stdev_t:>12.0f}",
-                    ]
-                )
+        output.extend(
+            " ".join(
+                [
+                    f"{method.name[:32]:<32}",
+                    f"{method.call_count:>5}",
+                    f"{method.total_time * 1e-6:>9.3f}",
+                    f"{method.average_time * 1e-6:>9.3f}",
+                    f"{method.median_time * 1e-6:>9.3f}",
+                    f"{method.standard_deviation:>12.0f}",
+                ]
             )
+            for method in self.get_stats()
+        )
 
         return "\n".join(output)
 
