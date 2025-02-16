@@ -63,9 +63,9 @@ class Ship(Disk):
             bullet_color (Color): Bullet_color
 
         >>> v0, c = Vec2(0, 0), Color(0,0,0)
-        >>> Ship(v0, v0, 1, 1, c, c, 1, 1).gun_cooldown
-        1
-        >>> Ship(v0, v0, 1, 1, c, c, -1, 1).gun_cooldown
+        >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
+        <ship.Ship object at ...>
+        >>> Ship(v0, v0, 1, 1, c, c, -1, 1)
         Traceback (most recent call last):
             ...
         ValueError

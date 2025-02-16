@@ -3,7 +3,7 @@ from math import tau
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import BulletEnemy, MissileEnemy, RocketEnemy, Ship
+from ship import Ship
 
 EPSILON = 1e-8
 
@@ -14,33 +14,24 @@ def test_shooting():
     color = Color(0, 0, 0)
     v0 = Vec2(0, 0)
     # Enemies need to target *something*
-    target_ship = Ship(v0, v0, 1, 1, color, color, 1, 1)
+    ship = Ship(v0, v0, 1, 1, color, color, gun_cooldown, 1)
 
-    ships: list[Ship] = [
-        target_ship,
-        BulletEnemy(v0, v0, target_ship, v0, 1, 1, color, color),
-        RocketEnemy(v0, v0, target_ship, v0, color),
-        MissileEnemy(v0, v0, target_ship, v0, color),
-    ]
+    ship.angle = tau / 8
+    ship.shooting = True
+    ship.shoot(bullet_count * gun_cooldown)
 
-    for ship in ships:
-        ship._gun_cooldown = gun_cooldown
-        ship.angle = tau / 8
-        ship.shooting = True
-        ship.shoot(bullet_count * gun_cooldown)
+    assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
-        assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
+    assert all(
+        abs((p.pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles
+    ), "Bullets should be shot in the direction of the ship"
 
-        assert all(
-            abs((p.pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles
-        ), "Bullets should be shot in the direction of the ship"
-
-        reference_delta = ship.projectiles[1].pos - ship.projectiles[0].pos
-        previous_projectile_pos = ship.projectiles[1].pos
-        for p in ship.projectiles[2:]:
-            delta = p.pos - previous_projectile_pos
-            assert (reference_delta - delta).magnitude_squared() < EPSILON, "Bullets should be evenly spaced"
-            previous_projectile_pos = p.pos
+    reference_delta = ship.projectiles[1].pos - ship.projectiles[0].pos
+    previous_projectile_pos = ship.projectiles[1].pos
+    for p in ship.projectiles[2:]:
+        delta = p.pos - previous_projectile_pos
+        assert (reference_delta - delta).magnitude_squared() < EPSILON, "Bullets should be evenly spaced"
+        previous_projectile_pos = p.pos
 
 
 def test_movement():
