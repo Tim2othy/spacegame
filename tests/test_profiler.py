@@ -1,4 +1,3 @@
-import re
 import time
 
 from profiler import global_profiler

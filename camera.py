@@ -9,6 +9,7 @@ from __future__ import annotations
 import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
+
 from profiler import global_profiler
 
 
