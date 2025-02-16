@@ -222,7 +222,7 @@ async def main() -> None:
             await asyncio.sleep(5)
         raise
     finally:
-        profiler_stats = global_profiler.log_stats()
+        profiler_stats = global_profiler.stats_to_str()
         print(profiler_stats)
         if sys.platform == "emscripten":
             platform.console.log(profiler_stats)

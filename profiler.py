@@ -114,7 +114,7 @@ class Profiler:
 
         return [to_stat(p) for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True)]
 
-    def log_stats(self) -> str:
+    def stats_to_str(self) -> str:
         """Return statistics for all profiled methods."""
         output = [
             f"{'Method':<32} {'Calls':>5} {'Total(ms)':>9} {'Avg(ms)':>9} {'Mdn(ms)':>9} {'StdDev':>12}",
