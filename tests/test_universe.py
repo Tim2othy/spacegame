@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import BulletEnemy, PlayerShip
+from ship import BulletEnemy, PlayerShip, ShipInput
 from universe import Asteroid, Planet, Universe
 
 if TYPE_CHECKING:
@@ -14,7 +14,14 @@ def test_planet_gravitation():
     world = Vec2(3000, 3000)
     planet = Planet(world / 2, 1000, Color(0, 0, 0), 1)
     player = PlayerShip(
-        world / 4, Vec2(100, -200), 1, 17, Color(0, 0, 0), Color(0, 0, 0), None, "assets/player_ship.png"
+        world / 4,
+        Vec2(100, -200),
+        1,
+        17,
+        Color(0, 0, 0),
+        Color(0, 0, 0),
+        ShipInput.arrows(),
+        "assets/player_ship.png",
     )
     enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player, world)
 
