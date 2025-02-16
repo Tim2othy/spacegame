@@ -64,10 +64,10 @@ def test_bullet_paths():
     enemy_start_right = Vec2(player_ship.pos + Vec2(500, 0))
     enemy_start_up = Vec2(player_ship.pos + Vec2(0, 500))
     enemy_groups: list[tuple[BulletEnemy, BulletEnemy]] = [
-        [
+        (
             ship_type(enemy_start_right, Vec2(0, 0), player_ship, world),
             ship_type(enemy_start_up, Vec2(0, 0), player_ship, world),
-        ]
+        )
         for ship_type in [BulletEnemy, RocketEnemy, MissileEnemy]
     ]
 
