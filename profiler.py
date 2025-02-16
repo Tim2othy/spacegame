@@ -92,6 +92,7 @@ class Profiler:
         """Return statistical information for all profiled methods.
 
         The list is sorted by total execution time, highest to lowest.
+        Units are milliseconds (ms).
         """
 
         def to_stat(profile: MethodProfile) -> MethodStats:
@@ -106,10 +107,10 @@ class Profiler:
             return MethodStats(
                 name=profile.name,
                 call_count=profile.call_count,
-                total_time=profile.total_time,
-                average_time=average_t,
-                median_time=median_t,
-                standard_deviation=stdev_t,
+                total_time=profile.total_time * 1e-6,
+                average_time=average_t * 1e-6,
+                median_time=median_t * 1e-6,
+                standard_deviation=stdev_t * 1e-12,
             )
 
         return [to_stat(p) for p in sorted(self._profiles.values(), key=lambda x: x.total_time, reverse=True)]
@@ -126,9 +127,9 @@ class Profiler:
                 [
                     f"{method.name[:32]:<32}",
                     f"{method.call_count:>5}",
-                    f"{method.total_time * 1e-6:>9.3f}",
-                    f"{method.average_time * 1e-6:>9.3f}",
-                    f"{method.median_time * 1e-6:>9.3f}",
+                    f"{method.total_time:>9.3f}",
+                    f"{method.average_time:>9.3f}",
+                    f"{method.median_time:>9.3f}",
                     f"{method.standard_deviation:>12.0f}",
                 ]
             )
