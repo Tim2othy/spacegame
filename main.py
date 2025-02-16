@@ -43,13 +43,7 @@ def universe_from_options(options: Options) -> Universe:
             10,
             Color("darkslategray"),
             Color("orange"),
-            ShipInput(
-                pygame.K_RIGHT,
-                pygame.K_LEFT,
-                pygame.K_UP,
-                pygame.K_DOWN,
-                pygame.K_RETURN,
-            ),
+            ShipInput.arrows(),
             "assets/player_ship.png",
         ),
     ]
@@ -62,7 +56,7 @@ def universe_from_options(options: Options) -> Universe:
                 10,
                 Color("blue"),
                 Color("yellow"),
-                ShipInput(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE),
+                ShipInput.wasd(),
                 "assets/player_ship.png",
             ),
         )

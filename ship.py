@@ -327,6 +327,22 @@ class ShipInput:
         self.thruster_backward = thruster_backward
         self.shoot = shoot
 
+    @classmethod
+    def arrows(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(
+            pygame.K_RIGHT,
+            pygame.K_LEFT,
+            pygame.K_UP,
+            pygame.K_DOWN,
+            pygame.K_RETURN,
+        )
+
+    @classmethod
+    def wasd(cls) -> ShipInput:
+        """Create a new ShipInput, WASD-movement and space-shooting."""
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE)
+
 
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
