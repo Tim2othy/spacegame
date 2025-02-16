@@ -38,7 +38,7 @@ class PhysicalObject:
         1
         >>> PhysicalObject(Vec2(), Vec2(), -1).mass
         Traceback (most recent call last):
-        ...
+            ...
         ValueError
 
         """

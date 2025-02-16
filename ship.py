@@ -62,6 +62,14 @@ class Ship(Disk):
             color (Color): Material color
             bullet_color (Color): Bullet_color
 
+        >>> v0, c = Vec2(0, 0), Color(0,0,0)
+        >>> Ship(v0, v0, 1, 1, c, c, 1, 1).gun_cooldown
+        1
+        >>> Ship(v0, v0, 1, 1, c, c, -1, 1).gun_cooldown
+        Traceback (most recent call last):
+            ...
+        ValueError
+
         """
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
