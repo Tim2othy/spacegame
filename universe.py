@@ -225,9 +225,8 @@ class Universe:
             bool: True iff any intersect
 
         """
-        return any(planet.intersects_point(vec) for planet in self._planets) or any(
-            asteroid.intersects_point(vec) for asteroid in self.asteroids
-        )
+        bodies: list[Disk] = self._nearby_asteroids(vec) + self._nearby_planets(vec)
+        return any(body.intersects_point(vec) for body in bodies)
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
