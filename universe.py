@@ -143,7 +143,6 @@ class Universe:
 
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-
         # Bounce-Hierarchy:
         # player_ships > enemy_ships > asteroids
         # Planets are separate.
