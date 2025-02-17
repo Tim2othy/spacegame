@@ -133,6 +133,11 @@ class Universe:
                 self._planet_chunks[chunk.x][chunk.y] = []
             self._planet_chunks[chunk.x][chunk.y].append(planet)
 
+    def _get_adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
+        """Return the 9 chunks that are adjacent to the chunk `vec` is in."""
+        chunk = self._vec_to_chunk(vec)
+        return [Vec2(chunk.x - i, chunk.y - j) for i in range(-1, 2) for j in range(-1, 2)]
+
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
 
