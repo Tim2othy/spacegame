@@ -108,7 +108,7 @@ class Universe:
 
         """
         self.size = Vec2(size)
-        self.planets = planets
+        self._planets = planets
         self.asteroids: list[Asteroid] = []
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
@@ -126,7 +126,7 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self.planets:
+        for body in self._planets:
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
@@ -153,7 +153,7 @@ class Universe:
             for body in self.enemy_ships + self.asteroids:
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
-            for planet in self.planets:
+            for planet in self._planets:
                 if damage := player.bounce_off_of_disk(planet) is not None:
                     player.suffer_damage(damage)
 
@@ -163,7 +163,7 @@ class Universe:
             for body in self.enemy_ships[ix + 1 :] + self.asteroids:
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_disks(body)
-            for planet in self.planets:
+            for planet in self._planets:
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_off_of_disk(planet)
 
@@ -171,7 +171,7 @@ class Universe:
         for ix, asteroid in enumerate(self.asteroids):
             for body in self.asteroids[ix + 1 :]:
                 asteroid.bounce_disks(body)
-            for planet in self.planets:
+            for planet in self._planets:
                 asteroid.bounce_off_of_disk(planet)
 
     def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
@@ -186,7 +186,7 @@ class Universe:
             bool: True iff any intersect
 
         """
-        return any(planet.intersects_point(vec) for planet in self.planets) or any(
+        return any(planet.intersects_point(vec) for planet in self._planets) or any(
             asteroid.intersects_point(vec) for asteroid in self.asteroids
         )
 
@@ -307,7 +307,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self.asteroids + self.planets + self.enemy_ships + self.player_ships:
+        for pobj in self.asteroids + self._planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
     @global_profiler.profile_method
