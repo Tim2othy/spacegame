@@ -109,6 +109,8 @@ class Universe:
         self.size = Vec2(size)
         self._planets = planets
         self.asteroids: list[Asteroid] = []
+        self._planet_clusters: dict[int, dict[int, Planet]] = {}
+        self._asteroid_clusters: dict[int, dict[int, Asteroid]] = {}
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
