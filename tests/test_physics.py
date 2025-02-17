@@ -58,9 +58,9 @@ def test_relative_bounce():
             disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1, 1, color)
             disk_b = Disk(Vec2(1, 0), absolute_vel, 1.23, 1, color)
 
-            print(relative_vel, disk_a.vel - disk_b.vel)
+            relative_vel, disk_a.vel - disk_b.vel
             disk_a.bounce_off_of_disk(disk_b)
-            print(relative_vel, disk_a.vel - disk_b.vel)
+            relative_vel, disk_a.vel - disk_b.vel
 
             assert disk_a.vel.y == (absolute_vel + relative_vel).y, (
                 "Disk's vertical velocity should be unchanged"
