@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import math
-from sys import float_info
 from typing import TYPE_CHECKING
 
 from pygame import Color
@@ -16,7 +15,6 @@ from constants import (
     BOUNCE_DAMAGE_SCALAR,
     BOUNCE_DAMAGE_THRESHOLD,
     BOUNCINESS,
-    EPSILON,
     GRAVITATIONAL_CONSTANT,
 )
 
