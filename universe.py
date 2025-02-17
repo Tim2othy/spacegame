@@ -123,8 +123,8 @@ class Universe:
         self._vec_to_chunk = lambda vec: Vec2(
             math.floor(vec.x / self._chunk_size), math.floor(vec.y / self._chunk_size)
         )
-        self._asteroid_chunks: dict[int, dict[int, Asteroid]] = {}
-        self._planet_chunks: dict[int, dict[int, Planet]] = {}
+        self._asteroid_chunks: dict[int, dict[int, list[Asteroid]]] = {}
+        self._planet_chunks: dict[int, dict[int, list[Planet]]] = {}
         for planet in self._planets:
             chunk = self._vec_to_chunk(planet.pos)
             if chunk.x not in self._planet_chunks:
