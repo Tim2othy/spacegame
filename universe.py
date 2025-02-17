@@ -279,11 +279,22 @@ class Universe:
             dt (float): Passed time
 
         """
-        # Call `step` on everything
+        # Ship
         for ship in self.player_ships + self.enemy_ships:
             ship.step(dt)
-        for asteroid in self.asteroids:
-            asteroid.step(dt)
+
+        # Asteroids
+        asteroids_changing_chunks: list[tuple[int, int, int, int, Asteroid]] = []
+        for chunk_x, chunk_ys in self._asteroid_chunks.items():
+            for chunk_y, asteroid in chunk_ys.items():
+                asteroid.step(dt)
+                new_chunk = self._vec_to_chunk(asteroid.pos)
+                if new_chunk.x != chunk_x or new_chunk.y != chunk_y:
+                    asteroids_changing_chunks.append((chunk_x, chunk_y, new_chunk.x, new_chunk.y, asteroid))
+        for chunk_x, chunk_y, new_chunk_x, new_chunk_y, asteroid in asteroids_changing_chunks:
+            # Prevents double-stepping of an asteroid in the same frame
+            self._asteroid_chunks[chunk_x][chunk_y].remove(asteroid)
+            self._asteroid_chunks.setdefault(new_chunk_x, {}).setdefault(new_chunk_y, []).append(asteroid)
 
         # Physics
         self.apply_gravity(dt)
