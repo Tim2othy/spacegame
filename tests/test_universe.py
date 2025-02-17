@@ -56,7 +56,6 @@ def test_mutual_bounce():
         universe = Universe(Vec2(30, 30), [], [], [], [])
         universe.asteroids.append(asteroid_a)
         universe.asteroids.append(asteroid_b)
-        print(absolute_vel, relative_vel)
 
         for _ in range(150):
             universe.step(0.01)
