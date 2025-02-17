@@ -128,10 +128,10 @@ class Universe:
         for planet in self._planets:
             chunk = self._vec_to_chunk(planet.pos)
             if chunk.x not in self._planet_chunks:
-                self._planet_chunks[chunk] = {}
-            if chunk.y not in self._planet_chunks[chunk]:
-                self._planet_chunks[chunk][chunk.y] = []
-            self._planet_chunks[chunk][chunk.y].append(planet)
+                self._planet_chunks[chunk.x] = {}
+            if chunk.y not in self._planet_chunks[chunk.x]:
+                self._planet_chunks[chunk.x][chunk.y] = []
+            self._planet_chunks[chunk.x][chunk.y].append(planet)
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
