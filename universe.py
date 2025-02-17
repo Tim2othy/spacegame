@@ -127,11 +127,7 @@ class Universe:
         self._planet_chunks: dict[int, dict[int, list[Planet]]] = {}
         for planet in self._planets:
             chunk = self._vec_to_chunk(planet.pos)
-            if chunk.x not in self._planet_chunks:
-                self._planet_chunks[chunk.x] = {}
-            if chunk.y not in self._planet_chunks[chunk.x]:
-                self._planet_chunks[chunk.x][chunk.y] = []
-            self._planet_chunks[chunk.x][chunk.y].append(planet)
+            self._planet_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(planet)
 
     def _get_adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
         """Return the 9 chunks that are adjacent to the chunk `vec` is in.
