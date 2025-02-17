@@ -54,7 +54,7 @@ def test_relative_bounce():
 
         for relative_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
             disk_a = Disk(Vec2(), relative_vel + absolute_vel, 1, 1, color)
-            disk_b = Disk(Vec2(), relative_vel, 1.23, 1, color)
+            disk_b = Disk(Vec2(1, 0), relative_vel, 1.23, 1, color)
 
             disk_a.bounce_off_of_disk(disk_b)
 
