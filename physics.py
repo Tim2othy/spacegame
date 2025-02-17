@@ -252,13 +252,14 @@ class Disk(PhysicalObject):
         # Position correction: push the disks apart so that they are just touching.
         # Respect the relative mass.
         overlap = radii_sum - distance
-        correction = normal * overlap / (self.mass + disk.mass)
-        self.pos -= correction * disk.mass
-        disk.pos += correction * self.mass
+        correction = normal * overlap
+        if math.isfinite(self.mass):
+            self.pos -= correction * (1 - self.mass / (self.mass + disk.mass))
+        if math.isfinite(disk.mass):
+            disk.pos += correction * (1 - disk.mass / (self.mass + disk.mass))
 
         # Compute damage. Here we simply use the magnitude of the impulse.
-        damage = abs(impulse_scalar)
-        return damage
+        return abs(impulse_scalar)
 
     def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce self disks off of `disk` if they are overlapping.
@@ -281,8 +282,8 @@ class Disk(PhysicalObject):
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """
-        old_mass = disk.mass
-        disk.mass = float_info.max  # This is a HACK
+        # HACK: Treat the static disk as if it had infinite mass
+        old_mass, disk.mass = disk.mass, float("inf")
         bounce = self.bounce_disks(disk)
         disk.mass = old_mass
         return bounce
