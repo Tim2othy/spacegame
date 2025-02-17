@@ -97,7 +97,8 @@ class Universe:
         """Create a new universe.
 
         Assumes every object can fit in a square of sidelength chunk_size, where
-            chunk_size = max(500, *(2*p.radius for p in planets))
+            chunk_size = max(500, *(2*p.radius for p in planets)).
+        Assumes planets are immutable.
 
         Args:
         ----
@@ -119,8 +120,18 @@ class Universe:
         ]
 
         self._chunk_size = max(500, *(2 * p.radius for p in self._planets))
-        self._planet_chunks: dict[int, dict[int, Planet]] = {}
+        self._vec_to_chunk = lambda vec: Vec2(
+            math.floor(vec.x / self._chunk_size), math.floor(vec.y / self._chunk_size)
+        )
         self._asteroid_chunks: dict[int, dict[int, Asteroid]] = {}
+        self._planet_chunks: dict[int, dict[int, Planet]] = {}
+        for planet in self._planets:
+            chunk = self._vec_to_chunk(planet.pos)
+            if chunk.x not in self._planet_chunks:
+                self._planet_chunks[chunk] = {}
+            if chunk.y not in self._planet_chunks[chunk]:
+                self._planet_chunks[chunk][chunk.y] = []
+            self._planet_chunks[chunk][chunk.y].append(planet)
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
