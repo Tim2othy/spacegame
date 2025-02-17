@@ -15,27 +15,38 @@ from constants import (
     BOUNCE_DAMAGE_SCALAR,
     BOUNCE_DAMAGE_THRESHOLD,
     BOUNCINESS,
+    EPSILON,
     GRAVITATIONAL_CONSTANT,
-    SMOL,
 )
 
 
 class PhysicalObject:
-    """A physical object with dynamic position, dynamic velocity, and constant nonzero mass."""
+    """A physical object with dynamic position, dynamic velocity, and constant strictly positive mass."""
 
     def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
+
+        Raises a ValueError if the mass is not strictly positive.
 
         Args:
         ----
             pos (Vec2): Object's position, usually its center
             vel (Vec2): Object's velocity (ignore relativity please)
-            mass (float): Object's mass
+            mass (float): Object's mass. Must be strictly positive.
+
+        >>> PhysicalObject(Vec2(), Vec2(), 1).mass
+        1
+        >>> PhysicalObject(Vec2(), Vec2(), -1).mass
+        Traceback (most recent call last):
+            ...
+        ValueError
 
         """
         self.pos = Vec2(pos)
-        self.mass = mass
         self.vel = Vec2(vel)
+        if mass <= 0:
+            raise ValueError
+        self.mass = mass
 
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
@@ -55,10 +66,7 @@ class PhysicalObject:
             impulse (Vec2): Impulse to apply
 
         """
-        if self.mass != 0:
-            self.vel += impulse / self.mass
-        else:
-            self.vel += impulse / SMOL
+        self.vel += impulse / self.mass
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.
@@ -130,7 +138,7 @@ class Disk(PhysicalObject):
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:
-        """Draw anti-aliased `self`.
+        """Draw `self`.
 
         Args:
         ----
@@ -150,11 +158,22 @@ class Disk(PhysicalObject):
         -------
             bool: True iff `vec` is in `self`
 
+        >>> disk = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk.intersects_point(Vec2(0, 0))
+        True
+        >>> disk.intersects_point(Vec2(1, -1))
+        True
+        >>> disk.intersects_point(Vec2(2, 1))
+        False
+
         """
         return self.pos.distance_squared_to(vec) < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
+
+        a.intersects_disk(b) should always return the same as b.intersects_disk(a),
+        barring floating-point rounding-errors.
 
         Args:
         ----
@@ -164,14 +183,32 @@ class Disk(PhysicalObject):
         -------
             bool: True iff the two disks intersect
 
+        >>> disk_a = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk_b = Disk(Vec2(2,1), Vec2(), density=1, radius=1, color=Color(0, 0, 0))
+        >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
+        True
+        >>> disk_c = Disk(Vec2(3,1), Vec2(), density=1, radius=0.5, color=Color(0, 0, 0))
+        >>> disk_a.intersects_disk(disk_c) or disk_c.intersects_disk(disk_a)
+        False
+        >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
+        True
+
+
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
     def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce `self` off of `disk`, iff the two intersect.
 
-        Calculates intensity that `self` moved towards `disk`
-        at moment of collision. Returns calculated impact-damage.
+        If a bounce occurs, this changes `self.pos` so that it's flush with `disk`,
+        and has velocity in the opposite direction.
+
+        Calculates intensity that `self` moved towards `disk` at moment of collision and
+        returns calculated impact-damage.
+
+        If the two disks have exactly the same center, they are treated as if they
+        were slightly offset from each other, with no guarantee about this behavior's
+        stability.
 
         Args:
         ----
@@ -189,24 +226,20 @@ class Disk(PhysicalObject):
         # Calculate normal vector
         delta = self.pos - disk.pos
         if delta == Vec2(0, 0):
-            delta = Vec2(SMOL, SMOL)  # I also tried using return here, but this gives better results
-        self_vel_along_normal = self.vel.dot(delta.normalize())
-        impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
-
-        if self.mass != 0 and disk.mass != 0:
-            impulse_scalar /= 1 / self.mass + 1 / disk.mass
-        else:
-            impulse_scalar /= 1 / (self.mass + SMOL) + 1 / (
-                disk.mass + SMOL
-            )  # You probably don't like this but it probably works for now
-        self.add_impulse(delta.normalize() * impulse_scalar)
-
-        # This allows the ship to land on the planet.
-        # If impulse is small there is no damage
-        damage = (max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD)) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
+            delta = Vec2(EPSILON, EPSILON)
+        delta_magnitude = delta.magnitude()
+        delta_normalized = delta / delta_magnitude
 
         # Move self outside other
-        overlap = self.radius + disk.radius - delta.magnitude()
-        self.pos += delta.normalize() * overlap
+        overlap = self.radius + disk.radius - delta_magnitude
+        self.pos += delta_normalized * overlap
 
-        return damage
+        self_vel_along_normal = self.vel.dot(delta_normalized)
+        impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
+        impulse_scalar /= 1 / self.mass + 1 / disk.mass
+
+        self.add_impulse(delta_normalized * impulse_scalar)
+
+        # Return damage.
+        # Clamping in case of small impulses allows the ship to land on the planet.
+        return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR

@@ -44,4 +44,4 @@ def downscale_image(input_path, output_path):
 
 
 # Usage example
-downscale_image(name + ".png", name + "_in_" + str(new_size) + ".png")
+# downscale_image(name + ".png", name + "_in_" + str(new_size) + ".png")

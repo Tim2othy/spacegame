@@ -10,18 +10,29 @@ dependencies = [
 
 [tool.ruff]
 line-length = 110
+
+[tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-    "S311", # suspicious-non-cryptographic-random-usage
-    "D203", # incorrect-blank-line-before-class
-    "D213", # multi-line-summary-second-line 
+    "S311",   # suspicious-non-cryptographic-random-usage
+    "D203",   # incorrect-blank-line-before-class
+    "D213",   # multi-line-summary-second-line 
+    "COM812", # missing-trailing-comma, see https://docs.astral.sh/ruff/rules/missing-trailing-comma/
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = [
+    "S101", # Allow asserts in tests
+    "D", # Disable all doc in tests
+    "ANN201", # Disable return-type-annotation
 ]
 
 [dependency-groups]
 dev = [
   "pygbag",
   "pillow",
-  "numpy"
+  "numpy",
+  "pytest>=8.3.4",
 ]
 lint = [
   "ruff"

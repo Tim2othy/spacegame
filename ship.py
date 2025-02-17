@@ -23,10 +23,10 @@ from constants import (
     ENEMY_SHOOT_RANGE,
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
-    GUN_COOLDOWN,
+    EPSILON,
+    GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    SMOL,
 )
 from physics import Disk
 from projectiles import Bullet, Missile, Rocket
@@ -51,6 +51,8 @@ class Ship(Disk):
     ) -> None:
         """Create a new spaceship.
 
+        Raises a ValueError if `gun_cooldown` is not strictly positive.
+
         Args:
         ----
             pos (Vec2): Initial position
@@ -60,13 +62,23 @@ class Ship(Disk):
             color (Color): Material color
             bullet_color (Color): Bullet_color
 
+        >>> v0, c = Vec2(0, 0), Color(0,0,0)
+        >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
+        <ship.Ship object at ...>
+        >>> Ship(v0, v0, 1, 1, c, c, -1, 1)
+        Traceback (most recent call last):
+            ...
+        ValueError
+
         """
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        self.gun_cooldown: float = gun_cooldown
+        if gun_cooldown <= 0:
+            raise ValueError
+        self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
         self.bullet_color = Color(bullet_color)
@@ -129,7 +141,7 @@ class Ship(Disk):
                 bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self.gun_cooldown
+                self.gun_cooldown_timer += self._gun_cooldown
                 self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
@@ -315,6 +327,22 @@ class ShipInput:
         self.thruster_backward = thruster_backward
         self.shoot = shoot
 
+    @classmethod
+    def arrows(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(
+            pygame.K_RIGHT,
+            pygame.K_LEFT,
+            pygame.K_UP,
+            pygame.K_DOWN,
+            pygame.K_RETURN,
+        )
+
+    @classmethod
+    def wasd(cls) -> ShipInput:
+        """Create a new ShipInput, WASD-movement and space-shooting."""
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE)
+
 
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
@@ -344,7 +372,7 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN, BULLET_SPEED)
+        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN_PLAYER, BULLET_SPEED)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -546,7 +574,7 @@ class BulletEnemy(Ship):
                 random.uniform(0, self.world_size.y),
             )
             if delta_target_ship == Vec2(0, 0):
-                delta_target_ship = Vec2(SMOL, SMOL)
+                delta_target_ship = Vec2(EPSILON, EPSILON)
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player

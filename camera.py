@@ -10,6 +10,8 @@ import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
+from profiler import global_profiler
+
 
 class Camera:
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
@@ -143,12 +145,13 @@ class Camera:
         """
         return (vec - self.pos) * self.zoom
 
+    @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
-        """Draw an anti-aliased worldspace-circle on screen.
+        """Draw a worldspace-circle on screen.
 
         Args:
         ----
@@ -158,8 +161,7 @@ class Camera:
 
         """
         ccenter, cradius = self.world_to_screen(center), radius * self.zoom
-        # ??? Why only ints?
-        x, y, r = int(ccenter.x), int(ccenter.y), int(cradius)
+        x, y, r = ccenter.x, ccenter.y, cradius
 
         # soft check for circle-screen-intersection:
         enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
@@ -167,7 +169,7 @@ class Camera:
             pygame.draw.circle(self.surface, color, (x, y), r)
 
     def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
-        """Draw an anti-aliased worldspace-polygon on screen.
+        """Draw a worldspace-polygon on screen.
 
         Args:
         ----
@@ -182,7 +184,7 @@ class Camera:
             pygame.draw.polygon(self.surface, color, cpoints)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
-        """Draw an anti-aliased worldspace-line with a given thickness.
+        """Draw a worldspace-line with a given thickness.
 
         Args:
         ----
@@ -207,7 +209,7 @@ class Camera:
         self.draw_polygon(color, points)
 
     def draw_hairline(self, color: Color, start: Vec2, end: Vec2) -> None:
-        """Draw an anti-aliased worldspace-line of single-pixel-thickness.
+        """Draw a worldspace-line of single-pixel-thickness.
 
         Args:
         ----

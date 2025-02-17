@@ -11,16 +11,17 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
+from profiler import global_profiler
 
 if TYPE_CHECKING:
     from camera import Camera
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
-    AST_ELLIPSIS_PARAM,
-    AST_MIN_SIZE,
-    AST_ORBIT_PARAM,
-    AST_RADIUS_PARAM,
+    ASTEROID_ELLIPSIS_PARAMETER,
+    ASTEROID_ORBIT_PARAMETER,
+    ASTEROID_RADIUS_PARAMETER,
+    ASTEROID_SIZE_MIN,
     FPS_HISTORY_LENGTH,
     GRAVITATIONAL_CONSTANT,
 )
@@ -256,6 +257,7 @@ class Universe:
             dt,
         )
 
+    @global_profiler.profile_method
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains.
 
@@ -275,6 +277,7 @@ class Universe:
         self.apply_bounce()
         self.collide_bullets()
 
+    @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
         """Draw `self`'s parallaxing background on `camera`.
 
@@ -304,6 +307,7 @@ class Universe:
                     y = int(draw_start_y + j * bg_height)
                     camera.surface.blit(scaled_background, (x, y))
 
+    @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
         """Draw all of `self` on `camera`.
 
@@ -315,6 +319,7 @@ class Universe:
         for pobj in self.asteroids + self.planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
+    @global_profiler.profile_method
     def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
         """Draw "debugging" text on `camera`.
 
@@ -348,6 +353,7 @@ class Universe:
         enemy_count = len(self.enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
 
+    @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
         """Draw grid on `camera`.
 
@@ -412,10 +418,10 @@ class Universe:
 
         """
         # random variables
-        asteroid_radius_lambda = 1 / (AST_RADIUS_PARAM * planet.radius)
-        radius_asteroid = AST_MIN_SIZE + random.expovariate(asteroid_radius_lambda)
-        r_p = planet.radius + radius_asteroid + random.expovariate(AST_ORBIT_PARAM)
-        r_a = r_p + random.expovariate(AST_ELLIPSIS_PARAM)
+        asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * planet.radius)
+        radius_asteroid = ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda)
+        r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
+        r_a = r_p + random.expovariate(ASTEROID_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
         asteroid_angle = random.choice([90, 270])
