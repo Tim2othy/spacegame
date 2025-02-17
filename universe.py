@@ -138,6 +138,14 @@ class Universe:
         chunk = self._vec_to_chunk(vec)
         return [Vec2(chunk.x - i, chunk.y - j) for i in range(-1, 2) for j in range(-1, 2)]
 
+    def _get_nearby_planets(self, vec: Vec2) -> list[Planet]:
+        adjacent_chunks = self._get_adjacent_chunks(vec)
+        return [
+            planet
+            for chunk in adjacent_chunks
+            for planet in self._planet_chunks.get(chunk.x, {}).get(chunk.y, [])
+        ]
+
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
 
@@ -148,7 +156,7 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self._planets:
+        for body in self._get_nearby_planets(pobj.pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
