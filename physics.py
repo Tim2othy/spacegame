@@ -258,8 +258,8 @@ class Disk(PhysicalObject):
         if math.isfinite(disk.mass):
             disk.pos += correction * (1 - disk.mass / (self.mass + disk.mass))
 
-        # Compute damage. Here we simply use the magnitude of the impulse.
-        return abs(impulse_scalar)
+        # Return damage
+        return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
 
     def bounce_off_of_disk(self, disk: Disk) -> float | None:
         """Bounce self disks off of `disk` if they are overlapping.
