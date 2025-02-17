@@ -146,6 +146,14 @@ class Universe:
             for planet in self._planet_chunks.get(chunk.x, {}).get(chunk.y, [])
         ]
 
+    def _get_nearby_asteroids(self, vec: Vec2) -> list[Planet]:
+        adjacent_chunks = self._get_adjacent_chunks(vec)
+        return [
+            asteroid
+            for chunk in adjacent_chunks
+            for asteroid in self._asteroid_chunks.get(chunk.x, {}).get(chunk.y, [])
+        ]
+
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
 
