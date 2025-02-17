@@ -191,25 +191,26 @@ class Universe:
             for body in self.enemy_ships + self._nearby_asteroids(player.pos):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
-            for planet in self._planets:
+            for planet in self._nearby_planets(player.pos):
                 if damage := player.bounce_off_of_disk(planet) is not None:
                     player.suffer_damage(damage)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self.enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in self.enemy_ships[ix + 1 :] + self.asteroids:
+            for body in self.enemy_ships[ix + 1 :] + self._nearby_asteroids(enemy_ship.pos):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_disks(body)
-            for planet in self._planets:
+            for planet in self._nearby_planets(enemy_ship.pos):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
         for ix, asteroid in enumerate(self.asteroids):
+            # TODO: Profile this against self._nearby_asteroids()
             for body in self.asteroids[ix + 1 :]:
                 asteroid.bounce_disks(body)
-            for planet in self._planets:
+            for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
 
     def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
