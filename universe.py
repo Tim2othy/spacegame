@@ -192,6 +192,9 @@ class Universe:
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
+
+        # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
+        # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
         for player_ship in self.player_ships:
             for projectile in player_ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(
