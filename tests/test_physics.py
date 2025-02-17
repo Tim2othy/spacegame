@@ -49,23 +49,27 @@ def test_relative_bounce():
     # Bounces should work the same if the disks have the same velocity relative
     # to each other. So if we add an absolute_vel to their velocities, the
     # result shouldn't change.
-    for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
+    # The disks shouldn't be moving apart from each other, otherwise bounce_off_of_disk is a no-op,
+    # so only use these velocities:
+    for relative_vel in [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)]:
         absolute_bounces: list[tuple[Disk, Disk]] = []
 
-        for relative_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-            disk_a = Disk(Vec2(), relative_vel + absolute_vel, 1, 1, color)
-            disk_b = Disk(Vec2(1, 0), relative_vel, 1.23, 1, color)
+        for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
+            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1, 1, color)
+            disk_b = Disk(Vec2(1, 0), absolute_vel, 1.23, 1, color)
 
+            print(relative_vel, disk_a.vel - disk_b.vel)
             disk_a.bounce_off_of_disk(disk_b)
+            print(relative_vel, disk_a.vel - disk_b.vel)
 
-            assert disk_a.vel.y == (relative_vel + absolute_vel).y, (
+            assert disk_a.vel.y == (absolute_vel + relative_vel).y, (
                 "Disk's vertical velocity should be unchanged"
             )
-            assert disk_a.vel.x < (relative_vel + absolute_vel).x - 0.1, (
+            assert disk_a.vel.x < (absolute_vel + relative_vel).x - 0.1, (
                 "Disk's horizontal velocity should be reduced"
             )
-            assert disk_b.vel.y == relative_vel.y, "Disk's vertical velocity should be unchanged"
-            assert disk_b.vel.x == relative_vel.x, "Disk's horizontal velocity should be unchanged"
+            assert disk_b.vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
+            assert disk_b.vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
 
             absolute_bounces.append((disk_a, disk_b))
 
