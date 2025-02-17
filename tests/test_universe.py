@@ -56,7 +56,6 @@ def test_mutual_bounce():
         universe = Universe(Vec2(30, 30), [], [], [], [])
         universe.asteroids.append(asteroid_a)
         universe.asteroids.append(asteroid_b)
-        print(asteroid_a.vel)
 
         for _ in range(150):
             universe.step(0.01)
@@ -66,7 +65,9 @@ def test_mutual_bounce():
             "The asteroids shouldn't move vertically at all"
         )
         # Test related to https://github.com/Tim2othy/spacegame/issues/9
-        )
-        assert 0 > asteroid_a.vel.x > (absolute_vel - relative_vel).x * 0.99, (
+        assert absolute_vel.x > asteroid_a.vel.x > (absolute_vel - relative_vel).x - 0.1, (
             "asteroid_a should be moving to the left with less speed"
+        )
+        assert absolute_vel.x < asteroid_b.vel.x < (absolute_vel + relative_vel).x - 0.1, (
+            "asteroid_b should be moving to the right with less speed"
         )
