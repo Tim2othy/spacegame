@@ -188,7 +188,7 @@ class Universe:
         # Bounce player_ships
         for player in self.player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in self.enemy_ships + self.asteroids:
+            for body in self.enemy_ships + self._nearby_asteroids(player.pos):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
             for planet in self._planets:
