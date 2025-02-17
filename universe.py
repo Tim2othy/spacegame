@@ -141,50 +141,38 @@ class Universe:
         for pobj in self.player_ships + self.enemy_ships + self.asteroids:
             self.apply_gravity_to_obj(dt, pobj)
 
-    def apply_bounce_to_disk(self, disk: Disk) -> float | None:
-        """Bounce a disk off of each of `self`s objects.
-
-        Args:
-        ----
-            disk (Disk): Disk to bounce
-
-        Returns:
-        -------
-            float | None: If float, impact velocity of first bounce.
-                If None, no impact occured.
-
-        """
-        for body in self.asteroids + self.planets:
-            damage = disk.bounce_off_of_disk(body)
-            if damage is not None:
-                return damage
-        return None
-
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        for player_ship in self.player_ships:
-            damage = self.apply_bounce_to_disk(player_ship)
-            if damage is not None:
-                player_ship.suffer_damage(damage)
-        for enemy_ship in self.enemy_ships:
-            self.apply_bounce_to_disk(enemy_ship)
+        # Bounce-Hierarchy:
+        # player_ships > enemy_ships > asteroids
+        # Planets are separate.
 
-        # Create a new list to store asteroids that have not collided
-        remaining_asteroids = []
-        for asteroid in self.asteroids:
-            collided = False
+        # Bounce player_ships
+        for player in self.player_ships:
+            # For now, don't bounce player-ships off of other player-ships
+            for body in self.enemy_ships + self.asteroids:
+                if damage := player.bounce_disks(body) is not None:
+                    player.suffer_damage(damage)
             for planet in self.planets:
-                if asteroid.intersects_disk(planet):
-                    collided = True
-                    break
-            if not collided:
-                remaining_asteroids.append(asteroid)
-        self.asteroids = remaining_asteroids
+                if damage := player.bounce_off_of_disk(planet) is not None:
+                    player.suffer_damage(damage)
 
-        for asteroid in self.asteroids:
-            other_asteroids = [ast for ast in self.asteroids if ast != asteroid]
-            for disk in other_asteroids + self.planets:
-                asteroid.bounce_off_of_disk(disk)
+        # Bounce enemy_ships
+        for ix, enemy_ship in enumerate(self.enemy_ships):
+            # But it *is* fun to bounce enemies off of each other
+            for body in self.enemy_ships[ix + 1 :] + self.asteroids:
+                # TODO: Once enemies have proper health, they should probably suffer damage, too
+                enemy_ship.bounce_disks(body)
+            for planet in self.planets:
+                # TODO: Once enemies have proper health, they should probably suffer damage, too
+                enemy_ship.bounce_off_of_disk(planet)
+
+        # Bounce asteroids
+        for ix, asteroid in enumerate(self.asteroids):
+            for body in self.asteroids[ix + 1 :]:
+                asteroid.bounce_disks(body)
+            for planet in self.planets:
+                asteroid.bounce_off_of_disk(planet)
 
     def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
         """Test whether any of `self`'s planets or asteroids intersect `vec`.
@@ -204,6 +192,9 @@ class Universe:
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
+
+        # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
+        # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
         for player_ship in self.player_ships:
             for projectile in player_ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(

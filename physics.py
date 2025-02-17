@@ -15,7 +15,6 @@ from constants import (
     BOUNCE_DAMAGE_SCALAR,
     BOUNCE_DAMAGE_THRESHOLD,
     BOUNCINESS,
-    EPSILON,
     GRAVITATIONAL_CONSTANT,
 )
 
@@ -197,49 +196,92 @@ class Disk(PhysicalObject):
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
-    def bounce_off_of_disk(self, disk: Disk) -> float | None:
-        """Bounce `self` off of `disk`, iff the two intersect.
+    def bounce_disks(self, disk: Disk) -> float | None:
+        """Bounce two disks off each other if they are overlapping.
 
-        If a bounce occurs, this changes `self.pos` so that it's flush with `disk`,
-        and has velocity in the opposite direction.
+        If a bounce occurs, this shifts the two disks' positions so that
+        they're exactly flush. This shift respects the difference between
+        the two disks' mass.
 
-        Calculates intensity that `self` moved towards `disk` at moment of collision and
-        returns calculated impact-damage.
+        Returns the damage the two disks take from the collision.
+        The damage is identical for both disks, i.e. it assumes a heavier disk
+        can take more damage.
 
         If the two disks have exactly the same center, they are treated as if they
         were slightly offset from each other, with no guarantee about this behavior's
         stability.
 
-        Args:
-        ----
-            disk (Disk): Disk to potentially bounce off of
+        Parameters
+        ----------
+            disk (Disk): The other disk to try bouncing off of.
 
-        Returns:
+        Returns
         -------
-            float | None: If float, it's `self`'s suffered damage.
-                If None, the two didn't intersect.
+            float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """
-        if not self.intersects_disk(disk):
+        delta = disk.pos - self.pos
+        radii_sum = self.radius + disk.radius
+        distance_squared = delta.magnitude_squared()
+
+        # Check for intersection
+        if distance_squared >= radii_sum**2:
             return None
 
-        # Calculate normal vector
-        delta = self.pos - disk.pos
-        if delta == Vec2(0, 0):
-            delta = Vec2(EPSILON, EPSILON)
-        delta_magnitude = delta.magnitude()
-        delta_normalized = delta / delta_magnitude
+        # Compute the distance; if 0 (disks on top of each other) choose an arbitrary normal.
+        distance = math.sqrt(distance_squared)
+        normal = delta / distance if distance_squared > 0 else Vec2(1, 0)
 
-        # Move self outside other
-        overlap = self.radius + disk.radius - delta_magnitude
-        self.pos += delta_normalized * overlap
+        relative_velocity = disk.vel - self.vel
+        vel_along_normal = relative_velocity.dot(normal)
 
-        self_vel_along_normal = self.vel.dot(delta_normalized)
-        impulse_scalar = -(1 + BOUNCINESS) * self_vel_along_normal
+        # If the disks are moving apart already, skip the collision response.
+        if vel_along_normal > 0:
+            return None
+
+        # Compute impulse scalar based on the collision response formula.
+        impulse_scalar = -(1 + BOUNCINESS) * vel_along_normal
         impulse_scalar /= 1 / self.mass + 1 / disk.mass
+        impulse = impulse_scalar * normal
 
-        self.add_impulse(delta_normalized * impulse_scalar)
+        self.add_impulse(-impulse)
+        disk.add_impulse(impulse)
 
-        # Return damage.
-        # Clamping in case of small impulses allows the ship to land on the planet.
+        # Position correction: push the disks apart so that they are just touching.
+        # Respect the relative mass.
+        overlap = radii_sum - distance
+        correction = normal * overlap
+        if math.isfinite(self.mass):
+            self.pos -= correction * (1 - self.mass / (self.mass + disk.mass))
+        if math.isfinite(disk.mass):
+            disk.pos += correction * (1 - disk.mass / (self.mass + disk.mass))
+
+        # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
+
+    def bounce_off_of_disk(self, disk: Disk) -> float | None:
+        """Bounce self disks off of `disk` if they are overlapping.
+
+        If a bounce occurs, this shifts self's positions so that
+        they're exactly flush.
+
+        Returns the damage self takes from the collision.
+
+        If the two disks have exactly the same center, they are treated as if they
+        were slightly offset from each other, with no guarantee about this behavior's
+        stability.
+
+        Parameters
+        ----------
+            disk (Disk): The other disk to try bouncing off of.
+
+        Returns
+        -------
+            float | None: If float, impact velocity of bounce. None if no bounce occurred.
+
+        """
+        # HACK: Treat the static disk as if it had infinite mass
+        old_mass, disk.mass = disk.mass, float("inf")
+        bounce = self.bounce_disks(disk)
+        disk.mass = old_mass
+        return bounce
