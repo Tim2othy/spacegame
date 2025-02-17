@@ -94,13 +94,12 @@ class Universe:
         enemy_ships: list[BulletEnemy],
         parallax_background_paths: list[str],
     ) -> None:
-        """Create a new universe (not in the big-bang way, sadly).
+        """Create a new universe.
 
         Args:
         ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
-            asteroids (list[Asteroid]): Asteroids but starts out empty
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
             parallax_background_paths (list[str]): Paths to
