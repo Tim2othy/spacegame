@@ -96,6 +96,9 @@ class Universe:
     ) -> None:
         """Create a new universe.
 
+        Assumes every object can fit in a square of sidelength chunk_size, where
+            chunk_size = max(500, *(2*p.radius for p in planets))
+
         Args:
         ----
             size (Vec2): Width and height
@@ -109,13 +112,15 @@ class Universe:
         self.size = Vec2(size)
         self._planets = planets
         self.asteroids: list[Asteroid] = []
-        self._planet_clusters: dict[int, dict[int, Planet]] = {}
-        self._asteroid_clusters: dict[int, dict[int, Asteroid]] = {}
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
             pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
+
+        self._chunk_size = max(500, *(2 * p.radius for p in self._planets))
+        self._planet_chunks: dict[int, dict[int, Planet]] = {}
+        self._asteroid_chunks: dict[int, dict[int, Asteroid]] = {}
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
