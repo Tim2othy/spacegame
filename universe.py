@@ -97,7 +97,7 @@ class Universe:
         """Create a new universe.
 
         Assumes every object can fit in a square of sidelength chunk_size, where
-            chunk_size = max(500, *(2*p.radius for p in planets)).
+            chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
         Assumes planets are immutable.
 
         Args:
@@ -119,7 +119,7 @@ class Universe:
             pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
 
-        self._chunk_size = max(500, *(2 * p.radius for p in self._planets))
+        self._chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
         self._vec_to_chunk = lambda vec: Vec2(
             math.floor(vec.x / self._chunk_size), math.floor(vec.y / self._chunk_size)
         )
