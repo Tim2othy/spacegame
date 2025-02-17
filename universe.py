@@ -129,7 +129,7 @@ class Universe:
             chunk = self._vec_to_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(planet)
 
-    def _get_adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
+    def _adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
         """Return the 9 chunks that are adjacent to the chunk `vec` is in.
 
         A universe-object at position `vec` should only be able to intersect with an
@@ -138,16 +138,16 @@ class Universe:
         chunk = self._vec_to_chunk(vec)
         return [Vec2(chunk.x - i, chunk.y - j) for i in range(-1, 2) for j in range(-1, 2)]
 
-    def _get_nearby_planets(self, vec: Vec2) -> list[Planet]:
-        adjacent_chunks = self._get_adjacent_chunks(vec)
+    def _nearby_planets(self, vec: Vec2) -> list[Planet]:
+        adjacent_chunks = self._adjacent_chunks(vec)
         return [
             planet
             for chunk in adjacent_chunks
             for planet in self._planet_chunks.get(chunk.x, {}).get(chunk.y, [])
         ]
 
-    def _get_nearby_asteroids(self, vec: Vec2) -> list[Planet]:
-        adjacent_chunks = self._get_adjacent_chunks(vec)
+    def _nearby_asteroids(self, vec: Vec2) -> list[Planet]:
+        adjacent_chunks = self._adjacent_chunks(vec)
         return [
             asteroid
             for chunk in adjacent_chunks
@@ -164,7 +164,7 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self._get_nearby_planets(pobj.pos):
+        for body in self._nearby_planets(pobj.pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
