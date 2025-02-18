@@ -158,7 +158,7 @@ class Universe:
         adjacent_chunks: list[PlanetChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
         return [planet for chunk in adjacent_chunks for planet in self._planet_chunks.get(chunk, [])]
 
-    def _nearby_asteroids(self, vec: Vec2) -> list[Planet]:
+    def _nearby_asteroids(self, vec: Vec2) -> list[Asteroid]:
         (x, y) = self._vec_to_asteroid_chunk(vec)
         adjacent_chunks: list[AsteroidChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
         return [asteroid for chunk in adjacent_chunks for asteroid in self._asteroid_chunks.get(chunk, [])]
