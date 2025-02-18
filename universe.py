@@ -116,9 +116,6 @@ class Universe:
 
         """
         self.size = Vec2(size)
-        # TODO: Consider deprecating _asteroids, they are contained
-        # in _asteroid_chunks anyway
-        self._asteroids: list[Asteroid] = []
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
@@ -146,7 +143,6 @@ class Universe:
     def add_asteroid(self, asteroid: Asteroid) -> None:
         """Add an asteroid to the universe."""
         # TODO: Change from single asteroid to many asteroids, `add_asteroids`
-        self._asteroids.append(asteroid)
         chunk = self._vec_to_asteroid_chunk(asteroid.pos)
         self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
@@ -183,7 +179,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        for pobj in chain(self.player_ships, self.enemy_ships, self._asteroids):
+        for pobj in chain(self.player_ships, self.enemy_ships, *self._asteroid_chunks.values()):
             self.apply_gravity_to_obj(dt, pobj)
 
     @global_profiler.profile_method
@@ -214,7 +210,7 @@ class Universe:
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
-        for ix, asteroid in enumerate(self._asteroids):
+        for ix, asteroid in chain(*self._asteroid_chunks.values()):
             for body in self._nearby_asteroids(asteroid.pos):
                 asteroid.bounce_disks(body)
             for planet in self._nearby_planets(asteroid.pos):
