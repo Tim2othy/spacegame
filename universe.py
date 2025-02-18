@@ -234,12 +234,12 @@ class Universe:
             bool: True iff any intersect
 
         """
-        bodies: list[Disk] = self._nearby_asteroids(vec) + self._nearby_planets(vec)
-        return any(body.intersects_point(vec) for body in bodies)
+        return any(body.intersects_point(vec) for body in self._nearby_asteroids(vec)) or any(
+            body.intersects_point(vec) for body in self._nearby_planets(vec)
+        )
 
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
-
         # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
         # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
         for player_ship in self.player_ships:
