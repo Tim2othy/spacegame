@@ -111,7 +111,11 @@ class Universe:
 
         """
         self.size = Vec2(size)
+        # TODO: Consider deprecating _planets, they are contained
+        # in _planet_chunks anyway
         self._planets = planets
+        # TODO: Consider deprecating _asteroids, they are contained
+        # in _asteroid_chunks anyway
         self._asteroids: list[Asteroid] = []
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
@@ -128,6 +132,12 @@ class Universe:
         for planet in self._planets:
             chunk = self._vec_to_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(planet)
+
+    def add_asteroid(self, asteroid: Asteroid) -> None:
+        """Add an asteroid to the universe."""
+        self._asteroids.append(asteroid)
+        chunk = self._vec_to_chunk(asteroid.pos)
+        self._asteroid_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(asteroid)
 
     def _adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
         """Return the 9 chunks that are adjacent to the chunk `vec` is in.
@@ -481,6 +491,4 @@ class Universe:
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
-        self._asteroids.append(
-            Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
-        )
+        self.add_asteroid(Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid))
