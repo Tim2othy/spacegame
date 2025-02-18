@@ -116,9 +116,6 @@ class Universe:
 
         """
         self.size = Vec2(size)
-        # TODO: Consider deprecating _planets, they are contained
-        # in _planet_chunks anyway
-        self._planets = planets
         # TODO: Consider deprecating _asteroids, they are contained
         # in _asteroid_chunks anyway
         self._asteroids: list[Asteroid] = []
@@ -136,13 +133,13 @@ class Universe:
         )
         self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
 
-        planet_chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
+        planet_chunk_size = max(500, 2 * max([p.radius for p in planets], default=0))
         self._vec_to_planet_chunk = lambda vec: (
             math.floor(vec.x / planet_chunk_size),
             math.floor(vec.y / planet_chunk_size),
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
-        for planet in self._planets:
+        for planet in planets:
             chunk = self._vec_to_planet_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
