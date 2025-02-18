@@ -127,8 +127,7 @@ class Universe:
             pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
 
-        # TODO: Separate chunk_sizes for planets and asteroids
-        # TODO: This requires writing the chunk-guarantees more precisely
+        # TODO: Rewrite collision-guarantees, they are wrong now
         asteroid_chunk_size = 100
         self._vec_to_asteroid_chunk = lambda vec: (
             math.floor(vec.x / asteroid_chunk_size),
