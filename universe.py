@@ -79,6 +79,10 @@ class Asteroid(Disk):
         super().__init__(pos, vel, density, radius, Color("gray"))
 
 
+type AsteroidChunk = tuple[int, int]
+type PlanetChunk = tuple[int, int]
+
+
 class Universe:
     """A collection of celestial objects, forming a Universe.
 
@@ -123,46 +127,41 @@ class Universe:
             pygame.image.load(path).convert_alpha() for path in parallax_background_paths
         ]
 
+        # TODO: Separate chunk_sizes for planets and asteroids
+        # TODO: This requires writing the chunk-guarantees more precisely
         self._chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
-        self._vec_to_chunk = lambda vec: Vec2(
-            math.floor(vec.x / self._chunk_size), math.floor(vec.y / self._chunk_size)
+
+        self._vec_to_asteroid_chunk = lambda vec: (
+            math.floor(vec.x / self._chunk_size),
+            math.floor(vec.y / self._chunk_size),
         )
-        self._asteroid_chunks: dict[int, dict[int, list[Asteroid]]] = {}
-        self._planet_chunks: dict[int, dict[int, list[Planet]]] = {}
+        self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
+
+        self._vec_to_planet_chunk = lambda vec: (
+            math.floor(vec.x / self._chunk_size),
+            math.floor(vec.y / self._chunk_size),
+        )
+        self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
         for planet in self._planets:
-            chunk = self._vec_to_chunk(planet.pos)
-            self._planet_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(planet)
+            chunk = self._vec_to_planet_chunk(planet.pos)
+            self._planet_chunks.setdefault(chunk, []).append(planet)
 
     def add_asteroid(self, asteroid: Asteroid) -> None:
         """Add an asteroid to the universe."""
+        # TODO: Change from single asteroid to many asteroids, `add_asteroids`
         self._asteroids.append(asteroid)
-        chunk = self._vec_to_chunk(asteroid.pos)
-        self._asteroid_chunks.setdefault(chunk.x, {}).setdefault(chunk.y, []).append(asteroid)
-
-    def _adjacent_chunks(self, vec: Vec2) -> list[Vec2]:
-        """Return the 9 chunks that are adjacent to the chunk `vec` is in.
-
-        A universe-object at position `vec` should only be able to intersect with an
-        object at position `vec2` if the chunk of `vec2` is in _get_adjacent_chunks(`vec`).
-        """
-        chunk = self._vec_to_chunk(vec)
-        return [Vec2(chunk.x - i, chunk.y - j) for i in range(-1, 2) for j in range(-1, 2)]
+        chunk = self._vec_to_asteroid_chunk(asteroid.pos)
+        self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
     def _nearby_planets(self, vec: Vec2) -> list[Planet]:
-        adjacent_chunks = self._adjacent_chunks(vec)
-        return [
-            planet
-            for chunk in adjacent_chunks
-            for planet in self._planet_chunks.get(chunk.x, {}).get(chunk.y, [])
-        ]
+        (x, y) = self._vec_to_planet_chunk(vec)
+        adjacent_chunks: list[PlanetChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
+        return [planet for chunk in adjacent_chunks for planet in self._planet_chunks.get(chunk, [])]
 
     def _nearby_asteroids(self, vec: Vec2) -> list[Planet]:
-        adjacent_chunks = self._adjacent_chunks(vec)
-        return [
-            asteroid
-            for chunk in adjacent_chunks
-            for asteroid in self._asteroid_chunks.get(chunk.x, {}).get(chunk.y, [])
-        ]
+        (x, y) = self._vec_to_asteroid_chunk(vec)
+        adjacent_chunks: list[AsteroidChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
+        return [asteroid for chunk in adjacent_chunks for asteroid in self._asteroid_chunks.get(chunk, [])]
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
@@ -310,20 +309,23 @@ class Universe:
             ship.step(dt)
 
         # Asteroids
-        asteroids_changing_chunks: list[tuple[int, int, int, int, Asteroid]] = []
-        for chunk_x, chunk_ys in self._asteroid_chunks.items():
-            for chunk_y, asteroids in chunk_ys.items():
-                for asteroid in asteroids:
-                    asteroid.step(dt)
-                    new_chunk = self._vec_to_chunk(asteroid.pos)
-                    if new_chunk.x != chunk_x or new_chunk.y != chunk_y:
-                        asteroids_changing_chunks.append(
-                            (chunk_x, chunk_y, new_chunk.x, new_chunk.y, asteroid)
-                        )
-        for chunk_x, chunk_y, new_chunk_x, new_chunk_y, asteroid in asteroids_changing_chunks:
+        asteroids_changing_chunks: list[tuple[AsteroidChunk, AsteroidChunk, Asteroid]] = []
+        for old_chunk, asteroids in self._asteroid_chunks.items():
+            for asteroid in asteroids:
+                asteroid.step(dt)
+                new_chunk = self._vec_to_asteroid_chunk(asteroid.pos)
+                if new_chunk != old_chunk:
+                    asteroids_changing_chunks.append((old_chunk, new_chunk, asteroid))
+        for old_chunk, new_chunk, asteroid in asteroids_changing_chunks:
             # Prevents double-stepping of an asteroid in the same frame
-            self._asteroid_chunks[chunk_x][chunk_y].remove(asteroid)
-            self._asteroid_chunks.setdefault(new_chunk_x, {}).setdefault(new_chunk_y, []).append(asteroid)
+            # TODO: Is there a faster way than using `remove`? Depending on that way,
+            #       the subsequent check whether _asteroid_chunks[old_chunk] is empty
+            #       might be sped up by only doing it once per chunk instead of once
+            #       per asteroid.
+            self._asteroid_chunks[old_chunk].remove(asteroid)
+            if not self._asteroid_chunks[old_chunk]:
+                del self._asteroid_chunks[old_chunk]
+            self._asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
 
         # Physics
         self.apply_gravity(dt)
