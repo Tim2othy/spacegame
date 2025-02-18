@@ -129,17 +129,17 @@ class Universe:
 
         # TODO: Separate chunk_sizes for planets and asteroids
         # TODO: This requires writing the chunk-guarantees more precisely
-        self._chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
-
+        asteroid_chunk_size = 100
         self._vec_to_asteroid_chunk = lambda vec: (
-            math.floor(vec.x / self._chunk_size),
-            math.floor(vec.y / self._chunk_size),
+            math.floor(vec.x / asteroid_chunk_size),
+            math.floor(vec.y / asteroid_chunk_size),
         )
         self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
 
+        planet_chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
         self._vec_to_planet_chunk = lambda vec: (
-            math.floor(vec.x / self._chunk_size),
-            math.floor(vec.y / self._chunk_size),
+            math.floor(vec.x / planet_chunk_size),
+            math.floor(vec.y / planet_chunk_size),
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
         for planet in self._planets:
