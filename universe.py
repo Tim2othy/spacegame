@@ -210,7 +210,7 @@ class Universe:
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
-        for ix, asteroid in chain(*self._asteroid_chunks.values()):
+        for asteroid in chain(*self._asteroid_chunks.values()):
             for body in self._nearby_asteroids(asteroid.pos):
                 asteroid.bounce_disks(body)
             for planet in self._nearby_planets(asteroid.pos):
