@@ -312,11 +312,14 @@ class Universe:
         # Asteroids
         asteroids_changing_chunks: list[tuple[int, int, int, int, Asteroid]] = []
         for chunk_x, chunk_ys in self._asteroid_chunks.items():
-            for chunk_y, asteroid in chunk_ys.items():
-                asteroid.step(dt)
-                new_chunk = self._vec_to_chunk(asteroid.pos)
-                if new_chunk.x != chunk_x or new_chunk.y != chunk_y:
-                    asteroids_changing_chunks.append((chunk_x, chunk_y, new_chunk.x, new_chunk.y, asteroid))
+            for chunk_y, asteroids in chunk_ys.items():
+                for asteroid in asteroids:
+                    asteroid.step(dt)
+                    new_chunk = self._vec_to_chunk(asteroid.pos)
+                    if new_chunk.x != chunk_x or new_chunk.y != chunk_y:
+                        asteroids_changing_chunks.append(
+                            (chunk_x, chunk_y, new_chunk.x, new_chunk.y, asteroid)
+                        )
         for chunk_x, chunk_y, new_chunk_x, new_chunk_y, asteroid in asteroids_changing_chunks:
             # Prevents double-stepping of an asteroid in the same frame
             self._asteroid_chunks[chunk_x][chunk_y].remove(asteroid)
