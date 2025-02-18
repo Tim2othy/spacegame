@@ -374,7 +374,10 @@ class Universe:
 
         """
         for pobj in chain(
-            self._asteroid_chunks.values(), self._planet_chunks.values(), self.enemy_ships, self.player_ships
+            *self._asteroid_chunks.values(),
+            *self._planet_chunks.values(),
+            self.enemy_ships,
+            self.player_ships,
         ):
             pobj.draw(camera)
 
