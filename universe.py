@@ -177,6 +177,7 @@ class Universe:
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
+    @global_profiler.profile_method
     def apply_gravity(self, dt: float) -> None:
         """Apply gravity to all of `self`'s objects.
 
@@ -188,6 +189,7 @@ class Universe:
         for pobj in self.player_ships + self.enemy_ships + self._asteroids:
             self.apply_gravity_to_obj(dt, pobj)
 
+    @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
         # Bounce-Hierarchy:
@@ -238,6 +240,7 @@ class Universe:
             body.intersects_point(vec) for body in self._nearby_planets(vec)
         )
 
+    @global_profiler.profile_method
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
         # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
