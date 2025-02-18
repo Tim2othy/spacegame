@@ -112,7 +112,7 @@ class Universe:
         """
         self.size = Vec2(size)
         self._planets = planets
-        self.asteroids: list[Asteroid] = []
+        self._asteroids: list[Asteroid] = []
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
         self.parallax_backgrounds = [
@@ -176,7 +176,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        for pobj in self.player_ships + self.enemy_ships + self.asteroids:
+        for pobj in self.player_ships + self.enemy_ships + self._asteroids:
             self.apply_gravity_to_obj(dt, pobj)
 
     def apply_bounce(self) -> None:
@@ -206,9 +206,9 @@ class Universe:
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
-        for ix, asteroid in enumerate(self.asteroids):
+        for ix, asteroid in enumerate(self._asteroids):
             # TODO: Profile this against self._nearby_asteroids()
-            for body in self.asteroids[ix + 1 :]:
+            for body in self._asteroids[ix + 1 :]:
                 asteroid.bounce_disks(body)
             for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
@@ -356,7 +356,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self.asteroids + self._planets + self.enemy_ships + self.player_ships:
+        for pobj in self._asteroids + self._planets + self.enemy_ships + self.player_ships:
             pobj.draw(camera)
 
     @global_profiler.profile_method
@@ -481,6 +481,6 @@ class Universe:
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
-        self.asteroids.append(
+        self._asteroids.append(
             Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
         )

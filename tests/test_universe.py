@@ -27,7 +27,7 @@ def test_planet_gravitation():
 
     universe = Universe(world, [planet], [player], [enemy], [])
     asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 1, 10)
-    universe.asteroids.append(asteroid)
+    universe._asteroids.append(asteroid)
 
     for _ in range(60 * 100):
         universe.step(0.01)
@@ -54,8 +54,8 @@ def test_mutual_bounce():
         asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 2, 0.9)
 
         universe = Universe(Vec2(30, 30), [], [], [], [])
-        universe.asteroids.append(asteroid_a)
-        universe.asteroids.append(asteroid_b)
+        universe._asteroids.append(asteroid_a)
+        universe._asteroids.append(asteroid_b)
 
         for _ in range(150):
             universe.step(0.01)

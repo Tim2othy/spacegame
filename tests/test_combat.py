@@ -73,7 +73,7 @@ def test_bullet_paths():
 
     for enemy_right, enemy_up in enemy_groups:
         universe = Universe(world, [], [player_ship], [enemy_right, enemy_up], [])
-        universe.asteroids.append(Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20))
+        universe._asteroids.append(Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20))
 
         bullet_right = player_ship.new_bullet(player_ship.pos, Vec2(100, 0))
         bullet_up = player_ship.new_bullet(player_ship.pos, Vec2(0, 100))
