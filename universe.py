@@ -218,8 +218,7 @@ class Universe:
 
         # Bounce asteroids
         for ix, asteroid in enumerate(self._asteroids):
-            # TODO: Profile this against self._nearby_asteroids()
-            for body in self._asteroids[ix + 1 :]:
+            for body in self._nearby_asteroids(asteroid.pos):
                 asteroid.bounce_disks(body)
             for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
