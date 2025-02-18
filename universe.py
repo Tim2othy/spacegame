@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 import pygame
 from pygame import Color
@@ -146,15 +146,15 @@ class Universe:
         chunk = self._vec_to_asteroid_chunk(asteroid.pos)
         self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
-    def _nearby_planets(self, vec: Vec2) -> list[Planet]:
+    def _nearby_planets(self, vec: Vec2) -> Iterable[Planet]:
         (x, y) = self._vec_to_planet_chunk(vec)
         adjacent_chunks: list[PlanetChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
-        return [planet for chunk in adjacent_chunks for planet in self._planet_chunks.get(chunk, [])]
+        return chain(*(self._planet_chunks.get(chunk, []) for chunk in adjacent_chunks))
 
-    def _nearby_asteroids(self, vec: Vec2) -> list[Asteroid]:
+    def _nearby_asteroids(self, vec: Vec2) -> Iterable[Asteroid]:
         (x, y) = self._vec_to_asteroid_chunk(vec)
         adjacent_chunks: list[AsteroidChunk] = [(x + i, y + j) for i in range(-1, 2) for j in range(-1, 2)]
-        return [asteroid for chunk in adjacent_chunks for asteroid in self._asteroid_chunks.get(chunk, [])]
+        return chain(*(self._asteroid_chunks.get(chunk, []) for chunk in adjacent_chunks))
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
