@@ -12,6 +12,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 from profiler import global_profiler
+from itertools import chain
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -185,7 +186,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        for pobj in self.player_ships + self.enemy_ships + self._asteroids:
+        for pobj in chain(self.player_ships, self.enemy_ships, self._asteroids):
             self.apply_gravity_to_obj(dt, pobj)
 
     @global_profiler.profile_method
@@ -198,7 +199,7 @@ class Universe:
         # Bounce player_ships
         for player in self.player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in self.enemy_ships + self._nearby_asteroids(player.pos):
+            for body in chain(self.enemy_ships, self._nearby_asteroids(player.pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
             for planet in self._nearby_planets(player.pos):
@@ -208,7 +209,7 @@ class Universe:
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self.enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in self.enemy_ships[ix + 1 :] + self._nearby_asteroids(enemy_ship.pos):
+            for body in chain(self.enemy_ships[ix + 1 :], self._nearby_asteroids(enemy_ship.pos)):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_disks(body)
             for planet in self._nearby_planets(enemy_ship.pos):
@@ -306,7 +307,7 @@ class Universe:
 
         """
         # Ship
-        for ship in self.player_ships + self.enemy_ships:
+        for ship in chain(self.player_ships, self.enemy_ships):
             ship.step(dt)
 
         # Asteroids
@@ -372,7 +373,9 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self._asteroids + self._planets + self.enemy_ships + self.player_ships:
+        for pobj in chain(
+            self._asteroid_chunks.values(), self._planet_chunks.values(), self.enemy_ships, self.player_ships
+        ):
             pobj.draw(camera)
 
     @global_profiler.profile_method
