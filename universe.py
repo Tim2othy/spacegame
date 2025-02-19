@@ -441,14 +441,6 @@ class Universe:
                         p *= random.random()
                         star_depths.append((z + random.random()) * z_chunk_size)
 
-                    # Sort stars by depth, so that stars in the front are drawn over the ones
-                    # in the back, even for this chunk.
-                    # It'd technically be necessary to accumulate all stars from all
-                    # chunks of this z-layer, but two stars overlapping at a chunk-border
-                    # is hopefully so rare that this is not a concern.
-                    # TODO: If only drawing points instead of disks, this shouldn't even be necessary.
-                    star_depths.sort(reverse=True)
-
                     for star_depth in star_depths:
                         star_worldspace_xy_unparallax = Vec2(
                             (x + random.random()) * x_chunk_size, (y + random.random()) * y_chunk_size
