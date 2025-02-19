@@ -340,26 +340,158 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        zoom = camera.zoom
-        screenspace_size = camera.surface.get_size()
-        camera_pos_x = -camera.pos.x * zoom
-        camera_pos_y = -camera.pos.y * zoom
-        background_count = len(self.parallax_backgrounds)
+        camera_size = Vec2(camera.surface.get_size())
+        # TODO: Profile this.
+        x_chunk_size = 5000
+        y_chunk_size = x_chunk_size * camera_size.y / camera_size.x
+        z_chunk_size = 1000
+        z_chunk_min = 1  # star-depths are in [z_chunk_min*z_chunk_size, z_chunk_max*z_chunk_size)
+        z_chunk_max = 5
 
-        for ix, background in enumerate(self.parallax_backgrounds):
-            scaled_background = pygame.transform.smoothscale_by(background, zoom)
-            (bg_width, bg_height) = Vec2(background.get_size()) * zoom
+        r"""
+        In worldspace, we can imagine it like this (the y-dimension is not visible here):
 
-            draw_start_x = (camera_pos_x / (background_count - ix + 0.5) % bg_width) - bg_width
-            draw_start_y = (camera_pos_y / (background_count - ix + 0.5) % bg_height) - bg_height
-            repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
-            repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
+                        camera                  worldspace_z = 0 * z_chunk_size
+                          ╱╲
+                         ╱  ╲
+                        ╱    ╲
+        ━━┯━━━━┯━━━━┯━━╱━┯p━━━╲━━━━┯━━━━┯━━━━┯━ worldspace_z = 1 * z_chunk_size
+          │    │    │ ╱  │    │╲   │    │    │
+          │    │    │╱   │    │ ╲  │    │    │
+        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─ worldspace_z = 2 * z_chunk_size
+          │    │░░░╱│░░░░│░░░░│░░░╲│░░░░│    │
+          │    │░░╱░│░░░░│░░░░│░░░░╲░░░░│    │
+        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─ worldspace_z = 3 * z_chunk_size
+          │░░░░│╱░░░│░░░░│░░░░│░░░░│░╲░░│    │
+          │░░░░╱░░░░│░░░░│░░░░│░░░░│░░╲░│    │
+        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─ worldspace_z = 4 * z_chunk_size
+          │  ╱ │    │    │    │    │    ╲    │
+        
 
-            for i in range(repeat_x):
-                for j in range(repeat_y):
-                    x = int(draw_start_x + i * bg_width)
-                    y = int(draw_start_y + j * bg_height)
-                    camera.surface.blit(scaled_background, (x, y))
+        (As this is a 2D-game, the z-dimension does not actually exist in worldspace, but
+        it's helpful to imagine it)
+        
+        - p is the player-ship
+        - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
+          planets andasteroids
+        - Here, z_chunk_min=2 and z_chunk_max=4.
+        - The rectangular grid comprises the chunks. Each rectangle thus has height z_chunk_size,
+          and width x_chunk_size.
+        - The ░shaded░ rectangles are exactly the chunks that stars will be generated in.
+
+        Given a fixed z, let's figure out how to generate all shaded chunks of that z-layer, i.e.
+        all shaded chunks between z*z_chunk_size and (z+1)*z_chunk_size.
+        For this, it suffices to figure out the x-position of where the camera's periphery (denoted
+        by the two diagonal lines) crosses the (z+1)*z_chunk_size line, and round to the nearest chunk.
+
+        For this, it suffices to know the points X1, X2 where the camera's periphery crosses the
+        1*z_chunk_size line (so the plane containing the ship, planets, asteroid), because then
+        the x-coordinates X1', X2' of the crossing-points with the (z+1)*z_chunk_size line are simply:
+            X1' = camera_worldspace_center.x - (camera_worldspace_center.x - X1) * (z+1)
+                = (z+1)*X1 - z*camera_worldspace_center.x
+            X2' = camera_worldspace_center.x + (X2 - camera_worldspace_center.x) * (z+1)
+                = (z+1)*X2 - z*camera_worldspace_center.x
+        by the basic proportionality theorem.
+
+        Figuring out X1, X2 is easy, though: They are simply the left and right
+        worldspace-coordinates of the screen-edges.
+        """  # noqa: RUF001
+
+        # Topleft, bottomright
+        camera_topleft_worldspace = camera.pos
+        camera_bottomright_worldspace = camera.pos + camera_size / camera.zoom
+        camera_center_worldspace = camera.pos + camera_size / (2 * camera.zoom)
+
+        # Threshold for sampling poisson-stars. This is e^(-λ), where λ is the expected value of the
+        # poisson-distribution. The poisson-distribution will determine the number of stars in one chunk,
+        # so λ should be proportional to the volume of a chunk:
+        poisson_threshold = math.exp(-1e-9 * x_chunk_size * y_chunk_size * z_chunk_size)
+
+        # Iterate z-chunks back to front, so that stars in the front are drawn over stars in the back
+        for z in range(z_chunk_max - 1, z_chunk_min - 1, -1):
+            # Calculate X1', X2'
+            x1 = (z + 1) * camera_topleft_worldspace.x - z * camera_center_worldspace.x
+            x2 = (z + 1) * camera_bottomright_worldspace.x - z * camera_center_worldspace.x
+            # Transfer them to chunks by dividing by x_chunk_size and rounding down.
+            # We round down both because this only denotes the left edge of the chunk. The
+            # Chunk will extend for one x_chunk_size further rightwards, and thus also include X2'.
+            xstart = math.floor(x1 / x_chunk_size)
+            xend = math.floor(x2 / x_chunk_size)
+            # The +1 in the range is because python's range-ends are exclusive.
+            for x in range(xstart, xend + 1):
+                # Same calculations for y
+                y1 = (z + 1) * camera_topleft_worldspace.y - z * camera_center_worldspace.y
+                y2 = (z + 1) * camera_bottomright_worldspace.y - z * camera_center_worldspace.y
+                # Transfer them to chunks by dividing by x_chunk_size and rounding down.
+                # We round down both because this only denotes the left edge of the chunk. The
+                # Chunk will extend for one x_chunk_size further rightwards, and thus also include X2'.
+                ystart = math.floor(y1 / y_chunk_size)
+                yend = math.floor(y2 / y_chunk_size)
+                for y in range(ystart, yend + 1):
+                    # Set the seed so that stars are always in the same positions for a given chunk
+                    random.seed(z + x * z_chunk_max + y * 1_000 * z_chunk_max)
+
+                    star_depths: list[float] = []
+                    # Number of stars follows a poisson-distribution
+                    p = random.random()
+                    while p > poisson_threshold:
+                        p *= random.random()
+                        star_depths.append((z + random.random()) * z_chunk_size)
+
+                    # Sort stars by depth, so that stars in the front are drawn over the ones
+                    # in the back, even for this chunk.
+                    # It'd technically be necessary to accumulate all stars from all
+                    # chunks of this z-layer, but two stars overlapping at a chunk-border
+                    # is hopefully so rare that this is not a concern.
+                    # TODO: If only drawing points instead of disks, this shouldn't even be necessary.
+                    star_depths.sort(reverse=True)
+
+                    for star_depth in star_depths:
+                        star_worldspace_xy_unparallax = Vec2(
+                            (x + random.random()) * x_chunk_size, (y + random.random()) * y_chunk_size
+                        )
+
+                        """
+                        For the parallax:
+
+                                        camera                  worldspace_z = 0 * z_chunk_size
+                                          ╱╲
+                                         ╱  ╲
+                                        ╱    ╲
+                        ━━┯━━━━┯━━━━┯━━╱┅┅┅┅┅┅╲━━━━┯━━━━┯━━━━┯━ worldspace_z = 1 * z_chunk_size
+                          │    │    │ ╱  │    │╲   │    │    │
+                          │    │    │╱   │    │ ╲  │    │    │
+                        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─ 
+                          │    │   ╱│    │    │   ╲│    │    │
+                          │    │  ╱ │    │    │    ╲    │    │
+                        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─ 
+                          │    │╱   │    │    │    │ ╲  │    │
+                          │    ╱════╪════╪════╪════╪══╲ │    │  star_depth
+                        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─ 
+                          │  ╱ │    │    │    │    │    ╲    │
+ 
+                        
+                        If you consider the set of all possible stars at depth = star_depth (this set is
+                        the ═doubly═struck═line═), we want those stars to be visible on screen, i.e. we
+                        want that set to be mapped to the ┅dashed┅line┅. We can do that by shrinking it
+                        by the factor star_depth/z_chunk_size (again by the proportionality theorem),
+                        while fixing its center at the camera-center. So the if the star's unparallaxed
+                        worldspace-position is X, then its parallaxed worldspace-position is:
+                            X' = (X - camera_center_worldspace.x) / (z_chunk_size/star_depth)
+                                  + camera_center_worldspace.x
+                        """  # noqa: RUF001
+
+                        star_depth_inverse = z_chunk_size / star_depth
+                        parallax_scaling_factor = Vec2(star_depth_inverse, star_depth_inverse)
+                        star_worldspace_xy = (
+                            star_worldspace_xy_unparallax - camera_center_worldspace
+                        ).elementwise() * parallax_scaling_factor + camera_center_worldspace
+                        color = int(200 * (1 - star_depth / (z_chunk_max * z_chunk_size)))
+
+                        camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
+
+                        # radius = max(1 / camera.zoom, 5 * z_chunk_size * (1 + random.random()) / star_depth)
+                        # camera.draw_circle(Color(color, color, color), star_worldspace_xy, radius)
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
