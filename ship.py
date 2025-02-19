@@ -76,7 +76,7 @@ class Ship(Disk):
         self.angle: float = 0
         self.health: float = 100.0
         self.projectiles: list[Bullet] = []
-        if gun_cooldown <= 0:
+        if not gun_cooldown > 0:
             raise ValueError
         self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0

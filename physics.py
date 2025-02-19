@@ -43,7 +43,7 @@ class PhysicalObject:
         """
         self.pos = Vec2(pos)
         self.vel = Vec2(vel)
-        if mass <= 0:
+        if not mass > 0:
             raise ValueError
         self.mass = mass
 
