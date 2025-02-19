@@ -340,6 +340,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
+        camera.surface.lock()
         camera_size = Vec2(camera.surface.get_size())
         # TODO: Profile this.
         x_chunk_size = 5000
@@ -490,8 +491,7 @@ class Universe:
 
                         camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
 
-                        # radius = max(1 / camera.zoom, 5 * z_chunk_size * (1 + random.random()) / star_depth)
-                        # camera.draw_circle(Color(color, color, color), star_worldspace_xy, radius)
+        camera.surface.unlock()
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
