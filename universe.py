@@ -342,6 +342,7 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
+        # TODO: Try caching star-chunks to their final on-screen locations.
         camera.surface.lock()
         camera_size = Vec2(camera.surface.get_size())
         # TODO: Profile this.
