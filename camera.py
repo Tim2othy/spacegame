@@ -154,6 +154,11 @@ class Camera:
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
 
+    def draw_pixel(self, color: Color, point: Vec2) -> None:
+        """Draw a  worldspace-pixel on screen."""
+        screenpoint = self.world_to_screen(point)
+        self.surface.set_at(screenpoint, color)
+
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a worldspace-circle on screen.
 
