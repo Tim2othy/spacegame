@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import math
 import random
-from typing import TYPE_CHECKING, Iterator
+from collections.abc import Iterator
+from itertools import chain
+from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color
@@ -12,7 +14,6 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 from profiler import global_profiler
-from itertools import chain
 
 if TYPE_CHECKING:
     from camera import Camera
