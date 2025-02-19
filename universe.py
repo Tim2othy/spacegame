@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import math
 import random
-from collections.abc import Iterator
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -16,6 +15,8 @@ from physics import Disk, PhysicalObject
 from profiler import global_profiler
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from camera import Camera
     from ship import BulletEnemy, PlayerShip
 
@@ -368,11 +369,11 @@ class Universe:
           │░░░░╱░░░░│░░░░│░░░░│░░░░│░░╲░│    │
         ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─ worldspace_z = 4 * z_chunk_size
           │  ╱ │    │    │    │    │    ╲    │
-        
+
 
         (As this is a 2D-game, the z-dimension does not actually exist in worldspace, but
         it's helpful to imagine it)
-        
+
         - p is the player-ship
         - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
           planets andasteroids
@@ -463,16 +464,16 @@ class Universe:
                         ━━┯━━━━┯━━━━┯━━╱┅┅┅┅┅┅╲━━━━┯━━━━┯━━━━┯━ worldspace_z = 1 * z_chunk_size
                           │    │    │ ╱  │    │╲   │    │    │
                           │    │    │╱   │    │ ╲  │    │    │
-                        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─ 
+                        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─
                           │    │   ╱│    │    │   ╲│    │    │
                           │    │  ╱ │    │    │    ╲    │    │
-                        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─ 
+                        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─
                           │    │╱   │    │    │    │ ╲  │    │
                           │    ╱════╪════╪════╪════╪══╲ │    │  star_depth
-                        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─ 
+                        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─
                           │  ╱ │    │    │    │    │    ╲    │
- 
-                        
+
+
                         If you consider the set of all possible stars at depth = star_depth (this set is
                         the ═doubly═struck═line═), we want those stars to be visible on screen, i.e. we
                         want that set to be mapped to the ┅dashed┅line┅. We can do that by shrinking it

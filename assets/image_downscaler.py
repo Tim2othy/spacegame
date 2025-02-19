@@ -17,7 +17,7 @@ def most_common_color(pixels):
     return Counter(pixels).most_common(1)[0][0]  # Most common color
 
 
-def downscale_image(input_path, output_path):
+def downscale_image(input_path, output_path) -> None:
     """Downscale image to new_size * new_size using the most common color in each grid."""
     original = Image.open("assets/" + input_path)
     original = original.resize((old_size, old_size))
