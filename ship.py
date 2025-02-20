@@ -35,43 +35,35 @@ if TYPE_CHECKING:
     from camera import Camera
 
 
+GRAY = Color("gray")
+
+
 class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        density: float,
-        size: float,
-        color: Color,
-        bullet_color: Color,
-        gun_cooldown: float,
-        bullet_speed: float,
+        self, pos: Vec2, vel: Vec2, size: float = 10, color: Color = GRAY, gun_cooldown: float = 0.1
     ) -> None:
         """Create a new spaceship.
 
         Raises a ValueError if `gun_cooldown` is not strictly positive.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
-            density (float): Density (of disk-body)
             size (float): Radius of disk-body
-            color (Color): Material color
-            bullet_color (Color): Bullet_color
+            color (Color): Material and bullet color
+            gun_cooldown (float): Minimum time between shots
 
-        >>> v0, c = Vec2(0, 0), Color(0,0,0)
-        >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
+        >>> Ship(Vec2(), Vec2(), gun_cooldown=1)
         <ship.Ship object at ...>
-        >>> Ship(v0, v0, 1, 1, c, c, -1, 1)
+        >>> Ship(Vec2(), Vec2(), gun_cooldown=-1)
         Traceback (most recent call last):
             ...
         ValueError
 
         """
-        super().__init__(pos, vel, density, size, color)
+        super().__init__(pos, vel, size, color, 1)
         self.size: float = size
 
         self.health: float = 100.0
@@ -83,8 +75,6 @@ class Ship(Disk):
         self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
-        self.bullet_color = Color(bullet_color)
-        self.bullet_speed = bullet_speed
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -97,8 +87,7 @@ class Ship(Disk):
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
 
-        Returns
-        -------
+        Returns:
             Vec2: Faced direction, normalized
 
         """
@@ -109,7 +98,7 @@ class Ship(Disk):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`."""
-        return Bullet(pos, vel, self.bullet_color)
+        return Bullet(pos, vel, self.color)
 
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
@@ -147,7 +136,6 @@ class Ship(Disk):
         Does nothing if damage is <= 0.
 
         Args:
-        ----
             damage (float): Amount of damage to deal.
 
         """
@@ -159,7 +147,6 @@ class Ship(Disk):
         """Physics, control, and bullet-stepping for `self`.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -187,7 +174,6 @@ class Ship(Disk):
         """Draw `self` on `camera.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -305,7 +291,6 @@ class ShipInput:
         """Create a new map from keys to spaceship-actions.
 
         Args:
-        ----
             thruster_rot_left (pygame_key): Left rotation thruster's key
             thruster_rot_right (pygame_key): Right rotation thruster's key
             thruster_forward (pygame_key): Forward thruster's key
@@ -330,6 +315,10 @@ class ShipInput:
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE)
 
 
+PLAYER_COLOR = Color("green")
+PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
+
+
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
@@ -337,30 +326,26 @@ class PlayerShip(Ship):
         self,
         pos: Vec2,
         vel: Vec2,
-        density: float,
-        size: float,
-        color: Color,
-        bullet_color: Color,
-        spaceship_input: ShipInput,
-        image_path: str,
+        size: float = 10.0,
+        color: Color = PLAYER_COLOR,
+        spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
+        image_path: str | None = None,
     ) -> None:
         """Create a new player-spaceship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
-            density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
-            bullet_color (Color): Bullet_color
             spaceship_input (SpaceshipInput): Map from keys to actions
-            image_path (str): Path to image
+            image_path (str | None): Path to image
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN_PLAYER, BULLET_SPEED)
+        super().__init__(pos, vel, size, color, GUN_COOLDOWN_PLAYER)
         self.spaceship_input = spaceship_input
-        self.image = pygame.image.load(image_path)
+        if image_path is not None:
+            self.image = pygame.image.load(image_path)
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -368,7 +353,6 @@ class PlayerShip(Ship):
         `keys` is typically retreived using `pygame.key.get_pressed()`
 
         Args:
-        ----
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
@@ -382,7 +366,6 @@ class PlayerShip(Ship):
         """Draw `self` on `camera.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -475,15 +458,6 @@ class PlayerShip(Ship):
             ],
         )
 
-        rotated_image = pygame.transform.rotate(self.image, -self.angle - 90)
-
-        # Get the width and height of the rotated image
-        image_rect = rotated_image.get_rect()
-        center_offset = Vec2(image_rect.width / 2, image_rect.height / 2)
-
-        # Adjust the position to center the image
-        adjusted_pos = self.pos - center_offset
-
         # Ugly hack
         backup_self_color = Color(self.color)
         self.color = base_color
@@ -493,11 +467,19 @@ class PlayerShip(Ship):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
-        camera.draw_image(rotated_image, adjusted_pos)
+        if hasattr(self, "image"):
+            rotated_image = pygame.transform.rotate(self.image, -self.angle - 90)
+            # Get the width and height of the rotated image
+            image_rect = rotated_image.get_rect()
+            center_offset = Vec2(image_rect.width / 2, image_rect.height / 2)
+            # Adjust the position to center the image
+            adjusted_pos = self.pos - center_offset
+            camera.draw_image(rotated_image, adjusted_pos)
 
 
-LIME = Color("lime")
-PINK = Color("hotpink")
+BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
+ROCKET_ENEMY_COLOR = Color("purple")
+MISSILE_ENEMY_COLOR = Color("blue")
 
 
 class BulletEnemy(Ship):
@@ -517,23 +499,20 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        world_size: Vec2,
         gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
-        bullet_speed: float = BULLET_SPEED,
-        color: Color = LIME,
-        bullet_color: Color = PINK,
+        color: Color = BULLET_ENEMY_COLOR,
     ) -> None:
         """Create a new enemy ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            world_size (Vec2): Size of the world
+            gun_cooldown (float): Time between shots
+            color (Color): Hull and bullet color
 
         """
-        super().__init__(pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed)
+        super().__init__(pos, vel, 8, color, gun_cooldown)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = ENEMY_HEALTH
@@ -541,13 +520,11 @@ class BulletEnemy(Ship):
         self.target_ship = target_ship
         self.projectiles: list[Bullet] = []
         self.random_point = Vec2(0.0, 0.0)
-        self.world_size = world_size
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -555,9 +532,7 @@ class BulletEnemy(Ship):
         delta_target_ship = self.target_ship.pos - self.pos
 
         if self.action_timer <= 0:
-            self.random_point = Vec2(
-                random.uniform(0, self.world_size.x), random.uniform(0, self.world_size.y)
-            )
+            self.random_point = self.pos + Vec2(random.uniform(-1000, 1000), random.uniform(-1000, 1000))
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
 
@@ -600,53 +575,38 @@ class BulletEnemy(Ship):
         super().step(dt)
 
 
-PLUM = Color("Plum")
-
-
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
-    def __init__(
-        self, pos: Vec2, vel: Vec2, target_ship: Ship, world_size: Vec2, color: Color = PLUM
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
         """Create a new Rocket-Ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            world_size (Vec2): Size of the world
-
 
         """
-        super().__init__(pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color)
+        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, ROCKET_ENEMY_COLOR)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
         return Rocket(pos, vel, self.color, self.target_ship)
 
 
-BLUE = Color("Blue")
-
-
 class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
-    def __init__(
-        self, pos: Vec2, vel: Vec2, target_ship: Ship, world_size: Vec2, color: Color = BLUE
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
         """Create a new Missile-Ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            world_size (Vec2): Size of the world
 
         """
-        super().__init__(pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color)
+        super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, MISSILE_ENEMY_COLOR)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""

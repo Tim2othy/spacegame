@@ -38,31 +38,29 @@ class Planet(Disk):
         """Create a new planet.
 
         Args:
-        ----
             pos (Vec2): Fixed position
             radius (float): Radius
             color (Color): Color
             density (float): Density
 
         """
-        super().__init__(pos, Vec2(0, 0), density, radius, color)
+        super().__init__(pos, Vec2(0, 0), radius, color, density)
 
 
 class Asteroid(Disk):
     """A gray disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float, density: float = 1) -> None:
         """Create a new Asteroid.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
-            density (float): Density
             radius (float): Radius
+            density (float): Density
 
         """
-        super().__init__(pos, vel, density, radius, Color("gray"))
+        super().__init__(pos, vel, radius, Color(32, 32, 32), density)
 
 
 type AsteroidChunk = tuple[int, int]
@@ -97,7 +95,6 @@ class Universe:
         Raises a ValueError if any player-ship or enemy-ship is larger than max_nonplanet_size.
 
         Args:
-        ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
             player_ships (list[Ship]): List of player-ships
@@ -166,7 +163,6 @@ class Universe:
         """Affect pobj by `self`'s entire gravity.
 
         Args:
-        ----
             dt (float): Passed time
             pobj (PhysicalObject): Object to affect
 
@@ -181,7 +177,6 @@ class Universe:
         """Apply gravity to all of `self`'s objects.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -226,11 +221,9 @@ class Universe:
         """Test whether any of `self`'s planets or asteroids intersect `vec`.
 
         Args:
-        ----
             vec (Vec2): Position to test for intersection
 
         Returns:
-        -------
             bool: True iff any intersect
 
         """
@@ -279,7 +272,6 @@ class Universe:
         """Run input-logic for player-ships.
 
         Args:
-        ----
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
@@ -290,7 +282,6 @@ class Universe:
         """Move the camera to `self.player_ships[player_ix]`.
 
         Args:
-        ----
             camera (Camera): Camera to move
             player_ix (int): Player to focus on
             dt (float): Passed time
@@ -304,7 +295,6 @@ class Universe:
         """Run the universe-logic, also for the object `self` contains.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -331,7 +321,6 @@ class Universe:
         """Draw `self`'s parallaxing background on `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -486,7 +475,6 @@ class Universe:
         """Draw all of `self` on `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -503,7 +491,6 @@ class Universe:
         """Draw "debugging" text on `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
             player_ix (int): Player to display information about
             fps (float): Current fps
@@ -530,7 +517,6 @@ class Universe:
         """Draw grid on `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -549,11 +535,9 @@ class Universe:
         """Test whether `vec` is contained in `self`'s boundaries.
 
         Args:
-        ----
             vec (Vec2): Vec to test for containment
 
         Returns:
-        -------
             bool: True iff `self` contains `vec`
 
         """
@@ -563,7 +547,6 @@ class Universe:
         """Create an asteroid orbiting a planet.
 
         Args:
-        ----
             planet (Planet): The planet to orbit
 
         What the random variables do:

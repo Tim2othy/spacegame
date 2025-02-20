@@ -1,6 +1,5 @@
 from math import tau
 
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from ship import Ship
@@ -11,10 +10,7 @@ EPSILON = 1e-8
 def test_shooting():
     gun_cooldown = 0.123
     bullet_count = 10
-    color = Color(0, 0, 0)
-    v0 = Vec2(0, 0)
-    # Enemies need to target *something*
-    ship = Ship(v0, v0, 1, 1, color, color, gun_cooldown, 1)
+    ship = Ship(Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
 
     ship.angle = tau / 8
     ship.shooting = True
@@ -35,7 +31,7 @@ def test_shooting():
 
 
 def test_movement():
-    ship = Ship(Vec2(0, 0), Vec2(0, 0), 1, 1, Color(0, 0, 0), Color(0, 0, 0), 1, 1)
+    ship = Ship(Vec2(), Vec2(), 10)
     ship.thruster_rot_left = True
     ship.step(0.01)
     ship.thruster_rot_left = False

@@ -45,7 +45,6 @@ class PhysicalObject:
         """Apply its velocity to `self`.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -55,7 +54,6 @@ class PhysicalObject:
         """Add an impulse to `self`.
 
         Args:
-        ----
             impulse (Vec2): Impulse to apply
 
         """
@@ -65,7 +63,6 @@ class PhysicalObject:
         """Apply a force to `self`.
 
         Args:
-        ----
             force (Vec2): Force to apply
             dt (float): Passed time
 
@@ -76,11 +73,9 @@ class PhysicalObject:
         """Calculate gravitational force between `pobj` and `self` affecting `self`.
 
         Args:
-        ----
             pobj (PhysicalObject): Other PhysicalObject to gravitate towards
 
         Returns:
-        -------
             Vec2: Resulting force to apply to `self`
 
         """
@@ -96,25 +91,26 @@ class PhysicalObject:
         """Draw `self` on `camera`. Implemented by subclasses.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
 
 
+GRAY = Color("gray")
+
+
 class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float, color: Color) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float, color: Color = GRAY, density: float = 1) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
-        ----
             pos (Vec2): Disk's center
             vel (Vec2): Disk's velocity
-            density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
+            density (float): Disk's density
 
         """
         mass = radius**3 * math.pi * 4 / 3 * density
@@ -127,7 +123,6 @@ class Disk(PhysicalObject):
         """Draw `self`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -137,11 +132,9 @@ class Disk(PhysicalObject):
         """Determine whether `vec` is in `self`.
 
         Args:
-        ----
             vec (Vec2): Vector to test for intersection
 
         Returns:
-        -------
             bool: True iff `vec` is in `self`
 
         >>> disk = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
@@ -162,11 +155,9 @@ class Disk(PhysicalObject):
         barring floating-point rounding-errors.
 
         Args:
-        ----
             disk (Disk): Other disk
 
         Returns:
-        -------
             bool: True iff the two disks intersect
 
         >>> disk_a = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
@@ -178,7 +169,6 @@ class Disk(PhysicalObject):
         False
         >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
         True
-
 
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
@@ -199,11 +189,9 @@ class Disk(PhysicalObject):
         stability.
 
         Args:
-        ----
             disk (Disk): The other disk to try bouncing off of.
 
         Returns:
-        -------
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """
@@ -259,11 +247,9 @@ class Disk(PhysicalObject):
         stability.
 
         Args:
-        ----
             disk (Disk): The other disk to try bouncing off of.
 
         Returns:
-        -------
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """

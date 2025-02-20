@@ -33,9 +33,9 @@ def test_gravitational_force():
 def test_threedimensional_disk_mass_scaling():
     density = 9.87
     radius = 1.23
-    disk = Disk(Vec2(), Vec2(), density, radius, Color(0, 0, 0))
-    double_density_disk = Disk(Vec2(), Vec2(), density * 2, radius, Color(0, 0, 0))
-    double_size_disk = Disk(Vec2(), Vec2(), density, radius * 2, Color(0, 0, 0))
+    disk = Disk(Vec2(), Vec2(), radius, density=density)
+    double_density_disk = Disk(Vec2(), Vec2(), radius, density=2 * density)
+    double_size_disk = Disk(Vec2(), Vec2(), radius * 2, density=density)
 
     assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
     assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
@@ -44,8 +44,6 @@ def test_threedimensional_disk_mass_scaling():
 
 
 def test_relative_bounce():
-    color = Color(0, 0, 0)
-
     # Bounces should work the same if the disks have the same velocity relative
     # to each other. So if we add an absolute_vel to their velocities, the
     # result shouldn't change.
@@ -55,8 +53,8 @@ def test_relative_bounce():
         absolute_bounces: list[tuple[Disk, Disk]] = []
 
         for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1, 1, color)
-            disk_b = Disk(Vec2(1, 0), absolute_vel, 1.23, 1, color)
+            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1, density=1)
+            disk_b = Disk(Vec2(1, 0), absolute_vel, 1, density=1.23)
 
             relative_vel, disk_a.vel - disk_b.vel
             disk_a.bounce_off_of_disk(disk_b)
@@ -90,7 +88,7 @@ def test_disk_drawing():
     black = Color(0, 0, 0)
     camera_center = Vec2(-3, 4)
     camera = Camera(camera_center, 1, Surface((width, height)))
-    disk = Disk(Vec2(1, 0), Vec2(0, 0), density=1, radius=10, color=color)
+    disk = Disk(Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
     disk.draw(camera)
     camera.surface.lock()
 
