@@ -105,7 +105,6 @@ def universe_from_options(options: Options) -> Universe:
         planets,
         player_ships,
         [],
-        ["assets/astral-0.png", "assets/astral-1.png", "assets/astral-1.png"],
     )
 
     for planet in planets:
