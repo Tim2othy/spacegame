@@ -73,8 +73,10 @@ class Ship(Disk):
         """
         super().__init__(pos, vel, density, size, color)
         self.size: float = size
-        self.angle: float = 0
+
         self.health: float = 100.0
+        self.damage_indicator_timer: float = 0
+
         self.projectiles: list[Bullet] = []
         if not gun_cooldown > 0:
             raise ValueError
@@ -83,13 +85,14 @@ class Ship(Disk):
         self.shooting: bool = False
         self.bullet_color = Color(bullet_color)
         self.bullet_speed = bullet_speed
+
+        self.angle: float = 0
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
