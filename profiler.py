@@ -92,7 +92,6 @@ class Profiler:
         def to_stat(profile: MethodProfile) -> MethodStats:
             if profile.times:
                 average_t = profile.total_time / profile.call_count
-                # TODO: Test that this equals sum(profile.times) / len(profile.times)
                 median_t = median(profile.times)
                 stdev_t = stdev(profile.times, average_t)
             else:
