@@ -54,7 +54,6 @@ class Ship(Disk):
         Raises a ValueError if `gun_cooldown` is not strictly positive.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             size (float): Radius of disk-body
@@ -93,8 +92,7 @@ class Ship(Disk):
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
 
-        Returns
-        -------
+        Returns:
             Vec2: Faced direction, normalized
 
         """
@@ -143,7 +141,6 @@ class Ship(Disk):
         Does nothing if damage is <= 0.
 
         Args:
-        ----
             damage (float): Amount of damage to deal.
 
         """
@@ -155,7 +152,6 @@ class Ship(Disk):
         """Physics, control, and bullet-stepping for `self`.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -183,7 +179,6 @@ class Ship(Disk):
         """Draw `self` on `camera.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -301,7 +296,6 @@ class ShipInput:
         """Create a new map from keys to spaceship-actions.
 
         Args:
-        ----
             thruster_rot_left (pygame_key): Left rotation thruster's key
             thruster_rot_right (pygame_key): Right rotation thruster's key
             thruster_forward (pygame_key): Forward thruster's key
@@ -345,7 +339,6 @@ class PlayerShip(Ship):
         """Create a new player-spaceship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             size (float): Radius of disk-body
@@ -364,7 +357,6 @@ class PlayerShip(Ship):
         `keys` is typically retreived using `pygame.key.get_pressed()`
 
         Args:
-        ----
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
@@ -378,7 +370,6 @@ class PlayerShip(Ship):
         """Draw `self` on `camera.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -518,7 +509,6 @@ class BulletEnemy(Ship):
         """Create a new enemy ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
@@ -537,7 +527,6 @@ class BulletEnemy(Ship):
         """Apply physics and "AI" to `self`.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -595,7 +584,6 @@ class RocketEnemy(BulletEnemy):
         """Create a new Rocket-Ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
@@ -615,7 +603,6 @@ class MissileEnemy(BulletEnemy):
         """Create a new Missile-Ship.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target

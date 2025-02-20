@@ -213,13 +213,11 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
     """Display the main menu until player presses Enter.
 
     Args:
-    ----
         screen (Surface): To fill and render text on
         options (Options): Current options
         font (Font): Font to use for rendering
 
     Returns:
-    -------
         Options: Updated options
 
     """

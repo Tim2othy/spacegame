@@ -29,7 +29,6 @@ class Bullet(PhysicalObject):
         """Create a new basic Bullet.
 
         Args:
-        ----
             pos (Vec2): Start position
             vel (Vec2): Velocity
             color (Color): Border- and fill-color
@@ -42,7 +41,6 @@ class Bullet(PhysicalObject):
         """Draw `self` on `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -64,7 +62,6 @@ class Rocket(Bullet):
         """Create a new rocket targeting `target_ship`.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
@@ -84,7 +81,6 @@ class Rocket(Bullet):
         """Apply homing and physics-logic.
 
         Args:
-        ----
             dt (float): Passed time
 
         """
@@ -115,7 +111,6 @@ class Rocket(Bullet):
         """Draw `self` to `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -159,7 +154,6 @@ class Missile(Bullet):
         """Create a new Missile targeting `target_ship`.
 
         Args:
-        ----
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
@@ -180,7 +174,6 @@ class Missile(Bullet):
         """Draw `self` to `camera`.
 
         Args:
-        ----
             camera (Camera): Camera to draw on
 
         """
@@ -196,7 +189,6 @@ class Missile(Bullet):
         """Apply homing and physics-logic.
 
         Args:
-        ----
             dt (float): Passed time
 
         """

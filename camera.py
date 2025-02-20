@@ -22,7 +22,6 @@ class Camera:
         Raises ValueError if zoom is not strictly positive.
 
         Args:
-        ----
             center (Vec2): Worldspace-coordinate at the center of the screen
             zoom (float): Higher = Fewer objects fit on screen,
                 zoom==1 corresponds to 1 pixel per unit
@@ -42,7 +41,6 @@ class Camera:
         """Smoothly transition the camera to a new location.
 
         Args:
-        ----
             new_pos (Vec2): New camera worldspace topleft corner
             new_zoom (float): New zoom-factor
             dt (float): Time-factor (for the smooth operation)
@@ -63,7 +61,6 @@ class Camera:
         """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
 
         Args:
-        ----
             rect (Rect): Worldspace-rectangle to fit to
             dt (float): Time-factor (for the smooth operation)
             transition_time (float, optional): After this amount of dt has passed,
@@ -94,7 +91,6 @@ class Camera:
         """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
 
         Args:
-        ----
             points (list[Vec2]): Worldspace-points to focus on. Hopefully nonempty.
             buff (float): Worldspace-buffer around the points
             dt (float): Time-factor (for the smooth operation)
@@ -110,11 +106,9 @@ class Camera:
         """Determine whether a screenspace-rectangle intersects the camera's screen.
 
         Args:
-        ----
             rect (Rect): Screenspace-rectangle
 
         Returns:
-        -------
             bool: True iff screenspace-rectangle intersects the screen
 
         """
@@ -126,11 +120,9 @@ class Camera:
         """Transform a worldspace-vector to screenspace.
 
         Args:
-        ----
             vec (Vec2): Worldspace-vector
 
         Returns:
-        -------
             Vec2: Screenspace-vector
 
         """
@@ -150,7 +142,6 @@ class Camera:
         """Draw a worldspace-circle on screen.
 
         Args:
-        ----
             color (Color): Border- and fill-color
             center (Vec2): Worldspace-center of the circle
             radius (float): Worldspace-radius of the circle
@@ -168,7 +159,6 @@ class Camera:
         """Draw a worldspace-polygon on screen.
 
         Args:
-        ----
             color (Color): Border- and fill-color
             points (list[Vec2]): Worldspace-points
 
@@ -183,7 +173,6 @@ class Camera:
         """Draw a worldspace-line with a given thickness.
 
         Args:
-        ----
             color (Color): Border- and fill-color
             start (Vec2): Line's start-worldspace-point
             end (Vec2): Line's end-worldspace-point
@@ -208,7 +197,6 @@ class Camera:
         """Draw a worldspace-line of single-pixel-thickness.
 
         Args:
-        ----
             color (Color): Line's color
             start (Vec2): Line's start-worldspace-point
             end (Vec2): Line's end-worldspace-point
@@ -225,7 +213,6 @@ class Camera:
         """Draw a vertical worldspace-line of single-pixel-thickness.
 
         Args:
-        ----
             color (Color): Line's Color
             x (float): Line's horizontal position
             starty (float): Line's starting point
@@ -243,7 +230,6 @@ class Camera:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
 
         Args:
-        ----
             color (Color): Line's Color
             startx (float): Line's starting point
             endx (float): Line's ending point
@@ -261,7 +247,6 @@ class Camera:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:
-        ----
             text (str): Text to render
             pos (Vec2 | None): If Vec2, screenspace-position of text's top-left-corner,
                 if None, text will be centered on screen
@@ -279,7 +264,6 @@ class Camera:
         """Draw an image on screen at screenspace-position.
 
         Args:
-        ----
             image (pygame.Surface): Image to draw
             pos (Vec2): Screenspace-position of the image's top-left-corner
 
@@ -294,11 +278,9 @@ def _get_enclosing_rect(points: list[Vec2]) -> Rect:
     """Get the smallest rectangle enclosing all points.
 
     Args:
-    ----
         points (list[Vec2]): Points to enclose
 
     Returns:
-    -------
         Rect: Rectangle fitting all points snugly
 
     """
