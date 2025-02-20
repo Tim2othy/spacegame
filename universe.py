@@ -154,6 +154,11 @@ class Universe:
         """Add asteroids to the universe.
 
         Raises a ValueError if the asteroid's size exceeds the universe's max_nonplanet_size.
+
+        TODO: We could also check if the asteroid's size exceeds max_nonplanet_size, and if it does,
+        update max_nonplanet_size and rebuild the chunks. Would be slow, but should hopefully happen
+        rarely, would provide a better API (callers need not settle on a size limit upfront), and
+        wouldn't cause runtime-exceptions.
         """
         for asteroid in args:
             if asteroid.radius * 2 > self.max_nonplanet_size:
