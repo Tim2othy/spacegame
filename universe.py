@@ -133,7 +133,6 @@ class Universe:
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
 
-        # TODO: Rewrite collision-guarantees, they are wrong now
         asteroid_chunk_size = max_nonplanet_size
         self._vec_to_asteroid_chunk = lambda vec: (
             math.floor(vec.x / asteroid_chunk_size),
