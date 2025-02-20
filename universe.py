@@ -99,12 +99,19 @@ class Universe:
         planets: list[Planet],
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
+        max_nonplanet_size: float,
     ) -> None:
         """Create a new universe.
 
-        Assumes every object can fit in a square of sidelength chunk_size, where
-            chunk_size = max(500, 2 * max([p.radius for p in self._planets], default=0))
         Assumes planets are immutable.
+
+        Assumes every non-planet-object (asteroids, ships, bullets) has an axis-aligned-bounding-box
+        of size at most max_nonplanet_size. For disks, that means their diameter must not
+        exceed max_nonplanet_size. If violated, collision-detection may ignore large objects.
+        A smaller max_nonplanet_size speeds up collision-detection, so choose the smallest value
+        possible.
+
+        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonplanet_size.
 
         Args:
         ----
@@ -112,14 +119,22 @@ class Universe:
             planets (list[Planet]): Planets
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
+            max_nonplanet_size: float
 
         """
         self.size = Vec2(size)
+        self.max_nonplanet_size = max_nonplanet_size
+
+        if any(2 * ship.radius > max_nonplanet_size for ship in player_ships) or any(
+            2 * ship.radius > max_nonplanet_size for ship in enemy_ships
+        ):
+            raise ValueError
+
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
 
         # TODO: Rewrite collision-guarantees, they are wrong now
-        asteroid_chunk_size = 100
+        asteroid_chunk_size = max_nonplanet_size
         self._vec_to_asteroid_chunk = lambda vec: (
             math.floor(vec.x / asteroid_chunk_size),
             math.floor(vec.y / asteroid_chunk_size),
@@ -137,8 +152,13 @@ class Universe:
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
     def add_asteroids(self, *args: Asteroid) -> None:
-        """Add asteroids to the universe."""
+        """Add asteroids to the universe.
+
+        Raises a ValueError if the asteroid's size exceeds the universe's max_nonplanet_size.
+        """
         for asteroid in args:
+            if asteroid.radius * 2 > self.max_nonplanet_size:
+                raise ValueError
             chunk = self._vec_to_asteroid_chunk(asteroid.pos)
             self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
