@@ -60,9 +60,9 @@ class Ship(Disk):
             color (Color): Material and bullet color
             gun_cooldown (float): Minimum time between shots
 
-        >>> Ship(Vec2(), Vec2() gun_cooldown=1)
+        >>> Ship(Vec2(), Vec2(), gun_cooldown=1)
         <ship.Ship object at ...>
-        >>> Ship(Vec2(), Vec2() gun_cooldown=-1)
+        >>> Ship(Vec2(), Vec2(), gun_cooldown=-1)
         Traceback (most recent call last):
             ...
         ValueError
