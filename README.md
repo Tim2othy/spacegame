@@ -29,5 +29,5 @@ uv run pygbag .
 Run tests with:
 
 ```sh
-uv run pytest --doctest-modules
+uv run pytest
 ```

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import random
+from itertools import chain
 from typing import TYPE_CHECKING
 
 import pygame
@@ -12,8 +13,11 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 from profiler import global_profiler
+from projectiles import Bullet
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from camera import Camera
     from ship import BulletEnemy, PlayerShip
 
@@ -79,6 +83,10 @@ class Asteroid(Disk):
         super().__init__(pos, vel, density, radius, Color("gray"))
 
 
+type AsteroidChunk = tuple[int, int]
+type PlanetChunk = tuple[int, int]
+
+
 class Universe:
     """A collection of celestial objects, forming a Universe.
 
@@ -92,29 +100,85 @@ class Universe:
         planets: list[Planet],
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
-        parallax_background_paths: list[str],
+        max_nonplanet_size: float,
     ) -> None:
-        """Create a new universe (not in the big-bang way, sadly).
+        """Create a new universe.
+
+        Assumes planets are immutable.
+
+        Assumes every asteroid and ship has an axis-aligned-bounding-box
+        of size at most max_nonplanet_size. For disks, that means their diameter must not
+        exceed max_nonplanet_size. If violated, collision-detection may ignore large objects.
+        A smaller max_nonplanet_size speeds up collision-detection, so choose the smallest value
+        possible.
+
+        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonplanet_size.
 
         Args:
         ----
             size (Vec2): Width and height
             planets (list[Planet]): Planets
-            asteroids (list[Asteroid]): Asteroids but starts out empty
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
-            parallax_background_paths (list[str]): Paths to
-                background-images,increasingly far away
+            max_nonplanet_size: float
 
         """
         self.size = Vec2(size)
-        self.planets = planets
-        self.asteroids: list[Asteroid] = []
-        self.player_ships = player_ships
-        self.enemy_ships = enemy_ships
-        self.parallax_backgrounds = [
-            pygame.image.load(path).convert_alpha() for path in parallax_background_paths
-        ]
+        self.max_nonplanet_size = max_nonplanet_size
+
+        if any(2 * ship.radius > max_nonplanet_size for ship in player_ships) or any(
+            2 * ship.radius > max_nonplanet_size for ship in enemy_ships
+        ):
+            raise ValueError
+
+        self._player_ships = player_ships
+        self._enemy_ships = enemy_ships
+
+        self._vec_to_asteroid_chunk = lambda vec: (
+            math.floor(vec.x / max_nonplanet_size),
+            math.floor(vec.y / max_nonplanet_size),
+        )
+        self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
+
+        planet_chunk_size = max(500, 2 * max([p.radius for p in planets], default=0))
+        self._vec_to_planet_chunk = lambda vec: (
+            math.floor(vec.x / planet_chunk_size),
+            math.floor(vec.y / planet_chunk_size),
+        )
+        self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
+        for planet in planets:
+            chunk = self._vec_to_planet_chunk(planet.pos)
+            self._planet_chunks.setdefault(chunk, []).append(planet)
+
+    def add_asteroids(self, *args: Asteroid) -> None:
+        """Add asteroids to the universe.
+
+        Raises a ValueError if the asteroid's size exceeds the universe's max_nonplanet_size.
+
+        TODO: We could also check if the asteroid's size exceeds max_nonplanet_size, and if it does,
+        update max_nonplanet_size and rebuild the chunks. Would be slow, but should hopefully happen
+        rarely, would provide a better API (callers need not settle on a size limit upfront), and
+        wouldn't cause runtime-exceptions.
+        """
+        for asteroid in args:
+            if asteroid.radius * 2 > self.max_nonplanet_size:
+                raise ValueError
+            chunk = self._vec_to_asteroid_chunk(asteroid.pos)
+            self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
+
+    def _nearby_planets(self, vec: Vec2) -> Iterator[Planet]:
+        (x, y) = self._vec_to_planet_chunk(vec)
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                chunk = (x + i, y + j)
+                yield from self._planet_chunks.get(chunk, [])
+
+    def _nearby_asteroids(self, vec: Vec2) -> Iterator[Asteroid]:
+        (x, y) = self._vec_to_asteroid_chunk(vec)
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                chunk = (x + i, y + j)
+                yield from self._asteroid_chunks.get(chunk, [])
 
     def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
         """Affect pobj by `self`'s entire gravity.
@@ -126,10 +190,11 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self.planets:
+        for body in self._nearby_planets(pobj.pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
+    @global_profiler.profile_method
     def apply_gravity(self, dt: float) -> None:
         """Apply gravity to all of `self`'s objects.
 
@@ -138,9 +203,10 @@ class Universe:
             dt (float): Passed time
 
         """
-        for pobj in self.player_ships + self.enemy_ships + self.asteroids:
+        for pobj in chain(self._player_ships, self._enemy_ships, *self._asteroid_chunks.values()):
             self.apply_gravity_to_obj(dt, pobj)
 
+    @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
         # Bounce-Hierarchy:
@@ -148,30 +214,30 @@ class Universe:
         # Planets are separate.
 
         # Bounce player_ships
-        for player in self.player_ships:
+        for player in self._player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in self.enemy_ships + self.asteroids:
+            for body in chain(self._enemy_ships, self._nearby_asteroids(player.pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
-            for planet in self.planets:
+            for planet in self._nearby_planets(player.pos):
                 if damage := player.bounce_off_of_disk(planet) is not None:
                     player.suffer_damage(damage)
 
         # Bounce enemy_ships
-        for ix, enemy_ship in enumerate(self.enemy_ships):
+        for ix, enemy_ship in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in self.enemy_ships[ix + 1 :] + self.asteroids:
+            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_asteroids(enemy_ship.pos)):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_disks(body)
-            for planet in self.planets:
+            for planet in self._nearby_planets(enemy_ship.pos):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
-        for ix, asteroid in enumerate(self.asteroids):
-            for body in self.asteroids[ix + 1 :]:
+        for asteroid in chain(*self._asteroid_chunks.values()):
+            for body in self._nearby_asteroids(asteroid.pos):
                 asteroid.bounce_disks(body)
-            for planet in self.planets:
+            for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
 
     def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
@@ -186,39 +252,46 @@ class Universe:
             bool: True iff any intersect
 
         """
-        return any(planet.intersects_point(vec) for planet in self.planets) or any(
-            asteroid.intersects_point(vec) for asteroid in self.asteroids
+        return any(body.intersects_point(vec) for body in self._nearby_asteroids(vec)) or any(
+            body.intersects_point(vec) for body in self._nearby_planets(vec)
         )
 
+    @global_profiler.profile_method
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
-        # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
-        for player_ship in self.player_ships:
-            for projectile in player_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
-                    player_ship.projectiles.remove(projectile)
-                    continue
-                for enemy_ship in self.enemy_ships:
-                    if enemy_ship.intersects_point(projectile.pos):
-                        self.enemy_ships.remove(enemy_ship)
-                        player_ship.projectiles.remove(projectile)
-                        break
-        for enemy_ship in self.enemy_ships:
-            for projectile in enemy_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
-                    enemy_ship.projectiles.remove(projectile)
-                    continue
-                for player_ship in self.player_ships:
-                    if player_ship.intersects_point(projectile.pos):
-                        player_ship.suffer_damage(5)
-                        enemy_ship.projectiles.remove(projectile)
-                        break
+        def player_projectile_check(projectile: Bullet) -> bool:
+            """Run bullet-logic and return whether it should stay alive."""
+            if not self.contains_point(projectile.pos):
+                return False
+            if self.asteroids_or_planets_intersect_point(projectile.pos):
+                return False
+            for enemy in self._enemy_ships:
+                if enemy.intersects_point(projectile.pos):
+                    self._enemy_ships.remove(enemy)
+                    return False
+            return True
+
+        # TODO: Once enemies can take damage, collapse player_projectile_check and
+        # enemy_projectile_check into a single function taking as an argument the list
+        # of enemy-ships.
+        def enemy_projectile_check(projectile: Bullet) -> bool:
+            """Run bullet-logic and return whether it should stay alive."""
+            if not self.contains_point(projectile.pos):
+                return False
+            if self.asteroids_or_planets_intersect_point(projectile.pos):
+                return False
+            for player in self._player_ships:
+                if player.intersects_point(projectile.pos):
+                    player.suffer_damage(5)
+                    return False
+            return True
+
+        for player in self._player_ships:
+            player.projectiles = [p for p in player.projectiles if player_projectile_check(p)]
+
+        for enemy in self._enemy_ships:
+            enemy.projectiles = [p for p in enemy.projectiles if enemy_projectile_check(p)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
@@ -228,7 +301,7 @@ class Universe:
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
-        for player_ship in self.player_ships:
+        for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 
     def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
@@ -241,7 +314,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        ship = self.player_ships[player_ix]
+        ship = self._player_ships[player_ix]
         camera.smoothly_focus_points(
             [ship.pos, ship.pos + 1.0 * ship.vel],
             500,
@@ -257,11 +330,18 @@ class Universe:
             dt (float): Passed time
 
         """
-        # Call `step` on everything
-        for ship in self.player_ships + self.enemy_ships:
+        # Ship
+        for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
-        for asteroid in self.asteroids:
-            asteroid.step(dt)
+
+        # Asteroids
+        new_asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
+        for asteroids in self._asteroid_chunks.values():
+            for asteroid in asteroids:
+                asteroid.step(dt)
+                new_chunk = self._vec_to_asteroid_chunk(asteroid.pos)
+                new_asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
+        self._asteroid_chunks = new_asteroid_chunks
 
         # Physics
         self.apply_gravity(dt)
@@ -277,26 +357,151 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        zoom = camera.zoom
-        screenspace_size = camera.surface.get_size()
-        camera_pos_x = -camera.pos.x * zoom
-        camera_pos_y = -camera.pos.y * zoom
-        background_count = len(self.parallax_backgrounds)
+        # TODO: Try caching star-chunks to their final on-screen locations.
+        # If doing that, also optimise x_chunk_size for performance (via profiling) again.
+        camera.surface.lock()
+        camera_size = Vec2(camera.surface.get_size())
+        x_chunk_size = 3500  # This value is profiling-optimised for non-cached star-chunks.
+        y_chunk_size = x_chunk_size * camera_size.y / camera_size.x
+        z_chunk_size = 1000
+        z_chunk_min = 1  # star-depths are in [z_chunk_min*z_chunk_size, z_chunk_max*z_chunk_size)
+        z_chunk_max = 5
 
-        for ix, background in enumerate(self.parallax_backgrounds):
-            scaled_background = pygame.transform.smoothscale_by(background, zoom)
-            (bg_width, bg_height) = Vec2(background.get_size()) * zoom
+        r"""
+        In worldspace, we can imagine it like this (the y-dimension is not visible here):
 
-            draw_start_x = (camera_pos_x / (background_count - ix + 0.5) % bg_width) - bg_width
-            draw_start_y = (camera_pos_y / (background_count - ix + 0.5) % bg_height) - bg_height
-            repeat_x = math.ceil(screenspace_size[0] / bg_width) + 2
-            repeat_y = math.ceil(screenspace_size[1] / bg_height) + 2
+                        camera                  worldspace_z = 0 * z_chunk_size
+                          ╱╲
+                         ╱  ╲
+                        ╱    ╲
+        ━━┯━━━━┯━━━━┯━━╱━┯p━━━╲━━━━┯━━━━┯━━━━┯━ worldspace_z = 1 * z_chunk_size
+          │    │    │ ╱  │    │╲   │    │    │
+          │    │    │╱   │    │ ╲  │    │    │
+        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─ worldspace_z = 2 * z_chunk_size
+          │    │░░░╱│░░░░│░░░░│░░░╲│░░░░│    │
+          │    │░░╱░│░░░░│░░░░│░░░░╲░░░░│    │
+        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─ worldspace_z = 3 * z_chunk_size
+          │░░░░│╱░░░│░░░░│░░░░│░░░░│░╲░░│    │
+          │░░░░╱░░░░│░░░░│░░░░│░░░░│░░╲░│    │
+        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─ worldspace_z = 4 * z_chunk_size
+          │  ╱ │    │    │    │    │    ╲    │
 
-            for i in range(repeat_x):
-                for j in range(repeat_y):
-                    x = int(draw_start_x + i * bg_width)
-                    y = int(draw_start_y + j * bg_height)
-                    camera.surface.blit(scaled_background, (x, y))
+
+        (As this is a 2D-game, the z-dimension does not actually exist in worldspace, but
+        it's helpful to imagine it)
+
+        - p is the player-ship
+        - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
+          planets andasteroids
+        - Here, z_chunk_min=2 and z_chunk_max=4.
+        - The rectangular grid comprises the chunks. Each rectangle thus has height z_chunk_size,
+          and width x_chunk_size.
+        - The ░shaded░ rectangles are exactly the chunks that stars will be generated in.
+
+        Given a fixed z, let's figure out how to generate all shaded chunks of that z-layer, i.e.
+        all shaded chunks between z*z_chunk_size and (z+1)*z_chunk_size.
+        For this, it suffices to figure out the x-position of where the camera's periphery (denoted
+        by the two diagonal lines) crosses the (z+1)*z_chunk_size line, and round to the nearest chunk.
+
+        For this, it suffices to know the points X1, X2 where the camera's periphery crosses the
+        1*z_chunk_size line (so the plane containing the ship, planets, asteroid), because then
+        the x-coordinates X1', X2' of the crossing-points with the (z+1)*z_chunk_size line are simply:
+            X1' = camera_worldspace_center.x - (camera_worldspace_center.x - X1) * (z+1)
+                = (z+1)*X1 - z*camera_worldspace_center.x
+            X2' = camera_worldspace_center.x + (X2 - camera_worldspace_center.x) * (z+1)
+                = (z+1)*X2 - z*camera_worldspace_center.x
+        by the basic proportionality theorem.
+
+        Figuring out X1, X2 is easy, though: They are simply the left and right
+        worldspace-coordinates of the screen-edges.
+        """  # noqa: RUF001
+
+        # Topleft, bottomright
+        camera_topleft_worldspace = camera.pos
+        camera_bottomright_worldspace = camera.pos + camera_size / camera.zoom
+        camera_center_worldspace = camera.pos + camera_size / (2 * camera.zoom)
+
+        # Threshold for sampling poisson-stars. This is e^(-λ), where λ is the expected value of the
+        # poisson-distribution. The poisson-distribution will determine the number of stars in one chunk,
+        # so λ should be proportional to the volume of a chunk:
+        poisson_threshold = math.exp(-1e-9 * x_chunk_size * y_chunk_size * z_chunk_size)
+
+        # Iterate z-chunks back to front, so that stars in the front are drawn over stars in the back
+        for z in range(z_chunk_max - 1, z_chunk_min - 1, -1):
+            # Calculate X1', X2'
+            x1 = (z + 1) * camera_topleft_worldspace.x - z * camera_center_worldspace.x
+            x2 = (z + 1) * camera_bottomright_worldspace.x - z * camera_center_worldspace.x
+            # Transfer them to chunks by dividing by x_chunk_size and rounding down.
+            # We round down both because this only denotes the left edge of the chunk. The
+            # Chunk will extend for one x_chunk_size further rightwards, and thus also include X2'.
+            xstart = math.floor(x1 / x_chunk_size)
+            xend = math.floor(x2 / x_chunk_size)
+            # The +1 in the range is because python's range-ends are exclusive.
+            for x in range(xstart, xend + 1):
+                # Same calculations for y
+                y1 = (z + 1) * camera_topleft_worldspace.y - z * camera_center_worldspace.y
+                y2 = (z + 1) * camera_bottomright_worldspace.y - z * camera_center_worldspace.y
+                # Transfer them to chunks by dividing by x_chunk_size and rounding down.
+                # We round down both because this only denotes the left edge of the chunk. The
+                # Chunk will extend for one x_chunk_size further rightwards, and thus also include X2'.
+                ystart = math.floor(y1 / y_chunk_size)
+                yend = math.floor(y2 / y_chunk_size)
+                for y in range(ystart, yend + 1):
+                    # Set the seed so that stars are always in the same positions for a given chunk
+                    random.seed(z + x * z_chunk_max + y * 1_000 * z_chunk_max)
+
+                    star_depths: list[float] = []
+                    # Number of stars follows a poisson-distribution
+                    p = random.random()
+                    while p > poisson_threshold:
+                        p *= random.random()
+                        star_depths.append((z + random.random()) * z_chunk_size)
+
+                    for star_depth in star_depths:
+                        star_worldspace_xy_unparallax = Vec2(
+                            (x + random.random()) * x_chunk_size, (y + random.random()) * y_chunk_size
+                        )
+
+                        """
+                        For the parallax:
+
+                                        camera                  worldspace_z = 0 * z_chunk_size
+                                          ╱╲
+                                         ╱  ╲
+                                        ╱    ╲
+                        ━━┯━━━━┯━━━━┯━━╱┅┅┅┅┅┅╲━━━━┯━━━━┯━━━━┯━ worldspace_z = 1 * z_chunk_size
+                          │    │    │ ╱  │    │╲   │    │    │
+                          │    │    │╱   │    │ ╲  │    │    │
+                        ──┼────┼────╱────┼────┼──╲─┼────┼────┼─
+                          │    │   ╱│    │    │   ╲│    │    │
+                          │    │  ╱ │    │    │    ╲    │    │
+                        ──┼────┼─╱──┼────┼────┼────┼╲───┼────┼─
+                          │    │╱   │    │    │    │ ╲  │    │
+                          │    ╱════╪════╪════╪════╪══╲ │    │  star_depth
+                        ──┼───╱┼────┼────┼────┼────┼───╲┼────┼─
+                          │  ╱ │    │    │    │    │    ╲    │
+
+
+                        If you consider the set of all possible stars at depth = star_depth (this set is
+                        the ═doubly═struck═line═), we want those stars to be visible on screen, i.e. we
+                        want that set to be mapped to the ┅dashed┅line┅. We can do that by shrinking it
+                        by the factor star_depth/z_chunk_size (again by the proportionality theorem),
+                        while fixing its center at the camera-center. So the if the star's unparallaxed
+                        worldspace-position is X, then its parallaxed worldspace-position is:
+                            X' = (X - camera_center_worldspace.x) / (z_chunk_size/star_depth)
+                                  + camera_center_worldspace.x
+                        """  # noqa: RUF001
+
+                        star_depth_inverse = z_chunk_size / star_depth
+                        parallax_scaling_factor = Vec2(star_depth_inverse, star_depth_inverse)
+                        star_worldspace_xy = (
+                            star_worldspace_xy_unparallax - camera_center_worldspace
+                        ).elementwise() * parallax_scaling_factor + camera_center_worldspace
+                        color = int(200 * (1 - star_depth / (z_chunk_max * z_chunk_size)))
+
+                        camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
+
+        camera.surface.unlock()
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
@@ -307,7 +512,12 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        for pobj in self.asteroids + self.planets + self.enemy_ships + self.player_ships:
+        for pobj in chain(
+            *self._asteroid_chunks.values(),
+            *self._planet_chunks.values(),
+            self._enemy_ships,
+            self._player_ships,
+        ):
             pobj.draw(camera)
 
     @global_profiler.profile_method
@@ -335,13 +545,13 @@ class Universe:
             return vertical_offset + font_size
 
         text_v = 10
-        player_ship = self.player_ships[player_ix]
+        player_ship = self._player_ships[player_ix]
         text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
         text_v = texty(text_v, f"Fuel: {player_ship.fuel:.0f}")
         text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
         text_v = texty(text_v, f"Ammunition: {player_ship.ammo}")
 
-        enemy_count = len(self.enemy_ships)
+        enemy_count = len(self._enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
 
     @global_profiler.profile_method
@@ -378,20 +588,6 @@ class Universe:
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def clamp_point(self, vec: Vec2) -> Vec2:
-        """Return `vec` clamped to be within `self`'s bounds.
-
-        Args:
-        ----
-            vec (Vec2): Point to clamp into `self`
-
-        Returns:
-        -------
-            Vec2: The clamped point. Unchanged if it already was in `self`.
-
-        """
-        return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
-
     def generate_asteroid(self, planet: Planet) -> None:
         """Create an asteroid orbiting a planet.
 
@@ -410,7 +606,9 @@ class Universe:
         """
         # random variables
         asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * planet.radius)
-        radius_asteroid = ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda)
+        radius_asteroid = min(
+            ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda), self.max_nonplanet_size / 2
+        )
         r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
         r_a = r_p + random.expovariate(ASTEROID_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
@@ -432,6 +630,4 @@ class Universe:
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
-        self.asteroids.append(
-            Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid),
-        )
+        self.add_asteroids(Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid))

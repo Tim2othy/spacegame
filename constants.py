@@ -1,4 +1,7 @@
-"""Constants for the game."""
+"""Constants for the game.
+
+TODO: We should put most of these into their respective modules.
+"""
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2

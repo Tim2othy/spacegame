@@ -5,11 +5,6 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-# TODO: We should have a way of checking how much
-# of main's time we profile in total, lest we
-# end up optimising things that aren't great drains
-# to begin with.
-
 
 # As importing `statistics` breaks pygbag for some
 # reason, we need to roll our own
@@ -97,7 +92,6 @@ class Profiler:
         def to_stat(profile: MethodProfile) -> MethodStats:
             if profile.times:
                 average_t = profile.total_time / profile.call_count
-                # TODO: Test that this equals sum(profile.times) / len(profile.times)
                 median_t = median(profile.times)
                 stdev_t = stdev(profile.times, average_t)
             else:

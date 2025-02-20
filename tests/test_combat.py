@@ -42,7 +42,7 @@ def test_enemy_hostility():
     ]
 
     for enemy in enemies:
-        universe = Universe(world, [], [player_ship], [enemy], [])
+        universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
         starting_health = player_ship.health
 
         # 30 seconds
@@ -72,8 +72,15 @@ def test_bullet_paths():
     ]
 
     for enemy_right, enemy_up in enemy_groups:
-        universe = Universe(world, [], [player_ship], [enemy_right, enemy_up], [])
-        universe.asteroids.append(Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20))
+        asteroid = Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20)
+        universe = Universe(
+            world,
+            [],
+            [player_ship],
+            [enemy_right, enemy_up],
+            max(player_ship.radius, enemy_right.radius, enemy_up.radius, asteroid.radius) * 2,
+        )
+        universe.add_asteroids(asteroid)
 
         bullet_right = player_ship.new_bullet(player_ship.pos, Vec2(100, 0))
         bullet_up = player_ship.new_bullet(player_ship.pos, Vec2(0, 100))
@@ -88,11 +95,12 @@ def test_bullet_paths():
         # 10 seconds
         for _ in range(1000):
             # Cull enemies to prevent them from moving
-            for enemy in universe.enemy_ships:
+            for enemy in [enemy_up, enemy_right]:
                 enemy.action_timer = 1e8
                 enemy.current_action = BulletEnemy.Action.decelerate
             universe.step(0.01)
 
         assert len(player_ship.projectiles) == 0, "Both bullets should have hit something"
-        assert len(universe.enemy_ships) == 1, "One enemy should be unharmed"
-        assert universe.enemy_ships[0].pos == enemy_start_right, "The enemy on the right should be unharmed"
+        # TODO: Once enemies have proper health, replace these checks by checking health instead
+        assert len(universe._enemy_ships) == 1, "One enemy should be unharmed"  # noqa: SLF001
+        assert universe._enemy_ships[0].pos == enemy_start_right, "The enemy on the right should be unharmed"  # noqa: SLF001

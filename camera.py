@@ -19,6 +19,8 @@ class Camera:
     def __init__(self, center: Vec2, zoom: float, surface: pygame.Surface) -> None:
         """Construct a new camera.
 
+        Raises ValueError if zoom is not strictly positive.
+
         Args:
         ----
             center (Vec2): Worldspace-coordinate at the center of the screen
@@ -27,6 +29,8 @@ class Camera:
             surface (pygame.Surface): Surface to draw on
 
         """
+        if not zoom > 0:
+            raise ValueError
         self.zoom: float = zoom
         self.surface: pygame.Surface = surface
         # Convert `center` to topleft corner
@@ -149,6 +153,11 @@ class Camera:
     def start_drawing_new_frame(self) -> None:
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self.surface.fill(Color("black"))
+
+    def draw_pixel(self, color: Color, point: Vec2) -> None:
+        """Draw a  worldspace-pixel on screen."""
+        screenpoint = self.world_to_screen(point)
+        self.surface.set_at(screenpoint, color)
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a worldspace-circle on screen.
