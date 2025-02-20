@@ -37,3 +37,6 @@ dev = [
 lint = [
   "ruff"
 ]
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
