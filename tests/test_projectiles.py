@@ -8,7 +8,7 @@ from ship import Ship
 
 
 def test_homing():
-    ship = Ship(Vec2(512, -1024), Vec2(), 10, Color(0, 0, 0), 0.1)
+    ship = Ship(Vec2(512, -1024), Vec2(), 10)
 
     def hits_ship(projectile: Bullet) -> bool:
         """Simulate projectile for a while and return if it ever hits `ship`"""
