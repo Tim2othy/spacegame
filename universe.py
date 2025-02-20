@@ -99,7 +99,6 @@ class Universe:
         planets: list[Planet],
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
-        parallax_background_paths: list[str],
     ) -> None:
         """Create a new universe.
 
@@ -113,16 +112,11 @@ class Universe:
             planets (list[Planet]): Planets
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
-            parallax_background_paths (list[str]): Paths to
-                background-images,increasingly far away
 
         """
         self.size = Vec2(size)
         self.player_ships = player_ships
         self.enemy_ships = enemy_ships
-        self.parallax_backgrounds = [
-            pygame.image.load(path).convert_alpha() for path in parallax_background_paths
-        ]
 
         # TODO: Rewrite collision-guarantees, they are wrong now
         asteroid_chunk_size = 100
