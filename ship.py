@@ -58,7 +58,9 @@ class Ship(Disk):
             vel (Vec2): Initial velocity
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
-            color (Color): Material color
+            color (Color): Material and bullet color
+            gun_cooldown (float): Minimum time between shots
+            bullet_speed (float): The speed at which bullets are shot
 
         >>> v0, c = Vec2(0, 0), Color(0,0,0)
         >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
