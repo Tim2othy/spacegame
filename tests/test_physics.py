@@ -35,7 +35,7 @@ def test_threedimensional_disk_mass_scaling():
     radius = 1.23
     disk = Disk(Vec2(), Vec2(), radius, density=density)
     double_density_disk = Disk(Vec2(), Vec2(), radius, density=2 * density)
-    double_size_disk = Disk(Vec2(), Vec2(), radius * 2, density=2 * density)
+    double_size_disk = Disk(Vec2(), Vec2(), radius * 2, density=density)
 
     assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
     assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
