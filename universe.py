@@ -105,7 +105,7 @@ class Universe:
 
         Assumes planets are immutable.
 
-        Assumes every non-planet-object (asteroids, ships, bullets) has an axis-aligned-bounding-box
+        Assumes every asteroid and ship has an axis-aligned-bounding-box
         of size at most max_nonplanet_size. For disks, that means their diameter must not
         exceed max_nonplanet_size. If violated, collision-detection may ignore large objects.
         A smaller max_nonplanet_size speeds up collision-detection, so choose the smallest value
@@ -130,8 +130,8 @@ class Universe:
         ):
             raise ValueError
 
-        self.player_ships = player_ships
-        self.enemy_ships = enemy_ships
+        self._player_ships = player_ships
+        self._enemy_ships = enemy_ships
 
         # TODO: Rewrite collision-guarantees, they are wrong now
         asteroid_chunk_size = max_nonplanet_size
@@ -199,7 +199,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        for pobj in chain(self.player_ships, self.enemy_ships, *self._asteroid_chunks.values()):
+        for pobj in chain(self._player_ships, self._enemy_ships, *self._asteroid_chunks.values()):
             self.apply_gravity_to_obj(dt, pobj)
 
     @global_profiler.profile_method
@@ -210,9 +210,9 @@ class Universe:
         # Planets are separate.
 
         # Bounce player_ships
-        for player in self.player_ships:
+        for player in self._player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in chain(self.enemy_ships, self._nearby_asteroids(player.pos)):
+            for body in chain(self._enemy_ships, self._nearby_asteroids(player.pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
             for planet in self._nearby_planets(player.pos):
@@ -220,9 +220,9 @@ class Universe:
                     player.suffer_damage(damage)
 
         # Bounce enemy_ships
-        for ix, enemy_ship in enumerate(self.enemy_ships):
+        for ix, enemy_ship in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in chain(self.enemy_ships[ix + 1 :], self._nearby_asteroids(enemy_ship.pos)):
+            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_asteroids(enemy_ship.pos)):
                 # TODO: Once enemies have proper health, they should probably suffer damage, too
                 enemy_ship.bounce_disks(body)
             for planet in self._nearby_planets(enemy_ship.pos):
@@ -257,26 +257,26 @@ class Universe:
         """Run bullet-collision checks and damage ships as a result."""
         # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
         # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
-        for player_ship in self.player_ships:
+        for player_ship in self._player_ships:
             for projectile in player_ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(
                     projectile.pos,
                 ) or not self.contains_point(projectile.pos):
                     player_ship.projectiles.remove(projectile)
                     continue
-                for enemy_ship in self.enemy_ships:
+                for enemy_ship in self._enemy_ships:
                     if enemy_ship.intersects_point(projectile.pos):
-                        self.enemy_ships.remove(enemy_ship)
+                        self._enemy_ships.remove(enemy_ship)
                         player_ship.projectiles.remove(projectile)
                         break
-        for enemy_ship in self.enemy_ships:
+        for enemy_ship in self._enemy_ships:
             for projectile in enemy_ship.projectiles:
                 if self.asteroids_or_planets_intersect_point(
                     projectile.pos,
                 ) or not self.contains_point(projectile.pos):
                     enemy_ship.projectiles.remove(projectile)
                     continue
-                for player_ship in self.player_ships:
+                for player_ship in self._player_ships:
                     if player_ship.intersects_point(projectile.pos):
                         player_ship.suffer_damage(5)
                         enemy_ship.projectiles.remove(projectile)
@@ -290,7 +290,7 @@ class Universe:
             keys (pygame.key.ScancodeWrapper): Pressed keys
 
         """
-        for player_ship in self.player_ships:
+        for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 
     def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
@@ -303,7 +303,7 @@ class Universe:
             dt (float): Passed time
 
         """
-        ship = self.player_ships[player_ix]
+        ship = self._player_ships[player_ix]
         camera.smoothly_focus_points(
             [ship.pos, ship.pos + 1.0 * ship.vel],
             500,
@@ -320,7 +320,7 @@ class Universe:
 
         """
         # Ship
-        for ship in chain(self.player_ships, self.enemy_ships):
+        for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
 
         # Asteroids
@@ -514,8 +514,8 @@ class Universe:
         for pobj in chain(
             *self._asteroid_chunks.values(),
             *self._planet_chunks.values(),
-            self.enemy_ships,
-            self.player_ships,
+            self._enemy_ships,
+            self._player_ships,
         ):
             pobj.draw(camera)
 
@@ -544,13 +544,13 @@ class Universe:
             return vertical_offset + font_size
 
         text_v = 10
-        player_ship = self.player_ships[player_ix]
+        player_ship = self._player_ships[player_ix]
         text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
         text_v = texty(text_v, f"Fuel: {player_ship.fuel:.0f}")
         text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
         text_v = texty(text_v, f"Ammunition: {player_ship.ammo}")
 
-        enemy_count = len(self.enemy_ships)
+        enemy_count = len(self._enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
 
     @global_profiler.profile_method

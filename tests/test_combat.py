@@ -88,11 +88,12 @@ def test_bullet_paths():
         # 10 seconds
         for _ in range(1000):
             # Cull enemies to prevent them from moving
-            for enemy in universe.enemy_ships:
+            for enemy in [enemy_up, enemy_right]:
                 enemy.action_timer = 1e8
                 enemy.current_action = BulletEnemy.Action.decelerate
             universe.step(0.01)
 
         assert len(player_ship.projectiles) == 0, "Both bullets should have hit something"
-        assert len(universe.enemy_ships) == 1, "One enemy should be unharmed"
-        assert universe.enemy_ships[0].pos == enemy_start_right, "The enemy on the right should be unharmed"
+        # TODO: Once enemies have proper health, replace these checks by checking health instead
+        assert len(universe._enemy_ships) == 1, "One enemy should be unharmed"  # noqa: SLF001
+        assert universe._enemy_ships[0].pos == enemy_start_right, "The enemy on the right should be unharmed"  # noqa: SLF001
