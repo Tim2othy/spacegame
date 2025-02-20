@@ -90,7 +90,7 @@ def test_newtons_cradle():
     # Do this 5 times for different directions
     for i in range(5):
         direction = Vec2()
-        direction.from_polar((asteroid_radius, i * math.tau / 5))
+        direction.from_polar((asteroid_radius, i * 360 / 5))
 
         universe = Universe(world, [], [], [], asteroid_radius * 2)
         first_asteroid = Asteroid(world / 2, direction, 1, asteroid_radius)
