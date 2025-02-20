@@ -136,7 +136,7 @@ class Universe:
             chunk = self._vec_to_planet_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
-    def add_asteroid(self, *args: Asteroid) -> None:
+    def add_asteroids(self, *args: Asteroid) -> None:
         """Add asteroids to the universe."""
         for asteroid in args:
             chunk = self._vec_to_asteroid_chunk(asteroid.pos)
@@ -621,4 +621,4 @@ class Universe:
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
-        self.add_asteroid(Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid))
+        self.add_asteroids(Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid))
