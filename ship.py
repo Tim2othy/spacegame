@@ -349,7 +349,8 @@ class PlayerShip(Ship):
         """
         super().__init__(pos, vel, size, color, GUN_COOLDOWN_PLAYER)
         self.spaceship_input = spaceship_input
-        self.image = pygame.image.load(image_path)
+        if image_path is not None:
+            self.image = pygame.image.load(image_path)
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -471,7 +472,7 @@ class PlayerShip(Ship):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
-        if self.image is not None:
+        if hasattr(self, "image"):
             rotated_image = pygame.transform.rotate(self.image, -self.angle - 90)
             # Get the width and height of the rotated image
             image_rect = rotated_image.get_rect()
