@@ -93,9 +93,21 @@ class Rocket(Bullet):
         if self.homing_timer <= self.homing_duration:
             # Target the ship
             direction = self.target_ship.pos - self.pos
-            if direction != Vec2(0, 0):
-                direction = (self.target_ship.pos - self.pos).normalize()
-                self.apply_force(direction * self.homing_thrust, dt)
+            if direction == Vec2(0, 0):
+                return
+            normalized_direction = (self.target_ship.pos - self.pos).normalize()
+
+            # Also correct for angular velocity
+            relative_velocity = self.vel - self.target_ship.vel
+            angular_offset = relative_velocity - normalized_direction * (
+                relative_velocity * normalized_direction
+            )
+
+            unnormalized_force = direction - angular_offset
+            if unnormalized_force == Vec2(0, 0):
+                return
+            force = (direction - 2 * angular_offset).normalize() * self.homing_thrust
+            self.apply_force(force, dt)
 
         super().step(dt)
 
