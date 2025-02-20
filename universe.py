@@ -567,20 +567,6 @@ class Universe:
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def clamp_point(self, vec: Vec2) -> Vec2:
-        """Return `vec` clamped to be within `self`'s bounds.
-
-        Args:
-        ----
-            vec (Vec2): Point to clamp into `self`
-
-        Returns:
-        -------
-            Vec2: The clamped point. Unchanged if it already was in `self`.
-
-        """
-        return Vec2(max(0, min(self.size.x, vec.x)), max(0, min(self.size.y, vec.y)))
-
     def generate_asteroid(self, planet: Planet) -> None:
         """Create an asteroid orbiting a planet.
 
