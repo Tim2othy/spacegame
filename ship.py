@@ -42,12 +42,7 @@ class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        size: float = 10,
-        color: Color = GRAY,
-        gun_cooldown: float = 0.1,
+        self, pos: Vec2, vel: Vec2, size: float = 10, color: Color = GRAY, gun_cooldown: float = 0.1
     ) -> None:
         """Create a new spaceship.
 
