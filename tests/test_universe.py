@@ -104,3 +104,51 @@ def test_newtons_cradle():
 
         assert first_asteroid.vel * direction < asteroid_radius, "First asteroid should have lost speed"
         assert other_asteroids[-1].vel * direction > 0, "Last asteroid should have gained speed"
+
+
+def test_precise_asteroid_collision():
+    # In all different directions, just barely have two asteroids graze past each other.
+
+    world = Vec2(3000, 3000)
+    asteroid_radius = 50
+
+    num_directions = 23
+
+    universe = Universe(world, [], [], [])
+
+    start_asteroids: list[Asteroid] = []
+    hit_asteroids: list[Asteroid] = []
+
+    for i in range(num_directions):
+        direction = Vec2()
+        direction.from_polar((1, i * 360 / num_directions))
+        direction_rotated = direction.rotate(90)
+
+        start_asteroid = Asteroid(
+            world / 2 + direction * num_directions * asteroid_radius,
+            direction * asteroid_radius,
+            1,
+            asteroid_radius,
+        )
+        start_asteroids.append(start_asteroid)
+        hit_asteroid = Asteroid(
+            world / 2
+            + direction * (num_directions + 1) * asteroid_radius
+            + 1.99 * direction_rotated * asteroid_radius,
+            Vec2(0, 0),
+            1,
+            asteroid_radius,
+        )
+        hit_asteroids.append(hit_asteroid)
+
+        universe.add_asteroids(start_asteroid, hit_asteroid)
+
+    # Run the universe for 1 second
+    for _ in range(1000):
+        universe.step(0.001)
+
+    for hit_asteroid in hit_asteroids:
+        print(hit_asteroid.vel.magnitude() / asteroid_radius)
+        assert 0.001 < hit_asteroid.vel.magnitude() / asteroid_radius < 0.1, (
+            "The hit asteroid should have gained a tiny bit of velocity"
+        )
