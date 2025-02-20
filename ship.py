@@ -46,7 +46,6 @@ class Ship(Disk):
         size: float,
         color: Color,
         gun_cooldown: float,
-        bullet_speed: float,
     ) -> None:
         """Create a new spaceship.
 
@@ -60,7 +59,6 @@ class Ship(Disk):
             size (float): Radius of disk-body
             color (Color): Material and bullet color
             gun_cooldown (float): Minimum time between shots
-            bullet_speed (float): The speed at which bullets are shot
 
         >>> v0, c = Vec2(0, 0), Color(0,0,0)
         >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
@@ -83,7 +81,6 @@ class Ship(Disk):
         self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
-        self.bullet_speed = bullet_speed
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -355,6 +352,7 @@ class PlayerShip(Ship):
             image_path (str): Path to image
 
         """
+        super().__init__(pos, vel, density, size, color, GUN_COOLDOWN_PLAYER)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -515,7 +513,6 @@ class BulletEnemy(Ship):
         target_ship: Ship,
         world_size: Vec2,
         gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
-        bullet_speed: float = BULLET_SPEED,
         color: Color = LIME,
     ) -> None:
         """Create a new enemy ship.
@@ -528,7 +525,7 @@ class BulletEnemy(Ship):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(pos, vel, 1, 8, color, gun_cooldown, bullet_speed)
+        super().__init__(pos, vel, 1, 8, color, gun_cooldown)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = ENEMY_HEALTH
@@ -615,7 +612,7 @@ class RocketEnemy(BulletEnemy):
 
 
         """
-        super().__init__(pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, 0, color)
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_ROCKET_COOLDOWN, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -641,7 +638,7 @@ class MissileEnemy(BulletEnemy):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, 0, color)
+        super().__init__(pos, vel, target_ship, world_size, ENEMY_MISSILE_COOLDOWN, color)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
