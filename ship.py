@@ -83,17 +83,12 @@ class Ship(Disk):
         self.shooting: bool = False
         self.bullet_color = Color(bullet_color)
         self.bullet_speed = bullet_speed
-        self.ammo: int = 3700
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 230
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.max_fuel: float = 100.0
-        self.fuel: float = self.max_fuel
-        self.fuel_consumption_rate: float = 0.5
-        self.fuel_rot_consumption_rate: float = 0.5
         self.damage_indicator_timer: float = 0
 
     def get_faced_direction(self) -> Vec2:
@@ -126,7 +121,7 @@ class Ship(Disk):
             self.gun_cooldown_timer -= dt
 
             # To handle multiple shots per frame:
-            while self.gun_cooldown_timer < 0 and self.ammo > 0:
+            while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
                 bullet_vel = self.vel + forward * BULLET_SPEED
 
@@ -142,7 +137,6 @@ class Ship(Disk):
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
-                self.ammo -= 1
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
@@ -166,21 +160,16 @@ class Ship(Disk):
             dt (float): Passed time
 
         """
-        if self.fuel > 0:
-            if self.thruster_rot_left:
-                self.fuel = max(0, self.fuel - dt * self.fuel_rot_consumption_rate)
-                self.angle += self.rotation_thrust * dt
-            if self.thruster_rot_right:
-                self.fuel = max(0, self.fuel - dt * self.fuel_rot_consumption_rate)
-                self.angle -= self.rotation_thrust * dt
+        if self.thruster_rot_left:
+            self.angle += self.rotation_thrust * dt
+        if self.thruster_rot_right:
+            self.angle -= self.rotation_thrust * dt
 
-            forward = self.get_faced_direction()
-            if self.thruster_forward:
-                self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
-                self.apply_force(forward * self.thrust, dt)
-            if self.thruster_backward:
-                self.fuel = max(0, self.fuel - dt * self.fuel_consumption_rate)
-                self.apply_force(-forward * self.thrust, dt)
+        forward = self.get_faced_direction()
+        if self.thruster_forward:
+            self.apply_force(forward * self.thrust, dt)
+        if self.thruster_backward:
+            self.apply_force(-forward * self.thrust, dt)
 
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
 

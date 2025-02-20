@@ -547,9 +547,7 @@ class Universe:
         text_v = 10
         player_ship = self._player_ships[player_ix]
         text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
-        text_v = texty(text_v, f"Fuel: {player_ship.fuel:.0f}")
         text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
-        text_v = texty(text_v, f"Ammunition: {player_ship.ammo}")
 
         enemy_count = len(self._enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
