@@ -116,8 +116,9 @@ async def main() -> None:
     try:
         pygame.display.set_caption("Space Game")
         screen_surface = pygame.display.set_mode(SCREEN_SIZE)
+        keep_playing = True
 
-        while True:
+        while keep_playing:
             options = await show_menu(screen_surface, options, font)
             universe, player_ships = universe_from_options(options)
 
@@ -141,6 +142,7 @@ async def main() -> None:
             while running:
                 if any(e.type == pygame.QUIT for e in pygame.event.get()):
                     running = False
+                    keep_playing = False
                     break
 
                 dt = clock.tick() / 1_000
