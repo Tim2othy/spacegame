@@ -45,13 +45,13 @@ class Planet(Disk):
             density (float): Density
 
         """
-        super().__init__(pos, Vec2(0, 0), density, radius, color)
+        super().__init__(pos, Vec2(0, 0), radius, color, density)
 
 
 class Asteroid(Disk):
     """A gray disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float, density: float = 1) -> None:
         """Create a new Asteroid.
 
         Args:
@@ -62,7 +62,7 @@ class Asteroid(Disk):
             radius (float): Radius
 
         """
-        super().__init__(pos, vel, density, radius, Color("gray"))
+        super().__init__(pos, vel, radius, Color(32, 32, 32), density)
 
 
 type AsteroidChunk = tuple[int, int]
