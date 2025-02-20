@@ -136,11 +136,11 @@ class Universe:
             chunk = self._vec_to_planet_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
-    def add_asteroid(self, asteroid: Asteroid) -> None:
-        """Add an asteroid to the universe."""
-        # TODO: Change from single asteroid to many asteroids, `add_asteroids`
-        chunk = self._vec_to_asteroid_chunk(asteroid.pos)
-        self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
+    def add_asteroid(self, *args: Asteroid) -> None:
+        """Add asteroids to the universe."""
+        for asteroid in args:
+            chunk = self._vec_to_asteroid_chunk(asteroid.pos)
+            self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
     def _nearby_planets(self, vec: Vec2) -> Iterator[Planet]:
         (x, y) = self._vec_to_planet_chunk(vec)
