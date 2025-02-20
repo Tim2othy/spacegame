@@ -45,7 +45,6 @@ class Ship(Disk):
         density: float,
         size: float,
         color: Color,
-        bullet_color: Color,
         gun_cooldown: float,
         bullet_speed: float,
     ) -> None:
@@ -60,7 +59,6 @@ class Ship(Disk):
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
-            bullet_color (Color): Bullet_color
 
         >>> v0, c = Vec2(0, 0), Color(0,0,0)
         >>> Ship(v0, v0, 1, 1, c, c, 1, 1)
@@ -83,7 +81,6 @@ class Ship(Disk):
         self._gun_cooldown: float = gun_cooldown
         self.gun_cooldown_timer: float = 0
         self.shooting: bool = False
-        self.bullet_color = Color(bullet_color)
         self.bullet_speed = bullet_speed
 
         self.angle: float = 0
@@ -109,7 +106,7 @@ class Ship(Disk):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`."""
-        return Bullet(pos, vel, self.bullet_color)
+        return Bullet(pos, vel, self.color)
 
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
@@ -340,7 +337,6 @@ class PlayerShip(Ship):
         density: float,
         size: float,
         color: Color,
-        bullet_color: Color,
         spaceship_input: ShipInput,
         image_path: str,
     ) -> None:
@@ -353,12 +349,10 @@ class PlayerShip(Ship):
             density (float): Density (of disk-body)
             size (float): Radius of disk-body
             color (Color): Material color
-            bullet_color (Color): Bullet_color
             spaceship_input (SpaceshipInput): Map from keys to actions
             image_path (str): Path to image
 
         """
-        super().__init__(pos, vel, density, size, color, bullet_color, GUN_COOLDOWN_PLAYER, BULLET_SPEED)
         self.spaceship_input = spaceship_input
         self.image = pygame.image.load(image_path)
 
@@ -521,7 +515,6 @@ class BulletEnemy(Ship):
         gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
         bullet_speed: float = BULLET_SPEED,
         color: Color = LIME,
-        bullet_color: Color = PINK,
     ) -> None:
         """Create a new enemy ship.
 
@@ -533,7 +526,7 @@ class BulletEnemy(Ship):
             world_size (Vec2): Size of the world
 
         """
-        super().__init__(pos, vel, 1, 8, color, bullet_color, gun_cooldown, bullet_speed)
+        super().__init__(pos, vel, 1, 8, color, gun_cooldown, bullet_speed)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = ENEMY_HEALTH
