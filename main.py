@@ -191,10 +191,7 @@ async def main() -> None:
                 # Draw minimap borders directly on SCREEN_SURFACE if needed
                 minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, universe.size.y)
                 minimap_camera.draw_horizontal_hairline(
-                    MINIMAP_BORDER_COLOR,
-                    0,
-                    universe.size.x,
-                    universe.size.y - 1,
+                    MINIMAP_BORDER_COLOR, 0, universe.size.x, universe.size.y - 1
                 )
 
                 pygame.display.flip()
