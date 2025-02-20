@@ -102,19 +102,22 @@ class PhysicalObject:
         """
 
 
+GRAY = Color("gray")
+
+
 class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float, color: Color) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float, color: Color = GRAY, density: float = 1) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
         ----
             pos (Vec2): Disk's center
             vel (Vec2): Disk's velocity
-            density (float): Disk's density
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
+            density (float): Disk's density
 
         """
         mass = radius**3 * math.pi * 4 / 3 * density
