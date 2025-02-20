@@ -261,7 +261,7 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
                     option_selection_ix = (option_selection_ix - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
                     option_selection_ix = (option_selection_ix + 1) % len(options)
-                elif event.key in (pygame.K_LEFT, pygame.K_RIGHT):
+                elif event.key in {pygame.K_LEFT, pygame.K_RIGHT}:
                     options[option_names[option_selection_ix]] = not options[
                         option_names[option_selection_ix]
                     ]
