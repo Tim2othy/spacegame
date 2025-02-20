@@ -1,6 +1,5 @@
 from math import tau
 
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from ship import Ship
@@ -11,7 +10,6 @@ EPSILON = 1e-8
 def test_shooting():
     gun_cooldown = 0.123
     bullet_count = 10
-    color = Color(0, 0, 0)
     ship = Ship(Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
 
     ship.angle = tau / 8

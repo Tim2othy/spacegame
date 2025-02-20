@@ -1,10 +1,9 @@
 import random
 
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from constants import ENEMY_VISUAL_RANGE
-from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
+from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
 
 

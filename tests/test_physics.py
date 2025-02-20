@@ -44,8 +44,6 @@ def test_threedimensional_disk_mass_scaling():
 
 
 def test_relative_bounce():
-    color = Color(0, 0, 0)
-
     # Bounces should work the same if the disks have the same velocity relative
     # to each other. So if we add an absolute_vel to their velocities, the
     # result shouldn't change.

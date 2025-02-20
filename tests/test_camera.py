@@ -1,5 +1,4 @@
 import pygame
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera

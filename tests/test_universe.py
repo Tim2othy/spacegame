@@ -5,7 +5,7 @@ import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import BulletEnemy, PlayerShip, ShipInput
+from ship import BulletEnemy, PlayerShip
 from universe import Asteroid, Planet, Universe
 
 if TYPE_CHECKING:
