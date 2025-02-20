@@ -211,7 +211,7 @@ async def main() -> None:
         raise
     finally:
         profiler_stats = global_profiler.stats_to_str()
-        print(profiler_stats)
+        print(profiler_stats)  # noqa: T201
         if sys.platform == "emscripten":
             platform.console.log(profiler_stats)
 

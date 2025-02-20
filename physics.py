@@ -28,7 +28,6 @@ class PhysicalObject:
         Raises a ValueError if the mass is not strictly positive.
 
         Args:
-        ----
             pos (Vec2): Object's position, usually its center
             vel (Vec2): Object's velocity (ignore relativity please)
             mass (float): Object's mass. Must be strictly positive.
@@ -211,11 +210,11 @@ class Disk(PhysicalObject):
         were slightly offset from each other, with no guarantee about this behavior's
         stability.
 
-        Parameters
-        ----------
+        Args:
+        ----
             disk (Disk): The other disk to try bouncing off of.
 
-        Returns
+        Returns:
         -------
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
@@ -271,11 +270,11 @@ class Disk(PhysicalObject):
         were slightly offset from each other, with no guarantee about this behavior's
         stability.
 
-        Parameters
-        ----------
+        Args:
+        ----
             disk (Disk): The other disk to try bouncing off of.
 
-        Returns
+        Returns:
         -------
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
