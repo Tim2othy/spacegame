@@ -4,18 +4,11 @@ from pygame.math import Vector2 as Vec2
 from projectiles import Bullet, Missile, Rocket
 from ship import Ship
 
+# TODO: More class defaults.
+
 
 def test_homing():
-    ship = Ship(
-        Vec2(512, -1024),
-        vel=Vec2(0, 0),
-        density=1,
-        size=10,
-        color=Color(0, 0, 0),
-        bullet_color=Color(0, 0, 0),
-        gun_cooldown=0.1,
-        bullet_speed=100,
-    )
+    ship = Ship(Vec2(512, -1024), Vec2(), 10, Color(0, 0, 0), 0.1)
 
     def hits_ship(projectile: Bullet) -> bool:
         """Simulate projectile for a while and return if it ever hits `ship`"""

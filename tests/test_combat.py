@@ -8,22 +8,16 @@ from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
 from universe import Asteroid, Universe
 
 
-def new_player_ship(pos: Vec2) -> PlayerShip:
-    return PlayerShip(
-        pos, Vec2(), 1, 10, Color(0, 0, 0), Color(0, 0, 0), ShipInput.arrows(), "assets/player_ship.png"
-    )
-
-
 def test_enemy_hostility():
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
-    player_ship = new_player_ship(world / 2)
+    player_ship = PlayerShip(world / 2, Vec2(), 9, Color("red"), ShipInput.arrows(), "assets/player_ship.png")
 
     def random_worldvec() -> Vec2:
         return Vec2(random.random() * world.x, random.random() * world.y)
 
     enemies: list[BulletEnemy] = [
-        ship_type(random_worldvec(), Vec2(0, 0), player_ship, world)
+        ship_type(random_worldvec(), Vec2(0, 0), player_ship)
         for ship_type in [BulletEnemy, RocketEnemy, MissileEnemy]
     ]
 
@@ -42,7 +36,7 @@ def test_enemy_hostility():
 
 def test_bullet_paths():
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
-    player_ship = new_player_ship(world / 2)
+    player_ship = PlayerShip(world / 2, Vec2(), 9, Color("red"), ShipInput.arrows(), "assets/player_ship.png")
 
     def random_worldvec() -> Vec2:
         return Vec2(random.random() * world.x, random.random() * world.y)
@@ -51,8 +45,8 @@ def test_bullet_paths():
     enemy_start_up = Vec2(player_ship.pos + Vec2(0, 500))
     enemy_groups: list[tuple[BulletEnemy, BulletEnemy]] = [
         (
-            ship_type(enemy_start_right, Vec2(0, 0), player_ship, world),
-            ship_type(enemy_start_up, Vec2(0, 0), player_ship, world),
+            ship_type(enemy_start_right, Vec2(0, 0), player_ship),
+            ship_type(enemy_start_up, Vec2(0, 0), player_ship),
         )
         for ship_type in [BulletEnemy, RocketEnemy, MissileEnemy]
     ]
