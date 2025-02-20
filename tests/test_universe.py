@@ -1,10 +1,9 @@
-import math
 import random
 from typing import TYPE_CHECKING
 
+import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
-import pytest
 
 from ship import BulletEnemy, PlayerShip, ShipInput
 from universe import Asteroid, Planet, Universe
