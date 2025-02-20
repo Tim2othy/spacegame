@@ -490,7 +490,9 @@ class PlayerShip(Ship):
             camera.draw_image(rotated_image, adjusted_pos)
 
 
-LIME = Color("lime")
+BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
+ROCKET_ENEMY_COLOR = Color("purple")
+MISSILE_ENEMY_COLOR = Color("blue")
 
 
 class BulletEnemy(Ship):
@@ -511,7 +513,7 @@ class BulletEnemy(Ship):
         vel: Vec2,
         target_ship: Ship,
         gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
-        color: Color = LIME,
+        color: Color = BULLET_ENEMY_COLOR,
     ) -> None:
         """Create a new enemy ship.
 
@@ -597,10 +599,9 @@ class RocketEnemy(BulletEnemy):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            world_size (Vec2): Size of the world
 
         """
-        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, Color("Plum"))
+        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, ROCKET_ENEMY_COLOR)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -620,7 +621,7 @@ class MissileEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, Color("Blue"))
+        super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, MISSILE_ENEMY_COLOR)
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
