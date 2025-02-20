@@ -335,23 +335,13 @@ class Universe:
             ship.step(dt)
 
         # Asteroids
-        asteroids_changing_chunks: list[tuple[AsteroidChunk, AsteroidChunk, Asteroid]] = []
-        for old_chunk, asteroids in self._asteroid_chunks.items():
+        new_asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
+        for asteroids in self._asteroid_chunks.values():
             for asteroid in asteroids:
                 asteroid.step(dt)
                 new_chunk = self._vec_to_asteroid_chunk(asteroid.pos)
-                if new_chunk != old_chunk:
-                    asteroids_changing_chunks.append((old_chunk, new_chunk, asteroid))
-        for old_chunk, new_chunk, asteroid in asteroids_changing_chunks:
-            # Prevents double-stepping of an asteroid in the same frame
-            # TODO: Is there a faster way than using `remove`? Depending on that way,
-            #       the subsequent check whether _asteroid_chunks[old_chunk] is empty
-            #       might be sped up by only doing it once per chunk instead of once
-            #       per asteroid.
-            self._asteroid_chunks[old_chunk].remove(asteroid)
-            if not self._asteroid_chunks[old_chunk]:
-                del self._asteroid_chunks[old_chunk]
-            self._asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
+                new_asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
+        self._asteroid_chunks = new_asteroid_chunks
 
         # Physics
         self.apply_gravity(dt)
