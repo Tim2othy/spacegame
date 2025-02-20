@@ -358,10 +358,10 @@ class Universe:
 
         """
         # TODO: Try caching star-chunks to their final on-screen locations.
+        # If doing that, also optimise x_chunk_size for performance (via profiling) again.
         camera.surface.lock()
         camera_size = Vec2(camera.surface.get_size())
-        # TODO: Profile this.
-        x_chunk_size = 5000
+        x_chunk_size = 3500  # This value is profiling-optimised for non-cached star-chunks.
         y_chunk_size = x_chunk_size * camera_size.y / camera_size.x
         z_chunk_size = 1000
         z_chunk_min = 1  # star-depths are in [z_chunk_min*z_chunk_size, z_chunk_max*z_chunk_size)
