@@ -133,10 +133,9 @@ class Universe:
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
 
-        asteroid_chunk_size = max_nonplanet_size
         self._vec_to_asteroid_chunk = lambda vec: (
-            math.floor(vec.x / asteroid_chunk_size),
-            math.floor(vec.y / asteroid_chunk_size),
+            math.floor(vec.x / max_nonplanet_size),
+            math.floor(vec.y / max_nonplanet_size),
         )
         self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
 

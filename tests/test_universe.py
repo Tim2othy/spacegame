@@ -1,8 +1,10 @@
 import math
+import random
 from typing import TYPE_CHECKING
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2
+import pytest
 
 from ship import BulletEnemy, PlayerShip, ShipInput
 from universe import Asteroid, Planet, Universe
@@ -153,3 +155,49 @@ def test_precise_asteroid_collision():
         assert 0.001 < hit_asteroid.vel.magnitude() / asteroid_radius < 0.1, (
             "The hit asteroid should have gained a tiny bit of velocity"
         )
+
+
+def test_precise_collision_failures():
+    # This is kind of a bad test, because it tests the implementation of universe-collision
+    # is correct by testing that it fails if we relax the rules just a little.
+    # This is useful to know, to see that the implementation is maximally efficient.
+
+    world = Vec2(1000, 1000)
+    # Now, try for 1000 iterations to see the ill effects:
+    for _ in range(1000):
+        # This sets the universe-chunk-calculation
+        universe = Universe(world, [], [], [], 190)
+        # Setting universe.max_nonplanet_size overrides the check for asteroid-radii, without
+        # changing the way chunks are calculated. So asteroids are added to chunks that are
+        # effectively too small for them.
+        universe.max_nonplanet_size = 200
+
+        pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
+        asteroid_a = Asteroid(pos, Vec2(), 1, 100)
+        universe.add_asteroids(asteroid_a)
+
+        delta = Vec2()
+        delta.from_polar((199, random.random() * 360))
+
+        # Now pos + delta has distance 199 from asteroid_a, so if we put an asteroid of
+        # radius 200 at (pos+delta), then that asteroid would definitely intersect asteroid_a,
+        # and hence querying asteroids near (pos+delta) should return asteroid_a
+
+        if asteroid_a not in universe._nearby_asteroids(pos + delta):  # noqa: SLF001
+            # Verify it really would fail successfully:
+            asteroid_b = Asteroid(pos + delta, Vec2(), 1, 100)
+            universe.add_asteroids(asteroid_b)
+            assert asteroid_a.intersects_disk(asteroid_b), (
+                "The two asteroids should intersect, the test-setup did not go as expected."
+            )
+            universe.apply_bounce()
+            assert asteroid_a.pos == pos, "asteroid_a should be unaffected, because collision-tests failed"
+            assert asteroid_b.pos == pos + delta, (
+                "asteroid_b should be unaffected, because collision-tests failed"
+            )
+            return
+
+    pytest.fail(
+        "The universe collision-detection should have failed at some point in the above loop, but it did "
+        "not, which indicates the implementation of collision-detection is not maximally efficient."
+    )
