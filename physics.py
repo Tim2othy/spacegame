@@ -170,7 +170,6 @@ class Disk(PhysicalObject):
         >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
         True
 
-
         """
         return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
 
