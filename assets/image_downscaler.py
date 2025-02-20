@@ -40,7 +40,7 @@ def downscale_image(input_path, output_path) -> None:
             result_image.putpixel((j, i), common_color)
 
     result_image.save("assets/" + output_path)
-    print(f"Image saved to {output_path}")
+    print(f"Image saved to {output_path}")  # noqa: T201
 
 
 # Usage example
