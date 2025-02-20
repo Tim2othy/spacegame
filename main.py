@@ -265,6 +265,7 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
                     options[option_names[option_selection_ix]] = not options[
                         option_names[option_selection_ix]
                     ]
+        await asyncio.sleep(0)
 
     return options
 
