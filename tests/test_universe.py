@@ -73,7 +73,7 @@ def test_mutual_bounce():
         )
 
 
-def newtons_cradle():
+def test_newtons_cradle():
     # When we have a setup like this:
     #  o->   oooo
     # We expect it to look something like this afterwards:
