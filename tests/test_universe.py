@@ -15,19 +15,10 @@ if TYPE_CHECKING:
 def test_planet_gravitation():
     world = Vec2(3000, 3000)
     planet = Planet(world / 2, 1000, Color(0, 0, 0), 1)
-    player = PlayerShip(
-        world / 4,
-        Vec2(100, -200),
-        1,
-        17,
-        Color(0, 0, 0),
-        Color(0, 0, 0),
-        ShipInput.arrows(),
-        "assets/player_ship.png",
-    )
+    player = PlayerShip(world / 4, Vec2(100, -200))
     enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player, world)
 
-    asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 1, 10)
+    asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 10)
     universe = Universe(
         world, [planet], [player], [enemy], max(player.radius, enemy.radius, asteroid.radius) * 2
     )
@@ -55,7 +46,7 @@ def test_mutual_bounce():
         relative_vel = Vec2(5, 0)
         # Boost both asteroids by absolute_vel
         asteroid_a = Asteroid(Vec2(10, start_y), absolute_vel + relative_vel, 1, 1)
-        asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 2, 0.9)
+        asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 0.9, 2)
 
         universe = Universe(Vec2(30, 30), [], [], [], max(asteroid_a.radius, asteroid_b.radius) * 2)
         universe.add_asteroids(asteroid_a, asteroid_b)
@@ -94,10 +85,10 @@ def test_newtons_cradle():
         direction.from_polar((asteroid_radius, i * 360 / 5))
 
         universe = Universe(world, [], [], [], asteroid_radius * 2)
-        first_asteroid = Asteroid(world / 2, direction, 1, asteroid_radius)
+        first_asteroid = Asteroid(world / 2, direction, asteroid_radius)
         universe.add_asteroids(first_asteroid)
         other_asteroids = [
-            Asteroid(world / 2 + 2.1 * i * direction, Vec2(), 1, asteroid_radius) for i in range(1, 6)
+            Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)
         ]
         universe.add_asteroids(*other_asteroids)
 
@@ -130,7 +121,6 @@ def test_precise_asteroid_collision():
         start_asteroid = Asteroid(
             world / 2 + direction * num_directions * asteroid_radius,
             direction * asteroid_radius,
-            1,
             asteroid_radius,
         )
         start_asteroids.append(start_asteroid)
@@ -139,7 +129,6 @@ def test_precise_asteroid_collision():
             + direction * (num_directions + 1) * asteroid_radius
             + 1.99 * direction_rotated * asteroid_radius,
             Vec2(0, 0),
-            1,
             asteroid_radius,
         )
         hit_asteroids.append(hit_asteroid)
@@ -172,7 +161,7 @@ def test_precise_collision_failures():
         universe.max_nonplanet_size = 200
 
         pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
-        asteroid_a = Asteroid(pos, Vec2(), 1, 100)
+        asteroid_a = Asteroid(pos, Vec2(), 100)
         universe.add_asteroids(asteroid_a)
 
         delta = Vec2()
@@ -184,7 +173,7 @@ def test_precise_collision_failures():
 
         if asteroid_a not in universe._nearby_asteroids(pos + delta):  # noqa: SLF001
             # Verify it really would fail successfully:
-            asteroid_b = Asteroid(pos + delta, Vec2(), 1, 100)
+            asteroid_b = Asteroid(pos + delta, Vec2(), 100)
             universe.add_asteroids(asteroid_b)
             assert asteroid_a.intersects_disk(asteroid_b), (
                 "The two asteroids should intersect, the test-setup did not go as expected."
