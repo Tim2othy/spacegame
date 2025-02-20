@@ -89,11 +89,7 @@ def test_disk_drawing():
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
     camera_center = Vec2(-3, 4)
-    camera = Camera(
-        camera_center,
-        1,
-        Surface((width, height)),
-    )
+    camera = Camera(camera_center, 1, Surface((width, height)))
     disk = Disk(Vec2(1, 0), Vec2(0, 0), density=1, radius=10, color=color)
     disk.draw(camera)
     camera.surface.lock()

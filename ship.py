@@ -322,13 +322,7 @@ class ShipInput:
     @classmethod
     def arrows(cls) -> ShipInput:
         """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
-        return cls(
-            pygame.K_RIGHT,
-            pygame.K_LEFT,
-            pygame.K_UP,
-            pygame.K_DOWN,
-            pygame.K_RETURN,
-        )
+        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN)
 
     @classmethod
     def wasd(cls) -> ShipInput:
@@ -562,8 +556,7 @@ class BulletEnemy(Ship):
 
         if self.action_timer <= 0:
             self.random_point = Vec2(
-                random.uniform(0, self.world_size.x),
-                random.uniform(0, self.world_size.y),
+                random.uniform(0, self.world_size.x), random.uniform(0, self.world_size.y)
             )
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
@@ -614,12 +607,7 @@ class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
     def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        target_ship: Ship,
-        world_size: Vec2,
-        color: Color = PLUM,
+        self, pos: Vec2, vel: Vec2, target_ship: Ship, world_size: Vec2, color: Color = PLUM
     ) -> None:
         """Create a new Rocket-Ship.
 
@@ -646,12 +634,7 @@ class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
     def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        target_ship: Ship,
-        world_size: Vec2,
-        color: Color = BLUE,
+        self, pos: Vec2, vel: Vec2, target_ship: Ship, world_size: Vec2, color: Color = BLUE
     ) -> None:
         """Create a new Missile-Ship.
 

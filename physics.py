@@ -11,12 +11,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-from constants import (
-    BOUNCE_DAMAGE_SCALAR,
-    BOUNCE_DAMAGE_THRESHOLD,
-    BOUNCINESS,
-    GRAVITATIONAL_CONSTANT,
-)
+from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
 
 
 class PhysicalObject:
@@ -110,14 +105,7 @@ class PhysicalObject:
 class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        density: float,
-        radius: float,
-        color: Color,
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float, color: Color) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:

@@ -1,6 +1,5 @@
 import random
 
-import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
@@ -11,14 +10,7 @@ from universe import Asteroid, Universe
 
 def new_player_ship(pos: Vec2) -> PlayerShip:
     return PlayerShip(
-        pos,
-        Vec2(),
-        1,
-        10,
-        Color(0, 0, 0),
-        Color(0, 0, 0),
-        ShipInput.arrows(),
-        "assets/player_ship.png",
+        pos, Vec2(), 1, 10, Color(0, 0, 0), Color(0, 0, 0), ShipInput.arrows(), "assets/player_ship.png"
     )
 
 

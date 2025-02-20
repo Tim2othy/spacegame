@@ -61,15 +61,12 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
                 Color("yellow"),
                 ShipInput.wasd(),
                 "assets/player_ship.png",
-            ),
+            )
         )
     planets: list[Planet] = (
         [
             Planet(
-                Vec2(
-                    random.uniform(0, world_size_vec[1]),
-                    random.uniform(0, world_size_vec[1]),
-                ),
+                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
@@ -237,27 +234,16 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
     def draw_menu() -> None:
         screen.fill(Color("Black"))
 
-        screen.blit(
-            title_text,
-            title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)),
-        )
+        screen.blit(title_text, title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)))
 
         for i, (name, value) in enumerate(options.items()):
             color = (255, 255, 255) if i == option_selection_ix else (100, 100, 100)
-            option_text = font.render(
-                f"{name}: <{'On' if value else 'Off'}>",
-                antialias=True,
-                color=color,
-            )
+            option_text = font.render(f"{name}: <{'On' if value else 'Off'}>", antialias=True, color=color)
             screen.blit(
-                option_text,
-                option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)),
+                option_text, option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50))
             )
 
-        screen.blit(
-            start_text,
-            start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)),
-        )
+        screen.blit(start_text, start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)))
         pygame.display.flip()
 
     option_names = list(options.keys())
