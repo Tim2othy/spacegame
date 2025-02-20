@@ -200,7 +200,7 @@ class Missile(Bullet):
             dt (float): Passed time
 
         """
-        self.homing_timer = self.homing_timer + dt
+        self.homing_timer += dt
         delta_target_ship = self.target_ship.pos - self.pos
         if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
             target_ship_direction = delta_target_ship.normalize()
