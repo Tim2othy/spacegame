@@ -26,8 +26,10 @@ def test_planet_gravitation():
     )
     enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player, world)
 
-    universe = Universe(world, [planet], [player], [enemy])
     asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 1, 10)
+    universe = Universe(
+        world, [planet], [player], [enemy], max(player.radius, enemy.radius, asteroid.radius) * 2
+    )
     universe.add_asteroids(asteroid)
 
     for _ in range(60 * 100):
@@ -54,7 +56,7 @@ def test_mutual_bounce():
         asteroid_a = Asteroid(Vec2(10, start_y), absolute_vel + relative_vel, 1, 1)
         asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 2, 0.9)
 
-        universe = Universe(Vec2(30, 30), [], [], [])
+        universe = Universe(Vec2(30, 30), [], [], [], max(asteroid_a.radius, asteroid_b.radius) * 2)
         universe.add_asteroids(asteroid_a, asteroid_b)
 
         for _ in range(150):
@@ -90,7 +92,7 @@ def test_newtons_cradle():
         direction = Vec2()
         direction.from_polar((asteroid_radius, i * math.tau / 5))
 
-        universe = Universe(world, [], [], [])
+        universe = Universe(world, [], [], [], asteroid_radius * 2)
         first_asteroid = Asteroid(world / 2, direction, 1, asteroid_radius)
         universe.add_asteroids(first_asteroid)
         other_asteroids = [
@@ -114,7 +116,7 @@ def test_precise_asteroid_collision():
 
     num_directions = 23
 
-    universe = Universe(world, [], [], [])
+    universe = Universe(world, [], [], [], asteroid_radius * 2)
 
     start_asteroids: list[Asteroid] = []
     hit_asteroids: list[Asteroid] = []

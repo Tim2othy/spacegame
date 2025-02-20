@@ -42,7 +42,7 @@ def test_enemy_hostility():
     ]
 
     for enemy in enemies:
-        universe = Universe(world, [], [player_ship], [enemy])
+        universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
         starting_health = player_ship.health
 
         # 30 seconds
@@ -72,8 +72,15 @@ def test_bullet_paths():
     ]
 
     for enemy_right, enemy_up in enemy_groups:
-        universe = Universe(world, [], [player_ship], [enemy_right, enemy_up])
-        universe.add_asteroids(Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20))
+        asteroid = Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20)
+        universe = Universe(
+            world,
+            [],
+            [player_ship],
+            [enemy_right, enemy_up],
+            max(player_ship.radius, enemy_right.radius, enemy_up.radius, asteroid.radius) * 2,
+        )
+        universe.add_asteroids(asteroid)
 
         bullet_right = player_ship.new_bullet(player_ship.pos, Vec2(100, 0))
         bullet_up = player_ship.new_bullet(player_ship.pos, Vec2(0, 100))

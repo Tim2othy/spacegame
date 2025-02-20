@@ -29,8 +29,11 @@ from universe import Planet, Universe
 type Options = dict[str, bool]
 
 
-def universe_from_options(options: Options) -> Universe:
-    """Create a universe from `options`."""
+def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]:
+    """Create a universe from `options`.
+
+    Returns a tuple (universe, player_ships)
+    """
     num_enemies = 20 if options["small"] else 40
     world_size = 15000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
@@ -100,25 +103,18 @@ def universe_from_options(options: Options) -> Universe:
         ]
     )
 
-    universe = Universe(
-        world_size_vec,
-        planets,
-        player_ships,
-        [],
-    )
-
-    for planet in planets:
-        for _ in range(ASTEROIDS_PER_PLANET):
-            universe.generate_asteroid(planet)
-
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
         enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships), world_size_vec))
-    universe.enemy_ships = enemy_ships
 
-    return universe
+    universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)
+    for planet in planets:
+        for _ in range(ASTEROIDS_PER_PLANET):
+            universe.generate_asteroid(planet)
+
+    return universe, player_ships
 
 
 async def main() -> None:
@@ -134,8 +130,7 @@ async def main() -> None:
         screen_surface = pygame.display.set_mode(SCREEN_SIZE)
 
         options = await show_menu(screen_surface, options, font)
-        universe = universe_from_options(options)
-        player_ships = universe.player_ships
+        universe, player_ships = universe_from_options(options)
 
         cameras: list[Camera] = []
         player_count = len(player_ships)

@@ -604,7 +604,9 @@ class Universe:
         """
         # random variables
         asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * planet.radius)
-        radius_asteroid = ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda)
+        radius_asteroid = min(
+            ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda), self.max_nonplanet_size / 2
+        )
         r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
         r_a = r_p + random.expovariate(ASTEROID_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
