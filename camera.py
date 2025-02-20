@@ -37,11 +37,7 @@ class Camera:
         self.pos: Vec2 = Vec2(center) - Vec2(surface.get_size()) / (2 * zoom)
 
     def smoothly_transition_to(
-        self,
-        new_pos: Vec2,
-        new_zoom: float,
-        dt: float,
-        transition_time: float = 0.25,
+        self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25
     ) -> None:
         """Smoothly transition the camera to a new location.
 
@@ -63,12 +59,7 @@ class Camera:
         dist = abs(self.zoom - new_zoom)
         self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
 
-    def smoothly_focus_rect(
-        self,
-        rect: Rect,
-        dt: float,
-        transition_time: float = 0.25,
-    ) -> None:
+    def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
 
         Args:
@@ -98,11 +89,7 @@ class Camera:
         self.smoothly_transition_to(Vec2(rect.topleft), new_zoom, dt, transition_time)
 
     def smoothly_focus_points(
-        self,
-        points: list[Vec2],
-        buff: float,
-        dt: float,
-        transition_time: float = 0.25,
+        self, points: list[Vec2], buff: float, dt: float, transition_time: float = 0.25
     ) -> None:
         """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
 
@@ -234,13 +221,7 @@ class Camera:
             ((x1, y1), (x2, y2)) = clipped_line
             pygame.draw.line(self.surface, color, (x1, y1), (x2, y2))
 
-    def draw_vertical_hairline(
-        self,
-        color: Color,
-        x: float,
-        starty: float,
-        endy: float,
-    ) -> None:
+    def draw_vertical_hairline(self, color: Color, x: float, starty: float, endy: float) -> None:
         """Draw a vertical worldspace-line of single-pixel-thickness.
 
         Args:
@@ -251,23 +232,14 @@ class Camera:
             endy (float): Line's ending point
 
         """
-        tstart, tend = (
-            self.world_to_screen(Vec2(x, starty)),
-            self.world_to_screen(Vec2(x, endy)),
-        )
+        tstart, tend = (self.world_to_screen(Vec2(x, starty)), self.world_to_screen(Vec2(x, endy)))
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x, y1), (_, y2)) = clipped_line
             pygame.draw.line(self.surface, color, (x, y1), (x, y2))
 
-    def draw_horizontal_hairline(
-        self,
-        color: Color,
-        startx: float,
-        endx: float,
-        y: float,
-    ) -> None:
+    def draw_horizontal_hairline(self, color: Color, startx: float, endx: float, y: float) -> None:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
 
         Args:
@@ -278,23 +250,14 @@ class Camera:
             y (float): Line's vertical position
 
         """
-        tstart, tend = (
-            self.world_to_screen(Vec2(startx, y)),
-            self.world_to_screen(Vec2(endx, y)),
-        )
+        tstart, tend = (self.world_to_screen(Vec2(startx, y)), self.world_to_screen(Vec2(endx, y)))
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x1, y), (x2, _)) = clipped_line
             pygame.draw.line(self.surface, color, (x1, y), (x2, y))
 
-    def draw_text(
-        self,
-        text: str,
-        pos: Vec2 | None,
-        font: pygame.font.Font,
-        color: Color,
-    ) -> None:
+    def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
 
         Args:
@@ -309,10 +272,7 @@ class Camera:
         rendered = font.render(text, antialias=True, color=color)
         if pos is None:
             width, height = self.surface.get_size()
-            pos = Vec2(
-                (width - rendered.get_width()) / 2,
-                (height - rendered.get_height()) / 2,
-            )
+            pos = Vec2((width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2)
         self.surface.blit(rendered, pos)
 
     def draw_image(self, image: pygame.Surface, pos: Vec2) -> None:
@@ -325,8 +285,7 @@ class Camera:
 
         """
         zoomed_image = pygame.transform.scale(
-            image,
-            (int(image.get_width() * self.zoom), int(image.get_height() * self.zoom)),
+            image, (int(image.get_width() * self.zoom), int(image.get_height() * self.zoom))
         )
         self.surface.blit(zoomed_image, self.world_to_screen(pos))
 

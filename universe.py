@@ -34,13 +34,7 @@ from constants import (
 class Planet(Disk):
     """A stationary disk."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        radius: float,
-        color: Color,
-        density: float = 1,
-    ) -> None:
+    def __init__(self, pos: Vec2, radius: float, color: Color, density: float = 1) -> None:
         """Create a new planet.
 
         Args:
@@ -51,25 +45,13 @@ class Planet(Disk):
             density (float): Density
 
         """
-        super().__init__(
-            pos,
-            Vec2(0, 0),
-            density,
-            radius,
-            color,
-        )
+        super().__init__(pos, Vec2(0, 0), density, radius, color)
 
 
 class Asteroid(Disk):
     """A gray disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        density: float,
-        radius: float,
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, density: float, radius: float) -> None:
         """Create a new Asteroid.
 
         Args:
@@ -315,11 +297,7 @@ class Universe:
 
         """
         ship = self._player_ships[player_ix]
-        camera.smoothly_focus_points(
-            [ship.pos, ship.pos + 1.0 * ship.vel],
-            500,
-            dt,
-        )
+        camera.smoothly_focus_points([ship.pos, ship.pos + 1.0 * ship.vel], 500, dt)
 
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
@@ -536,12 +514,7 @@ class Universe:
 
         def texty(vertical_offset: int, text: str | None = None) -> int:
             if text is not None:
-                camera.draw_text(
-                    text,
-                    Vec2(10, vertical_offset),
-                    font,
-                    Color("white"),
-                )
+                camera.draw_text(text, Vec2(10, vertical_offset), font, Color("white"))
             return vertical_offset + font_size
 
         text_v = 10
