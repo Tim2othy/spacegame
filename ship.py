@@ -344,7 +344,7 @@ class PlayerShip(Ship):
             size (float): Radius of disk-body
             color (Color): Material color
             spaceship_input (SpaceshipInput): Map from keys to actions
-            image_path (str): Path to image
+            image_path (str | None): Path to image
 
         """
         super().__init__(pos, vel, size, color, GUN_COOLDOWN_PLAYER)
@@ -513,6 +513,8 @@ class BulletEnemy(Ship):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
+            gun_cooldown (float): Time between shots
+            color (Color): Hull and bullet color
 
         """
         super().__init__(pos, vel, 8, color, gun_cooldown)
