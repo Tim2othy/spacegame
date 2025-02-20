@@ -12,7 +12,7 @@ def test_shooting():
     gun_cooldown = 0.123
     bullet_count = 10
     color = Color(0, 0, 0)
-    ship = Ship(Vec2(), Vec2(), 10, color, 0.1)
+    ship = Ship(Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
 
     ship.angle = tau / 8
     ship.shooting = True
@@ -33,7 +33,7 @@ def test_shooting():
 
 
 def test_movement():
-    ship = Ship(Vec2(), Vec2(), 10, Color(0, 0, 0), 0.1)
+    ship = Ship(Vec2(), Vec2(), 10)
     ship.thruster_rot_left = True
     ship.step(0.01)
     ship.thruster_rot_left = False
