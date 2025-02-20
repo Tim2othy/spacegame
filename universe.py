@@ -13,6 +13,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 from profiler import global_profiler
+from projectiles import Bullet
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -258,32 +259,40 @@ class Universe:
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
-        # TODO: Use memory-hack to make bullet-removal faster, use indices and python's analogue
-        # of https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap_remove
-        for player_ship in self._player_ships:
-            for projectile in player_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
-                    player_ship.projectiles.remove(projectile)
-                    continue
-                for enemy_ship in self._enemy_ships:
-                    if enemy_ship.intersects_point(projectile.pos):
-                        self._enemy_ships.remove(enemy_ship)
-                        player_ship.projectiles.remove(projectile)
-                        break
-        for enemy_ship in self._enemy_ships:
-            for projectile in enemy_ship.projectiles:
-                if self.asteroids_or_planets_intersect_point(
-                    projectile.pos,
-                ) or not self.contains_point(projectile.pos):
-                    enemy_ship.projectiles.remove(projectile)
-                    continue
-                for player_ship in self._player_ships:
-                    if player_ship.intersects_point(projectile.pos):
-                        player_ship.suffer_damage(5)
-                        enemy_ship.projectiles.remove(projectile)
-                        break
+
+        def player_projectile_check(projectile: Bullet) -> bool:
+            """Run bullet-logic and return whether it should stay alive."""
+            if not self.contains_point(projectile.pos):
+                return False
+            if self.asteroids_or_planets_intersect_point(projectile.pos):
+                return False
+            for enemy in self._enemy_ships:
+                if enemy.intersects_point(projectile.pos):
+                    self._enemy_ships.remove(enemy)
+                    return False
+            return True
+
+        # TODO: Once enemies can take damage, collapse player_projectile_check and
+        # enemy_projectile_check into a single function taking as an argument the list
+        # of enemy-ships.
+        def enemy_projectile_check(projectile: Bullet) -> bool:
+            """Run bullet-logic and return whether it should stay alive."""
+            if not self.contains_point(projectile.pos):
+                return False
+            if self.asteroids_or_planets_intersect_point(projectile.pos):
+                return False
+            for player in self._player_ships:
+                if player.intersects_point(projectile.pos):
+                    player.suffer_damage(5)
+                    enemy.projectiles.remove(projectile)
+                    break
+            return True
+
+        for player in self._player_ships:
+            player.projectiles = [p for p in player.projectiles if player_projectile_check(p)]
+
+        for enemy in self._enemy_ships:
+            enemy.projectiles = [p for p in enemy.projectiles if enemy_projectile_check(p)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
