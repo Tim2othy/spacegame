@@ -56,8 +56,8 @@ class Asteroid(Disk):
         Args:
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
-            density (float): Density
             radius (float): Radius
+            density (float): Density
 
         """
         super().__init__(pos, vel, radius, Color(32, 32, 32), density)
