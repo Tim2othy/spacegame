@@ -11,7 +11,7 @@ from universe import Asteroid, Universe
 def test_enemy_hostility():
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
-    player_ship = PlayerShip(world / 2, Vec2(), 9, Color("red"), ShipInput.arrows(), "assets/player_ship.png")
+    player_ship = PlayerShip(world / 2, Vec2())
 
     def random_worldvec() -> Vec2:
         return Vec2(random.random() * world.x, random.random() * world.y)
@@ -36,7 +36,7 @@ def test_enemy_hostility():
 
 def test_bullet_paths():
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
-    player_ship = PlayerShip(world / 2, Vec2(), 9, Color("red"), ShipInput.arrows(), "assets/player_ship.png")
+    player_ship = PlayerShip(world / 2, Vec2())
 
     def random_worldvec() -> Vec2:
         return Vec2(random.random() * world.x, random.random() * world.y)
