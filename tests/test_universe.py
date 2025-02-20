@@ -16,7 +16,7 @@ def test_planet_gravitation():
     world = Vec2(3000, 3000)
     planet = Planet(world / 2, 1000, Color(0, 0, 0), 1)
     player = PlayerShip(world / 4, Vec2(100, -200))
-    enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player, world)
+    enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player)
 
     asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 10)
     universe = Universe(
