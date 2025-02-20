@@ -284,8 +284,7 @@ class Universe:
             for player in self._player_ships:
                 if player.intersects_point(projectile.pos):
                     player.suffer_damage(5)
-                    enemy.projectiles.remove(projectile)
-                    break
+                    return False
             return True
 
         for player in self._player_ships:
