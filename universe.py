@@ -13,12 +13,12 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, PhysicalObject
 from profiler import global_profiler
-from projectiles import Bullet
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
     from camera import Camera
+    from projectiles import Bullet
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
