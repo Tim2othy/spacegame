@@ -17,13 +17,7 @@ def new_player_ship(pos: Vec2) -> PlayerShip:
         10,
         Color(0, 0, 0),
         Color(0, 0, 0),
-        ShipInput(
-            pygame.K_RIGHT,
-            pygame.K_LEFT,
-            pygame.K_UP,
-            pygame.K_DOWN,
-            pygame.K_RETURN,
-        ),
+        ShipInput.arrows(),
         "assets/player_ship.png",
     )
 
