@@ -1,4 +1,4 @@
-![Screenshot of a 2D space-videogame](./banner.png)
+![Screenshot of a 2D space-videogame](./banner.jpg)
 
 Fun small game we're making. Give us feedback, or just play the game.
 
