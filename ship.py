@@ -329,7 +329,6 @@ class PlayerShip(Ship):
         size: float = 10.0,
         color: Color = PLAYER_COLOR,
         spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
-        image_path: str | None = None,
     ) -> None:
         """Create a new player-spaceship.
 
@@ -339,13 +338,10 @@ class PlayerShip(Ship):
             size (float): Radius of disk-body
             color (Color): Material color
             spaceship_input (SpaceshipInput): Map from keys to actions
-            image_path (str | None): Path to image
 
         """
         super().__init__(pos, vel, size, color, GUN_COOLDOWN_PLAYER)
         self.spaceship_input = spaceship_input
-        if image_path is not None:
-            self.image = pygame.image.load(image_path)
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -361,120 +357,6 @@ class PlayerShip(Ship):
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
-
-    def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
-        forward = self.get_faced_direction()
-
-        right = Vec2(-forward.y, forward.x)
-        left = -right
-        backward = -forward
-
-        base_color: Color = self.color.lerp(Color("red"), self.damage_indicator_timer)
-        darker_color: Color = base_color.lerp(Color("black"), 0.5)
-
-        # Helper function for drawing polygons relative to the ship-position
-        def drawy(color: Color, points: list[Vec2]) -> None:
-            camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
-
-        # thruster_backward, active
-        if self.thruster_backward:
-            drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
-
-        # "For his neutral special, he wields a gun"
-        camera.draw_line(
-            darker_color,
-            self.pos,
-            self.pos + forward * self.radius * GUNBARREL_LENGTH,
-            GUNBARREL_WIDTH * self.radius,
-        )
-
-        # thruster_rot_left, material
-        drawy(
-            darker_color,
-            [
-                0.7 * left + 0.7 * forward,
-                0.5 * left + 0.5 * backward,
-                2.0 * left + 1.0 * backward,
-            ],
-        )
-        # thruster_rot_left, active
-        if self.thruster_rot_left:
-            drawy(
-                Color("orange"),
-                [
-                    1.5 * left + 1.25 * backward,
-                    0.5 * left + 0.5 * backward,
-                    2.0 * left + 1.0 * backward,
-                ],
-            )
-
-        # thruster_rot_right, material
-        drawy(
-            darker_color,
-            [
-                0.7 * right + 0.7 * forward,
-                0.5 * right + 0.5 * backward,
-                2.0 * right + 1.0 * backward,
-            ],
-        )
-        # thruster_rot_right, active
-        if self.thruster_rot_right:
-            drawy(
-                Color("orange"),
-                [
-                    1.5 * right + 1.25 * backward,
-                    0.5 * right + 0.5 * backward,
-                    2.0 * right + 1.0 * backward,
-                ],
-            )
-
-        # thruster_forward, flame
-        if self.thruster_forward:
-            drawy(
-                Color("orange"),
-                [
-                    0.7 * left + 0.7 * backward,
-                    0.5 * left + 1.5 * backward,
-                    1.25 * backward,
-                    0.5 * right + 1.5 * backward,
-                    0.7 * right + 0.7 * backward,
-                ],
-            )
-        # thruster_forward, material
-        drawy(
-            darker_color,
-            [
-                0.7 * left + 0.7 * backward,
-                0.5 * left + 1.25 * backward,
-                1.0 * backward,
-                0.5 * right + 1.25 * backward,
-                0.7 * right + 0.7 * backward,
-            ],
-        )
-
-        # Ugly hack
-        backup_self_color = Color(self.color)
-        self.color = base_color
-        super().draw(camera)  # Draw circular body ("hitbox")
-        self.color = backup_self_color
-
-        for projectile in self.projectiles:
-            projectile.draw(camera)
-
-        if hasattr(self, "image"):
-            rotated_image = pygame.transform.rotate(self.image, -self.angle - 90)
-            # Get the width and height of the rotated image
-            image_rect = rotated_image.get_rect()
-            center_offset = Vec2(image_rect.width / 2, image_rect.height / 2)
-            # Adjust the position to center the image
-            adjusted_pos = self.pos - center_offset
-            camera.draw_image(rotated_image, adjusted_pos)
 
 
 BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
