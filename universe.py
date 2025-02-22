@@ -313,6 +313,8 @@ class Universe:
                 new_asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
         self._asteroid_chunks = new_asteroid_chunks
 
+        self._particles = [p for p in self._particles if p.step(dt)]
+
         # Physics
         self.apply_gravity(dt)
         self.apply_bounce()
