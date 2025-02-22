@@ -14,6 +14,27 @@ if TYPE_CHECKING:
 from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
 
 
+class Particle:
+    """A single-pixel particle with a color, velocity, and limited lifetime."""
+
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, lifetime: float) -> None:
+        """Create a new Particle."""
+        self.pos = Vec2(pos)
+        self.vel = Vec2(vel)
+        self.color = color
+        self.lifetime = lifetime
+
+    def step(self, dt: float) -> bool:
+        """Apply velocity to self and reduce lifetime. Returns True if lifetime has elapsed."""
+        self.pos += dt * self.vel
+        self.lifetime -= dt
+        return self.lifetime <= 0
+
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` on `camera`."""
+        camera.draw_pixel(self.pos, self.color)
+
+
 class PhysicalObject:
     """A physical object with dynamic position, dynamic velocity, and constant strictly positive mass."""
 
