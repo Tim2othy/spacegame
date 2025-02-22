@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
 
+BLACK = Color("black")
+
 
 class Particle:
     """A single-pixel particle with a color, velocity, and limited lifetime."""
@@ -22,6 +24,7 @@ class Particle:
         self.pos = Vec2(pos)
         self.vel = Vec2(vel)
         self.color = color
+        self._max_lifetime = lifetime
         self.lifetime = lifetime
 
     def step(self, dt: float) -> bool:
@@ -32,7 +35,8 @@ class Particle:
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        camera.draw_pixel(self.pos, self.color)
+        color = BLACK.lerp(self.color, max(0, min(1, self.lifetime / self._max_lifetime)))
+        camera.draw_pixel(self.pos, color)
 
 
 class PhysicalObject:
