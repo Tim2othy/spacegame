@@ -11,7 +11,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, PhysicalObject
+from physics import Disk, Particle, PhysicalObject
 from profiler import global_profiler
 
 if TYPE_CHECKING:
@@ -128,6 +128,8 @@ class Universe:
         for planet in planets:
             chunk = self._vec_to_planet_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
+
+        self._particles: list[Particle] = []
 
     def add_asteroids(self, *args: Asteroid) -> None:
         """Add asteroids to the universe.
