@@ -489,6 +489,7 @@ class Universe:
             self._player_ships,
         ):
             pobj.draw(camera)
+
         for particle in self._particles:
             particle.draw(camera)
 

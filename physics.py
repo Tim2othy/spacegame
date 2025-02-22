@@ -283,3 +283,18 @@ class Disk(PhysicalObject):
         bounce = self.bounce_disks(disk)
         disk.mass = old_mass
         return bounce
+
+    def project(self, point: Vec2) -> Vec2:
+        """Project `point` onto the disk's surface. Returns self.pos if `point` is the disk's center.
+
+        Args:
+            point (Vec2): Point to project
+
+        Returns:
+            Vec2: Projected point
+
+        """
+        delta = point - self.pos
+        if delta == Vec2(0, 0):
+            return self.pos
+        return self.pos + delta.normalized() * self.radius
