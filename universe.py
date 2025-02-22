@@ -489,6 +489,8 @@ class Universe:
             self._player_ships,
         ):
             pobj.draw(camera)
+        for particle in self._particles:
+            particle.draw(camera)
 
     @global_profiler.profile_method
     def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
