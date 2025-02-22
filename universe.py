@@ -219,19 +219,31 @@ class Universe:
             for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
 
-    def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
-        """Test whether any of `self`'s planets or asteroids intersect `vec`.
+    def create_particles_on_disk(
+        self, pos: Vec2, disk: Disk, n: int, color: Color, blast_vel: float, lifetime: float = 1
+    ) -> None:
+        """Create `n` particles on the disk's surface.
 
-        Args:
-            vec (Vec2): Position to test for intersection
+        `pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        away from `disk` with max-magnitude `blast_vel` in addition to `disk`'s current velocity.
+        Colors are randomly sampled from interpolation
+        between `disk.color` and `color`.
 
-        Returns:
-            bool: True iff any intersect
+        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
 
+        If pos is exactly on disk's center, nothing happens.
         """
-        return any(body.intersects_point(vec) for body in self._nearby_asteroids(vec)) or any(
-            body.intersects_point(vec) for body in self._nearby_planets(vec)
-        )
+        delta = pos - disk.pos
+        if delta == Vec2(0, 0):
+            return
+        delta_normalized = delta.normalize()
+        projected = disk.pos + delta_normalized * disk.radius
+        for _ in range(n):
+            angle = random.uniform(-math.tau / 4, math.tau / 4)
+            vel = disk.vel + delta_normalized.rotate(angle) * blast_vel * random.random()
+            color = disk.color.lerp(color, random.random())
+            lifetime = random.uniform(lifetime / 2, lifetime)
+            self._particles.append(Particle(projected, vel, color, lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
@@ -241,8 +253,9 @@ class Universe:
             """Run bullet-logic and return whether it should stay alive."""
             if not self.contains_point(projectile.pos):
                 return False
-            if self.asteroids_or_planets_intersect_point(projectile.pos):
-                return False
+            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
+                if body.intersects_point(projectile.pos):
+                    return False
             for enemy in self._enemy_ships:
                 if enemy.intersects_point(projectile.pos):
                     self._enemy_ships.remove(enemy)
