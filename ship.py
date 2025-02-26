@@ -492,4 +492,4 @@ class MissileEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.color, self.target_ship, "assets/missile.png")
+        return Missile(pos, vel, self.color, self.target_ship)

@@ -150,7 +150,7 @@ class Rocket(Bullet):
 class Missile(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship", image_path: str) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
         """Create a new Missile targeting `target_ship`.
 
         Args:
@@ -158,7 +158,6 @@ class Missile(Bullet):
             vel (Vec2): Initial velocity
             color (Color): Border- and fill-color
             target_ship (Ship): Ship to home in on
-            image_path (str): Path to the image file
 
         """
         super().__init__(pos, vel, color)
