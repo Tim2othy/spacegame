@@ -34,33 +34,31 @@ from constants import (
 class Planet(Disk):
     """A stationary disk."""
 
-    def __init__(self, pos: Vec2, radius: float, color: Color, density: float = 1) -> None:
+    def __init__(self, pos: Vec2, radius: float, color: Color) -> None:
         """Create a new planet.
 
         Args:
             pos (Vec2): Fixed position
             radius (float): Radius
             color (Color): Color
-            density (float): Density
 
         """
-        super().__init__(pos, Vec2(0, 0), radius, color, density)
+        super().__init__(pos, Vec2(0, 0), radius, color)
 
 
 class Asteroid(Disk):
     """A gray disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, radius: float, density: float = 1) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float) -> None:
         """Create a new Asteroid.
 
         Args:
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             radius (float): Radius
-            density (float): Density
 
         """
-        super().__init__(pos, vel, radius, Color(32, 32, 32), density)
+        super().__init__(pos, vel, radius, Color(32, 32, 32))
 
 
 type AsteroidChunk = tuple[int, int]
@@ -584,4 +582,4 @@ class Universe:
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
-        self.add_asteroids(Asteroid(pos_asteroid, velocity_asteroid, 1, radius_asteroid))
+        self.add_asteroids(Asteroid(pos_asteroid, velocity_asteroid, radius_asteroid))

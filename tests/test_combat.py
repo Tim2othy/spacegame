@@ -51,7 +51,7 @@ def test_bullet_paths():
     ]
 
     for enemy_right, enemy_up in enemy_groups:
-        asteroid = Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1, 20)
+        asteroid = Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1)
         universe = Universe(
             world,
             [],

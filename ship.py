@@ -63,7 +63,7 @@ class Ship(Disk):
         ValueError
 
         """
-        super().__init__(pos, vel, size, color, 1)
+        super().__init__(pos, vel, size, color)
         self.size: float = size
 
         self.health: float = 100.0

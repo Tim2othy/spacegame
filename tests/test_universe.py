@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 def test_planet_gravitation():
     world = Vec2(3000, 3000)
-    planet = Planet(world / 2, 1000, Color(0, 0, 0), 1)
+    planet = Planet(world / 2, 1000, Color(0, 0, 0))
     player = PlayerShip(world / 4, Vec2(100, -200))
     enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player)
 
@@ -45,8 +45,8 @@ def test_mutual_bounce():
         start_y = 15
         relative_vel = Vec2(5, 0)
         # Boost both asteroids by absolute_vel
-        asteroid_a = Asteroid(Vec2(10, start_y), absolute_vel + relative_vel, 1, 1)
-        asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 0.9, 2)
+        asteroid_a = Asteroid(Vec2(10, start_y), absolute_vel + relative_vel, 1)
+        asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 0.9)
 
         universe = Universe(Vec2(30, 30), [], [], [], max(asteroid_a.radius, asteroid_b.radius) * 2)
         universe.add_asteroids(asteroid_a, asteroid_b)

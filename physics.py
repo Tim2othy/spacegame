@@ -102,7 +102,7 @@ GRAY = Color("gray")
 class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, radius: float, color: Color = GRAY, density: float = 1) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, radius: float, color: Color = GRAY) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though.
 
         Args:
@@ -110,10 +110,9 @@ class Disk(PhysicalObject):
             vel (Vec2): Disk's velocity
             radius (float): Disk's radius
             color (pygame.Color): Disk's color
-            density (float): Disk's density
 
         """
-        mass = radius**3 * math.pi * 4 / 3 * density
+        mass = radius**3 * math.pi * 4 / 3
         super().__init__(pos, vel, mass)
         self.radius = radius
         self.color = Color(color)
@@ -137,7 +136,7 @@ class Disk(PhysicalObject):
         Returns:
             bool: True iff `vec` is in `self`
 
-        >>> disk = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
+        >>> disk = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
         >>> disk.intersects_point(Vec2(0, 0))
         True
         >>> disk.intersects_point(Vec2(1, -1))
@@ -160,11 +159,11 @@ class Disk(PhysicalObject):
         Returns:
             bool: True iff the two disks intersect
 
-        >>> disk_a = Disk(Vec2(0,0), Vec2(), density=1, radius=2, color=Color(0, 0, 0))
-        >>> disk_b = Disk(Vec2(2,1), Vec2(), density=1, radius=1, color=Color(0, 0, 0))
+        >>> disk_a = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
+        >>> disk_b = Disk(Vec2(2,1), Vec2(), radius=1, color=Color(0, 0, 0))
         >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
         True
-        >>> disk_c = Disk(Vec2(3,1), Vec2(), density=1, radius=0.5, color=Color(0, 0, 0))
+        >>> disk_c = Disk(Vec2(3,1), Vec2(), radius=0.5, color=Color(0, 0, 0))
         >>> disk_a.intersects_disk(disk_c) or disk_c.intersects_disk(disk_a)
         False
         >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
