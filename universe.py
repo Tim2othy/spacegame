@@ -58,7 +58,7 @@ class Asteroid(Disk):
             radius (float): Radius
 
         """
-        super().__init__(pos, vel, radius, Color(32, 32, 32))
+        super().__init__(pos, vel, radius, Color(211,211,211))
 
 
 type AsteroidChunk = tuple[int, int]
