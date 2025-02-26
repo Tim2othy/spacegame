@@ -6,8 +6,8 @@ TODO: We should put most of these into their respective modules.
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-SCREEN_SIZE = Vec2(1400, 700)
-MINIMAP_SIZE = Vec2(350, 350)
+SCREEN_SIZE = Vec2(1700, 900)
+MINIMAP_SIZE = Vec2(400, 400)
 FPS_HISTORY_LENGTH = 180  # how many frames to keep for FPS calculation
 MINIMAP_BORDER_COLOR = Color("aquamarine")
 
