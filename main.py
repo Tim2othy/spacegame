@@ -9,7 +9,8 @@ import sys
 from collections import deque
 
 import pygame
-from pygame import Color, Font, Surface
+from pygame import Color, Surface
+from pygame.font import Font
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
