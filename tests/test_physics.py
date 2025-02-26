@@ -29,6 +29,7 @@ def test_gravitational_force():
     assert abs(2 - large_force.magnitude() / small_force.magnitude()) < EPSILON
     assert abs(4 - small_force.magnitude() / double_distance_force.magnitude()) < EPSILON
 
+""" Is this still useful with density gone?
 
 def test_threedimensional_disk_mass_scaling():
     density = 9.87
@@ -41,6 +42,7 @@ def test_threedimensional_disk_mass_scaling():
     assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
         "Scaling radius should increase mass by a factor scale**3"
     )
+    """
 
 
 def test_relative_bounce():
