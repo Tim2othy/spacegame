@@ -243,6 +243,14 @@ class Universe:
                 if enemy.intersects_point(projectile.pos):
                     self._enemy_ships.remove(enemy)
                     return False
+                # Check if player projectile hits any enemy missile
+                for enemy_projectile in enemy.projectiles[:]:  # Create a copy to safely modify
+                    # Use distance check based on collision approximation
+                    collision_distance = 5  # Approximate collision radius
+                    if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
+                        # Remove the enemy projectile by marking it
+                        enemy.projectiles.remove(enemy_projectile)
+                        return False
             return True
 
         # TODO: Once enemies can take damage, collapse player_projectile_check and
