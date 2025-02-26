@@ -55,8 +55,8 @@ def test_relative_bounce():
         absolute_bounces: list[tuple[Disk, Disk]] = []
 
         for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1, density=1)
-            disk_b = Disk(Vec2(1, 0), absolute_vel, 1, density=1.23)
+            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
+            disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
 
             relative_vel, disk_a.vel - disk_b.vel
             disk_a.bounce_off_of_disk(disk_b)
@@ -130,12 +130,12 @@ def test_disk_drawing():
 
 
 def test_disk_bounce():
-    disk_a = Disk(Vec2(0, 0), Vec2(0, 0), density=1, radius=1, color=Color(0, 0, 0))
-    disk_b = Disk(Vec2(4, 0), Vec2(0, 0), density=1, radius=2, color=Color(0, 0, 0))
+    disk_a = Disk(Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
+    disk_b = Disk(Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
 
     assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 
-    disk_c = Disk(Vec2(0, 1), Vec2(1, 0), density=1, radius=1, color=Color(0, 0, 0))
+    disk_c = Disk(Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
 
     bounce_count = 0
     for _ in range(200):
