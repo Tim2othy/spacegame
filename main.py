@@ -21,6 +21,8 @@ from constants import (
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
     SCREEN_SIZE,
+    PLANET_COLORS_LARGE,
+    PLANET_COLORS_SMALL
 )
 from profiler import global_profiler
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
@@ -60,33 +62,16 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
-            for color in [
-                Color("darkred"),
-                Color("green"),
-                Color("mediumpurple"),
-                Color("darkorange"),
-                Color("royalblue"),
-                Color("yellow"),
-            ]
+            for color in PLANET_COLORS_SMALL
         ]
         if options["small"]
-        else [
-            Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
-            Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
-            Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
-            Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
-            Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
-            Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
-            Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
-            Planet(Vec2(18_000, 19_000), 300, Color("coral")),
-            Planet(Vec2(13_000, 17_000), 400, Color("blue")),
-            Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
-            Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
-            Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
-            Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
-            Planet(Vec2(14_500, 3_000), 600, Color("plum")),
-            Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
-            Planet(Vec2(3_000, 1_000), 700, Color("navy")),
+        else[
+            Planet(
+                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
+                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
+                color,
+            )
+            for color in PLANET_COLORS_LARGE
         ]
     )
 
