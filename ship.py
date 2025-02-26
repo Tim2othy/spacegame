@@ -78,7 +78,7 @@ class Ship(Disk):
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 230
+        self.rotation_thrust: float = 0.15 * self.mass
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
