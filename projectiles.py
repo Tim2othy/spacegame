@@ -166,24 +166,30 @@ class Missile(Bullet):
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
-        self.color = Color("red")
-        self.image = pygame.image.load(image_path)
-        self.original_image = self.image  # Keep the original image for rotation
+        self.color = Color("orange")
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` to `camera`.
+        """Draw `self` on `camera`.
 
         Args:
             camera (Camera): Camera to draw on
 
         """
-        if self.vel == Vec2(0, 0):
-            return
-        forward = self.vel.normalize()
-        angle = forward.angle_to(Vec2(0, -1))
+        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        left = Vec2(-forward.y, forward.x)
+        right = -left
+        backward = -forward
 
-        rotated_image = pygame.transform.rotate(self.original_image, angle)
-        camera.draw_image(rotated_image, self.pos)
+        camera.draw_polygon(
+            self.color,
+            [
+                self.pos + 3 * (left + forward),
+                self.pos + 5 * (left + 5 * backward),
+                self.pos + 5 * (right + 5 * backward),
+                self.pos + 3 * (right + forward),
+                self.pos + 2 * (8 * forward),
+            ],
+        )
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logic.
