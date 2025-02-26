@@ -40,6 +40,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     num_enemies = 20 if options["small"] else 40
     world_size = 15000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
+    planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
@@ -59,20 +60,11 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     planets: list[Planet] = (
         [
             Planet(
-                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
+                Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
-            for color in PLANET_COLORS_SMALL
-        ]
-        if options["small"]
-        else[
-            Planet(
-                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
-                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-                color,
-            )
-            for color in PLANET_COLORS_LARGE
+            for color in planet_colors
         ]
     )
 
