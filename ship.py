@@ -361,7 +361,7 @@ class PlayerShip(Ship):
 
 BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
 ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("blue")
+MISSILE_ENEMY_COLOR = Color("lime")
 
 
 class BulletEnemy(Ship):
