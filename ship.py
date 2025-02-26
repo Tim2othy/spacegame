@@ -13,6 +13,7 @@ from pygame.math import Vector2 as Vec2
 
 from constants import (
     BULLET_SPEED,
+    ROCKET_SPEED,
     DAMAGE_INDICATOR_TIME,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
@@ -83,6 +84,7 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
+        self.projectile_speed = BULLET_SPEED
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
@@ -115,7 +117,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = self.vel + forward * BULLET_SPEED
+                bullet_vel = self.vel + forward * self.projectile_speed
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -470,6 +472,7 @@ class RocketEnemy(BulletEnemy):
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, ROCKET_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -489,6 +492,7 @@ class MissileEnemy(BulletEnemy):
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, MISSILE_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
