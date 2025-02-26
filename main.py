@@ -18,11 +18,11 @@ from constants import (
     FPS_HISTORY_LENGTH,
     MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
+    PLANET_COLORS_LARGE,
+    PLANET_COLORS_SMALL,
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
     SCREEN_SIZE,
-    PLANET_COLORS_LARGE,
-    PLANET_COLORS_SMALL
 )
 from profiler import global_profiler
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
