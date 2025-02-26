@@ -43,7 +43,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
-            world_size_vec / 2, Vec2(0, 0), 10, Color("orange"), ShipInput.arrows(),
+            world_size_vec / 2, Vec2(0, 0), 10, Color("darkslategray"), ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
