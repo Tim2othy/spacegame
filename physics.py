@@ -31,12 +31,12 @@ class Particle:
         """Apply velocity to self and reduce lifetime. Returns True if lifetime has elapsed."""
         self.pos += dt * self.vel
         self.lifetime -= dt
-        return self.lifetime <= 0
+        return self.lifetime > 0
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
         color = BLACK.lerp(self.color, max(0, min(1, self.lifetime / self._max_lifetime)))
-        camera.draw_pixel(self.pos, color)
+        camera.draw_pixel(color, self.pos)
 
 
 class PhysicalObject:
