@@ -337,6 +337,7 @@ class ShipInput:
             thruster_forward (pygame_key): Forward thruster's key
             thruster_backward (pygame_key): Backward thruster's key
             shoot (pygame_key): Pew pew key
+            release_flairs (pygame_key): Flair-release key
 
         """
         self.thruster_rot_left = thruster_rot_left
