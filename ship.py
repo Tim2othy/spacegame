@@ -482,15 +482,11 @@ class BulletEnemy(Ship):
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                target_ship_direction = delta_target_ship.normalize()
-                multiplier = max(self.target_ship.vel.magnitude() * 1.1, ENEMY_MIN_SPEED)
-                desired_velocity = target_ship_direction * multiplier
-                force_direction = desired_velocity - self.vel
+                force_direction = delta_target_ship
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
             case BulletEnemy.Action.accelerate_randomly:
-                delta_random_point = self.random_point - self.pos
-                force_direction = delta_random_point
+                force_direction = self.random_point - self.pos
 
         if force_direction.magnitude() != 0:
             force = force_direction.normalize() * self.thrust
