@@ -40,10 +40,11 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     num_enemies = 20 if options["small"] else 40
     world_size = 15000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
+    planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
-            world_size_vec / 2, Vec2(0, 0), 10, Color("orange"), ShipInput.arrows(),
+            world_size_vec / 2, Vec2(0, 0), 10, Color("darkslategray"), ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
@@ -59,27 +60,18 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     planets: list[Planet] = (
         [
             Planet(
-                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
+                Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
-            for color in PLANET_COLORS_SMALL
-        ]
-        if options["small"]
-        else[
-            Planet(
-                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
-                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-                color,
-            )
-            for color in PLANET_COLORS_LARGE
+            for color in planet_colors
         ]
     )
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
+        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.45, 0.3, 0.25])[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)

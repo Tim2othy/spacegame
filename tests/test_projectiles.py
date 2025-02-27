@@ -19,8 +19,8 @@ def test_homing():
                 return True
         return False
 
-    missile = Missile(Vec2(0, 0), Vec2(500, 0), Color(0, 0, 0), ship, "assets/missile.png")
-    rocket = Rocket(Vec2(0, 0), Vec2(500, 0), Color(0, 0, 0), ship)
+    missile = Missile(Vec2(0, 0), Vec2(500, 0), Color(0, 0, 0), ship)
+    rocket = Rocket(Vec2(0, 0), Vec2(0, 0), Color(0, 0, 0), ship)
 
     assert hits_ship(missile), "Missile should have hit the ship"
     assert hits_ship(rocket), "Rocket should have hit the ship"
