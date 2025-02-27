@@ -9,7 +9,8 @@ import sys
 from collections import deque
 
 import pygame
-from pygame import Color, Font, Surface
+from pygame import Color, Surface
+from pygame.font import Font
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
@@ -18,6 +19,8 @@ from constants import (
     FPS_HISTORY_LENGTH,
     MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
+    PLANET_COLORS_LARGE,
+    PLANET_COLORS_SMALL,
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
     SCREEN_SIZE,
@@ -37,10 +40,11 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     num_enemies = 20 if options["small"] else 40
     world_size = 15000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
+    planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
-            world_size_vec / 2, Vec2(0, 0), 10, Color("orange"), ShipInput.arrows(),
+            world_size_vec / 2, Vec2(0, 0), 10, Color("darkslategray"), ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
@@ -56,44 +60,18 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     planets: list[Planet] = (
         [
             Planet(
-                Vec2(random.uniform(0, world_size_vec[1]), random.uniform(0, world_size_vec[1])),
+                Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
                 random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
                 color,
             )
-            for color in [
-                Color("darkred"),
-                Color("green"),
-                Color("mediumpurple"),
-                Color("darkorange"),
-                Color("royalblue"),
-                Color("yellow"),
-            ]
-        ]
-        if options["small"]
-        else [
-            Planet(Vec2(27_000, 29_000), 700, Color("darkred")),
-            Planet(Vec2(21_000, 28_000), 800, Color("khaki")),
-            Planet(Vec2(2_000, 27_000), 900, Color("royalblue")),
-            Planet(Vec2(17_000, 26_000), 900, Color("mediumpurple")),
-            Planet(Vec2(14_000, 23_000), 900, Color("darkslategray")),
-            Planet(Vec2(17_000, 22_000), 800, Color("darkgreen")),
-            Planet(Vec2(13_000, 21_000), 400, Color("crimson")),
-            Planet(Vec2(18_000, 19_000), 300, Color("coral")),
-            Planet(Vec2(13_000, 17_000), 400, Color("blue")),
-            Planet(Vec2(8_000, 16_000), 500, Color("turquoise")),
-            Planet(Vec2(25_000, 14_000), 300, Color("deeppink")),
-            Planet(Vec2(18_000, 12_000), 900, Color("darkorange")),
-            Planet(Vec2(22_000, 4_000), 850, Color("lightblue")),
-            Planet(Vec2(14_500, 3_000), 600, Color("plum")),
-            Planet(Vec2(28_000, 2_000), 200, Color("slategray")),
-            Planet(Vec2(3_000, 1_000), 700, Color("navy")),
+            for color in planet_colors
         ]
     )
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.6, 0.2, 0.2])[0]
+        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.45, 0.3, 0.25])[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)

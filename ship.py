@@ -24,12 +24,18 @@ from constants import (
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
     EPSILON,
+    FLAIR_COOLDOWN,
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
+    MEAN_FLAIR_SPEED,
+    NUM_FLAIRS,
+    ROCKET_SPEED,
+    SD_FLAIR_ANGLE,
+    SD_FLAIR_SPEED,
 )
 from physics import Disk
-from projectiles import Bullet, Missile, Rocket
+from projectiles import Bullet, Flair, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -63,7 +69,7 @@ class Ship(Disk):
         ValueError
 
         """
-        super().__init__(pos, vel, size, color, 1)
+        super().__init__(pos, vel, size, color)
         self.size: float = size
 
         self.health: float = 100.0
@@ -73,16 +79,20 @@ class Ship(Disk):
         if not gun_cooldown > 0:
             raise ValueError
         self._gun_cooldown: float = gun_cooldown
+        self._flair_cooldown: float = FLAIR_COOLDOWN
         self.gun_cooldown_timer: float = 0
+        self.flair_cooldown_timer: float = 0
         self.shooting: bool = False
+        self.releasing_flairs: bool = False
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 230
+        self.rotation_thrust: float = 0.15 * self.mass
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
+        self.projectile_speed = BULLET_SPEED
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
@@ -100,6 +110,10 @@ class Ship(Disk):
         """Create a new bullet at `pos` with velocity `vel`."""
         return Bullet(pos, vel, self.color)
 
+    def new_flair(self, pos: Vec2, vel: Vec2) -> Flair:
+        """Create a new Flair at `pos` with velocity `vel`."""
+        return Flair(pos, vel, self.color)
+
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
         if not self.shooting:
@@ -115,7 +129,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = self.vel + forward * BULLET_SPEED
+                bullet_vel = self.vel + forward * self.projectile_speed
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -129,6 +143,32 @@ class Ship(Disk):
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
+
+    def release_flairs(self, dt: float) -> None:
+        """Handle flair-releasing."""
+        if not self.releasing_flairs:
+            # The ship doesn't want to release flairs at the moment,
+            # so just decrease the cooldown if it's > 0.
+            # If it's <= 0, don't decrease the cooldown further.
+            if self.flair_cooldown_timer > 0:
+                self.flair_cooldown_timer = max(0, self.flair_cooldown_timer - dt)
+        else:
+            # The ship wants to shoot.
+            self.flair_cooldown_timer -= dt
+
+            while self.flair_cooldown_timer < 0:
+                forward = self.get_faced_direction()
+
+                for _ in range(NUM_FLAIRS):
+                    random_rotation = random.normalvariate(0, SD_FLAIR_ANGLE)
+                    flair_direction = forward.rotate(random_rotation)
+                    # set to sigma = 1 for cool explosion effect
+                    flair_vel = self.vel - flair_direction* random.normalvariate(
+                        MEAN_FLAIR_SPEED, SD_FLAIR_SPEED)
+                    self.projectiles.append(self.new_flair(self.pos, flair_vel))
+                self.flair_cooldown_timer += self._flair_cooldown
+
+
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
@@ -169,6 +209,7 @@ class Ship(Disk):
             projectile.step(dt)
 
         self.shoot(dt)
+        self.release_flairs(dt)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera.
@@ -287,6 +328,7 @@ class ShipInput:
         thruster_forward: PygameKey,
         thruster_backward: PygameKey,
         shoot: PygameKey,
+        release_flairs: PygameKey,
     ) -> None:
         """Create a new map from keys to spaceship-actions.
 
@@ -296,6 +338,7 @@ class ShipInput:
             thruster_forward (pygame_key): Forward thruster's key
             thruster_backward (pygame_key): Backward thruster's key
             shoot (pygame_key): Pew pew key
+            release_flairs (pygame_key): Flair-release key
 
         """
         self.thruster_rot_left = thruster_rot_left
@@ -303,16 +346,17 @@ class ShipInput:
         self.thruster_forward = thruster_forward
         self.thruster_backward = thruster_backward
         self.shoot = shoot
+        self.release_flairs = release_flairs
 
     @classmethod
     def arrows(cls) -> ShipInput:
         """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
-        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN)
+        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN, pygame.K_m)
 
     @classmethod
     def wasd(cls) -> ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
-        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE)
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE,pygame.K_e)
 
 
 PLAYER_COLOR = Color("green")
@@ -357,11 +401,12 @@ class PlayerShip(Ship):
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
+        self.releasing_flairs = keys[self.spaceship_input.release_flairs]
 
 
-BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
+BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("blue")
+MISSILE_ENEMY_COLOR = Color("lime")
 
 
 class BulletEnemy(Ship):
@@ -414,9 +459,14 @@ class BulletEnemy(Ship):
         delta_target_ship = self.target_ship.pos - self.pos
 
         if self.action_timer <= 0:
-            self.random_point = self.pos + Vec2(random.uniform(-1000, 1000), random.uniform(-1000, 1000))
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
+            distance_target_ship = delta_target_ship.magnitude()
+
+            self.random_point = self.pos + (delta_target_ship
+                + Vec2(random.uniform(-distance_target_ship, distance_target_ship),
+                       random.uniform(-distance_target_ship, distance_target_ship))
+                       )/2
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
@@ -433,19 +483,14 @@ class BulletEnemy(Ship):
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                desired_velocity = delta_target_ship * self.thrust / delta_target_ship.magnitude()
-                perfect_multiplier = max(self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude())
-                perfect_velocity = desired_velocity.normalize() * perfect_multiplier
-                required_acceleration = perfect_velocity - self.vel
-                force_direction = required_acceleration
+                force_direction = delta_target_ship
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
             case BulletEnemy.Action.accelerate_randomly:
-                delta_random_point = self.random_point - self.pos
-                force_direction = delta_random_point
+                force_direction = self.random_point - self.pos
 
         if force_direction.magnitude() != 0:
-            force = force_direction * self.thrust / force_direction.magnitude()
+            force = force_direction.normalize() * self.thrust
             self.apply_force(force, dt)
 
         self.shooting = (
@@ -470,6 +515,7 @@ class RocketEnemy(BulletEnemy):
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, ROCKET_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -489,7 +535,8 @@ class MissileEnemy(BulletEnemy):
 
         """
         super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, MISSILE_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.color, self.target_ship, "assets/missile.png")
+        return Missile(pos, vel, self.color, self.target_ship)

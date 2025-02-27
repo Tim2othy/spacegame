@@ -136,8 +136,9 @@ class Camera:
     def draw_pixel(self, color: Color, point: Vec2) -> None:
         """Draw a  worldspace-pixel on screen."""
         screenpoint = self.world_to_screen(point)
+        
         # TODO: Should we check if screenpoint is on screen?
-        self.surface.set_at(screenpoint, color)
+        self.surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a worldspace-circle on screen.
