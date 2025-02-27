@@ -458,9 +458,14 @@ class BulletEnemy(Ship):
         delta_target_ship = self.target_ship.pos - self.pos
 
         if self.action_timer <= 0:
-            self.random_point = self.pos + Vec2(random.uniform(-ENEMY_CHOOSE_POINT_DISTANCE, ENEMY_CHOOSE_POINT_DISTANCE), random.uniform(-ENEMY_CHOOSE_POINT_DISTANCE, ENEMY_CHOOSE_POINT_DISTANCE))
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
+            distance_target_ship = delta_target_ship.magnitude()
+
+            self.random_point = self.pos + (delta_target_ship
+                + Vec2(random.uniform(-distance_target_ship, distance_target_ship),
+                       random.uniform(-distance_target_ship, distance_target_ship))
+                       )/2
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
