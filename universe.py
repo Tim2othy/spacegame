@@ -276,7 +276,7 @@ class Universe:
                     return False
             for enemy in self._enemy_ships:
                 if enemy.intersects_point(projectile.pos):
-                    self.create_particle_cloud(enemy.pos, 20, enemy.color, enemy.vel, 250)
+                    self.create_particle_cloud(enemy.pos, 100, enemy.color, enemy.vel, 150, 2)
                     self._enemy_ships.remove(enemy)
                     return False
             return True
