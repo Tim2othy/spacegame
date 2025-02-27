@@ -193,6 +193,9 @@ class Missile(Bullet):
             multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
             desired_velocity = target_ship_direction * multiplier
             force_direction = desired_velocity - self.vel
+
+            if force_direction == Vec2(0, 0):
+                return
             force = force_direction.normalize() * self.homing_thrust
             self.apply_force(force, dt)
         super().step(dt)
