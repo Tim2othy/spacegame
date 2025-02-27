@@ -53,6 +53,10 @@ DAMAGE_INDICATOR_TIME = 1
 """Time (in seconds) a ship should flash red after taking damage"""
 GUN_COOLDOWN_PLAYER = 0.05
 FLAIR_COOLDOWN = 5
+NUM_FLAIRS = 40
+SD_FLAIR_ANGLE = 25
+MEAN_FLAIR_SPEED = 140
+SD_FLAIR_SPEED = 28
 
 
 # BulletEnemy constants
@@ -64,6 +68,7 @@ ENEMY_HEALTH = 100  # TODO: Unused, ships die instantly
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 ENEMY_BULLET_COOLDOWN = 0.1
 ROCKET_SPEED = 300
+ENEMY_CHOOSE_POINT_DISTANCE = 1000
 
 
 # RocketEnemy constants

@@ -29,6 +29,11 @@ from constants import (
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     FLAIR_COOLDOWN,
+    NUM_FLAIRS ,
+    SD_FLAIR_ANGLE,
+    MEAN_FLAIR_SPEED,
+    SD_FLAIR_SPEED,
+    ENEMY_CHOOSE_POINT_DISTANCE,
 )
 from physics import Disk
 from projectiles import Bullet, Missile, Rocket, Flair
@@ -143,7 +148,7 @@ class Ship(Disk):
     def release_flairs(self, dt: float) -> None:
         """Handle flair-releasing."""
         if not self.releasing_flairs:
-            # The ship doesn't want to do flairs at the moment,
+            # The ship doesn't want to release flairs at the moment,
             # so just decrease the cooldown if it's > 0.
             # If it's <= 0, don't decrease the cooldown further.
             if self.flair_cooldown_timer > 0:
@@ -155,13 +160,14 @@ class Ship(Disk):
             while self.flair_cooldown_timer < 0:
                 forward = self.get_faced_direction()
 
-                for _ in range(40):
-                    random_rotation = random.normalvariate(0, 25)
+                for _ in range(NUM_FLAIRS):
+                    random_rotation = random.normalvariate(0, SD_FLAIR_ANGLE)
                     flair_direction = forward.rotate(random_rotation)
                     # set to sigma = 1 for cool explosion effect
-                    flair_vel = self.vel - flair_direction * self.projectile_speed * random.normalvariate(0.2, 0.04)
+                    flair_vel = self.vel - flair_direction * random.normalvariate(MEAN_FLAIR_SPEED, SD_FLAIR_SPEED)
                     self.projectiles.append(self.new_flair(self.pos, flair_vel))
                 self.flair_cooldown_timer += self._flair_cooldown
+
 
 
     def suffer_damage(self, damage: float) -> None:
@@ -452,7 +458,7 @@ class BulletEnemy(Ship):
         delta_target_ship = self.target_ship.pos - self.pos
 
         if self.action_timer <= 0:
-            self.random_point = self.pos + Vec2(random.uniform(-1000, 1000), random.uniform(-1000, 1000))
+            self.random_point = self.pos + Vec2(random.uniform(-ENEMY_CHOOSE_POINT_DISTANCE, ENEMY_CHOOSE_POINT_DISTANCE), random.uniform(-ENEMY_CHOOSE_POINT_DISTANCE, ENEMY_CHOOSE_POINT_DISTANCE))
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
 
