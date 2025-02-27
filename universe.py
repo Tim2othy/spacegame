@@ -220,7 +220,7 @@ class Universe:
                 asteroid.bounce_off_of_disk(planet)
 
     def create_particles_on_disk(
-        self, pos: Vec2, disk: Disk, n: int, color: Color, blast_vel: float, lifetime: float = 1
+        self, disk: Disk, pos: Vec2, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
     ) -> None:
         """Create `n` particles on the disk's surface.
 
@@ -239,11 +239,28 @@ class Universe:
         delta_normalized = delta.normalize()
         projected = disk.pos + delta_normalized * disk.radius
         for _ in range(n):
-            angle = random.uniform(-math.tau / 4, math.tau / 4)
+            angle = random.uniform(-90.0, 90.0)
             vel = disk.vel + delta_normalized.rotate(angle) * blast_vel * random.random()
             color = disk.color.lerp(color, random.random())
-            lifetime = random.uniform(lifetime / 2, lifetime)
-            self._particles.append(Particle(projected, vel, color, lifetime))
+            random_lifetime = random.uniform(lifetime / 2.0, lifetime)
+            self._particles.append(Particle(projected, vel, color, random_lifetime))
+
+    def create_particle_cloud(
+        self, pos: Vec2, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
+    ) -> None:
+        """Create `n` particles forming a blast-cloud around pos.
+
+        Particles' velocity are spherically sampled with length between 0 and blast_vel, added
+        to `initial_vel`.
+
+        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        """
+        for _ in range(n):
+            random_vel = Vec2()
+            random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
+            vel = initial_vel + random_vel
+            random_lifetime = random.uniform(lifetime / 2, lifetime)
+            self._particles.append(Particle(pos, vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
@@ -255,9 +272,11 @@ class Universe:
                 return False
             for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
                 if body.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
                     return False
             for enemy in self._enemy_ships:
                 if enemy.intersects_point(projectile.pos):
+                    self.create_particle_cloud(enemy.pos, 20, enemy.color, enemy.vel, 250)
                     self._enemy_ships.remove(enemy)
                     return False
             return True
@@ -269,8 +288,10 @@ class Universe:
             """Run bullet-logic and return whether it should stay alive."""
             if not self.contains_point(projectile.pos):
                 return False
-            if self.asteroids_or_planets_intersect_point(projectile.pos):
-                return False
+            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
+                if body.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 100)
+                    return False
             for player in self._player_ships:
                 if player.intersects_point(projectile.pos):
                     player.suffer_damage(5)
@@ -341,6 +362,8 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
+        # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
+        random_state = random.getstate()
         # TODO: Try caching star-chunks to their final on-screen locations.
         # If doing that, also optimise x_chunk_size for performance (via profiling) again.
         camera.surface.lock()
@@ -486,6 +509,7 @@ class Universe:
                         camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
 
         camera.surface.unlock()
+        random.setstate(random_state)
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
