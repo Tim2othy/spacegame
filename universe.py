@@ -294,6 +294,7 @@ class Universe:
                     return False
             for player in self._player_ships:
                 if player.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(player, projectile.pos, 10, projectile.color, 100)
                     player.suffer_damage(5)
                     return False
             return True
