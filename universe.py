@@ -198,9 +198,11 @@ class Universe:
             for body in chain(self._enemy_ships, self._nearby_asteroids(player.pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
+                    self.create_particles_on_disk(body, player.pos, 25, player.color, 100)
             for planet in self._nearby_planets(player.pos):
                 if damage := player.bounce_off_of_disk(planet) is not None:
                     player.suffer_damage(damage)
+                    self.create_particles_on_disk(planet, player.pos, 25, player.color, 100)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
@@ -239,11 +241,11 @@ class Universe:
         delta_normalized = delta.normalize()
         projected = disk.pos + delta_normalized * disk.radius
         for _ in range(n):
-            angle = random.uniform(-90.0, 90.0)
-            vel = disk.vel + delta_normalized.rotate(angle) * blast_vel * random.random()
-            color = disk.color.lerp(color, random.random())
+            random_angle = random.uniform(-90.0, 90.0)
+            random_vel = disk.vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_color = disk.color.lerp(color, random.random())
             random_lifetime = random.uniform(lifetime / 2.0, lifetime)
-            self._particles.append(Particle(projected, vel, color, random_lifetime))
+            self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
 
     def create_particle_cloud(
         self, pos: Vec2, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
