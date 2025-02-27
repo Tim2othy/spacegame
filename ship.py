@@ -13,7 +13,6 @@ from pygame.math import Vector2 as Vec2
 
 from constants import (
     BULLET_SPEED,
-    ROCKET_SPEED,
     DAMAGE_INDICATOR_TIME,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
@@ -25,17 +24,18 @@ from constants import (
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
     EPSILON,
+    FLAIR_COOLDOWN,
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
-    FLAIR_COOLDOWN,
-    NUM_FLAIRS ,
-    SD_FLAIR_ANGLE,
     MEAN_FLAIR_SPEED,
+    NUM_FLAIRS,
+    ROCKET_SPEED,
+    SD_FLAIR_ANGLE,
     SD_FLAIR_SPEED,
 )
 from physics import Disk
-from projectiles import Bullet, Missile, Rocket, Flair
+from projectiles import Bullet, Flair, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -163,7 +163,8 @@ class Ship(Disk):
                     random_rotation = random.normalvariate(0, SD_FLAIR_ANGLE)
                     flair_direction = forward.rotate(random_rotation)
                     # set to sigma = 1 for cool explosion effect
-                    flair_vel = self.vel - flair_direction * random.normalvariate(MEAN_FLAIR_SPEED, SD_FLAIR_SPEED)
+                    flair_vel = self.vel - flair_direction* random.normalvariate(
+                        MEAN_FLAIR_SPEED, SD_FLAIR_SPEED)
                     self.projectiles.append(self.new_flair(self.pos, flair_vel))
                 self.flair_cooldown_timer += self._flair_cooldown
 
