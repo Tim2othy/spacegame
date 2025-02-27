@@ -197,3 +197,23 @@ class Missile(Bullet):
             force = required_velocity * self.homing_thrust / required_velocity.magnitude()
             self.apply_force(force, dt)
         super().step(dt)
+
+
+class Flair(Bullet):
+    """A round bullet, bobbing about."""
+
+    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
+        """Create a new flair.
+
+        Args:
+            pos (Vec2): Initial position
+            vel (Vec2): Velocity
+            color (Color): Border- and fill-color
+
+        """
+        super().__init__(pos, vel, color)
+        self.color = Color("yellow")
+
+    def draw(self, camera: Camera) -> None:
+        """Draw `self` to `camera`."""
+        camera.draw_circle(self.color,self.pos, 3)
