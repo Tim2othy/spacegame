@@ -28,9 +28,10 @@ from constants import (
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
+    FLAIR_COOLDOWN,
 )
 from physics import Disk
-from projectiles import Bullet, Missile, Rocket
+from projectiles import Bullet, Missile, Rocket, Flair
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -74,8 +75,11 @@ class Ship(Disk):
         if not gun_cooldown > 0:
             raise ValueError
         self._gun_cooldown: float = gun_cooldown
+        self._flair_cooldown: float = FLAIR_COOLDOWN
         self.gun_cooldown_timer: float = 0
+        self.flair_cooldown_timer: float = 0
         self.shooting: bool = False
+        self.releasing_flairs: bool = False
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -101,6 +105,10 @@ class Ship(Disk):
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`."""
         return Bullet(pos, vel, self.color)
+
+    def new_flair(self, pos: Vec2, vel: Vec2) -> Flair:
+        """Create a new Flair at `pos` with velocity `vel`."""
+        return Flair(pos, vel, self.color)
 
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
@@ -131,6 +139,30 @@ class Ship(Disk):
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
+
+    def release_flairs(self, dt: float) -> None:
+        """Handle flair-releasing."""
+        if not self.releasing_flairs:
+            # The ship doesn't want to do flairs at the moment,
+            # so just decrease the cooldown if it's > 0.
+            # If it's <= 0, don't decrease the cooldown further.
+            if self.flair_cooldown_timer > 0:
+                self.flair_cooldown_timer = max(0, self.flair_cooldown_timer - dt)
+        else:
+            # The ship wants to shoot.
+            self.flair_cooldown_timer -= dt
+
+            while self.flair_cooldown_timer < 0:
+                forward = self.get_faced_direction()
+
+                for _ in range(40):
+                    random_rotation = random.normalvariate(0, 25)
+                    flair_direction = forward.rotate(random_rotation)
+                    # set to sigma = 1 for cool explosion effect
+                    flair_vel = self.vel - flair_direction * self.projectile_speed * random.normalvariate(0.2, 0.04)
+                    self.projectiles.append(self.new_flair(self.pos, flair_vel))
+                self.flair_cooldown_timer += self._flair_cooldown
+
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
@@ -171,6 +203,7 @@ class Ship(Disk):
             projectile.step(dt)
 
         self.shoot(dt)
+        self.release_flairs(dt)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera.
@@ -289,6 +322,7 @@ class ShipInput:
         thruster_forward: PygameKey,
         thruster_backward: PygameKey,
         shoot: PygameKey,
+        release_flairs: PygameKey,
     ) -> None:
         """Create a new map from keys to spaceship-actions.
 
@@ -305,16 +339,17 @@ class ShipInput:
         self.thruster_forward = thruster_forward
         self.thruster_backward = thruster_backward
         self.shoot = shoot
+        self.release_flairs = release_flairs
 
     @classmethod
     def arrows(cls) -> ShipInput:
         """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
-        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN)
+        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN, pygame.K_m)
 
     @classmethod
     def wasd(cls) -> ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
-        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE)
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE,pygame.K_e)
 
 
 PLAYER_COLOR = Color("green")
@@ -359,6 +394,7 @@ class PlayerShip(Ship):
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
+        self.releasing_flairs = keys[self.spaceship_input.release_flairs]
 
 
 BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
