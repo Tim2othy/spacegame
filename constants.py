@@ -68,7 +68,6 @@ ENEMY_HEALTH = 100  # TODO: Unused, ships die instantly
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 ENEMY_BULLET_COOLDOWN = 0.1
 ROCKET_SPEED = 300
-ENEMY_MIN_SPEED = 500.0
 
 
 # RocketEnemy constants
