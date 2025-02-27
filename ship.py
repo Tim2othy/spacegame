@@ -403,7 +403,7 @@ class PlayerShip(Ship):
         self.releasing_flairs = keys[self.spaceship_input.release_flairs]
 
 
-BULLET_ENEMY_COLOR = Color("red")  # oh wow so original
+BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 
