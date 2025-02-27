@@ -192,9 +192,9 @@ class Missile(Bullet):
         if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
             target_ship_direction = delta_target_ship.normalize()
             multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
-            goal_velocity = target_ship_direction * multiplier
-            required_velocity = goal_velocity - self.vel
-            force = required_velocity * self.homing_thrust / required_velocity.magnitude()
+            desired_velocity = target_ship_direction * multiplier
+            force_direction = desired_velocity - self.vel
+            force = force_direction.normalize() * self.homing_thrust
             self.apply_force(force, dt)
         super().step(dt)
 
