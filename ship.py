@@ -24,6 +24,7 @@ from constants import (
     ENEMY_SHOOT_RANGE,
     ENEMY_THRUST_MULTIPLIER,
     ENEMY_VISUAL_RANGE,
+    ENEMY_MIN_SPEED,
     EPSILON,
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
@@ -33,7 +34,6 @@ from constants import (
     SD_FLAIR_ANGLE,
     MEAN_FLAIR_SPEED,
     SD_FLAIR_SPEED,
-    ENEMY_CHOOSE_POINT_DISTANCE,
 )
 from physics import Disk
 from projectiles import Bullet, Missile, Rocket, Flair
@@ -482,11 +482,10 @@ class BulletEnemy(Ship):
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                desired_velocity = delta_target_ship * self.thrust / delta_target_ship.magnitude()
-                perfect_multiplier = max(self.target_ship.vel.magnitude() * 1.5, desired_velocity.magnitude())
-                perfect_velocity = desired_velocity.normalize() * perfect_multiplier
-                required_acceleration = perfect_velocity - self.vel
-                force_direction = required_acceleration
+                target_ship_direction = delta_target_ship.normalize()
+                multiplier = max(self.target_ship.vel.magnitude() * 1.1, ENEMY_MIN_SPEED)
+                desired_velocity = target_ship_direction * multiplier
+                force_direction = desired_velocity - self.vel
             case BulletEnemy.Action.decelerate:
                 force_direction = -self.vel
             case BulletEnemy.Action.accelerate_randomly:
@@ -494,7 +493,7 @@ class BulletEnemy(Ship):
                 force_direction = delta_random_point
 
         if force_direction.magnitude() != 0:
-            force = force_direction * self.thrust / force_direction.magnitude()
+            force = force_direction.normalize() * self.thrust
             self.apply_force(force, dt)
 
         self.shooting = (
