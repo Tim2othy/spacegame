@@ -107,13 +107,13 @@ def test_disk_drawing():
                     bad += 1
 
     threshold = 0.02
-    assert good / (good + bad) > 1 - threshold, (
+    assert isclose(good, (good + bad), rel_tol=threshold), (
         "The drawn circle should mostly agree with the idealised circle"
     )
 
     rect_area = width * height
     circle_area = disk.radius**2 * math.pi
-    assert abs((circle_area - drawn) / rect_area) < threshold, (
+    assert isclose(drawn, circle_area, abs_tol=rect_area * threshold), (
         "The area we drew should be close in size to the circle's idealised area"
     )
 
