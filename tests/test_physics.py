@@ -5,8 +5,7 @@ from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from physics import Disk, PhysicalObject
-
-EPSILON = 1e-8
+from math import isclose
 
 
 def test_step():
@@ -26,23 +25,18 @@ def test_gravitational_force():
     assert large_force.y > 0
     assert double_distance_force.x > 0
     assert double_distance_force.y > 0
-    assert abs(2 - large_force.magnitude() / small_force.magnitude()) < EPSILON
-    assert abs(4 - small_force.magnitude() / double_distance_force.magnitude()) < EPSILON
+    assert isclose(2, large_force.magnitude() / small_force.magnitude())
+    assert isclose(4, small_force.magnitude() / double_distance_force.magnitude())
 
-""" Is this still useful with density gone?
 
 def test_threedimensional_disk_mass_scaling():
-    density = 9.87
     radius = 1.23
-    disk = Disk(Vec2(), Vec2(), radius, density=density)
-    double_density_disk = Disk(Vec2(), Vec2(), radius, density=2 * density)
-    double_size_disk = Disk(Vec2(), Vec2(), radius * 2, density=density)
+    disk = Disk(Vec2(), Vec2(), radius)
+    double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
 
-    assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
-    assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
-        "Scaling radius should increase mass by a factor scale**3"
+    assert isclose(2**3, double_size_disk.mass / disk.mass), (
+        "Scaling the radius by `t` should scale the mass by a factor `t**3`"
     )
-    """
 
 
 def test_relative_bounce():
