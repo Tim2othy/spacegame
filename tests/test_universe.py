@@ -1,3 +1,4 @@
+from math import isclose
 import random
 from typing import TYPE_CHECKING
 
@@ -14,24 +15,33 @@ if TYPE_CHECKING:
 
 def test_planet_gravitation():
     world = Vec2(3000, 3000)
+    worldcenter = world / 2
     planet = Planet(world / 2, 1000, Color(0, 0, 0))
-    player = PlayerShip(world / 4, Vec2(100, -200))
-    enemy = BulletEnemy(3 * world / 4, Vec2(100, -200), player)
 
-    asteroid = Asteroid(world / 2 + world.rotate(90) / 2, Vec2(100, -200), 10)
+    asteroids = []
+    players = []
+    num_disks = 23
+    for i in range(num_disks):
+        offset = Vec2()
+        offset.from_polar((1500, 360 * i / num_disks))
+        pos = worldcenter + offset
+        if i % 4 == 0 or i % 3 == 0:
+            players.append(PlayerShip(pos, Vec2(100, -200)))
+        else:
+            asteroids.append(Asteroid(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
+
     universe = Universe(
-        world, [planet], [player], [enemy], max(player.radius, enemy.radius, asteroid.radius) * 2
+        world, [planet], players, [], max(*(a.radius for a in asteroids), *(p.radius for p in players)) * 2
     )
-    universe.add_asteroids(asteroid)
+    universe.add_asteroids(*asteroids)
 
-    for _ in range(60 * 100):
+    for _ in range(30 * 100):
         universe.step(0.01)
 
-    epsilon = 1e-2
-    disks: list[Disk] = [player, enemy, asteroid]
+    disks: list[Disk] = asteroids + players
     for disk in disks:
-        assert abs(1 - (disk.radius + planet.radius) / disk.pos.distance_to(planet.pos)) < epsilon, (
-            "Gravity should have pulled the object to the planet's surface within a minute"
+        assert isclose(disk.radius + planet.radius, disk.pos.distance_to(planet.pos), rel_tol=1e-3), (
+            "Gravity should have pulled the object to the planet's surface within 30 seconds"
         )
 
 
