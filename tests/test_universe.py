@@ -77,11 +77,12 @@ def test_mutual_bounce(absolute_vel: Vec2):
     )
 
 
-def test_newtons_cradle():
+@pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
+def test_newtons_cradle(direction_angle: float):
     # When we have a setup like this:
-    #  o->   oooo
+    #  o-->   oooo
     # We expect it to look something like this afterwards:
-    #        oooo    o->
+    #         oooo    o->
     # (https://en.wikipedia.org/wiki/Newton's_cradle)
     # At least, if bounciness==1, which is not the case here, but
     # we still expect the rightmost asteroid to gain velocity afterwards.
@@ -89,25 +90,23 @@ def test_newtons_cradle():
     world = Vec2(3000, 3000)
     asteroid_radius = 50
 
-    # Do this 5 times for different directions
-    for i in range(5):
-        direction = Vec2()
-        direction.from_polar((asteroid_radius, i * 360 / 5))
+    direction = Vec2()
+    direction.from_polar((asteroid_radius, direction_angle))
 
-        universe = Universe(world, [], [], [], asteroid_radius * 2)
-        first_asteroid = Asteroid(world / 2, direction, asteroid_radius)
-        universe.add_asteroids(first_asteroid)
-        other_asteroids = [
-            Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)
-        ]
-        universe.add_asteroids(*other_asteroids)
+    universe = Universe(world, [], [], [], asteroid_radius * 2)
+    first_asteroid = Asteroid(world / 2, direction, asteroid_radius)
+    universe.add_asteroids(first_asteroid)
+    other_asteroids = [
+        Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)
+    ]
+    universe.add_asteroids(*other_asteroids)
 
-        # Run for 2 seconds
-        for _ in range(200):
-            universe.step(0.01)
+    # Run for 2 seconds
+    for _ in range(200):
+        universe.step(0.01)
 
-        assert first_asteroid.vel * direction < asteroid_radius**2, "First asteroid should have lost speed"
-        assert other_asteroids[-1].vel * direction > 0.01, "Last asteroid should have gained speed"
+    assert first_asteroid.vel * direction < asteroid_radius**2, "First asteroid should have lost speed"
+    assert other_asteroids[-1].vel * direction > 0.01, "Last asteroid should have gained speed"
 
 
 def test_precise_asteroid_collision():
