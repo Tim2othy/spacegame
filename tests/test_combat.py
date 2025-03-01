@@ -1,7 +1,7 @@
 import random
 
-from pygame.math import Vector2 as Vec2
 import pytest
+from pygame.math import Vector2 as Vec2
 
 from constants import ENEMY_VISUAL_RANGE
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy

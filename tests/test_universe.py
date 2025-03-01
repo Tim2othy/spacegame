@@ -1,12 +1,12 @@
-from math import isclose
 import random
+from math import isclose
 from typing import TYPE_CHECKING
 
 import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from ship import BulletEnemy, PlayerShip
+from ship import PlayerShip
 from universe import Asteroid, Planet, Universe
 
 if TYPE_CHECKING:

@@ -1,12 +1,12 @@
 import math
+from math import isclose
 
+import pytest
 from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
-import pytest
 
 from camera import Camera
 from physics import Disk, PhysicalObject
-from math import isclose
 
 
 def test_step():

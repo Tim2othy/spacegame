@@ -1,6 +1,6 @@
+import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
-import pytest
 
 from projectiles import Bullet, Missile, Rocket
 from ship import Ship
