@@ -8,30 +8,24 @@ from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
 
 
-def test_enemy_hostility():
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
+def test_enemy_hostility(enemy_type: type[BulletEnemy]):
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
     player_ship = PlayerShip(world / 2, Vec2())
 
-    def random_worldvec() -> Vec2:
-        return Vec2(random.random() * world.x, random.random() * world.y)
+    enemy = enemy_type(Vec2(random.random() * world.x, random.random() * world.y), Vec2(0, 0), player_ship)
 
-    enemies: list[BulletEnemy] = [
-        ship_type(random_worldvec(), Vec2(0, 0), player_ship)
-        for ship_type in [BulletEnemy, RocketEnemy, MissileEnemy]
-    ]
+    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+    starting_health = player_ship.health
 
-    for enemy in enemies:
-        universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
-        starting_health = player_ship.health
+    # 30 seconds
+    for _ in range(3000):
+        universe.step(0.01)
+        if player_ship.health < starting_health:
+            break
 
-        # 30 seconds
-        for _ in range(3000):
-            universe.step(0.01)
-            if player_ship.health < starting_health:
-                break
-
-        assert player_ship.health < starting_health
+    assert player_ship.health < starting_health
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
