@@ -74,11 +74,11 @@ class Rocket(Bullet):
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
-        self._total_duration = self.homing_duration + self.nonhoming_duration
+        self._cycle_duration = self.homing_duration + self.nonhoming_duration
         self.color = Color("red")
 
     def step(self, dt: float) -> None:
-        """Apply homing and physics-logic.
+        """Apply homing and physics-logics.
 
         Args:
             dt (float): Passed time
@@ -86,21 +86,31 @@ class Rocket(Bullet):
         """
         self.homing_timer += dt
         delta_target_ship = self.target_ship.pos - self.pos
-        if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
-            target_ship_direction = delta_target_ship.normalize()
 
-            if self.target_ship.vel == Vec2(0, 0):
-                multiplier = max(self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED)
-            else:
-                multiplier = ROCKET_MIN_SPEED
-            desired_velocity = target_ship_direction * multiplier
-            force_direction = desired_velocity - self.vel
+        current_cycle = int(self.homing_timer / self._cycle_duration)
+        time_in_current_cycle = self.homing_timer % self._cycle_duration
 
-            if force_direction == Vec2(0, 0):
-                force_direction = Vec2(EPSILON, EPSILON)
+        # Determine if we're in a homing phase (first part of cycle)
+        is_homing_phase = time_in_current_cycle <= self.homing_duration
 
-            force = force_direction.normalize() * self.homing_thrust
-            self.apply_force(force, dt)
+        # Only home if we're in a homing phase and haven't exceeded 3 cycles
+        if current_cycle < 3 and is_homing_phase:
+            if delta_target_ship != Vec2(0, 0):
+                target_ship_direction = delta_target_ship.normalize()
+
+                if self.target_ship.vel != Vec2(0, 0):
+                    multiplier = max(self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED)
+                else:
+                    multiplier = ROCKET_MIN_SPEED
+
+                desired_velocity = target_ship_direction * multiplier
+                force_direction = desired_velocity - self.vel
+
+                if force_direction == Vec2(0, 0):
+                    force_direction = Vec2(EPSILON, EPSILON)
+
+                force = force_direction.normalize() * self.homing_thrust
+                self.apply_force(force, dt)
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
@@ -115,8 +125,20 @@ class Rocket(Bullet):
         right = -left
         backward = -forward
 
-        # Spooky homing body
-        if self.homing_timer <= self.homing_duration:
+
+
+
+        current_cycle = int(self.homing_timer / self._cycle_duration)
+        time_in_current_cycle = self.homing_timer % self._cycle_duration
+
+        # Determine if we're in a homing phase (first part of cycle)
+        is_homing_phase = time_in_current_cycle <= self.homing_duration
+
+        # Only home if we're in a homing phase and haven't exceeded 3 cycles
+        if current_cycle < 3 and is_homing_phase:
+
+
+            # Spooky homing body
             self.color = Color("purple")
             camera.draw_polygon(
                 self.color.lerp(Color("blue"), 0.5),
