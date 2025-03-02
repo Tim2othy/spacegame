@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
+from enemy_ai import MarkovAI
 
 from constants import (
     BULLET_SPEED,
@@ -545,4 +546,92 @@ class MissileEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
+        return Missile(pos, vel, self.color, self.target_ship)
+
+
+class MarkovEnemy(BulletEnemy):
+    """An enemy ship using Markov chain AI for more sophisticated behavior."""
+
+    def __init__(
+        self,
+        pos: Vec2,
+        vel: Vec2,
+        target_ship: Ship,
+        gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
+    ) -> None:
+        """Create a new Markov-based enemy ship.
+
+        Args:
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            target_ship (Ship): Ship to target
+            gun_cooldown (float): Time between shots
+            color (Color): Hull and bullet color
+        """
+        super().__init__(pos, vel, target_ship, gun_cooldown)
+        self.thrust *= ENEMY_THRUST_MULTIPLIER
+        self.health = ENEMY_HEALTH
+        self.target_ship = target_ship
+        self.projectiles: list[Bullet] = []
+
+        # Create Markov AI controller
+        self.ai = MarkovAI(self, target_ship)
+
+        # Set initial state, unneeded with MarkovAI
+        self.thruster_forward = False
+        self.thruster_backward = False
+        self.shooting = False
+
+    def step(self, dt: float) -> None:
+        """Apply physics and AI to this ship.
+
+        Args:
+            dt (float): Passed time
+        """
+        # Update AI
+        self.ai.update(dt)
+
+        # The AI handles movement and shooting
+        # Now we just need to call the parent's step method
+        super().step(dt)
+
+    # Additional methods for specialized enemy types can extend this class
+
+
+class MarkovRocketEnemy(MarkovEnemy):
+    """A Markov-based enemy that fires rockets."""
+
+    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
+        """Create a new Markov-based rocket enemy.
+
+        Args:
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            target_ship (Ship): Ship to target
+        """
+        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN)
+        self.projectile_speed = ROCKET_SPEED
+
+    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
+        """Create a new rocket targeting the player."""
+        return Rocket(pos, vel, self.color, self.target_ship)
+
+
+class MarkovMissileEnemy(MarkovEnemy):
+    """A Markov-based enemy that fires homing missiles."""
+
+    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
+        """Create a new Markov-based missile enemy.
+
+        Args:
+            pos (Vec2): Initial position
+            vel (Vec2): Initial velocity
+            target_ship (Ship): Ship to target
+        """
+        super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN)
+        self.projectile_speed = ROCKET_SPEED
+
+    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
+        """Create a new missile targeting the player."""
+        print("worked")
         return Missile(pos, vel, self.color, self.target_ship)
