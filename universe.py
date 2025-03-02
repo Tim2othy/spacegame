@@ -11,7 +11,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, PhysicalObject
+from physics import Disk, Particle, PhysicalObject
 from profiler import global_profiler
 
 if TYPE_CHECKING:
@@ -127,6 +127,8 @@ class Universe:
             chunk = self._vec_to_planet_chunk(planet.pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
+        self._particles: list[Particle] = []
+
     def add_asteroids(self, *args: Asteroid) -> None:
         """Add asteroids to the universe.
 
@@ -194,9 +196,11 @@ class Universe:
             for body in chain(self._enemy_ships, self._nearby_asteroids(player.pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
+                    self.create_particles_on_disk(body, player.pos, 25, player.color, 100)
             for planet in self._nearby_planets(player.pos):
                 if damage := player.bounce_off_of_disk(planet) is not None:
                     player.suffer_damage(damage)
+                    self.create_particles_on_disk(planet, player.pos, 25, player.color, 100)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
@@ -215,19 +219,48 @@ class Universe:
             for planet in self._nearby_planets(asteroid.pos):
                 asteroid.bounce_off_of_disk(planet)
 
-    def asteroids_or_planets_intersect_point(self, vec: Vec2) -> bool:
-        """Test whether any of `self`'s planets or asteroids intersect `vec`.
+    def create_particles_on_disk(
+        self, disk: Disk, pos: Vec2, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
+    ) -> None:
+        """Create `n` particles on the disk's surface.
 
-        Args:
-            vec (Vec2): Position to test for intersection
+        `pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        away from `disk` with max-magnitude `blast_vel` in addition to `disk`'s current velocity.
+        Colors are randomly sampled from interpolation
+        between `disk.color` and `color`.
 
-        Returns:
-            bool: True iff any intersect
+        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
 
+        If pos is exactly on disk's center, nothing happens.
         """
-        return any(body.intersects_point(vec) for body in self._nearby_asteroids(vec)) or any(
-            body.intersects_point(vec) for body in self._nearby_planets(vec)
-        )
+        delta = pos - disk.pos
+        if delta == Vec2(0, 0):
+            return
+        delta_normalized = delta.normalize()
+        projected = disk.pos + delta_normalized * disk.radius
+        for _ in range(n):
+            random_angle = random.uniform(-90.0, 90.0)
+            random_vel = disk.vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_color = disk.color.lerp(color, random.random())
+            random_lifetime = random.uniform(lifetime / 2.0, lifetime)
+            self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
+
+    def create_particle_cloud(
+        self, pos: Vec2, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
+    ) -> None:
+        """Create `n` particles forming a blast-cloud around pos.
+
+        Particles' velocity are spherically sampled with length between 0 and blast_vel, added
+        to `initial_vel`.
+
+        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        """
+        for _ in range(n):
+            random_vel = Vec2()
+            random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
+            vel = initial_vel + random_vel
+            random_lifetime = random.uniform(lifetime / 2, lifetime)
+            self._particles.append(Particle(pos, vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
@@ -237,10 +270,13 @@ class Universe:
             """Run bullet-logic and return whether it should stay alive."""
             if not self.contains_point(projectile.pos):
                 return False
-            if self.asteroids_or_planets_intersect_point(projectile.pos):
-                return False
+            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
+                if body.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
+                    return False
             for enemy in self._enemy_ships:
                 if enemy.intersects_point(projectile.pos):
+                    self.create_particle_cloud(enemy.pos, 100, enemy.color, enemy.vel, 150, 2)
                     self._enemy_ships.remove(enemy)
                     return False
                 if enemy.__class__.__name__ == "MissileEnemy":
@@ -258,10 +294,13 @@ class Universe:
             """Run bullet-logic and return whether it should stay alive."""
             if not self.contains_point(projectile.pos):
                 return False
-            if self.asteroids_or_planets_intersect_point(projectile.pos):
-                return False
+            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
+                if body.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 100)
+                    return False
             for player in self._player_ships:
                 if player.intersects_point(projectile.pos):
+                    self.create_particles_on_disk(player, projectile.pos, 10, projectile.color, 100)
                     player.suffer_damage(5)
                     return False
             return True
@@ -315,6 +354,8 @@ class Universe:
                 new_asteroid_chunks.setdefault(new_chunk, []).append(asteroid)
         self._asteroid_chunks = new_asteroid_chunks
 
+        self._particles = [p for p in self._particles if p.step(dt)]
+
         # Physics
         self.apply_gravity(dt)
         self.apply_bounce()
@@ -328,6 +369,8 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
+        # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
+        random_state = random.getstate()
         # TODO: Try caching star-chunks to their final on-screen locations.
         # If doing that, also optimise x_chunk_size for performance (via profiling) again.
         camera.surface.lock()
@@ -473,6 +516,7 @@ class Universe:
                         camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
 
         camera.surface.unlock()
+        random.setstate(random_state)
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
@@ -489,6 +533,9 @@ class Universe:
             self._player_ships,
         ):
             pobj.draw(camera)
+
+        for particle in self._particles:
+            particle.draw(camera)
 
     @global_profiler.profile_method
     def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
