@@ -163,12 +163,11 @@ class Ship(Disk):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = forward.rotate(random_rotation)
                     # set to sigma = 1 for cool explosion effect
-                    flare_vel = self.vel - flare_direction* random.normalvariate(
-                        MEAN_FLARE_SPEED, SD_FLARE_SPEED)
+                    flare_vel = self.vel - flare_direction * random.normalvariate(
+                        MEAN_FLARE_SPEED, SD_FLARE_SPEED
+                    )
                     self.projectiles.append(self.new_flare(self.pos, flare_vel))
                 self.flare_cooldown_timer += self._flare_cooldown
-
-
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
@@ -356,7 +355,7 @@ class ShipInput:
     @classmethod
     def wasd(cls) -> ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
-        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE,pygame.K_e)
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
 
 
 PLAYER_COLOR = Color("green")
@@ -463,10 +462,17 @@ class BulletEnemy(Ship):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
             distance_target_ship = delta_target_ship.magnitude()
 
-            self.random_point = self.pos + (delta_target_ship
-                + Vec2(random.uniform(-distance_target_ship, distance_target_ship),
-                       random.uniform(-distance_target_ship, distance_target_ship))
-                       )/2
+            self.random_point = (
+                self.pos
+                + (
+                    delta_target_ship
+                    + Vec2(
+                        random.uniform(-distance_target_ship, distance_target_ship),
+                        random.uniform(-distance_target_ship, distance_target_ship),
+                    )
+                )
+                / 2
+            )
 
             if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
                 self.current_action = BulletEnemy.Action.accelerate_to_player

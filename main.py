@@ -45,7 +45,11 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
-            world_size_vec / 2, Vec2(0, 0), 10, Color("darkslategray"), ShipInput.arrows(),
+            world_size_vec / 2,
+            Vec2(0, 0),
+            10,
+            Color("darkslategray"),
+            ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
@@ -58,16 +62,14 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
                 ShipInput.wasd(),
             )
         )
-    planets: list[Planet] = (
-        [
-            Planet(
-                Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
-                random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-                color,
-            )
-            for color in planet_colors
-        ]
-    )
+    planets: list[Planet] = [
+        Planet(
+            Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
+            random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
+            color,
+        )
+        for color in planet_colors
+    ]
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):

@@ -128,7 +128,7 @@ class Rocket(Bullet):
         time_in_current_cycle = self.homing_timer % self._cycle_duration
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
-        if current_cycle < ROCKET_TIMES_HOMES  and is_homing_phase:
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
 
             # Spooky homing body
             self.color = Color("purple")
@@ -217,4 +217,4 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        camera.draw_circle(self.color,self.pos, 3)
+        camera.draw_circle(self.color, self.pos, 3)

@@ -21,7 +21,7 @@ PLANET_COLORS_SMALL = [
     Color("darkorange"),
     Color("royalblue"),
     Color("yellow"),
-    ]
+]
 
 PLANET_COLORS_LARGE = [
     Color("khaki"),
@@ -40,9 +40,7 @@ PLANET_COLORS_LARGE = [
     Color("plum"),
     Color("slategray"),
     Color("navy"),
-    ]
-
-
+]
 
 
 # ship constants
