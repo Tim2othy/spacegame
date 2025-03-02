@@ -1,12 +1,12 @@
 import math
+from math import isclose
 
+import pytest
 from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from physics import Disk, PhysicalObject
-
-EPSILON = 1e-8
 
 
 def test_step():
@@ -26,62 +26,53 @@ def test_gravitational_force():
     assert large_force.y > 0
     assert double_distance_force.x > 0
     assert double_distance_force.y > 0
-    assert abs(2 - large_force.magnitude() / small_force.magnitude()) < EPSILON
-    assert abs(4 - small_force.magnitude() / double_distance_force.magnitude()) < EPSILON
+    assert isclose(2, large_force.magnitude() / small_force.magnitude())
+    assert isclose(4, small_force.magnitude() / double_distance_force.magnitude())
 
-""" Is this still useful with density gone?
 
 def test_threedimensional_disk_mass_scaling():
-    density = 9.87
     radius = 1.23
-    disk = Disk(Vec2(), Vec2(), radius, density=density)
-    double_density_disk = Disk(Vec2(), Vec2(), radius, density=2 * density)
-    double_size_disk = Disk(Vec2(), Vec2(), radius * 2, density=density)
+    disk = Disk(Vec2(), Vec2(), radius)
+    double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
 
-    assert abs(2 - double_density_disk.mass / disk.mass) < EPSILON
-    assert abs(2**3 - double_size_disk.mass / disk.mass) < EPSILON, (
-        "Scaling radius should increase mass by a factor scale**3"
+    assert isclose(2**3, double_size_disk.mass / disk.mass), (
+        "Scaling the radius by `t` should scale the mass by a factor `t**3`"
     )
-    """
 
 
-def test_relative_bounce():
+@pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)])
+def test_relative_bounce(relative_vel: Vec2):
     # Bounces should work the same if the disks have the same velocity relative
     # to each other. So if we add an absolute_vel to their velocities, the
     # result shouldn't change.
-    # The disks shouldn't be moving apart from each other, otherwise bounce_off_of_disk is a no-op,
-    # so only use these velocities:
-    for relative_vel in [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)]:
-        absolute_bounces: list[tuple[Disk, Disk]] = []
+    bounces: list[tuple[Disk, Disk]] = []
 
-        for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-            disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
-            disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
+    for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
+        disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
+        disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
 
-            relative_vel, disk_a.vel - disk_b.vel
-            disk_a.bounce_off_of_disk(disk_b)
-            relative_vel, disk_a.vel - disk_b.vel
+        relative_vel, disk_a.vel - disk_b.vel
+        disk_a.bounce_off_of_disk(disk_b)
+        relative_vel, disk_a.vel - disk_b.vel
 
-            assert disk_a.vel.y == (absolute_vel + relative_vel).y, (
-                "Disk's vertical velocity should be unchanged"
-            )
-            assert disk_a.vel.x < (absolute_vel + relative_vel).x - 0.1, (
-                "Disk's horizontal velocity should be reduced"
-            )
-            assert disk_b.vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
-            assert disk_b.vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
+        assert disk_a.vel.y == (absolute_vel + relative_vel).y, "Disk's vertical velocity should be unchanged"
+        assert disk_a.vel.x < (absolute_vel + relative_vel).x - 0.1, (
+            "Disk's horizontal velocity should be reduced"
+        )
+        assert disk_b.vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
+        assert disk_b.vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
 
-            absolute_bounces.append((disk_a, disk_b))
+        bounces.append((disk_a, disk_b))
 
-        # All the relative bounces should turn out the same
-        comparison_a, comparison_b = absolute_bounces[0]
-        for disk_a, disk_b in absolute_bounces[1:]:
-            assert (disk_a.pos - disk_b.pos - comparison_a.pos + comparison_b.pos).magnitude() < EPSILON, (
-                "Bounce positions should agree relatively"
-            )
-            assert (disk_a.vel - disk_b.vel - comparison_a.vel + comparison_b.vel).magnitude() < EPSILON, (
-                "Bounce velocities should agree relatively"
-            )
+    # All the bounces should turn out the same, so compare them to the first bounces
+    comparison_a, comparison_b = bounces[0]
+    for disk_a, disk_b in bounces[1:]:
+        assert isclose(0, (disk_a.pos - disk_b.pos - comparison_a.pos + comparison_b.pos).magnitude()), (
+            "Bounce positions should agree relatively"
+        )
+        assert isclose(0, (disk_a.vel - disk_b.vel - comparison_a.vel + comparison_b.vel).magnitude()), (
+            "Bounce velocities should agree relatively"
+        )
 
 
 def test_disk_drawing():
@@ -116,13 +107,13 @@ def test_disk_drawing():
                     bad += 1
 
     threshold = 0.02
-    assert good / (good + bad) > 1 - threshold, (
+    assert isclose(good, (good + bad), rel_tol=threshold), (
         "The drawn circle should mostly agree with the idealised circle"
     )
 
     rect_area = width * height
     circle_area = disk.radius**2 * math.pi
-    assert abs((circle_area - drawn) / rect_area) < threshold, (
+    assert isclose(drawn, circle_area, abs_tol=rect_area * threshold), (
         "The area we drew should be close in size to the circle's idealised area"
     )
 
@@ -146,11 +137,11 @@ def test_disk_bounce():
             bounce_count += 1
             assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
 
-            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) < EPSILON, (
+            assert isclose(disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)), (
                 "Disks should be flush"
             )
         else:
-            assert abs(disk_c.radius + disk_b.radius - disk_c.pos.distance_to(disk_b.pos)) > EPSILON, (
+            assert not isclose(disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)), (
                 "Disks should not be flush"
             )
         if bounce_count <= 0:
