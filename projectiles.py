@@ -19,6 +19,7 @@ from constants import (
     ROCKET_HOMING_THRUST,
     ROCKET_MIN_SPEED,
     ROCKET_NONHOMING_DURATION,
+    ROCKET_TIMES_HOMES,
 )
 
 
@@ -89,12 +90,10 @@ class Rocket(Bullet):
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
-
-        # Determine if we're in a homing phase (first part of cycle)
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < 3 and is_homing_phase:
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:  # noqa: SIM102
             if delta_target_ship != Vec2(0, 0):
                 target_ship_direction = delta_target_ship.normalize()
 
@@ -125,18 +124,11 @@ class Rocket(Bullet):
         right = -left
         backward = -forward
 
-
-
-
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
-
-        # Determine if we're in a homing phase (first part of cycle)
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
-        # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < 3 and is_homing_phase:
-
+        if current_cycle < ROCKET_TIMES_HOMES  and is_homing_phase:
 
             # Spooky homing body
             self.color = Color("purple")
