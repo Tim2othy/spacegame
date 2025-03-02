@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from ship import Ship
 
 from constants import (
+    EPSILON,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
     MISSILE_MIN_SPEED,
@@ -87,12 +88,17 @@ class Rocket(Bullet):
         delta_target_ship = self.target_ship.pos - self.pos
         if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
             target_ship_direction = delta_target_ship.normalize()
-            multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
+
+            if self.target_ship.vel == Vec2(0, 0):
+                multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
+            else:
+                multiplier = MISSILE_MIN_SPEED
             desired_velocity = target_ship_direction * multiplier
             force_direction = desired_velocity - self.vel
 
             if force_direction == Vec2(0, 0):
-                return
+                force_direction = Vec2(EPSILON, EPSILON)
+
             force = force_direction.normalize() * self.homing_thrust
             self.apply_force(force, dt)
         super().step(dt)
