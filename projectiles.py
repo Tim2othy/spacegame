@@ -15,9 +15,9 @@ from constants import (
     EPSILON,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
-    MISSILE_MIN_SPEED,
     ROCKET_HOMING_DURATION,
     ROCKET_HOMING_THRUST,
+    ROCKET_MIN_SPEED,
     ROCKET_NONHOMING_DURATION,
 )
 
@@ -90,9 +90,9 @@ class Rocket(Bullet):
             target_ship_direction = delta_target_ship.normalize()
 
             if self.target_ship.vel == Vec2(0, 0):
-                multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
+                multiplier = max(self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED)
             else:
-                multiplier = MISSILE_MIN_SPEED
+                multiplier = ROCKET_MIN_SPEED
             desired_velocity = target_ship_direction * multiplier
             force_direction = desired_velocity - self.vel
 
