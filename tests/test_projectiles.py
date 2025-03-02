@@ -8,8 +8,8 @@ from ship import Ship
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
 def test_homing(bullet_type: type[Bullet]):
-    ship = Ship(Vec2(512, -1024), Vec2(), 10)
-    projectile = bullet_type(Vec2(0, 0), Vec2(0, 0), Color(0, 0, 0), ship)
+    ship = Ship(Vec2(512, -1024), Vec2(4,8), 10)
+    projectile = bullet_type(Vec2(10, -15), Vec2(8, 29), Color(0, 0, 0), ship)
 
     for _ in range(2000):
         projectile.step(0.01)
