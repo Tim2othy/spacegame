@@ -16,6 +16,7 @@ from pygame.math import Vector2 as Vec2
 from camera import Camera
 from constants import (
     ASTEROIDS_PER_PLANET,
+    ENEMY_SPAWN_WEIGHTS,
     FPS_HISTORY_LENGTH,
     MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
@@ -71,7 +72,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], [0.45, 0.3, 0.25])[0]
+        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], ENEMY_SPAWN_WEIGHTS)[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)
