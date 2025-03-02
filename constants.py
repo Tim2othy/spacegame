@@ -14,14 +14,7 @@ MINIMAP_BORDER_COLOR = Color("aquamarine")
 # planet constants
 PLANET_RADIUS_MU = 6.2
 PLANET_RADIUS_SIGMA = 0.2
-PLANET_COLORS_SMALL = [
-    Color("darkred"),
-    Color("green"),
-    Color("mediumpurple"),
-    Color("darkorange"),
-    Color("royalblue"),
-    Color("yellow"),
-]
+PLANET_COLORS_SMALL = []
 
 PLANET_COLORS_LARGE = [
     Color("khaki"),
@@ -33,6 +26,8 @@ PLANET_COLORS_LARGE = [
     Color("crimson"),
     Color("coral"),
     Color("blue"),
+    Color("green"),
+    Color("yellow"),
     Color("turquoise"),
     Color("deeppink"),
     Color("darkorange"),
