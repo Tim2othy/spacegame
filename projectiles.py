@@ -200,11 +200,11 @@ class Missile(Rocket):
         )
 
 
-class Flair(Bullet):
+class Flare(Bullet):
     """A round bullet, bobbing about."""
 
     def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
-        """Create a new flair.
+        """Create a new flare.
 
         Args:
             pos (Vec2): Initial position

@@ -52,11 +52,11 @@ GUNBARREL_WIDTH = 0.5  # relative to radius
 DAMAGE_INDICATOR_TIME = 1
 """Time (in seconds) a ship should flash red after taking damage"""
 GUN_COOLDOWN_PLAYER = 0.05
-FLAIR_COOLDOWN = 5
-NUM_FLAIRS = 40
-SD_FLAIR_ANGLE = 25
-MEAN_FLAIR_SPEED = 140
-SD_FLAIR_SPEED = 28
+FLARE_COOLDOWN = 5
+NUM_FLARES = 40
+SD_FLARE_ANGLE = 25
+MEAN_FLARE_SPEED = 140
+SD_FLARE_SPEED = 28
 
 
 # BulletEnemy constants
