@@ -34,8 +34,6 @@ from ship import (
     RocketEnemy,
     ShipInput,
     MarkovEnemy,
-    MarkovMissileEnemy,
-    MarkovRocketEnemy,
 )
 from universe import Planet, Universe
 
@@ -84,7 +82,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
         enemy_type = random.choices(
-            [BulletEnemy, RocketEnemy, MissileEnemy, MarkovMissileEnemy, MarkovEnemy, MarkovRocketEnemy],
+            [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy],
             ENEMY_SPAWN_WEIGHTS,
         )[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
