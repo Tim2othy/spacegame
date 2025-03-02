@@ -83,17 +83,18 @@ class Rocket(Bullet):
             dt (float): Passed time
 
         """
-        self.homing_timer = (self.homing_timer + dt) % self._total_duration
+        self.homing_timer += dt
+        delta_target_ship = self.target_ship.pos - self.pos
+        if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
+            target_ship_direction = delta_target_ship.normalize()
+            multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
+            desired_velocity = target_ship_direction * multiplier
+            force_direction = desired_velocity - self.vel
 
-        if self.homing_timer <= self.homing_duration:
-            # Target the ship
-            direction = self.target_ship.pos - self.pos
-            if direction == Vec2(0, 0):
+            if force_direction == Vec2(0, 0):
                 return
-            normalized_direction = (self.target_ship.pos - self.pos).normalize()
-            force = normalized_direction * self.homing_thrust
+            force = force_direction.normalize() * self.homing_thrust
             self.apply_force(force, dt)
-
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
@@ -136,7 +137,7 @@ class Rocket(Bullet):
         )
 
 
-class Missile(Bullet):
+class Missile(Rocket):
     """A pentagonal bullet, homing on a target-ship."""
 
     def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
@@ -149,8 +150,7 @@ class Missile(Bullet):
             target_ship (Ship): Ship to home in on
 
         """
-        super().__init__(pos, vel, color)
-        self.target_ship = target_ship
+        super().__init__(pos, vel, color, target_ship)
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
@@ -178,27 +178,6 @@ class Missile(Bullet):
                 self.pos + 2 * (8 * forward),
             ],
         )
-
-    def step(self, dt: float) -> None:
-        """Apply homing and physics-logic.
-
-        Args:
-            dt (float): Passed time
-
-        """
-        self.homing_timer += dt
-        delta_target_ship = self.target_ship.pos - self.pos
-        if delta_target_ship != Vec2(0, 0) and self.homing_timer <= self.homing_duration:
-            target_ship_direction = delta_target_ship.normalize()
-            multiplier = max(self.target_ship.vel.magnitude() * 1.1, MISSILE_MIN_SPEED)
-            desired_velocity = target_ship_direction * multiplier
-            force_direction = desired_velocity - self.vel
-
-            if force_direction == Vec2(0, 0):
-                return
-            force = force_direction.normalize() * self.homing_thrust
-            self.apply_force(force, dt)
-        super().step(dt)
 
 
 class Flair(Bullet):
