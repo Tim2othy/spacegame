@@ -12,27 +12,25 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from constants import (
-    BULLET_SPEED,
+    BULLET_RELEASE_SPEED,
+    BULLET_ROF,
     DAMAGE_INDICATOR_TIME,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
-    ENEMY_BULLET_COOLDOWN,
-    ENEMY_MISSILE_COOLDOWN,
-    ENEMY_ROCKET_COOLDOWN,
-    ENEMY_SHOOT_RANGE,
-    ENEMY_THRUST_MULTIPLIER,
+    ENEMY_FIRE_RANGE,
     ENEMY_VISUAL_RANGE,
     EPSILON,
-    FLARE_COOLDOWN,
-    GUN_COOLDOWN_PLAYER,
+    FLARE_MEAN_RELEASE_SPEED,
+    FLARE_ROF,
+    FLARE_SD_RELEASE_SPEED,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     HEALTH,
-    MEAN_FLARE_SPEED,
+    MISSILE_ROF,
     NUM_FLARES,
-    ROCKET_SPEED,
+    ROCKET_RELEASE_SPEED,
+    ROCKET_ROF,
     SD_FLARE_ANGLE,
-    SD_FLARE_SPEED,
 )
 from enemy_ai import MarkovAI
 from physics import Disk
@@ -80,7 +78,7 @@ class Ship(Disk):
         if not gun_cooldown > 0:
             raise ValueError
         self._gun_cooldown: float = gun_cooldown
-        self._flare_cooldown: float = FLARE_COOLDOWN
+        self._flare_cooldown: float = FLARE_ROF
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
@@ -93,7 +91,7 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.projectile_speed = BULLET_SPEED
+        self.projectile_speed = BULLET_RELEASE_SPEED
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
@@ -165,7 +163,7 @@ class Ship(Disk):
                     flare_direction = forward.rotate(random_rotation)
                     # set to sigma = 1 for cool explosion effect
                     flare_vel = self.vel - flare_direction * random.normalvariate(
-                        MEAN_FLARE_SPEED, SD_FLARE_SPEED
+                        FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
                     self.projectiles.append(self.new_flare(self.pos, flare_vel))
                 self.flare_cooldown_timer += self._flare_cooldown
@@ -384,7 +382,7 @@ class PlayerShip(Ship):
             spaceship_input (SpaceshipInput): Map from keys to actions
 
         """
-        super().__init__(pos, vel, size, color, GUN_COOLDOWN_PLAYER)
+        super().__init__(pos, vel, size, color, BULLET_ROF)
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
@@ -426,7 +424,7 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        gun_cooldown: float = ENEMY_BULLET_COOLDOWN,
+        gun_cooldown: float = BULLET_ROF,
         color: Color = BULLET_ENEMY_COLOR,
     ) -> None:
         """Create a new enemy ship.
@@ -440,7 +438,6 @@ class BulletEnemy(Ship):
 
         """
         super().__init__(pos, vel, 8, color, gun_cooldown)
-        self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
         self.health = HEALTH
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
@@ -502,7 +499,7 @@ class BulletEnemy(Ship):
 
         self.shooting = (
             self.current_action == BulletEnemy.Action.accelerate_to_player
-            and delta_target_ship.magnitude_squared() < ENEMY_SHOOT_RANGE**2
+            and delta_target_ship.magnitude_squared() < ENEMY_FIRE_RANGE**2
         )
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
@@ -521,8 +518,8 @@ class RocketEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship, ENEMY_ROCKET_COOLDOWN, ROCKET_ENEMY_COLOR)
-        self.projectile_speed = ROCKET_SPEED
+        super().__init__(pos, vel, target_ship, ROCKET_ROF, ROCKET_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -541,8 +538,8 @@ class MissileEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship, ENEMY_MISSILE_COOLDOWN, MISSILE_ENEMY_COLOR)
-        self.projectile_speed = ROCKET_SPEED
+        super().__init__(pos, vel, target_ship, MISSILE_ROF, MISSILE_ENEMY_COLOR)
+        self.projectile_speed = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
