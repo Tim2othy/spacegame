@@ -104,7 +104,9 @@ class Rocket(Bullet):
                 target_ship_direction = delta_target_ship.normalize()
 
                 if self.target_ship.vel != Vec2(0, 0):
-                    multiplier = max(self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED)
+                    multiplier = max(
+                        self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
+                    )  # TODO: this violates relatvity, fix!
                 else:
                     multiplier = ROCKET_MIN_SPEED
 
