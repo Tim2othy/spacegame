@@ -11,7 +11,9 @@ from universe import Asteroid, Universe
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_enemy_hostility(enemy_type: type[BulletEnemy]):
     """Verify that any enemy will eventually find and hit the player."""
-    world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
+    world = Vec2(
+        ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4
+    )  # TODO(Tim2othy): If ENEMY_VISUAL_RANGE is set below 3500 or so this test fails, I'd like it at 2000
     player_ship = PlayerShip(world / 2, Vec2())
 
     enemy = enemy_type(Vec2(random.random() * world.x, random.random() * world.y), Vec2(0, 0), player_ship)
