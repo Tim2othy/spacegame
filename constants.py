@@ -53,6 +53,15 @@ ENEMY_VISUAL_RANGE = 5000
 ENEMY_ACTION_TIMER = 6
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 
+
+GRAY = Color("gray")
+PLAYER_COLOR = Color("green")
+BULLET_ENEMY_COLOR = Color("lightblue")
+ROCKET_ENEMY_COLOR = Color("purple")
+MISSILE_ENEMY_COLOR = Color("lime")
+MARKOV_ENEMY_COLOR = Color("red")
+
+
 # Added speed at release
 BULLET_RELEASE_SPEED = 700.0
 ROCKET_RELEASE_SPEED = 300.0

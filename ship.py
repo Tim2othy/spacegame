@@ -12,6 +12,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from constants import (
+    BULLET_ENEMY_COLOR,
     BULLET_RELEASE_SPEED,
     BULLET_ROF,
     DAMAGE_INDICATOR_TIME,
@@ -23,11 +24,16 @@ from constants import (
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_ROF,
     FLARE_SD_RELEASE_SPEED,
+    GRAY,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     HEALTH,
+    MARKOV_ENEMY_COLOR,
+    MISSILE_ENEMY_COLOR,
     MISSILE_ROF,
     NUM_FLARES,
+    PLAYER_COLOR,
+    ROCKET_ENEMY_COLOR,
     ROCKET_RELEASE_SPEED,
     ROCKET_ROF,
     SD_FLARE_ANGLE,
@@ -38,9 +44,6 @@ from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
-
-
-GRAY = Color("gray")
 
 
 class Ship(Disk):
@@ -161,7 +164,6 @@ class Ship(Disk):
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = forward.rotate(random_rotation)
-                    # set to sigma = 1 for cool explosion effect
                     flare_vel = self.vel - flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
@@ -357,7 +359,6 @@ class ShipInput:
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
 
 
-PLAYER_COLOR = Color("green")
 PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
 
 
@@ -400,11 +401,6 @@ class PlayerShip(Ship):
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
-
-
-BULLET_ENEMY_COLOR = Color("lightblue")
-ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("lime")
 
 
 class BulletEnemy(Ship):
@@ -558,7 +554,7 @@ class MarkovEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship)
+        super().__init__(pos, vel, target_ship, color=MARKOV_ENEMY_COLOR)
 
         self.ai = MarkovAI(self, target_ship)
 
