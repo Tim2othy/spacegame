@@ -14,16 +14,14 @@ from constants import ENEMY_FIRE_RANGE, ENEMY_VISUAL_RANGE, EPSILON, FLANK_DISTA
 if TYPE_CHECKING:
     from ship import Ship
 
-MARKOV_ENEMY_SPEED_THRESHOLD = 50
-
 
 class AIState(Enum):
     """Possible AI states in the Markov chain."""
 
-    SEARCH = auto()  # Actively pursue player
-    ATTACK = auto()  # Focus on firing at player
-    FLANK = auto()  # Circle to player's side
-    RETREAT = auto()  # Back away to recover
+    SEARCH = auto()
+    ATTACK = auto()
+    FLANK = auto()
+    RETREAT = auto()
 
 
 class MarkovAI:
@@ -39,10 +37,10 @@ class MarkovAI:
         """
         self.ship = ship
         self.target_ship = target_ship
-        self.current_state = AIState.ATTACK
+        self.current_state = AIState.SEARCH
         self.state_timer = 0.0
         self.min_state_time = 0.5  # Minimum time to stay in a state
-        self.flank_direction = 1  # 1 for clockwise, -1 for counter-clockwise
+        self.flank_direction = 1
 
     def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
         """Calculate state transition probabilities based on current context.
@@ -57,14 +55,9 @@ class MarkovAI:
         distance = delta.magnitude() if delta != Vec2(EPSILON, EPSILON) else EPSILON
         # TODO(Tim2othy) do this everywhere else also
 
-        # Can we see the player?
         can_see_player = distance < ENEMY_VISUAL_RANGE
         low_health = self.ship.health < RETREAT_HEALTH
 
-        # Base transition matrices for different contexts
-        # Format: {from_state: {to_state: probability}}  # noqa: ERA001
-
-        # Base matrix - default transitions
         matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
 
         standard_matrix = {
@@ -128,7 +121,7 @@ class MarkovAI:
         states = list(AIState)
 
         # Choose next state based on probabilities
-        next_state = random.choices(states, weights=probabilities, k=1)[0]
+        next_state = random.choices(states, probabilities)[0]
 
         # If state changes, reset timer and update behavior
         if next_state != self.current_state:
@@ -161,16 +154,7 @@ class MarkovAI:
             Vec2: Desired force direction
 
         """
-        delta_target_ship = self.target_ship.pos - self.ship.pos
-        distance = delta_target_ship.magnitude() if delta_target_ship.magnitude() > 0 else 0.1
-
-        # Try to maintain optimal attack distance
-        # desired_distance = ATTACK_RANGE
-
-        # If too close, back up slightly
-        # if distance < desired_distance:
-        #   return Vec2(0, 0)
-        return delta_target_ship
+        return self.target_ship.pos - self.ship.pos
 
     def _execute_flank_behavior(self) -> Vec2:
         """Execute flanking behavior - circle around player.
@@ -211,12 +195,7 @@ class MarkovAI:
             Vec2: Desired force direction
 
         """
-        # Direct retreat - opposite of direction to player
-        away_direction = self.ship.pos - self.target_ship.pos
-
-        # Add some jitter for less predictable retreat
-        # jitter = Vec2(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2))
-        return away_direction.normalize() * 50  # + jitter
+        return self.ship.pos - self.target_ship.pos
 
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior.
@@ -233,9 +212,6 @@ class MarkovAI:
             self._transition_state()
             health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
             print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
-
-        # Execute behavior based on current state
-        force_direction = Vec2(0, 0)
 
         # Determine shooting behavior
         delta = self.target_ship.pos - self.ship.pos
