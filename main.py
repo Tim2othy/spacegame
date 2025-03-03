@@ -29,11 +29,11 @@ from constants import (
 from profiler import global_profiler
 from ship import (
     BulletEnemy,
+    MarkovEnemy,
     MissileEnemy,
     PlayerShip,
     RocketEnemy,
     ShipInput,
-    MarkovEnemy,
 )
 from universe import Planet, Universe
 

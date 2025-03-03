@@ -78,6 +78,12 @@ MISSILE_HOMING_DURATION = 20.0
 MISSILE_HOMING_THRUST = 1000.0
 ROCKET_MIN_SPEED = 500.0
 
+# Constants for state transitions
+ATTACK_RANGE = 150.0  # Optimal firing range
+RETREAT_HEALTH = 30.0  # Health threshold to consider retreating
+FLANK_DISTANCE = 100.0  # Distance to maintain when flanking
+PATROL_RADIUS = 200.0  # Radius of patrol pattern
+
 
 # physics constants
 GRAVITATIONAL_CONSTANT = 0.2

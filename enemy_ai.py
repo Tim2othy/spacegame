@@ -9,15 +9,12 @@ from typing import TYPE_CHECKING
 import pygame
 from pygame.math import Vector2 as Vec2
 
+from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, FLANK_DISTANCE, PATROL_RADIUS, RETREAT_HEALTH
+
 if TYPE_CHECKING:
     from ship import Ship
 
-# Constants for state transitions
-VISUAL_RANGE = 300.0  # Maximum distance to see player
-ATTACK_RANGE = 150.0  # Optimal firing range
-RETREAT_HEALTH = 30.0  # Health threshold to consider retreating
-FLANK_DISTANCE = 100.0  # Distance to maintain when flanking
-PATROL_RADIUS = 200.0  # Radius of patrol pattern
+MARKOV_ENEMY_SPEED_THRESHOLD = 50
 
 
 class AIState(Enum):
@@ -87,12 +84,12 @@ class MarkovAI:
         health_ratio = self.ship.health / 100.0
 
         # Can we see the player?
-        can_see_player = distance < VISUAL_RANGE
+        can_see_player = distance < ENEMY_VISUAL_RANGE
         in_attack_range = ATTACK_RANGE * 0.5 < distance < ATTACK_RANGE * 1.5
         low_health = health_ratio < (RETREAT_HEALTH / 100.0)
 
         # Base transition matrices for different contexts
-        # Format: {from_state: {to_state: probability}}
+        # Format: {from_state: {to_state: probability}}  # noqa: ERA001
 
         # Base matrix - default transitions
         matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
@@ -188,9 +185,9 @@ class MarkovAI:
             if next_state == AIState.PATROL:
                 self._generate_patrol_pattern()
             elif next_state == AIState.FLANK:
-                self.flank_direction = 1 if random.random() > 0.5 else -1
+                self.flank_direction = random.choice([1, -1])
 
-    def _execute_hunt_behavior(self, dt: float) -> Vec2:
+    def _execute_hunt_behavior(self) -> Vec2:
         """Execute hunting behavior - direct pursuit of player.
 
         Args:
@@ -202,7 +199,7 @@ class MarkovAI:
         """
         return self.target_ship.pos - self.ship.pos
 
-    def _execute_attack_behavior(self, dt: float) -> Vec2:
+    def _execute_attack_behavior(self) -> Vec2:
         """Execute attack behavior - maintain optimal firing distance.
 
         Args:
@@ -227,7 +224,7 @@ class MarkovAI:
         # Otherwise, match velocity to maintain distance
         return self.target_ship.vel - self.ship.vel
 
-    def _execute_evade_behavior(self, dt: float) -> Vec2:
+    def _execute_evade_behavior(self) -> Vec2:
         """Execute evasive behavior - erratic movement.
 
         Args:
@@ -247,7 +244,7 @@ class MarkovAI:
         # Combine perpendicular and random for unpredictable evasion
         return perp + random_direction * 0.5
 
-    def _execute_flank_behavior(self, dt: float) -> Vec2:
+    def _execute_flank_behavior(self) -> Vec2:
         """Execute flanking behavior - circle around player.
 
         Args:
@@ -276,7 +273,7 @@ class MarkovAI:
         # Combined direction: mostly orbit with minor radial adjustment
         return orbit_dir * 0.8 + radial_dir * 0.2
 
-    def _execute_patrol_behavior(self, dt: float) -> Vec2:
+    def _execute_patrol_behavior(self) -> Vec2:
         """Execute patrol behavior - follow patrol pattern.
 
         Args:
@@ -299,7 +296,7 @@ class MarkovAI:
 
         return direction
 
-    def _execute_retreat_behavior(self, dt: float) -> Vec2:
+    def _execute_retreat_behavior(self) -> Vec2:
         """Execute retreat behavior - move away from player.
 
         Args:
@@ -351,17 +348,17 @@ class MarkovAI:
         # Execute behavior based on current state
         match self.current_state:
             case AIState.HUNT:
-                force_direction = self._execute_hunt_behavior(dt)
+                force_direction = self._execute_hunt_behavior()
             case AIState.ATTACK:
-                force_direction = self._execute_attack_behavior(dt)
+                force_direction = self._execute_attack_behavior()
             case AIState.EVADE:
-                force_direction = self._execute_evade_behavior(dt)
+                force_direction = self._execute_evade_behavior()
             case AIState.FLANK:
-                force_direction = self._execute_flank_behavior(dt)
+                force_direction = self._execute_flank_behavior()
             case AIState.PATROL:
-                force_direction = self._execute_patrol_behavior(dt)
+                force_direction = self._execute_patrol_behavior()
             case AIState.RETREAT:
-                force_direction = self._execute_retreat_behavior(dt)
+                force_direction = self._execute_retreat_behavior()
 
         # Set ship properties for movement
         if force_direction.length() > 0:
@@ -376,12 +373,12 @@ class MarkovAI:
             vel_dot_dir = self.ship.vel.dot(normalized_direction)
 
             # If moving too fast in the desired direction, stop thrusting
-            if vel_dot_dir > 50:  # Arbitrary speed threshold
+            if vel_dot_dir > MARKOV_ENEMY_SPEED_THRESHOLD:  # Arbitrary speed threshold
                 self.ship.thruster_forward = False
 
             # Use backward thrust if needed to slow down when moving away from target
             if self.current_state in (AIState.RETREAT, AIState.EVADE):
-                if vel_dot_dir < -50:
+                if vel_dot_dir < -MARKOV_ENEMY_SPEED_THRESHOLD:
                     self.ship.thruster_backward = True
                 else:
                     self.ship.thruster_backward = False
