@@ -81,85 +81,83 @@ class MarkovAI:
                 transitions and their probabilities.
 
         """
-        # Initialize the transition matrix with zeroes
-        matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
-
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
         distance = delta.length() if delta.length() > 0 else 0.1
-        health_ratio = self.ship.health / 100.0  # Assuming max health is 100
+        health_ratio = self.ship.health / 100.0
 
         # Can we see the player?
         can_see_player = distance < VISUAL_RANGE
-
-        # Is the player in attack range?
         in_attack_range = ATTACK_RANGE * 0.5 < distance < ATTACK_RANGE * 1.5
-
-        # Are we at low health?
         low_health = health_ratio < (RETREAT_HEALTH / 100.0)
 
-        # Calculate transition probabilities based on context
-        # From HUNT state
-        if can_see_player:
-            matrix[AIState.HUNT][AIState.HUNT] = 0.6
-            matrix[AIState.HUNT][AIState.ATTACK] = 0.3 if in_attack_range else 0.0
-            matrix[AIState.HUNT][AIState.FLANK] = 0.1
-            if low_health:
-                matrix[AIState.HUNT][AIState.RETREAT] = 0.3
-                matrix[AIState.HUNT][AIState.HUNT] = 0.3
-        else:
-            matrix[AIState.HUNT][AIState.PATROL] = 0.8
-            matrix[AIState.HUNT][AIState.HUNT] = 0.2
+        # Base transition matrices for different contexts
+        # Format: {from_state: {to_state: probability}}
 
-        # From ATTACK state
-        if can_see_player and in_attack_range:
-            matrix[AIState.ATTACK][AIState.ATTACK] = 0.7
-            matrix[AIState.ATTACK][AIState.EVADE] = 0.1
-            matrix[AIState.ATTACK][AIState.FLANK] = 0.2
-            if low_health:
-                matrix[AIState.ATTACK][AIState.RETREAT] = 0.4
-                matrix[AIState.ATTACK][AIState.ATTACK] = 0.3
-        else:
-            matrix[AIState.ATTACK][AIState.HUNT] = 0.7
-            matrix[AIState.ATTACK][AIState.ATTACK] = 0.3
+        # Base matrix - default transitions
+        matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
 
-        # From EVADE state
-        matrix[AIState.EVADE][AIState.EVADE] = 0.3
-        matrix[AIState.EVADE][AIState.FLANK] = 0.3
-        matrix[AIState.EVADE][AIState.ATTACK] = 0.2 if (can_see_player and in_attack_range) else 0.0
-        matrix[AIState.EVADE][AIState.HUNT] = 0.2
+        # Standard behavior matrix
+        standard_matrix = {
+            AIState.HUNT: {AIState.HUNT: 0.6, AIState.ATTACK: 0.3, AIState.FLANK: 0.1},
+            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.EVADE: 0.1, AIState.FLANK: 0.2},
+            AIState.EVADE: {AIState.EVADE: 0.3, AIState.FLANK: 0.3, AIState.ATTACK: 0.2, AIState.HUNT: 0.2},
+            AIState.FLANK: {AIState.FLANK: 0.5, AIState.ATTACK: 0.3, AIState.HUNT: 0.2},
+            AIState.PATROL: {AIState.PATROL: 0.9, AIState.HUNT: 0.1},
+            AIState.RETREAT: {AIState.HUNT: 0.4, AIState.EVADE: 0.4, AIState.PATROL: 0.2},
+        }
+
+        # Low health matrix - prioritize retreat
+        low_health_matrix = {
+            AIState.HUNT: {AIState.RETREAT: 0.3, AIState.HUNT: 0.3, AIState.ATTACK: 0.0},
+            AIState.ATTACK: {AIState.RETREAT: 0.4, AIState.ATTACK: 0.3},
+            AIState.EVADE: {AIState.RETREAT: 0.5, AIState.EVADE: 0.5},
+            AIState.FLANK: {AIState.RETREAT: 0.3, AIState.FLANK: 0.2},
+            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
+        }
+
+        # Can't see player matrix - prioritize search
+        no_visibility_matrix = {
+            AIState.HUNT: {AIState.PATROL: 0.8, AIState.HUNT: 0.2},
+            AIState.ATTACK: {AIState.HUNT: 0.7, AIState.ATTACK: 0.3},
+            AIState.FLANK: {AIState.HUNT: 0.7, AIState.PATROL: 0.3},
+        }
+
+        # Player visible matrix - prioritize engagement
+        player_visible_matrix = {AIState.PATROL: {AIState.HUNT: 0.8, AIState.PATROL: 0.2}}
+
+        # First apply standard matrix
+        for from_state, transitions in standard_matrix.items():
+            for to_state, prob in transitions.items():
+                # Apply probabilities conditionally
+                if from_state == AIState.ATTACK and to_state == AIState.ATTACK and not in_attack_range:
+                    continue
+                if from_state == AIState.FLANK and to_state == AIState.ATTACK and not in_attack_range:
+                    continue
+                if (
+                    from_state == AIState.EVADE
+                    and to_state == AIState.ATTACK
+                    and not (can_see_player and in_attack_range)
+                ):
+                    continue
+
+                matrix[from_state][to_state] = prob
+
+        # Apply context-specific matrices
         if low_health:
-            matrix[AIState.EVADE][AIState.RETREAT] = 0.5
-            matrix[AIState.EVADE][AIState.EVADE] = 0.5
+            for from_state, transitions in low_health_matrix.items():
+                for to_state, prob in transitions.items():
+                    matrix[from_state][to_state] = prob
 
-        # From FLANK state
+        if not can_see_player:
+            for from_state, transitions in no_visibility_matrix.items():
+                for to_state, prob in transitions.items():
+                    matrix[from_state][to_state] = prob
+
         if can_see_player:
-            matrix[AIState.FLANK][AIState.FLANK] = 0.5
-            matrix[AIState.FLANK][AIState.ATTACK] = 0.3 if in_attack_range else 0.0
-            matrix[AIState.FLANK][AIState.HUNT] = 0.2
-            if low_health:
-                matrix[AIState.FLANK][AIState.RETREAT] = 0.3
-                matrix[AIState.FLANK][AIState.FLANK] = 0.2
-        else:
-            matrix[AIState.FLANK][AIState.HUNT] = 0.7
-            matrix[AIState.FLANK][AIState.PATROL] = 0.3
-
-        # From PATROL state
-        if can_see_player:
-            matrix[AIState.PATROL][AIState.HUNT] = 0.8
-            matrix[AIState.PATROL][AIState.PATROL] = 0.2
-        else:
-            matrix[AIState.PATROL][AIState.PATROL] = 0.9
-            matrix[AIState.PATROL][AIState.HUNT] = 0.1
-
-        # From RETREAT state
-        if low_health:
-            matrix[AIState.RETREAT][AIState.RETREAT] = 0.7
-            matrix[AIState.RETREAT][AIState.EVADE] = 0.3
-        else:
-            matrix[AIState.RETREAT][AIState.HUNT] = 0.4
-            matrix[AIState.RETREAT][AIState.EVADE] = 0.4
-            matrix[AIState.RETREAT][AIState.PATROL] = 0.2
+            for from_state, transitions in player_visible_matrix.items():
+                for to_state, prob in transitions.items():
+                    matrix[from_state][to_state] = prob
 
         # Normalize probabilities to ensure they sum to 1.0
         for state in AIState:
