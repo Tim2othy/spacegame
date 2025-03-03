@@ -75,24 +75,24 @@ class MarkovAI:
         }
 
         low_health_matrix = {
-            AIState.SEARCH: {AIState.SEARCH: 1.0},
+            AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
             AIState.ATTACK: {AIState.RETREAT: 1.0},
-            AIState.FLANK: {AIState.RETREAT: 0.8, AIState.FLANK: 0.2},
-            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.SEARCH: 0.3},
+            AIState.FLANK: {AIState.RETREAT: 1.0},
+            AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.RETREAT: 0.8},
         }
 
         player_visible_matrix = {
             AIState.SEARCH: {AIState.ATTACK: 1.0},
-            AIState.ATTACK: {AIState.ATTACK: 1.0, AIState.FLANK: 0.0},
-            AIState.FLANK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.1, AIState.RETREAT: 0.1},
+            AIState.ATTACK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.2},
+            AIState.FLANK: {AIState.ATTACK: 0.4, AIState.FLANK: 0.4, AIState.RETREAT: 0.2},
             AIState.RETREAT: {AIState.ATTACK: 1.0},
         }
 
         low_health_and_player_visible_matrix = {
-            AIState.SEARCH: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.FLANK: 0.1},
+            AIState.SEARCH: {AIState.ATTACK: 0.2, AIState.FLANK: 0.6, AIState.RETREAT: 0.2},
             AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.FLANK: 0.1},
-            AIState.FLANK: {AIState.RETREAT: 0.9, AIState.FLANK: 0.1},
-            AIState.RETREAT: {AIState.RETREAT: 0.9, AIState.FLANK: 0.1},
+            AIState.FLANK: {AIState.ATTACK: 0.1, AIState.RETREAT: 0.1, AIState.FLANK: 0.8},
+            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.RETREAT: 0.8, AIState.FLANK: 0.1},
         }
 
         # Apply matrices based on priority
