@@ -570,6 +570,7 @@ class MarkovEnemy(BulletEnemy):
 
         Args:
             dt (float): Passed time
+
         """
         # Update AI
         self.ai.update(dt)
