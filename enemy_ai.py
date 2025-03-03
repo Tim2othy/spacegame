@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import pygame
 from pygame.math import Vector2 as Vec2
 
-from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, FLANK_DISTANCE, PATROL_RADIUS, RETREAT_HEALTH
+from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, FLANK_DISTANCE, RETREAT_HEALTH
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -24,7 +24,6 @@ class AIState(Enum):
     ATTACK = auto()  # Focus on firing at player
     EVADE = auto()  # Take evasive action
     FLANK = auto()  # Circle to player's side
-    PATROL = auto()  # Search when player not visible
     RETREAT = auto()  # Back away to recover
 
 
@@ -41,34 +40,15 @@ class MarkovAI:
         """
         self.ship = ship
         self.target_ship = target_ship
-        self.current_state = AIState.PATROL
+        self.current_state = AIState.HUNT
         self.state_timer = 0.0
         self.min_state_time = 0.5  # Minimum time to stay in a state
-
-        # Patrol pattern variables
-        self.patrol_points: list[Vec2] = []
-        self.current_patrol_point = 0
-        self._generate_patrol_pattern()
 
         # Flank variables
         self.flank_direction = 1  # 1 for clockwise, -1 for counter-clockwise
 
         # Previous positions for tracking
         self.prev_positions: list[tuple[float, float]] = []
-
-    def _generate_patrol_pattern(self) -> None:
-        """Generate a random patrol pattern around the current position."""
-        center = self.ship.pos
-        self.patrol_points = []
-
-        # Create a somewhat random patrol pattern
-        num_points = random.randint(3, 6)
-        for i in range(num_points):
-            angle = i * (360 / num_points)
-            distance = random.uniform(0.5, 1.0) * PATROL_RADIUS
-            offset = Vec2()
-            offset.from_polar((distance, angle))
-            self.patrol_points.append(center + offset)
 
     def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
         """Calculate state transition probabilities based on current context.
@@ -100,8 +80,7 @@ class MarkovAI:
             AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.EVADE: 0.1, AIState.FLANK: 0.2},
             AIState.EVADE: {AIState.EVADE: 0.3, AIState.FLANK: 0.3, AIState.ATTACK: 0.2, AIState.HUNT: 0.2},
             AIState.FLANK: {AIState.FLANK: 0.5, AIState.ATTACK: 0.3, AIState.HUNT: 0.2},
-            AIState.PATROL: {AIState.PATROL: 0.9, AIState.HUNT: 0.1},
-            AIState.RETREAT: {AIState.HUNT: 0.4, AIState.EVADE: 0.4, AIState.PATROL: 0.2},
+            AIState.RETREAT: {AIState.HUNT: 0.4, AIState.EVADE: 0.4, AIState.RETREAT: 0.2},
         }
 
         # Low health matrix - prioritize retreat
@@ -114,14 +93,11 @@ class MarkovAI:
         }
 
         # Can't see player matrix - prioritize search
-        no_visibility_matrix = {
-            AIState.HUNT: {AIState.PATROL: 0.8, AIState.HUNT: 0.2},
+        player_visible_matrix = {
+            AIState.HUNT: {AIState.HUNT: 0.2},
             AIState.ATTACK: {AIState.HUNT: 0.7, AIState.ATTACK: 0.3},
-            AIState.FLANK: {AIState.HUNT: 0.7, AIState.PATROL: 0.3},
+            AIState.FLANK: {AIState.HUNT: 0.7, AIState.FLANK: 0.3},
         }
-
-        # Player visible matrix - prioritize engagement
-        player_visible_matrix = {AIState.PATROL: {AIState.HUNT: 0.8, AIState.PATROL: 0.2}}
 
         # First apply standard matrix
         for from_state, transitions in standard_matrix.items():
@@ -147,7 +123,7 @@ class MarkovAI:
                     matrix[from_state][to_state] = prob
 
         if not can_see_player:
-            for from_state, transitions in no_visibility_matrix.items():
+            for from_state, transitions in standard_matrix.items():
                 for to_state, prob in transitions.items():
                     matrix[from_state][to_state] = prob
 
@@ -182,9 +158,7 @@ class MarkovAI:
             self.state_timer = self.min_state_time
 
             # Reset state-specific variables
-            if next_state == AIState.PATROL:
-                self._generate_patrol_pattern()
-            elif next_state == AIState.FLANK:
+            if next_state == AIState.FLANK:
                 self.flank_direction = random.choice([1, -1])
 
     def _execute_hunt_behavior(self) -> Vec2:
@@ -273,29 +247,6 @@ class MarkovAI:
         # Combined direction: mostly orbit with minor radial adjustment
         return orbit_dir * 0.8 + radial_dir * 0.2
 
-    def _execute_patrol_behavior(self) -> Vec2:
-        """Execute patrol behavior - follow patrol pattern.
-
-        Args:
-            dt (float): Time delta
-
-        Returns:
-            Vec2: Desired force direction
-
-        """
-        if not self.patrol_points:
-            self._generate_patrol_pattern()
-
-        # Move toward current patrol point
-        current_point = self.patrol_points[self.current_patrol_point]
-        direction = current_point - self.ship.pos
-
-        # If reached the point, move to next point
-        if direction.length_squared() < 100:  # Within 10 units
-            self.current_patrol_point = (self.current_patrol_point + 1) % len(self.patrol_points)
-
-        return direction
-
     def _execute_retreat_behavior(self) -> Vec2:
         """Execute retreat behavior - move away from player.
 
@@ -355,8 +306,6 @@ class MarkovAI:
                 force_direction = self._execute_evade_behavior()
             case AIState.FLANK:
                 force_direction = self._execute_flank_behavior()
-            case AIState.PATROL:
-                force_direction = self._execute_patrol_behavior()
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
 
