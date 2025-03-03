@@ -301,7 +301,7 @@ class Universe:
                             # _enemy_ships.remove(ship) somewhere else, not sure where though.
                             # Then we could also remove the boolean positional argument.
                     return False
-                if is_player_projectile and ship.__class__.__name__ == "MissileEnemy":
+                if ship.__class__.__name__ == "MissileEnemy":
                     for enemy_projectile in ship.projectiles[:]:
                         collision_distance = 10
                         if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
