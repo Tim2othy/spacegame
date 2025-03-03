@@ -269,7 +269,17 @@ class Universe:
         """Run bullet-collision checks and damage ships as a result."""
 
         def projectile_check(projectile: Bullet, target_ships: list, is_player_projectile: bool) -> bool:
-            """Run bullet-logic and return whether it should stay alive."""
+            """Check for collision and return whether the projectile should stay alive.
+
+            Args:
+                projectile (Bullet): The projectile to check
+                target_ships (list): Ships that can be hit by this projectile
+                is_player_projectile (bool): Whether this is a player's projectile
+
+            Returns:
+                bool: True if the projectile should stay alive, False otherwise
+
+            """
             if not self.contains_point(projectile.pos):
                 return False
             for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
@@ -283,7 +293,13 @@ class Universe:
                     if ship.health <= 0:
                         self.create_particle_cloud(ship.pos, 300, ship.color, ship.vel, 200, 8)
                         if is_player_projectile:
-                            self._enemy_ships.remove(ship)
+                            self._enemy_ships.remove(
+                                ship
+                            )  # TODO(Tim2othy): <- Ruff wants me to write a name here, should that be my name
+                            # because I created the todo or yours because I want you to fix it? Or should we
+                            # tell ruff not to care about this. The actual issue: We should probably do
+                            # _enemy_ships.remove(ship) somewhere else, not sure where though.
+                            # Then we could also remove the boolean positional argument.
                     return False
                 if is_player_projectile and ship.__class__.__name__ == "MissileEnemy":
                     for enemy_projectile in ship.projectiles[:]:
