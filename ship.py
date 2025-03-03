@@ -17,7 +17,6 @@ from constants import (
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
     ENEMY_BULLET_COOLDOWN,
-    ENEMY_HEALTH,
     ENEMY_MISSILE_COOLDOWN,
     ENEMY_ROCKET_COOLDOWN,
     ENEMY_SHOOT_RANGE,
@@ -28,6 +27,7 @@ from constants import (
     GUN_COOLDOWN_PLAYER,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
+    HEALTH,
     MEAN_FLARE_SPEED,
     NUM_FLARES,
     ROCKET_SPEED,
@@ -73,7 +73,7 @@ class Ship(Disk):
         super().__init__(pos, vel, size, color)
         self.size: float = size
 
-        self.health: float = 100.0
+        self.health: float = HEALTH
         self.damage_indicator_timer: float = 0
 
         self.projectiles: list[Bullet] = []
@@ -442,7 +442,7 @@ class BulletEnemy(Ship):
         super().__init__(pos, vel, 8, color, gun_cooldown)
         self.thrust *= ENEMY_THRUST_MULTIPLIER
         self.action_timer = 0.0
-        self.health = ENEMY_HEALTH
+        self.health = HEALTH
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship = target_ship
         self.projectiles: list[Bullet] = []
