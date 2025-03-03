@@ -45,8 +45,8 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
 
     Returns a tuple (universe, player_ships)
     """
-    num_enemies = 1 if options["small"] else 40
-    world_size = 1000 if options["small"] else 30000
+    num_enemies = 2 if options["small"] else 40
+    world_size = 2000 if options["small"] else 30000
     world_size_vec = Vec2(world_size, world_size)
     planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
