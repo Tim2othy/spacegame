@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import pygame
 from pygame.math import Vector2 as Vec2
 
-from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, FLANK_DISTANCE, RETREAT_HEALTH
+from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, EPSILON, FLANK_DISTANCE, RETREAT_HEALTH
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -43,12 +43,7 @@ class MarkovAI:
         self.current_state = AIState.HUNT
         self.state_timer = 0.0
         self.min_state_time = 0.5  # Minimum time to stay in a state
-
-        # Flank variables
         self.flank_direction = 1  # 1 for clockwise, -1 for counter-clockwise
-
-        # Previous positions for tracking
-        self.prev_positions: list[tuple[float, float]] = []
 
     def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
         """Calculate state transition probabilities based on current context.
@@ -60,13 +55,13 @@ class MarkovAI:
         """
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
-        distance = delta.length() if delta.length() > 0 else 0.1
-        health_ratio = self.ship.health / 100.0
+        distance = delta.magnitude() if delta != Vec2(EPSILON, EPSILON) else EPSILON
+        # TODO(Tim2othy) do this everywhere else also
 
         # Can we see the player?
         can_see_player = distance < ENEMY_VISUAL_RANGE
         in_attack_range = ATTACK_RANGE * 0.5 < distance < ATTACK_RANGE * 1.5
-        low_health = health_ratio < (RETREAT_HEALTH / 100.0)
+        low_health = self.ship.health < RETREAT_HEALTH
 
         # Base transition matrices for different contexts
         # Format: {from_state: {to_state: probability}}  # noqa: ERA001
@@ -74,29 +69,34 @@ class MarkovAI:
         # Base matrix - default transitions
         matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
 
-        # Standard behavior matrix
         standard_matrix = {
-            AIState.HUNT: {AIState.HUNT: 0.6, AIState.ATTACK: 0.3, AIState.FLANK: 0.1},
-            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.EVADE: 0.1, AIState.FLANK: 0.2},
-            AIState.EVADE: {AIState.EVADE: 0.3, AIState.FLANK: 0.3, AIState.ATTACK: 0.2, AIState.HUNT: 0.2},
-            AIState.FLANK: {AIState.FLANK: 0.5, AIState.ATTACK: 0.3, AIState.HUNT: 0.2},
-            AIState.RETREAT: {AIState.HUNT: 0.4, AIState.EVADE: 0.4, AIState.RETREAT: 0.2},
+            AIState.HUNT: {AIState.HUNT: 1},
+            AIState.ATTACK: {AIState.HUNT: 1},
+            AIState.EVADE: {AIState.HUNT: 1},
+            AIState.FLANK: {AIState.HUNT: 1},
+            AIState.RETREAT: {AIState.HUNT: 1},
         }
 
-        # Low health matrix - prioritize retreat
         low_health_matrix = {
-            AIState.HUNT: {AIState.RETREAT: 0.3, AIState.HUNT: 0.3, AIState.ATTACK: 0.0},
-            AIState.ATTACK: {AIState.RETREAT: 0.4, AIState.ATTACK: 0.3},
-            AIState.EVADE: {AIState.RETREAT: 0.5, AIState.EVADE: 0.5},
-            AIState.FLANK: {AIState.RETREAT: 0.3, AIState.FLANK: 0.2},
+            AIState.HUNT: {AIState.RETREAT: 0.8, AIState.HUNT: 0.3, AIState.ATTACK: 0.2},
+            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.3},
+            AIState.EVADE: {AIState.RETREAT: 0.8, AIState.EVADE: 0.5},
+            AIState.FLANK: {AIState.RETREAT: 0.8, AIState.FLANK: 0.2},
             AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
         }
 
-        # Can't see player matrix - prioritize search
         player_visible_matrix = {
             AIState.HUNT: {AIState.HUNT: 0.2},
             AIState.ATTACK: {AIState.HUNT: 0.7, AIState.ATTACK: 0.3},
             AIState.FLANK: {AIState.HUNT: 0.7, AIState.FLANK: 0.3},
+        }
+
+        low_health_and_player_visible_matrix = {
+            AIState.HUNT: {AIState.RETREAT: 0.4, AIState.HUNT: 0.1, AIState.ATTACK: 0.5},
+            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.2, AIState.EVADE: 0.5},
+            AIState.EVADE: {AIState.RETREAT: 0.5, AIState.EVADE: 0.5},
+            AIState.FLANK: {AIState.RETREAT: 0.3, AIState.FLANK: 0.2},
+            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
         }
 
         # First apply standard matrix
@@ -272,11 +272,6 @@ class MarkovAI:
             dt (float): Time delta
 
         """
-        # Record ship position for tracking
-        self.prev_positions.append((self.ship.pos.x, self.ship.pos.y))
-        if len(self.prev_positions) > 60:  # Keep last 60 positions (~1 second at 60 FPS)
-            self.prev_positions.pop(0)
-
         # Update state timer
         self.state_timer -= dt
 
