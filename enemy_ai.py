@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
+import math
 import random
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-import pygame
 from pygame.math import Vector2 as Vec2
 
-from constants import ATTACK_RANGE, ENEMY_VISUAL_RANGE, EPSILON, FLANK_DISTANCE, RETREAT_HEALTH
+from constants import ENEMY_FIRE_RANGE, ENEMY_VISUAL_RANGE, EPSILON, FLANK_DISTANCE, RETREAT_HEALTH
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -20,7 +20,7 @@ MARKOV_ENEMY_SPEED_THRESHOLD = 50
 class AIState(Enum):
     """Possible AI states in the Markov chain."""
 
-    HUNT = auto()  # Actively pursue player
+    SEARCH = auto()  # Actively pursue player
     ATTACK = auto()  # Focus on firing at player
     EVADE = auto()  # Take evasive action
     FLANK = auto()  # Circle to player's side
@@ -40,7 +40,7 @@ class MarkovAI:
         """
         self.ship = ship
         self.target_ship = target_ship
-        self.current_state = AIState.HUNT
+        self.current_state = AIState.ATTACK
         self.state_timer = 0.0
         self.min_state_time = 0.5  # Minimum time to stay in a state
         self.flank_direction = 1  # 1 for clockwise, -1 for counter-clockwise
@@ -60,7 +60,6 @@ class MarkovAI:
 
         # Can we see the player?
         can_see_player = distance < ENEMY_VISUAL_RANGE
-        in_attack_range = ATTACK_RANGE * 0.5 < distance < ATTACK_RANGE * 1.5
         low_health = self.ship.health < RETREAT_HEALTH
 
         # Base transition matrices for different contexts
@@ -70,67 +69,51 @@ class MarkovAI:
         matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
 
         standard_matrix = {
-            AIState.HUNT: {AIState.HUNT: 1},
-            AIState.ATTACK: {AIState.HUNT: 1},
-            AIState.EVADE: {AIState.HUNT: 1},
-            AIState.FLANK: {AIState.HUNT: 1},
-            AIState.RETREAT: {AIState.HUNT: 1},
+            AIState.SEARCH: {AIState.SEARCH: 1},
+            AIState.ATTACK: {AIState.SEARCH: 1},
+            AIState.EVADE: {AIState.SEARCH: 1},
+            AIState.FLANK: {AIState.SEARCH: 1},
+            AIState.RETREAT: {AIState.SEARCH: 1},
         }
 
         low_health_matrix = {
-            AIState.HUNT: {AIState.RETREAT: 0.8, AIState.HUNT: 0.3, AIState.ATTACK: 0.2},
-            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.3},
+            AIState.SEARCH: {AIState.SEARCH: 1.0},
+            AIState.ATTACK: {AIState.RETREAT: 1.0},
             AIState.EVADE: {AIState.RETREAT: 0.8, AIState.EVADE: 0.5},
             AIState.FLANK: {AIState.RETREAT: 0.8, AIState.FLANK: 0.2},
             AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
         }
 
         player_visible_matrix = {
-            AIState.HUNT: {AIState.HUNT: 0.2},
-            AIState.ATTACK: {AIState.HUNT: 0.7, AIState.ATTACK: 0.3},
-            AIState.FLANK: {AIState.HUNT: 0.7, AIState.FLANK: 0.3},
+            AIState.SEARCH: {AIState.ATTACK: 1.0},
+            AIState.ATTACK: {AIState.ATTACK: 1.0, AIState.FLANK: 0.0},
+            AIState.EVADE: {AIState.ATTACK: 1.0, AIState.FLANK: 0.0},
+            AIState.FLANK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.1, AIState.EVADE: 0.1},
+            AIState.RETREAT: {AIState.ATTACK: 1.0},
         }
 
         low_health_and_player_visible_matrix = {
-            AIState.HUNT: {AIState.RETREAT: 0.4, AIState.HUNT: 0.1, AIState.ATTACK: 0.5},
-            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.2, AIState.EVADE: 0.5},
-            AIState.EVADE: {AIState.RETREAT: 0.5, AIState.EVADE: 0.5},
-            AIState.FLANK: {AIState.RETREAT: 0.3, AIState.FLANK: 0.2},
-            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
+            AIState.SEARCH: {AIState.RETREAT: 0.8, AIState.EVADE: 0.1, AIState.ATTACK: 0.1},
+            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.EVADE: 0.1},
+            AIState.EVADE: {AIState.RETREAT: 0.9, AIState.EVADE: 0.1},
+            AIState.FLANK: {AIState.RETREAT: 0.9, AIState.FLANK: 0.1},
+            AIState.RETREAT: {AIState.RETREAT: 0.9, AIState.EVADE: 0.1},
         }
 
-        # First apply standard matrix
-        for from_state, transitions in standard_matrix.items():
+        # Apply matrices based on priority
+        if can_see_player and low_health:
+            active_matrix = low_health_and_player_visible_matrix
+        elif low_health:
+            active_matrix = low_health_matrix
+        elif can_see_player:
+            active_matrix = player_visible_matrix
+        else:
+            active_matrix = standard_matrix
+
+        # Apply  selected matrix
+        for from_state, transitions in active_matrix.items():
             for to_state, prob in transitions.items():
-                # Apply probabilities conditionally
-                if from_state == AIState.ATTACK and to_state == AIState.ATTACK and not in_attack_range:
-                    continue
-                if from_state == AIState.FLANK and to_state == AIState.ATTACK and not in_attack_range:
-                    continue
-                if (
-                    from_state == AIState.EVADE
-                    and to_state == AIState.ATTACK
-                    and not (can_see_player and in_attack_range)
-                ):
-                    continue
-
                 matrix[from_state][to_state] = prob
-
-        # Apply context-specific matrices
-        if low_health:
-            for from_state, transitions in low_health_matrix.items():
-                for to_state, prob in transitions.items():
-                    matrix[from_state][to_state] = prob
-
-        if not can_see_player:
-            for from_state, transitions in standard_matrix.items():
-                for to_state, prob in transitions.items():
-                    matrix[from_state][to_state] = prob
-
-        if can_see_player:
-            for from_state, transitions in player_visible_matrix.items():
-                for to_state, prob in transitions.items():
-                    matrix[from_state][to_state] = prob
 
         # Normalize probabilities to ensure they sum to 1.0
         for state in AIState:
@@ -161,8 +144,8 @@ class MarkovAI:
             if next_state == AIState.FLANK:
                 self.flank_direction = random.choice([1, -1])
 
-    def _execute_hunt_behavior(self) -> Vec2:
-        """Execute hunting behavior - direct pursuit of player.
+    def _execute_search_behavior(self) -> Vec2:
+        """Execute searching behavior - direct pursuit of player.
 
         Args:
             dt (float): Time delta
@@ -183,20 +166,16 @@ class MarkovAI:
             Vec2: Desired force direction
 
         """
-        delta = self.target_ship.pos - self.ship.pos
-        distance = delta.length() if delta.length() > 0 else 0.1
+        delta_target_ship = self.target_ship.pos - self.ship.pos
+        distance = delta_target_ship.magnitude() if delta_target_ship.magnitude() > 0 else 0.1
 
         # Try to maintain optimal attack distance
-        desired_distance = ATTACK_RANGE
+        # desired_distance = ATTACK_RANGE
 
         # If too close, back up slightly
-        if distance < desired_distance * 0.8:
-            return -delta
-        # If too far, move closer
-        if distance > desired_distance * 1.2:
-            return delta
-        # Otherwise, match velocity to maintain distance
-        return self.target_ship.vel - self.ship.vel
+        # if distance < desired_distance:
+        #   return Vec2(0, 0)
+        return delta_target_ship
 
     def _execute_evade_behavior(self) -> Vec2:
         """Execute evasive behavior - erratic movement.
@@ -261,9 +240,8 @@ class MarkovAI:
         away_direction = self.ship.pos - self.target_ship.pos
 
         # Add some jitter for less predictable retreat
-        jitter = Vec2(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2))
-
-        return away_direction + jitter
+        # jitter = Vec2(random.uniform(-0.2, 0.2), random.uniform(-0.2, 0.2))
+        return away_direction.normalize() * 50  # + jitter
 
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior.
@@ -278,6 +256,8 @@ class MarkovAI:
         # Check for state transition
         if self.state_timer <= 0:
             self._transition_state()
+            health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
+            print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
 
         # Execute behavior based on current state
         force_direction = Vec2(0, 0)
@@ -289,12 +269,12 @@ class MarkovAI:
         # Only shoot when in attack or flank states and within range
         self.ship.shooting = (
             self.current_state in (AIState.ATTACK, AIState.FLANK)
-        ) and distance < ATTACK_RANGE * 1.5
+        ) and distance < ENEMY_FIRE_RANGE
 
         # Execute behavior based on current state
         match self.current_state:
-            case AIState.HUNT:
-                force_direction = self._execute_hunt_behavior()
+            case AIState.SEARCH:
+                force_direction = self._execute_search_behavior()
             case AIState.ATTACK:
                 force_direction = self._execute_attack_behavior()
             case AIState.EVADE:
@@ -304,37 +284,8 @@ class MarkovAI:
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
 
-        # Set ship properties for movement
-        if force_direction.length() > 0:
-            # Calculate angle to face
-            self.ship.angle = pygame.math.Vector2.as_polar(force_direction)[1]
+        if force_direction.magnitude() != 0:
+            force = force_direction.normalize() * self.ship.thrust
+            self.ship.apply_force(force, dt)
 
-            # Apply thrust in that direction
-            normalized_direction = force_direction.normalize()
-            self.ship.thruster_forward = True
-
-            # Calculate dot product to slow down when needed
-            vel_dot_dir = self.ship.vel.dot(normalized_direction)
-
-            # If moving too fast in the desired direction, stop thrusting
-            if vel_dot_dir > MARKOV_ENEMY_SPEED_THRESHOLD:  # Arbitrary speed threshold
-                self.ship.thruster_forward = False
-
-            # Use backward thrust if needed to slow down when moving away from target
-            if self.current_state in (AIState.RETREAT, AIState.EVADE):
-                if vel_dot_dir < -MARKOV_ENEMY_SPEED_THRESHOLD:
-                    self.ship.thruster_backward = True
-                else:
-                    self.ship.thruster_backward = False
-        else:
-            self.ship.thruster_forward = False
-            self.ship.thruster_backward = False
-
-    def get_state_name(self) -> str:
-        """Get the current state name for debugging.
-
-        Returns:
-            str: Current state name
-
-        """
-        return self.current_state.name
+        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))

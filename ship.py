@@ -573,5 +573,4 @@ class MarkovEnemy(BulletEnemy):
         self.ai.update(dt)
 
         # The AI handles movement and shooting
-        # Now we just need to call the parent's step method
-        super().step(dt)
+        Ship.step(self, dt)
