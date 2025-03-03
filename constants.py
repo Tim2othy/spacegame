@@ -47,7 +47,7 @@ NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
 # Enemy Action and Spawn
-ENEMY_SPAWN_WEIGHTS = [0.0, 0.0, 0.0, 1.0]
+ENEMY_SPAWN_WEIGHTS = [0.5, 0.0, 0.0, 0.5]
 ENEMY_FIRE_RANGE = 1700
 ENEMY_VISUAL_RANGE = 5000
 ENEMY_ACTION_TIMER = 6
@@ -89,8 +89,8 @@ ROCKET_TIMES_HOMES = 3
 ROCKET_MIN_SPEED = 500.0
 
 # Constants for state transitions
-RETREAT_HEALTH = 30.0  # Health threshold to consider retreating
-FLANK_DISTANCE = 100.0  # Distance to maintain when flanking
+RETREAT_HEALTH = 30.0
+FLANK_DISTANCE = 100.0
 ENEMY_ACCELERATE_LESS = 500
 
 # physics constants
