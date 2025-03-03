@@ -9,7 +9,14 @@ from typing import TYPE_CHECKING
 
 from pygame.math import Vector2 as Vec2
 
-from constants import ENEMY_FIRE_RANGE, ENEMY_VISUAL_RANGE, EPSILON, FLANK_DISTANCE, RETREAT_HEALTH
+from constants import (
+    ENEMY_ACCELERATE_LESS,
+    ENEMY_FIRE_RANGE,
+    ENEMY_VISUAL_RANGE,
+    EPSILON,
+    FLANK_DISTANCE,
+    RETREAT_HEALTH,
+)
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -235,6 +242,11 @@ class MarkovAI:
 
         if force_direction.magnitude() != 0:
             force = force_direction.normalize() * self.ship.thrust
+            if (
+                self.current_state == AIState.ATTACK
+                and (self.ship.vel - self.target_ship.vel).magnitude() < ENEMY_ACCELERATE_LESS
+            ):
+                force *= 0.3
             self.ship.apply_force(force, dt)
 
         self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
