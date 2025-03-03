@@ -22,7 +22,6 @@ class AIState(Enum):
 
     SEARCH = auto()  # Actively pursue player
     ATTACK = auto()  # Focus on firing at player
-    EVADE = auto()  # Take evasive action
     FLANK = auto()  # Circle to player's side
     RETREAT = auto()  # Back away to recover
 
@@ -71,7 +70,6 @@ class MarkovAI:
         standard_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 1},
             AIState.ATTACK: {AIState.SEARCH: 1},
-            AIState.EVADE: {AIState.SEARCH: 1},
             AIState.FLANK: {AIState.SEARCH: 1},
             AIState.RETREAT: {AIState.SEARCH: 1},
         }
@@ -79,25 +77,22 @@ class MarkovAI:
         low_health_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 1.0},
             AIState.ATTACK: {AIState.RETREAT: 1.0},
-            AIState.EVADE: {AIState.RETREAT: 0.8, AIState.EVADE: 0.5},
             AIState.FLANK: {AIState.RETREAT: 0.8, AIState.FLANK: 0.2},
-            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.EVADE: 0.3},
+            AIState.RETREAT: {AIState.RETREAT: 0.7, AIState.SEARCH: 0.3},
         }
 
         player_visible_matrix = {
             AIState.SEARCH: {AIState.ATTACK: 1.0},
             AIState.ATTACK: {AIState.ATTACK: 1.0, AIState.FLANK: 0.0},
-            AIState.EVADE: {AIState.ATTACK: 1.0, AIState.FLANK: 0.0},
-            AIState.FLANK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.1, AIState.EVADE: 0.1},
+            AIState.FLANK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.1, AIState.RETREAT: 0.1},
             AIState.RETREAT: {AIState.ATTACK: 1.0},
         }
 
         low_health_and_player_visible_matrix = {
-            AIState.SEARCH: {AIState.RETREAT: 0.8, AIState.EVADE: 0.1, AIState.ATTACK: 0.1},
-            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.EVADE: 0.1},
-            AIState.EVADE: {AIState.RETREAT: 0.9, AIState.EVADE: 0.1},
+            AIState.SEARCH: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.FLANK: 0.1},
+            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.FLANK: 0.1},
             AIState.FLANK: {AIState.RETREAT: 0.9, AIState.FLANK: 0.1},
-            AIState.RETREAT: {AIState.RETREAT: 0.9, AIState.EVADE: 0.1},
+            AIState.RETREAT: {AIState.RETREAT: 0.9, AIState.FLANK: 0.1},
         }
 
         # Apply matrices based on priority
@@ -176,26 +171,6 @@ class MarkovAI:
         # if distance < desired_distance:
         #   return Vec2(0, 0)
         return delta_target_ship
-
-    def _execute_evade_behavior(self) -> Vec2:
-        """Execute evasive behavior - erratic movement.
-
-        Args:
-            dt (float): Time delta
-
-        Returns:
-            Vec2: Desired force direction
-
-        """
-        # Get perpendicular direction to player
-        delta = self.target_ship.pos - self.ship.pos
-        perp = Vec2(-delta.y, delta.x).normalize()
-
-        # Add some randomness for erratic movement
-        random_direction = Vec2(random.uniform(-1, 1), random.uniform(-1, 1)).normalize()
-
-        # Combine perpendicular and random for unpredictable evasion
-        return perp + random_direction * 0.5
 
     def _execute_flank_behavior(self) -> Vec2:
         """Execute flanking behavior - circle around player.
@@ -277,8 +252,6 @@ class MarkovAI:
                 force_direction = self._execute_search_behavior()
             case AIState.ATTACK:
                 force_direction = self._execute_attack_behavior()
-            case AIState.EVADE:
-                force_direction = self._execute_evade_behavior()
             case AIState.FLANK:
                 force_direction = self._execute_flank_behavior()
             case AIState.RETREAT:
