@@ -12,9 +12,13 @@ if TYPE_CHECKING:
     from ship import Ship
 
 from constants import (
+    BULLET_DAMAGE,
     EPSILON,
+    FLAIR_DAMAGE,
+    MISSILE_DAMAGE,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
+    ROCKET_DAMAGE,
     ROCKET_HOMING_DURATION,
     ROCKET_HOMING_THRUST,
     ROCKET_MIN_SPEED,
@@ -37,6 +41,7 @@ class Bullet(PhysicalObject):
         """
         super().__init__(pos, vel, 1.0)
         self.color = Color(color)
+        self.damage = BULLET_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
@@ -77,6 +82,7 @@ class Rocket(Bullet):
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._cycle_duration = self.homing_duration + self.nonhoming_duration
         self.color = Color("red")
+        self.damage = ROCKET_DAMAGE
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics.
@@ -175,6 +181,7 @@ class Missile(Rocket):
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
         self.color = Color("orange")
+        self.damage = MISSILE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
@@ -214,6 +221,7 @@ class Flare(Bullet):
         """
         super().__init__(pos, vel, color)
         self.color = Color("yellow")
+        self.damage = FLAIR_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""

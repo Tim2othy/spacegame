@@ -277,7 +277,10 @@ class Universe:
             for enemy in self._enemy_ships:
                 if enemy.intersects_point(projectile.pos):
                     self.create_particle_cloud(enemy.pos, 100, enemy.color, enemy.vel, 150, 2)
-                    self._enemy_ships.remove(enemy)
+                    enemy.suffer_damage(projectile.damage)
+                    if enemy.health <= 0:
+                        self.create_particle_cloud(enemy.pos, 300, enemy.color, enemy.vel, 200, 8)
+                        self._enemy_ships.remove(enemy)
                     return False
                 if enemy.__class__.__name__ == "MissileEnemy":
                     for enemy_projectile in enemy.projectiles[:]:
@@ -287,7 +290,7 @@ class Universe:
                             return False
             return True
 
-        # TODO: Once enemies can take damage, collapse player_projectile_check and
+        # TODO: collapse player_projectile_check and
         # enemy_projectile_check into a single function taking as an argument the list
         # of enemy-ships.
         def enemy_projectile_check(projectile: Bullet) -> bool:
@@ -301,7 +304,7 @@ class Universe:
             for player in self._player_ships:
                 if player.intersects_point(projectile.pos):
                     self.create_particles_on_disk(player, projectile.pos, 10, projectile.color, 100)
-                    player.suffer_damage(5)
+                    player.suffer_damage(projectile.damage)
                     return False
             return True
 
