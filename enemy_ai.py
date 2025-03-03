@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from pygame.math import Vector2 as Vec2
 
 from constants import (
+    DESIRED_APPROACH_SPEED,
     ENEMY_ACCELERATE_LESS,
     ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE,
@@ -142,8 +143,22 @@ class MarkovAI:
         """
 
     def _execute_search_behavior(self) -> Vec2:
-        """Execute searching behavior."""
-        return self.target_ship.pos - self.ship.pos
+        """Execute searching behavior respecting relativity principles."""
+        delta_target_ship = self.target_ship.pos - self.ship.pos
+        relative_velocity = self.ship.vel - self.target_ship.vel
+
+        if delta_target_ship.magnitude() > EPSILON:
+            approach_direction = delta_target_ship.normalize()
+            desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
+            # Force required to change from current relative velocity to desired relative velocity
+            force_direction = desired_relative_vel - relative_velocity
+        else:
+            force_direction = Vec2(EPSILON, EPSILON)
+
+        if force_direction.magnitude() < EPSILON:
+            force_direction = Vec2(EPSILON, EPSILON)
+
+        return force_direction
 
     def _execute_attack_behavior(self) -> Vec2:
         """Execute attack behavior."""
