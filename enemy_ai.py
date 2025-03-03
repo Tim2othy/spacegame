@@ -11,6 +11,7 @@ from pygame.math import Vector2 as Vec2
 
 from constants import (
     ENEMY_ACCELERATE_LESS,
+    ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE,
     ENEMY_VISUAL_RANGE,
     EPSILON,
@@ -45,8 +46,7 @@ class MarkovAI:
         self.ship = ship
         self.target_ship = target_ship
         self.current_state = AIState.SEARCH
-        self.state_timer = 0.0
-        self.min_state_time = 0.5  # Minimum time to stay in a state
+        self.action_timer = 0.0
         self.flank_direction = 1
 
     def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
@@ -125,16 +125,10 @@ class MarkovAI:
         # Extract probabilities for current state
         probabilities = list(matrix[self.current_state].values())
         states = list(AIState)
-        next_state = random.choices(states, probabilities)[0]
+        self.current_state = random.choices(states, probabilities)[0]
 
-        # If state changes, reset timer and update behavior
-        if next_state != self.current_state:
-            self.current_state = next_state
-            self.state_timer = self.min_state_time
-
-            # Reset state-specific variables
-            if next_state == AIState.FLANK:
-                self.flank_direction = random.choice([1, -1])
+        if self.current_state == AIState.FLANK:
+            self.flank_direction = random.choice([1, -1])
 
         """
         For the next 4 functions:
@@ -187,12 +181,13 @@ class MarkovAI:
             dt (float): Passed time
 
         """
-        self.state_timer -= dt
+        self.action_timer -= dt
 
-        if self.state_timer <= 0:
+        if self.action_timer <= 0:
             self._transition_state()
             health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
             print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
+            self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or flank states and within range
         delta = self.target_ship.pos - self.ship.pos
