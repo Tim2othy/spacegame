@@ -206,10 +206,12 @@ class Universe:
         for ix, enemy_ship in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
             for body in chain(self._enemy_ships[ix + 1 :], self._nearby_asteroids(enemy_ship.pos)):
-                # TODO: Once enemies have proper health, they should probably suffer damage, too
+                if damage := enemy_ship.bounce_disks(body) is not None:
+                    enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_disks(body)
             for planet in self._nearby_planets(enemy_ship.pos):
-                # TODO: Once enemies have proper health, they should probably suffer damage, too
+                if damage := enemy_ship.bounce_off_of_disk(planet) is not None:
+                    enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_off_of_disk(planet)
 
         # Bounce asteroids
