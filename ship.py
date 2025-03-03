@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
-from enemy_ai import MarkovAI
 
 from constants import (
     BULLET_SPEED,
@@ -35,6 +34,7 @@ from constants import (
     SD_FLARE_ANGLE,
     SD_FLARE_SPEED,
 )
+from enemy_ai import MarkovAI
 from physics import Disk
 from projectiles import Bullet, Flare, Missile, Rocket
 
