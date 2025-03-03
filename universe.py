@@ -268,7 +268,7 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def player_projectile_check(projectile: Bullet) -> bool:
+        def projectile_check(projectile: Bullet, target_ships: list, is_player_projectile: bool) -> bool:
             """Run bullet-logic and return whether it should stay alive."""
             if not self.contains_point(projectile.pos):
                 return False
@@ -276,45 +276,33 @@ class Universe:
                 if body.intersects_point(projectile.pos):
                     self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
                     return False
-            for enemy in self._enemy_ships:
-                if enemy.intersects_point(projectile.pos):
-                    self.create_particle_cloud(enemy.pos, 100, enemy.color, enemy.vel, 150, 2)
-                    enemy.suffer_damage(projectile.damage)
-                    if enemy.health <= 0:
-                        self.create_particle_cloud(enemy.pos, 300, enemy.color, enemy.vel, 200, 8)
-                        self._enemy_ships.remove(enemy)
+            for ship in target_ships:
+                if ship.intersects_point(projectile.pos):
+                    self.create_particle_cloud(ship.pos, 100, ship.color, ship.vel, 150, 2)
+                    ship.suffer_damage(projectile.damage)
+                    if ship.health <= 0:
+                        self.create_particle_cloud(ship.pos, 300, ship.color, ship.vel, 200, 8)
+                        if is_player_projectile:
+                            self._enemy_ships.remove(ship)
                     return False
-                if enemy.__class__.__name__ == "MissileEnemy":
-                    for enemy_projectile in enemy.projectiles[:]:
+                if is_player_projectile and ship.__class__.__name__ == "MissileEnemy":
+                    for enemy_projectile in ship.projectiles[:]:
                         collision_distance = 10
                         if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
-                            enemy.projectiles.remove(enemy_projectile)
+                            ship.projectiles.remove(enemy_projectile)
                             return False
-            return True
 
-        # TODO: collapse player_projectile_check and
-        # enemy_projectile_check into a single function taking as an argument the list
-        # of enemy-ships.
-        def enemy_projectile_check(projectile: Bullet) -> bool:
-            """Run bullet-logic and return whether it should stay alive."""
-            if not self.contains_point(projectile.pos):
-                return False
-            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
-                if body.intersects_point(projectile.pos):
-                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 100)
-                    return False
-            for player in self._player_ships:
-                if player.intersects_point(projectile.pos):
-                    self.create_particles_on_disk(player, projectile.pos, 10, projectile.color, 100)
-                    player.suffer_damage(projectile.damage)
-                    return False
             return True
 
         for player in self._player_ships:
-            player.projectiles = [p for p in player.projectiles if player_projectile_check(p)]
+            player.projectiles = [
+                p for p in player.projectiles if projectile_check(p, self._enemy_ships, True)
+            ]
 
         for enemy in self._enemy_ships:
-            enemy.projectiles = [p for p in enemy.projectiles if enemy_projectile_check(p)]
+            enemy.projectiles = [
+                p for p in enemy.projectiles if projectile_check(p, self._player_ships, False)
+            ]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
