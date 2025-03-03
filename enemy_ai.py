@@ -95,7 +95,6 @@ class MarkovAI:
             AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.RETREAT: 0.8, AIState.FLANK: 0.1},
         }
 
-        # Apply matrices based on priority
         if can_see_player and low_health:
             active_matrix = low_health_and_player_visible_matrix
         elif low_health:
@@ -105,7 +104,7 @@ class MarkovAI:
         else:
             active_matrix = standard_matrix
 
-        # Apply  selected matrix
+        # Apply selected matrix
         for from_state, transitions in active_matrix.items():
             for to_state, prob in transitions.items():
                 matrix[from_state][to_state] = prob
@@ -126,8 +125,6 @@ class MarkovAI:
         # Extract probabilities for current state
         probabilities = list(matrix[self.current_state].values())
         states = list(AIState)
-
-        # Choose next state based on probabilities
         next_state = random.choices(states, probabilities)[0]
 
         # If state changes, reset timer and update behavior
@@ -139,40 +136,27 @@ class MarkovAI:
             if next_state == AIState.FLANK:
                 self.flank_direction = random.choice([1, -1])
 
-    def _execute_search_behavior(self) -> Vec2:
-        """Execute searching behavior - direct pursuit of player.
+        """
+        For the next 4 functions:
 
         Args:
-            dt (float): Time delta
+            dt (float): Passed time
 
         Returns:
-            Vec2: Desired force direction
+            Vec2: Force direction
 
         """
+
+    def _execute_search_behavior(self) -> Vec2:
+        """Execute searching behavior."""
         return self.target_ship.pos - self.ship.pos
 
     def _execute_attack_behavior(self) -> Vec2:
-        """Execute attack behavior - maintain optimal firing distance.
-
-        Args:
-            dt (float): Time delta
-
-        Returns:
-            Vec2: Desired force direction
-
-        """
+        """Execute attack behavior."""
         return self.target_ship.pos - self.ship.pos
 
     def _execute_flank_behavior(self) -> Vec2:
-        """Execute flanking behavior - circle around player.
-
-        Args:
-            dt (float): Time delta
-
-        Returns:
-            Vec2: Desired force direction
-
-        """
+        """Execute flanking behavior - circle around player."""
         delta = self.target_ship.pos - self.ship.pos
         distance = delta.length() if delta.length() > 0 else 0.1
 
@@ -193,38 +177,26 @@ class MarkovAI:
         return orbit_dir * 0.8 + radial_dir * 0.2
 
     def _execute_retreat_behavior(self) -> Vec2:
-        """Execute retreat behavior - move away from player.
-
-        Args:
-            dt (float): Time delta
-
-        Returns:
-            Vec2: Desired force direction
-
-        """
+        """Execute retreat behavior - move away from player."""
         return self.ship.pos - self.target_ship.pos
 
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior.
 
         Args:
-            dt (float): Time delta
+            dt (float): Passed time
 
         """
-        # Update state timer
         self.state_timer -= dt
 
-        # Check for state transition
         if self.state_timer <= 0:
             self._transition_state()
             health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
             print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
 
-        # Determine shooting behavior
+        # Only shoot when in attack or flank states and within range
         delta = self.target_ship.pos - self.ship.pos
         distance = delta.length() if delta.length() > 0 else 0.1
-
-        # Only shoot when in attack or flank states and within range
         self.ship.shooting = (
             self.current_state in (AIState.ATTACK, AIState.FLANK)
         ) and distance < ENEMY_FIRE_RANGE
