@@ -304,7 +304,7 @@ class Ship(Disk):
             ],
         )
 
-        # Ugly hack
+        # HACK: UGLY
         backup_self_color = Color(self.color)
         self.color = base_color
         super().draw(camera)  # Draw circular body ("hitbox")
