@@ -69,7 +69,7 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
     assert len(player_ship.projectiles) == 0, "Both bullets should have hit something"
     assert (enemy_right.health == HEALTH) is not (
         enemy_up.health == HEALTH
-    ), "Exactly one enemy should be unharmed"  # TODO use something like a nand operator here
+    ), "Exactly one enemy should be unharmed"
     assert (
         universe._enemy_ships[0].health == HEALTH  # noqa: SLF001
     ), "The enemy on the right should be unharmed"

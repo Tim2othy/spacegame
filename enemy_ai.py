@@ -60,7 +60,7 @@ class MarkovAI:
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
         distance_squared = delta.magnitude_squared()
-        # TODO(Tim2othy) make division by zero checks nicer
+        # TODO(Tim2othy): make division by zero checks nicer
 
         can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH

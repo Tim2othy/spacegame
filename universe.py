@@ -296,11 +296,8 @@ class Universe:
                         if is_player_projectile:
                             self._enemy_ships.remove(
                                 ship
-                            )  # TODO(Tim2othy): <- Ruff wants me to write a name here, should that be my name
-                            # because I created the todo or yours because I want you to fix it? Or should we
-                            # tell ruff not to care about this. The actual issue: We should probably do
-                            # _enemy_ships.remove(ship) somewhere else, not sure where though.
-                            # Then we could also remove the boolean positional argument.
+                            )  # TODO: We should probably do _enemy_ships.remove(ship) somewhere else, not
+                            # sure where though. Then we could also remove the boolean positional argument.
                     return False
                 if ship.__class__.__name__ == "MissileEnemy":
                     for enemy_projectile in ship.projectiles[:]:
