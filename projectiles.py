@@ -42,7 +42,7 @@ class Bullet(PhysicalObject):
 
         """
         super().__init__(pos, vel, 1.0)
-        self.color = color
+        self.color = Color(color)
         self.damage = BULLET_DAMAGE
 
     def draw(self, camera: Camera) -> None:
@@ -83,7 +83,7 @@ class Rocket(Bullet):
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._cycle_duration = self.homing_duration + self.nonhoming_duration
-        self.color = color
+        self.color = Color(color)
         self.damage = ROCKET_DAMAGE
 
     def step(self, dt: float) -> None:

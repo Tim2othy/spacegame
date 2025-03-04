@@ -137,7 +137,7 @@ class Disk(PhysicalObject):
         mass = radius**3 * math.pi * 4 / 3
         super().__init__(pos, vel, mass)
         self.radius = radius
-        self.color = color
+        self.color = Color(color)
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:
