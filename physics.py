@@ -11,7 +11,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
+from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT, GRAY
 
 BLACK = Color("black")
 
@@ -121,9 +121,6 @@ class PhysicalObject:
         """
 
 
-GRAY = Color("gray")
-
-
 class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
@@ -140,7 +137,7 @@ class Disk(PhysicalObject):
         mass = radius**3 * math.pi * 4 / 3
         super().__init__(pos, vel, mass)
         self.radius = radius
-        self.color = Color(color)
+        self.color = color
         self._radius_squared = radius**2
 
     def draw(self, camera: Camera) -> None:

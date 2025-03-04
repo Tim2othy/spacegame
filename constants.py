@@ -41,6 +41,7 @@ PLANET_COLORS_LARGE = [
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 HEALTH = 100
+
 DAMAGE_INDICATOR_TIME = 1
 """Time (in seconds) a ship should flash red after taking damage"""
 NUM_FLARES = 40
@@ -115,8 +116,6 @@ ASTEROID_SIZE_MIN = 20
 ASTEROID_RADIUS_PARAMETER = 0.05  # of the radii
 ASTEROID_ORBIT_PARAMETER = 0.0004  # orbit sizes
 ASTEROID_ELLIPSIS_PARAMETER = 0.0001  # and orbit ellipticities
-
-GRID_COLOR = Color("darkgreen")
 
 GRID_COLOR = Color("darkgreen")
 
