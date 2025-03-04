@@ -14,7 +14,7 @@ from constants import (
     DESIRED_APPROACH_SPEED,
     ENEMY_ACCELERATE_LESS,
     ENEMY_ACTION_TIMER,
-    ENEMY_FIRE_RANGE,
+    ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
     EPSILON,
     RETREAT_HEALTH,
@@ -277,11 +277,9 @@ class MarkovAI:
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
-        delta = self.target_ship.pos - self.ship.pos
-        distance = delta.length() if delta.length() > 0 else 0.1
         self.ship.shooting = (
-            self.current_state in (AIState.ATTACK, AIState.AIM)
-        ) and distance < ENEMY_FIRE_RANGE
+            self.current_state in {AIState.ATTACK, AIState.AIM}
+        ) and self.ship.pos.distance_squared_to(self.target_ship.pos) < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:

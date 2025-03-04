@@ -18,7 +18,7 @@ from constants import (
     DAMAGE_INDICATOR_TIME,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
-    ENEMY_FIRE_RANGE,
+    ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
     EPSILON,
     FLARE_MEAN_RELEASE_SPEED,
@@ -511,7 +511,7 @@ class BulletEnemy(Ship):
 
         self.shooting = (
             self.current_action == BulletEnemy.Action.accelerate_to_player
-            and delta_target_ship.magnitude_squared() < ENEMY_FIRE_RANGE**2
+            and delta_target_ship.magnitude_squared() < ENEMY_FIRE_RANGE_SQUARED
         )
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
