@@ -166,11 +166,11 @@ def generate_complementary_color(base_color: Color) -> Color:
         r, g, b = new_v, t, p
     elif h_i == 1:
         r, g, b = q, new_v, p
-    elif h_i == 2:
+    elif h_i == 2:  # noqa: PLR2004
         r, g, b = p, new_v, t
-    elif h_i == 3:
+    elif h_i == 3:  # noqa: PLR2004
         r, g, b = p, q, new_v
-    elif h_i == 4:
+    elif h_i == 4:  # noqa: PLR2004
         r, g, b = t, p, new_v
     else:
         r, g, b = new_v, p, q
