@@ -23,7 +23,7 @@ class Particle:
         """Create a new Particle."""
         self.pos = Vec2(pos)
         self.vel = Vec2(vel)
-        self.color = color
+        self.color = color  # TODO: Should this be self.color = Color(color)?
         self._max_lifetime = lifetime
         self.lifetime = lifetime
 
