@@ -45,12 +45,20 @@ from projectiles import Bullet, Flare, Missile, Rocket
 if TYPE_CHECKING:
     from camera import Camera
 
+SHIP_SIZE = 10.0
+
 
 class Ship(Disk):
     """A basic spaceship."""
 
     def __init__(
-        self, pos: Vec2, vel: Vec2, size: float = 10, color: Color = GRAY, gun_cooldown: float = 0.1
+        self,
+        pos: Vec2,
+        vel: Vec2,
+        size: float = SHIP_SIZE,
+        color: Color = GRAY,
+        gun_cooldown: float = BULLET_ROF,
+        projectile_speed: float = BULLET_RELEASE_SPEED,
     ) -> None:
         """Create a new spaceship.
 
@@ -62,6 +70,7 @@ class Ship(Disk):
             size (float): Radius of disk-body
             color (Color): Material and bullet color
             gun_cooldown (float): Minimum time between shots
+            projectile_speed (float): Speed at which projectiles are fired
 
         >>> Ship(Vec2(), Vec2(), gun_cooldown=1)
         <ship.Ship object at ...>
@@ -86,6 +95,7 @@ class Ship(Disk):
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
         self.releasing_flares: bool = False
+        self.projectile_speed: float = projectile_speed
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -94,7 +104,6 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.projectile_speed = BULLET_RELEASE_SPEED
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s faced direction from its `angle`.
@@ -369,7 +378,7 @@ class PlayerShip(Ship):
         self,
         pos: Vec2,
         vel: Vec2,
-        size: float = 10.0,
+        size: float = SHIP_SIZE,
         color: Color = PLAYER_COLOR,
         spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
     ) -> None:
@@ -383,7 +392,7 @@ class PlayerShip(Ship):
             spaceship_input (SpaceshipInput): Map from keys to actions
 
         """
-        super().__init__(pos, vel, size, color, BULLET_ROF)
+        super().__init__(pos, vel, size, color, BULLET_ROF, BULLET_RELEASE_SPEED)
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
@@ -406,6 +415,11 @@ class PlayerShip(Ship):
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
+    SHIP_COLOR = BULLET_ENEMY_COLOR
+    SHIP_GUN_COOLDOWN = BULLET_ROF
+    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
+    SHIP_SIZE = SHIP_SIZE
+
     Action = Enum(
         "Action",
         [
@@ -420,8 +434,6 @@ class BulletEnemy(Ship):
         pos: Vec2,
         vel: Vec2,
         target_ship: Ship,
-        gun_cooldown: float = BULLET_ROF,
-        color: Color = BULLET_ENEMY_COLOR,
     ) -> None:
         """Create a new enemy ship.
 
@@ -429,17 +441,17 @@ class BulletEnemy(Ship):
             pos (Vec2): Initial position
             vel (Vec2): Initial velocity
             target_ship (Ship): Ship to target
-            gun_cooldown (float): Time between shots
-            color (Color): Hull and bullet color
 
         """
-        super().__init__(pos, vel, 8, color, gun_cooldown)
-        self.action_timer = 0.0
-        self.health = HEALTH
+        super().__init__(
+            pos, vel, self.SHIP_SIZE, self.SHIP_COLOR, self.SHIP_GUN_COOLDOWN, self.SHIP_PROJECTILE_SPEED
+        )
+
+        self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
-        self.target_ship = target_ship
+        self.target_ship: Ship = target_ship
         self.projectiles: list[Bullet] = []
-        self.random_point = Vec2(0.0, 0.0)
+        self.random_point: Vec2 = Vec2(0.0, 0.0)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
@@ -505,17 +517,10 @@ class BulletEnemy(Ship):
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
-        """Create a new Rocket-Ship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-
-        """
-        super().__init__(pos, vel, target_ship, ROCKET_ROF, ROCKET_ENEMY_COLOR)
-        self.projectile_speed = ROCKET_RELEASE_SPEED
+    # Override class configuration for RocketEnemy
+    SHIP_COLOR = ROCKET_ENEMY_COLOR
+    SHIP_GUN_COOLDOWN = ROCKET_ROF
+    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
@@ -525,17 +530,10 @@ class RocketEnemy(BulletEnemy):
 class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
-        """Create a new Missile-Ship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-
-        """
-        super().__init__(pos, vel, target_ship, MISSILE_ROF, MISSILE_ENEMY_COLOR)
-        self.projectile_speed = ROCKET_RELEASE_SPEED
+    # Override class configuration for MissileEnemy
+    SHIP_COLOR = MISSILE_ENEMY_COLOR
+    SHIP_GUN_COOLDOWN = MISSILE_ROF
+    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
@@ -544,6 +542,9 @@ class MissileEnemy(BulletEnemy):
 
 class MarkovEnemy(BulletEnemy):
     """An enemy ship using Markov chain AI for more sophisticated behavior."""
+
+    # Override class configuration for MarkovEnemy
+    SHIP_COLOR = MARKOV_ENEMY_COLOR
 
     def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
         """Create a new Markov-based enemy ship.
@@ -554,8 +555,7 @@ class MarkovEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship, color=MARKOV_ENEMY_COLOR)
-
+        super().__init__(pos, vel, target_ship)
         self.ai = MarkovAI(self, target_ship)
 
     def step(self, dt: float) -> None:
