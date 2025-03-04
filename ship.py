@@ -565,8 +565,5 @@ class MarkovEnemy(BulletEnemy):
             dt (float): Passed time
 
         """
-        # Update AI
         self.ai.update(dt)
-
-        # The AI handles movement and shooting
         Ship.step(self, dt)
