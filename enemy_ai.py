@@ -51,7 +51,7 @@ _PLAYER_VISIBLE_MATRIX = {
     AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
     AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.4, AIState.RETREAT: 0.5},
+    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
 }
 
 _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {

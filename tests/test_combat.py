@@ -1,9 +1,18 @@
+import math
 import random
 
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from constants import HEALTH
+from constants import (
+    HEALTH,
+)
+from enemy_ai import (
+    _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
+    _LOW_HEALTH_MATRIX,
+    _PLAYER_VISIBLE_MATRIX,
+    _STANDARD_MATRIX,
+)
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
 
@@ -73,3 +82,19 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
     assert (
         universe._enemy_ships[0].health == HEALTH  # noqa: SLF001
     ), "The enemy on the right should be unharmed"
+
+
+@pytest.mark.parametrize(
+    "matrix",
+    [
+        _STANDARD_MATRIX,
+        _LOW_HEALTH_MATRIX,
+        _PLAYER_VISIBLE_MATRIX,
+        _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
+    ],
+)
+def test_transition_matrix_sums(matrix: dict):
+    """Verify that each row in the transition matrices sums to 1."""
+    for from_state, transitions in matrix.items():
+        total = sum(transitions.values())
+        assert math.isclose(total, 1.0, rel_tol=1e-9), f"Row for {from_state} does not sum to 1: {total}"
