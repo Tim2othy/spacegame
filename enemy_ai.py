@@ -59,7 +59,7 @@ class MarkovAI:
         """
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
-        distance = delta.magnitude() if delta != Vec2(EPSILON, EPSILON) else EPSILON
+        distance = delta.magnitude()
         # TODO(Tim2othy) do this everywhere else also
 
         can_see_player = distance < ENEMY_VISUAL_RANGE
