@@ -61,6 +61,23 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
 
+# Pre-compute complete transition matrices
+_COMPLETE_MATRICES = {}
+for matrix_name in [
+    "_STANDARD_MATRIX",
+    "_LOW_HEALTH_MATRIX",
+    "_PLAYER_VISIBLE_MATRIX",
+    "_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX",
+]:
+    source_matrix = globals()[matrix_name]
+    complete_matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
+
+    for from_state, transitions in source_matrix.items():
+        for to_state, prob in transitions.items():
+            complete_matrix[from_state][to_state] = prob
+
+    _COMPLETE_MATRICES[matrix_name] = complete_matrix
+
 
 class MarkovAI:
     """Markov chain-based AI for enemy ships."""
@@ -89,27 +106,18 @@ class MarkovAI:
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
         distance_squared = delta.magnitude_squared()
-        # TODO(Tim2othy): make division by zero checks nicer
 
         can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH
 
-        matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
-
+        # Simply select the appropriate pre-computed matrix based on context
         if can_see_player and low_health:
-            active_matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
-        elif low_health:
-            active_matrix = _LOW_HEALTH_MATRIX
-        elif can_see_player:
-            active_matrix = _PLAYER_VISIBLE_MATRIX
-        else:
-            active_matrix = _STANDARD_MATRIX
-
-        for from_state, transitions in active_matrix.items():
-            for to_state, prob in transitions.items():
-                matrix[from_state][to_state] = prob
-
-        return matrix
+            return _COMPLETE_MATRICES["_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX"]
+        if low_health:
+            return _COMPLETE_MATRICES["_LOW_HEALTH_MATRIX"]
+        if can_see_player:
+            return _COMPLETE_MATRICES["_PLAYER_VISIBLE_MATRIX"]
+        return _COMPLETE_MATRICES["_STANDARD_MATRIX"]
 
     def _transition_state(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
