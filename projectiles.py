@@ -81,7 +81,7 @@ class Rocket(Bullet):
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._cycle_duration = self.homing_duration + self.nonhoming_duration
-        self.color = Color("red")
+        self.color = color
         self.damage = ROCKET_DAMAGE
 
     def step(self, dt: float) -> None:
@@ -182,7 +182,6 @@ class Missile(Rocket):
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
-        self.color = Color("orange")
         self.damage = MISSILE_DAMAGE
 
     def draw(self, camera: Camera) -> None:

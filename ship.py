@@ -37,6 +37,7 @@ from constants import (
     ROCKET_RELEASE_SPEED,
     ROCKET_ROF,
     SD_FLARE_ANGLE,
+    generate_complementary_color,
 )
 from enemy_ai import MarkovAI
 from physics import Disk
@@ -97,6 +98,8 @@ class Ship(Disk):
         self.releasing_flares: bool = False
         self.projectile_speed: float = projectile_speed
 
+        self.projectile_color = generate_complementary_color(color)
+
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 0.15 * self.mass
@@ -119,7 +122,7 @@ class Ship(Disk):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`."""
-        return Bullet(pos, vel, self.color)
+        return Bullet(pos, vel, self.projectile_color)
 
     def new_flare(self, pos: Vec2, vel: Vec2) -> Flare:
         """Create a new Flare at `pos` with velocity `vel`."""
@@ -524,7 +527,7 @@ class RocketEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
-        return Rocket(pos, vel, self.color, self.target_ship)
+        return Rocket(pos, vel, self.projectile_color, self.target_ship)
 
 
 class MissileEnemy(BulletEnemy):
@@ -537,7 +540,7 @@ class MissileEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.color, self.target_ship)
+        return Missile(pos, vel, self.projectile_color, self.target_ship)
 
 
 class MarkovEnemy(BulletEnemy):
