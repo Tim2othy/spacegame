@@ -10,12 +10,12 @@ from typing import TYPE_CHECKING
 from pygame.math import Vector2 as Vec2
 
 from constants import (
+    BULLET_RELEASE_SPEED,
     DESIRED_APPROACH_SPEED,
     ENEMY_ACCELERATE_LESS,
     ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE,
     ENEMY_VISUAL_RANGE,
-    EPSILON,
     FLANK_DISTANCE,
     RETREAT_HEALTH,
 )
@@ -165,25 +165,78 @@ class MarkovAI:
         return self.target_ship.pos - self.ship.pos
 
     def _execute_flank_behavior(self) -> Vec2:
-        """Execute flanking behavior - circle around player."""
-        delta = self.target_ship.pos - self.ship.pos
-        distance = delta.length() if delta.length() > 0 else 0.1
+        """Execute behavior with predictive aiming to hit moving targets."""
+        # Current positions and velocities
+        ship_pos = self.ship.pos
+        ship_vel = self.ship.vel
+        target_pos = self.target_ship.pos
+        target_vel = self.target_ship.vel
+        # Relative position and velocity
+        relative_pos = target_pos - ship_pos
+        relative_vel = target_vel - ship_vel
 
-        # Calculate tangential direction for circling
-        # Rotate 90 degrees (clockwise or counter-clockwise)
-        orbit_dir = Vec2(-delta.y * self.flank_direction, delta.x * self.flank_direction).normalize()
+        """
+        We need to find the direction where:
+        # target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
 
-        # Adjust distance if needed
-        radial_dir = Vec2(0, 0)
-        if distance > FLANK_DISTANCE * 1.2:
-            # Too far, move closer
-            radial_dir = delta.normalize()
-        elif distance < FLANK_DISTANCE * 0.8:
-            # Too close, move away
-            radial_dir = -delta.normalize()
+        Solve quadratic equation for intercept time:
+        |relative_pos + relative_vel*t| = bullet_speed*t
 
-        # Combined direction: mostly orbit with minor radial adjustment
-        return orbit_dir * 0.8 + radial_dir * 0.2
+        This expands to:
+        |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
+        """
+
+        # Quadratic equation coefficients:
+        a = relative_vel.magnitude_squared() - BULLET_RELEASE_SPEED**2
+        b = 2 * relative_pos.dot(relative_vel)
+        c = relative_pos.magnitude_squared()
+
+        # Standard quadratic formula
+        discriminant = b**2 - 4 * a * c
+
+        if discriminant < 0:
+            # No real solution exists (target unreachable)
+            # Fall back to simpler approach
+            return (
+                relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
+            ).normalize()
+
+        # Calculate both solutions
+        t1 = (-b + math.sqrt(discriminant)) / (2 * a)
+        t2 = (-b - math.sqrt(discriminant)) / (2 * a)
+
+        # Select the smallest positive time
+        if t1 > 0 and t2 > 0:
+            intercept_time = min(t1, t2)
+        elif t1 > 0:
+            intercept_time = t1
+        elif t2 > 0:
+            intercept_time = t2
+        else:
+            # No positive solution, target moving too fast or in wrong direction
+            # Fall back to simple leading shot
+            intercept_time = relative_pos.magnitude() / BULLET_RELEASE_SPEED
+
+        # Calculate predicted position
+        if intercept_time <= 0:
+            # Fallback if no solution found
+            return relative_pos.normalize()
+
+        # Calculate where to aim to hit the target
+        target_future_pos = target_pos + target_vel * intercept_time
+
+        # Now calculate what direction the bullet must be fired in
+        aim_direction = (target_future_pos - ship_pos - ship_vel * intercept_time) / (
+            BULLET_RELEASE_SPEED * intercept_time
+        )
+        # Normalize to get pure direction
+        if aim_direction.magnitude() > EPSILON:
+            aim_direction = aim_direction.normalize()
+        else:
+            # Fallback if direction calculation fails
+            aim_direction = relative_pos.normalize()
+
+        return aim_direction
 
     def _execute_retreat_behavior(self) -> Vec2:
         """Execute retreat behavior - move away from player."""
