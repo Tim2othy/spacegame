@@ -124,55 +124,16 @@ GRID_COLOR = Color("darkgreen")
 
 def generate_complementary_color(base_color: Color) -> Color:
     """Generate a complementary bullet color based on a color."""
-    # Convert RGB to HSV
-    r, g, b = base_color.r / 255.0, base_color.g / 255.0, base_color.b / 255.0
-    max_val = max(r, g, b)
-    min_val = min(r, g, b)
-    delta = max_val - min_val
+    # Get the HSV values using Color.hsva
+    h, s, v, a = base_color.hsva
 
-    # Calculate hue
-    if delta == 0:
-        h = 0  # Grayscale
-    elif max_val == r:
-        h = ((g - b) / delta) % 6
-    elif max_val == g:
-        h = (b - r) / delta + 2
-    else:  # max_val == b
-        h = (r - g) / delta + 4
-
-    h = (h * 60) % 360
-
-    # Calculate saturation
-    s = 0 if max_val == 0 else delta / max_val
-
-    # Calculate value
-    v = max_val
-
-    # For bullet color:
     # 1. Shift hue by 180° for complementary color
     # 2. Increase brightness for better visibility
     new_h = (h + 180) % 360
-    new_s = min(1.0, s * 1.2)  # Slightly more saturated
-    new_v = min(1.0, v * 1.3)  # Slightly brighter
+    new_s = min(100, s * 1.2)  # Slightly more saturated
+    new_v = min(100, v * 1.3)  # Slightly brighter
 
-    # Convert back to RGB
-    h_i = int(new_h / 60)
-    f = new_h / 60 - h_i
-    p = new_v * (1 - new_s)
-    q = new_v * (1 - f * new_s)
-    t = new_v * (1 - (1 - f) * new_s)
+    complementary_color = Color(0)
+    complementary_color.hsva = (new_h, new_s, new_v, a)
 
-    if h_i == 0:
-        r, g, b = new_v, t, p
-    elif h_i == 1:
-        r, g, b = q, new_v, p
-    elif h_i == 2:  # noqa: PLR2004
-        r, g, b = p, new_v, t
-    elif h_i == 3:  # noqa: PLR2004
-        r, g, b = p, q, new_v
-    elif h_i == 4:  # noqa: PLR2004
-        r, g, b = t, p, new_v
-    else:
-        r, g, b = new_v, p, q
-
-    return Color(int(r * 255), int(g * 255), int(b * 255))
+    return complementary_color
