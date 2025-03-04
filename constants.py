@@ -114,6 +114,10 @@ ASTEROID_RADIUS_PARAMETER = 0.05  # of the radii
 ASTEROID_ORBIT_PARAMETER = 0.0004  # orbit sizes
 ASTEROID_ELLIPSIS_PARAMETER = 0.0001  # and orbit ellipticities
 
+GRID_COLOR = Color("darkgreen")
+
+GRID_COLOR = Color("darkgreen")
+
 
 def generate_complementary_color(base_color: Color) -> Color:
     """Generate a complementary bullet color based on a color."""

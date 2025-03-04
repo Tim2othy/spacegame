@@ -28,6 +28,7 @@ from constants import (
     ASTEROID_SIZE_MIN,
     FPS_HISTORY_LENGTH,
     GRAVITATIONAL_CONSTANT,
+    GRID_COLOR,
 )
 
 
@@ -58,7 +59,7 @@ class Asteroid(Disk):
             radius (float): Radius
 
         """
-        super().__init__(pos, vel, radius, Color(211, 211, 211))
+        super().__init__(pos, vel, radius)
 
 
 type AsteroidChunk = tuple[int, int]
@@ -580,16 +581,15 @@ class Universe:
             camera (Camera): Camera to draw on
 
         """
-        grid_color = Color("darkgreen")
         gridline_spacing = 500
         width = self.size.x
         height = self.size.y
 
         for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_vertical_hairline(grid_color, x, 0, height)
+            camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)
 
         for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_horizontal_hairline(grid_color, 0, width, y)
+            camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
     def contains_point(self, vec: Vec2) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries.
