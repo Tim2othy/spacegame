@@ -131,8 +131,8 @@ class MarkovAI:
         if self.current_state == AIState.FLANK:
             self.flank_direction = random.choice([1, -1])
 
-        """
-        For the next 4 functions:
+    def _execute_search_behavior(self) -> Vec2:
+        """Execute searching behavior.
 
         Args:
             dt (float): Passed time
@@ -141,9 +141,6 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-
-    def _execute_search_behavior(self) -> Vec2:
-        """Execute searching behavior respecting relativity principles."""
         delta_target_ship = self.target_ship.pos - self.ship.pos
         relative_velocity = self.ship.vel - self.target_ship.vel
 
@@ -161,11 +158,27 @@ class MarkovAI:
         return force_direction
 
     def _execute_attack_behavior(self) -> Vec2:
-        """Execute attack behavior."""
+        """Execute attack behavior.
+
+        Args:
+            dt (float): Passed time
+
+        Returns:
+            Vec2: Force direction
+
+        """
         return self.target_ship.pos - self.ship.pos
 
     def _execute_flank_behavior(self) -> Vec2:
-        """Execute behavior with predictive aiming to hit moving targets."""
+        """Execute behavior with predictive aiming to hit moving targets.
+
+        Args:
+            dt (float): Passed time
+
+        Returns:
+            Vec2: Force direction
+
+        """
         # Current positions and velocities
         ship_pos = self.ship.pos
         ship_vel = self.ship.vel
@@ -239,7 +252,15 @@ class MarkovAI:
         return aim_direction
 
     def _execute_retreat_behavior(self) -> Vec2:
-        """Execute retreat behavior - move away from player."""
+        """Execute retreat behavior - move away from player.
+
+        Args:
+            dt (float): Passed time
+
+        Returns:
+            Vec2: Force direction
+
+        """
         return self.ship.pos - self.target_ship.pos
 
     def update(self, dt: float) -> None:
