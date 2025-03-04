@@ -33,6 +33,35 @@ class AIState(Enum):
     RETREAT = auto()
 
 
+_STANDARD_MATRIX = {
+    AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
+    AIState.ATTACK: {AIState.SEARCH: 1},
+    AIState.AIM: {AIState.SEARCH: 1},
+    AIState.RETREAT: {AIState.SEARCH: 0.5, AIState.RETREAT: 0.5},
+}
+
+_LOW_HEALTH_MATRIX = {
+    AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
+    AIState.ATTACK: {AIState.RETREAT: 1.0},
+    AIState.AIM: {AIState.RETREAT: 1.0},
+    AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.RETREAT: 0.7},
+}
+
+_PLAYER_VISIBLE_MATRIX = {
+    AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
+    AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
+    AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
+    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.4, AIState.RETREAT: 0.5},
+}
+
+_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {
+    AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
+    AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+    AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
+    AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+}
+
+
 class MarkovAI:
     """Markov chain-based AI for enemy ships."""
 
@@ -67,54 +96,18 @@ class MarkovAI:
 
         matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
 
-        standard_matrix = {
-            AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
-            AIState.ATTACK: {AIState.SEARCH: 1},
-            AIState.AIM: {AIState.SEARCH: 1},
-            AIState.RETREAT: {AIState.SEARCH: 0.5, AIState.RETREAT: 0.5},
-        }
-
-        low_health_matrix = {
-            AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
-            AIState.ATTACK: {AIState.RETREAT: 1.0},
-            AIState.AIM: {AIState.RETREAT: 1.0},
-            AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.RETREAT: 0.7},
-        }
-
-        player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
-            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
-            AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-            AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.4, AIState.RETREAT: 0.5},
-        }
-
-        low_health_and_player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-            AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
-            AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
-            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
-        }
-
         if can_see_player and low_health:
-            active_matrix = low_health_and_player_visible_matrix
+            active_matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
         elif low_health:
-            active_matrix = low_health_matrix
+            active_matrix = _LOW_HEALTH_MATRIX
         elif can_see_player:
-            active_matrix = player_visible_matrix
+            active_matrix = _PLAYER_VISIBLE_MATRIX
         else:
-            active_matrix = standard_matrix
+            active_matrix = _STANDARD_MATRIX
 
-        # Apply selected matrix
         for from_state, transitions in active_matrix.items():
             for to_state, prob in transitions.items():
                 matrix[from_state][to_state] = prob
-
-        # Normalize probabilities to ensure they sum to 1.0
-        for state in AIState:
-            total = sum(matrix[state].values())
-            if total > 0:
-                for next_state in AIState:
-                    matrix[state][next_state] /= total
 
         return matrix
 
