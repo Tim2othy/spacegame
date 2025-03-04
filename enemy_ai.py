@@ -270,8 +270,8 @@ class MarkovAI:
 
         if self.action_timer <= 0:
             self._transition_state()
-            health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
-            print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
+            # health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
+            # print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
