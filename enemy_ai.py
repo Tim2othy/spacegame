@@ -65,7 +65,7 @@ class MarkovAI:
         can_see_player = distance < ENEMY_VISUAL_RANGE
         low_health = self.ship.health < RETREAT_HEALTH
 
-        matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
+        matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
 
         standard_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
