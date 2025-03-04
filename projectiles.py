@@ -212,17 +212,15 @@ class Missile(Rocket):
 class Flare(Bullet):
     """A round bullet, bobbing about."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2) -> None:
         """Create a new flare.
 
         Args:
             pos (Vec2): Initial position
             vel (Vec2): Velocity
-            color (Color): Border- and fill-color
 
         """
-        super().__init__(pos, vel, color)
-        self.color = Color("yellow")
+        super().__init__(pos, vel, Color("yellow"))
         self.damage = FLAIR_DAMAGE
 
     def draw(self, camera: Camera) -> None:

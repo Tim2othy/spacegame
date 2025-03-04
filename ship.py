@@ -114,7 +114,7 @@ class Ship(Disk):
 
     def new_flare(self, pos: Vec2, vel: Vec2) -> Flare:
         """Create a new Flare at `pos` with velocity `vel`."""
-        return Flare(pos, vel, self.color)
+        return Flare(pos, vel)
 
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
