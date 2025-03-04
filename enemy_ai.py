@@ -29,7 +29,7 @@ class AIState(Enum):
 
     SEARCH = auto()
     ATTACK = auto()
-    FLANK = auto()
+    AIM = auto()
     RETREAT = auto()
 
 
@@ -48,7 +48,6 @@ class MarkovAI:
         self.target_ship = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
-        self.flank_direction = 1
 
     def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
         """Calculate state transition probabilities based on current context.
@@ -71,29 +70,29 @@ class MarkovAI:
         standard_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
             AIState.ATTACK: {AIState.SEARCH: 1},
-            AIState.FLANK: {AIState.SEARCH: 1},
+            AIState.AIM: {AIState.SEARCH: 1},
             AIState.RETREAT: {AIState.SEARCH: 0.5, AIState.RETREAT: 0.5},
         }
 
         low_health_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
             AIState.ATTACK: {AIState.RETREAT: 1.0},
-            AIState.FLANK: {AIState.RETREAT: 1.0},
+            AIState.AIM: {AIState.RETREAT: 1.0},
             AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.RETREAT: 0.7},
         }
 
         player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.FLANK: 0.2},
-            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.FLANK: 0.3},
-            AIState.FLANK: {AIState.ATTACK: 0.4, AIState.FLANK: 0.4, AIState.RETREAT: 0.2},
+            AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
+            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
+            AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
             AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.4, AIState.RETREAT: 0.5},
         }
 
         low_health_and_player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.FLANK: 0.4, AIState.RETREAT: 0.2},
-            AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.FLANK: 0.1, AIState.RETREAT: 0.8},
-            AIState.FLANK: {AIState.ATTACK: 0.1, AIState.FLANK: 0.8, AIState.RETREAT: 0.1},
-            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.FLANK: 0.1, AIState.RETREAT: 0.8},
+            AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
+            AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+            AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
+            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
         }
 
         if can_see_player and low_health:
@@ -127,9 +126,6 @@ class MarkovAI:
         probabilities = list(matrix[self.current_state].values())
         states = list(AIState)
         self.current_state = random.choices(states, probabilities)[0]
-
-        if self.current_state == AIState.FLANK:
-            self.flank_direction = random.choice([1, -1])
 
     def _execute_search_behavior(self) -> Vec2:
         """Execute searching behavior.
@@ -169,14 +165,14 @@ class MarkovAI:
         """
         return self.target_ship.pos - self.ship.pos
 
-    def _execute_flank_behavior(self) -> Vec2:
+    def _execute_aim_behavior(self) -> Vec2:
         """Execute behavior with predictive aiming to hit moving targets.
 
         Args:
             dt (float): Passed time
 
         Returns:
-            Vec2: Force direction
+            Vec2: Force direction/aim direction
 
         """
         # Current positions and velocities
@@ -278,11 +274,11 @@ class MarkovAI:
             print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
             self.action_timer = ENEMY_ACTION_TIMER
 
-        # Only shoot when in attack or flank states and within range
+        # Only shoot when in attack or aim states and within range
         delta = self.target_ship.pos - self.ship.pos
         distance = delta.length() if delta.length() > 0 else 0.1
         self.ship.shooting = (
-            self.current_state in (AIState.ATTACK, AIState.FLANK)
+            self.current_state in (AIState.ATTACK, AIState.AIM)
         ) and distance < ENEMY_FIRE_RANGE
 
         # Execute behavior based on current state
@@ -291,8 +287,8 @@ class MarkovAI:
                 force_direction = self._execute_search_behavior()
             case AIState.ATTACK:
                 force_direction = self._execute_attack_behavior()
-            case AIState.FLANK:
-                force_direction = self._execute_flank_behavior()
+            case AIState.AIM:
+                force_direction = self._execute_aim_behavior()
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
 
