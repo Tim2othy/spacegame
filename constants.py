@@ -61,6 +61,7 @@ BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
+THRUST_COLOR = Color("orange")
 
 
 # Added speed at release

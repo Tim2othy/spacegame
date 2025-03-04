@@ -37,6 +37,7 @@ from constants import (
     ROCKET_RELEASE_SPEED,
     ROCKET_ROF,
     SD_FLARE_ANGLE,
+    THRUST_COLOR,
     generate_complementary_color,
 )
 from enemy_ai import MarkovAI
@@ -244,7 +245,7 @@ class Ship(Disk):
 
         # thruster_backward
         if self.thruster_backward:
-            drawy(Color("orange"), [forward * 2, left * 1.25, right * 1.25])
+            drawy(THRUST_COLOR, [forward * 2, left * 1.25, right * 1.25])
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
@@ -266,7 +267,7 @@ class Ship(Disk):
         if self.thruster_rot_left:
             # thruster_rot_left, active
             drawy(
-                Color("orange"),
+                THRUST_COLOR,
                 [
                     1.5 * left + 1.25 * backward,
                     0.5 * left + 0.5 * backward,
@@ -286,7 +287,7 @@ class Ship(Disk):
         if self.thruster_rot_right:
             # thruster_rot_right, active
             drawy(
-                Color("orange"),
+                THRUST_COLOR,
                 [
                     1.5 * right + 1.25 * backward,
                     0.5 * right + 0.5 * backward,
@@ -297,7 +298,7 @@ class Ship(Disk):
         # thruster_forward, active
         if self.thruster_forward:
             drawy(
-                Color("orange"),
+                THRUST_COLOR,
                 [
                     0.7 * left + 0.7 * backward,
                     0.5 * left + 1.5 * backward,
