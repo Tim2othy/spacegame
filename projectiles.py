@@ -108,7 +108,7 @@ class Rocket(Bullet):
                 if self.target_ship.vel != Vec2(0, 0):
                     multiplier = max(
                         self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
-                    )  # TODO: this violates relatvity, fix!
+                    )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
                 else:
                     multiplier = ROCKET_MIN_SPEED
 
