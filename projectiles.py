@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 from constants import (
     BULLET_DAMAGE,
     EPSILON,
-    FLAIR_DAMAGE,
+    FLARE_DAMAGE,
     MISSILE_DAMAGE,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
@@ -137,7 +137,6 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
-
             # Spooky homing body
             self.color = Color("purple")
             camera.draw_polygon(
@@ -223,7 +222,7 @@ class Flare(Bullet):
         """
         super().__init__(pos, vel, color)
         self.color = Color("yellow")
-        self.damage = FLAIR_DAMAGE
+        self.damage = FLARE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
