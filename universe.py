@@ -13,6 +13,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, Particle, PhysicalObject
 from profiler import global_profiler
+from ship import MissileEnemy
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -299,7 +300,7 @@ class Universe:
                             )  # TODO: We should probably do _enemy_ships.remove(ship) somewhere else, not
                             # sure where though. Then we could also remove the boolean positional argument.
                     return False
-                if ship.__class__.__name__ == "MissileEnemy":
+                if isinstance(ship, MissileEnemy):
                     for enemy_projectile in ship.projectiles[:]:
                         collision_distance = 10
                         if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
