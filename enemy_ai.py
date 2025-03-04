@@ -16,7 +16,7 @@ from constants import (
     ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE,
     ENEMY_VISUAL_RANGE,
-    FLANK_DISTANCE,
+    EPSILON,
     RETREAT_HEALTH,
 )
 
@@ -69,31 +69,31 @@ class MarkovAI:
         matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
 
         standard_matrix = {
-            AIState.SEARCH: {AIState.SEARCH: 1},
+            AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
             AIState.ATTACK: {AIState.SEARCH: 1},
             AIState.FLANK: {AIState.SEARCH: 1},
-            AIState.RETREAT: {AIState.SEARCH: 1},
+            AIState.RETREAT: {AIState.SEARCH: 0.5, AIState.RETREAT: 0.5},
         }
 
         low_health_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
             AIState.ATTACK: {AIState.RETREAT: 1.0},
             AIState.FLANK: {AIState.RETREAT: 1.0},
-            AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.RETREAT: 0.8},
+            AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.RETREAT: 0.7},
         }
 
         player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 1.0},
-            AIState.ATTACK: {AIState.ATTACK: 0.8, AIState.FLANK: 0.2},
+            AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.FLANK: 0.2},
+            AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.FLANK: 0.3},
             AIState.FLANK: {AIState.ATTACK: 0.4, AIState.FLANK: 0.4, AIState.RETREAT: 0.2},
-            AIState.RETREAT: {AIState.ATTACK: 1.0},
+            AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.4, AIState.RETREAT: 0.5},
         }
 
         low_health_and_player_visible_matrix = {
-            AIState.SEARCH: {AIState.ATTACK: 0.2, AIState.FLANK: 0.6, AIState.RETREAT: 0.2},
-            AIState.ATTACK: {AIState.RETREAT: 0.8, AIState.ATTACK: 0.1, AIState.FLANK: 0.1},
-            AIState.FLANK: {AIState.ATTACK: 0.1, AIState.RETREAT: 0.1, AIState.FLANK: 0.8},
-            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.RETREAT: 0.8, AIState.FLANK: 0.1},
+            AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.FLANK: 0.4, AIState.RETREAT: 0.2},
+            AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.FLANK: 0.1, AIState.RETREAT: 0.8},
+            AIState.FLANK: {AIState.ATTACK: 0.1, AIState.FLANK: 0.8, AIState.RETREAT: 0.1},
+            AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.FLANK: 0.1, AIState.RETREAT: 0.8},
         }
 
         if can_see_player and low_health:
