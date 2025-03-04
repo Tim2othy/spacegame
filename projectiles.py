@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 from constants import (
     BULLET_DAMAGE,
     EPSILON,
-    FLAIR_DAMAGE,
     FLARE_COLOR,
+    FLARE_DAMAGE,
     MISSILE_DAMAGE,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
@@ -219,7 +219,7 @@ class Flare(Bullet):
 
         """
         super().__init__(pos, vel, FLARE_COLOR)
-        self.damage = FLAIR_DAMAGE
+        self.damage = FLARE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""

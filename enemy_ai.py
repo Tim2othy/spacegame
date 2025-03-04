@@ -59,13 +59,13 @@ class MarkovAI:
         """
         # Get context information
         delta = self.target_ship.pos - self.ship.pos
-        distance = delta.magnitude() if delta != Vec2(EPSILON, EPSILON) else EPSILON
+        distance = delta.magnitude()
         # TODO(Tim2othy) do this everywhere else also
 
         can_see_player = distance < ENEMY_VISUAL_RANGE
         low_health = self.ship.health < RETREAT_HEALTH
 
-        matrix = {state: {other_state: 0.0 for other_state in AIState} for state in AIState}
+        matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
 
         standard_matrix = {
             AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
