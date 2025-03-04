@@ -54,7 +54,7 @@ _PLAYER_VISIBLE_MATRIX = {
 }
 
 _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {
-    AIState.SEARCH: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
+    AIState.SEARCH: {AIState.SEARCH: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
@@ -147,10 +147,6 @@ class MarkovAI:
             force_direction = desired_relative_vel - relative_velocity
         else:
             force_direction = Vec2(EPSILON, EPSILON)
-
-        if force_direction.magnitude() < EPSILON:
-            force_direction = Vec2(EPSILON, EPSILON)
-
         return force_direction
 
     def _execute_attack_behavior(self) -> Vec2:
