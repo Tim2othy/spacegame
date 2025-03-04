@@ -95,7 +95,6 @@ ROCKET_MIN_SPEED = 500.0
 
 # Constants for state transitions
 RETREAT_HEALTH = 30.0
-ENEMY_ACCELERATE_LESS = 500
 DESIRED_APPROACH_SPEED = 500
 
 # physics constants

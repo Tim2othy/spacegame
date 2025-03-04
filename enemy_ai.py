@@ -12,7 +12,6 @@ from pygame.math import Vector2 as Vec2
 from constants import (
     BULLET_RELEASE_SPEED,
     DESIRED_APPROACH_SPEED,
-    ENEMY_ACCELERATE_LESS,
     ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
@@ -295,11 +294,6 @@ class MarkovAI:
 
         if force_direction.magnitude() != 0:
             force = force_direction.normalize() * self.ship.thrust
-            if (
-                self.current_state == AIState.ATTACK
-                and (self.ship.vel - self.target_ship.vel).magnitude() < ENEMY_ACCELERATE_LESS
-            ):
-                force *= 0.3
             self.ship.apply_force(force, dt)
 
         self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
