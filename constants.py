@@ -45,6 +45,7 @@ DAMAGE_INDICATOR_TIME = 1
 """Time (in seconds) a ship should flash red after taking damage"""
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
+FLARE_COLOR = Color("yellow")
 
 # Enemy Action and Spawn
 ENEMY_SPAWN_WEIGHTS = [0.3, 0.3, 0.2, 0.2]

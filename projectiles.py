@@ -15,6 +15,7 @@ from constants import (
     BULLET_DAMAGE,
     EPSILON,
     FLAIR_DAMAGE,
+    FLARE_COLOR,
     MISSILE_DAMAGE,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
@@ -219,7 +220,7 @@ class Flare(Bullet):
             vel (Vec2): Velocity
 
         """
-        super().__init__(pos, vel, Color("yellow"))
+        super().__init__(pos, vel, FLARE_COLOR)
         self.damage = FLAIR_DAMAGE
 
     def draw(self, camera: Camera) -> None:
