@@ -25,6 +25,7 @@ from constants import (
     ROCKET_MIN_SPEED,
     ROCKET_NONHOMING_DURATION,
     ROCKET_TIMES_HOMES,
+    THRUST_COLOR,
 )
 
 
@@ -41,7 +42,7 @@ class Bullet(PhysicalObject):
 
         """
         super().__init__(pos, vel, 1.0)
-        self.color = Color(color)
+        self.color = color
         self.damage = BULLET_DAMAGE
 
     def draw(self, camera: Camera) -> None:
@@ -139,19 +140,16 @@ class Rocket(Bullet):
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
 
-            # Spooky homing body
-            self.color = Color("purple")
+            # Thrust flame
             camera.draw_polygon(
-                self.color.lerp(Color("blue"), 0.5),
+                self.color.lerp(THRUST_COLOR, 0.5),
                 [
-                    self.pos + 4 * (left + forward),
-                    self.pos + 4 * (left + backward),
-                    self.pos + 4 * (right + backward),
-                    self.pos + 4 * (right + forward),
+                    self.pos + 3 * (left + backward),
+                    self.pos + 4 * (left + 2 * backward),
+                    self.pos + 4 * (right + 2 * backward),
+                    self.pos + 3 * (right + backward),
                 ],
             )
-        else:
-            self.color = Color("red    ")
 
         # Missile body
         camera.draw_polygon(
