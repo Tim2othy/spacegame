@@ -24,6 +24,7 @@ from constants import (
     PLANET_COLORS_SMALL,
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
+    PLAYER_2_COLOR,
     SCREEN_SIZE,
 )
 from profiler import global_profiler
@@ -54,9 +55,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
         PlayerShip(
             world_size_vec / 2,
             Vec2(0, 0),
-            10,
-            Color("darkslategray"),
-            ShipInput.arrows(),
+            spaceship_input=ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
@@ -64,9 +63,8 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
             PlayerShip(
                 world_size_vec / 2 + Vec2(50, 0),
                 Vec2(0, 0),
-                10,
-                Color("yellow"),
-                ShipInput.wasd(),
+                color=PLAYER_2_COLOR,
+                spaceship_input=ShipInput.wasd(),
             )
         )
     planets: list[Planet] = [
