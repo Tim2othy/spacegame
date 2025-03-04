@@ -186,13 +186,15 @@ class MarkovAI:
 
         """
         We need to find the direction where:
-        # target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
+            target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
+        Which is equivalent to:
+            relative_pos + relative_vel*t = direction*bullet_speed*t
 
         Solve quadratic equation for intercept time:
-        |relative_pos + relative_vel*t| = bullet_speed*t
+            |relative_pos + relative_vel*t| = bullet_speed*t
 
         This expands to:
-        |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
+            |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
         """
 
         # Quadratic equation coefficients:
