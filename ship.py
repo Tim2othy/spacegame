@@ -19,7 +19,7 @@ from constants import (
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
     ENEMY_FIRE_RANGE,
-    ENEMY_VISUAL_RANGE,
+    ENEMY_VISUAL_RANGE_SQUARED,
     EPSILON,
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_ROF,
@@ -484,7 +484,7 @@ class BulletEnemy(Ship):
                 / 2
             )
 
-            if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE**2:
+            if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
                 [self.current_action] = random.choices(
