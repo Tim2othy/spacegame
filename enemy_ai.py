@@ -140,14 +140,12 @@ class MarkovAI:
         delta_target_ship = self.target_ship.pos - self.ship.pos
         relative_velocity = self.ship.vel - self.target_ship.vel
 
-        if delta_target_ship != Vec2(0, 0):
-            approach_direction = delta_target_ship.normalize()
-            desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
-            # Force required to change from current relative velocity to desired relative velocity
-            force_direction = desired_relative_vel - relative_velocity
-        else:
-            force_direction = Vec2(0, 0)
-        return force_direction
+        if delta_target_ship == Vec2(0, 0):
+            return Vec2(0, 0)
+        approach_direction = delta_target_ship.normalize()
+        desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
+        # Force required to change from current relative velocity to desired relative velocity
+        return desired_relative_vel - relative_velocity
 
     def _execute_attack_behavior(self) -> Vec2:
         """Execute attack behavior.
@@ -180,6 +178,9 @@ class MarkovAI:
         relative_pos = target_pos - ship_pos
         relative_vel = target_vel - ship_vel
 
+        if relative_pos == Vec2(0, 0):
+            return Vec2(0, 0)
+
         """
         We need to find the direction where:
             target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
@@ -204,9 +205,8 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            return (
-                relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
-            ).normalize()
+            force = relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
+            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -237,13 +237,7 @@ class MarkovAI:
             BULLET_RELEASE_SPEED * intercept_time
         )
         # Normalize to get pure direction
-        if aim_direction.magnitude() > EPSILON:
-            aim_direction = aim_direction.normalize()
-        else:
-            # Fallback if direction calculation fails
-            aim_direction = relative_pos.normalize()
-
-        return aim_direction
+        return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
 
     def _execute_retreat_behavior(self) -> Vec2:
         """Execute retreat behavior - move away from player.
@@ -288,7 +282,7 @@ class MarkovAI:
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
 
-        if force_direction.magnitude() != 0:
+        if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.ship.thrust
             self.ship.apply_force(force, dt)
 

@@ -50,8 +50,8 @@ FLARE_COLOR = Color("yellow")
 
 # Enemy Action and Spawn
 ENEMY_SPAWN_WEIGHTS = [0.3, 0.3, 0.2, 0.2]
-ENEMY_FIRE_RANGE_SQUARED = 2890000
-ENEMY_VISUAL_RANGE_SQUARED = 4000000
+ENEMY_FIRE_RANGE_SQUARED = 1700**2
+ENEMY_VISUAL_RANGE_SQUARED = 2000**2
 ENEMY_ACTION_TIMER = 6
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 
@@ -122,17 +122,19 @@ GRID_COLOR = Color("darkgreen")
 
 
 def generate_complementary_color(base_color: Color) -> Color:
-    """Generate a complementary bullet color based on a color."""
-    # Get the HSV values using Color.hsva
+    """Generate a complementary bullet color based on a color.
+
+    >>> generate_complementary_color(Color("red"))  # should return cyan
+    Color(0, 255, 255, 255)
+    >>> generate_complementary_color(Color("white"))  # should return white
+    Color(255, 255, 255, 255)
+    >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
+    Color(166, 0, 166, 255)
+    """
     h, s, v, a = base_color.hsva
 
-    # 1. Shift hue by 180° for complementary color
-    # 2. Increase brightness for better visibility
-    new_h = (h + 180) % 360
+    new_h = (h + 180) % 360  # Shift hue by 180° for complementary color
     new_s = min(100, s * 1.2)  # Slightly more saturated
     new_v = min(100, v * 1.3)  # Slightly brighter
 
-    complementary_color = Color(0)
-    complementary_color.hsva = (new_h, new_s, new_v, a)
-
-    return complementary_color
+    return Color.from_hsva(new_h, new_s, new_v, a)

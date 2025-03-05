@@ -505,7 +505,7 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.accelerate_randomly:
                 force_direction = self.random_point - self.pos
 
-        if force_direction.magnitude() != 0:
+        if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.thrust
             self.apply_force(force, dt)
 
