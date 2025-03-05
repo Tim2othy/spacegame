@@ -122,7 +122,15 @@ GRID_COLOR = Color("darkgreen")
 
 
 def generate_complementary_color(base_color: Color) -> Color:
-    """Generate a complementary bullet color based on a color."""
+    """Generate a complementary bullet color based on a color.
+
+    >>> generate_complementary_color(Color("red"))  # should return cyan
+    Color(0, 255, 255, 255)
+    >>> generate_complementary_color(Color("white"))  # should return white
+    Color(255, 255, 255, 255)
+    >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
+    Color(166, 0, 166, 255)
+    """
     h, s, v, a = base_color.hsva
 
     new_h = (h + 180) % 360  # Shift hue by 180° for complementary color
