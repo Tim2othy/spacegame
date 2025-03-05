@@ -101,25 +101,24 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:  # noqa: SIM102
-            if delta_target_ship != Vec2(0, 0):
-                target_ship_direction = delta_target_ship.normalize()
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):  # noqa: SIM102
+            target_ship_direction = delta_target_ship.normalize()
 
-                if self.target_ship.vel != Vec2(0, 0):
-                    multiplier = max(
-                        self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
-                    )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
-                else:
-                    multiplier = ROCKET_MIN_SPEED
+            if self.target_ship.vel != Vec2(0, 0):
+                multiplier = max(
+                    self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
+                )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
+            else:
+                multiplier = ROCKET_MIN_SPEED
 
-                desired_velocity = target_ship_direction * multiplier
-                force_direction = desired_velocity - self.vel
+            desired_velocity = target_ship_direction * multiplier
+            force_direction = desired_velocity - self.vel
 
-                if force_direction == Vec2(0, 0):
-                    force_direction = Vec2(EPSILON, EPSILON)
+            if force_direction == Vec2(0, 0):
+                force_direction = Vec2(EPSILON, EPSILON)
 
-                force = force_direction.normalize() * self.homing_thrust
-                self.apply_force(force, dt)
+            force = force_direction.normalize() * self.homing_thrust
+            self.apply_force(force, dt)
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
@@ -139,7 +138,6 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
-
             # Thrust flame
             camera.draw_polygon(
                 self.color.lerp(THRUST_COLOR, 0.5),
