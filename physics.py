@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
 
 BLACK = Color("black")
+GRAY = Color("gray")
 
 
 class Particle:
@@ -23,7 +24,7 @@ class Particle:
         """Create a new Particle."""
         self.pos = Vec2(pos)
         self.vel = Vec2(vel)
-        self.color = color
+        self.color = color  # TODO: Should this be self.color = Color(color)?
         self._max_lifetime = lifetime
         self.lifetime = lifetime
 
@@ -119,9 +120,6 @@ class PhysicalObject:
             camera (Camera): Camera to draw on
 
         """
-
-
-GRAY = Color("gray")
 
 
 class Disk(PhysicalObject):

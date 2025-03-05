@@ -18,6 +18,8 @@ ignore = [
     "D203",   # incorrect-blank-line-before-class
     "D213",   # multi-line-summary-second-line
     "COM812", # missing-trailing-comma, see https://docs.astral.sh/ruff/rules/missing-trailing-comma/
+    "TD002",  # TODO-missing-author-name
+    "TD003",  # TODO-missing-issue-link
 ]
 
 [tool.ruff.lint.extend-per-file-ignores]

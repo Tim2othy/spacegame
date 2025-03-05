@@ -3,7 +3,15 @@ import random
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from constants import ENEMY_VISUAL_RANGE
+from constants import (
+    HEALTH,
+)
+from enemy_ai import (
+    _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
+    _LOW_HEALTH_MATRIX,
+    _PLAYER_VISIBLE_MATRIX,
+    _STANDARD_MATRIX,
+)
 from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
 
@@ -11,7 +19,7 @@ from universe import Asteroid, Universe
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_enemy_hostility(enemy_type: type[BulletEnemy]):
     """Verify that any enemy will eventually find and hit the player."""
-    world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
+    world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
 
     enemy = enemy_type(Vec2(random.random() * world.x, random.random() * world.y), Vec2(0, 0), player_ship)
@@ -30,7 +38,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy]):
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_bullet_paths(enemy_type: type[BulletEnemy]):
-    world = Vec2(ENEMY_VISUAL_RANGE / 4, ENEMY_VISUAL_RANGE / 4)
+    world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
 
     enemy_start_right = Vec2(player_ship.pos + Vec2(500, 0))
@@ -67,6 +75,25 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
         universe.step(0.01)
 
     assert len(player_ship.projectiles) == 0, "Both bullets should have hit something"
-    # TODO: Once enemies have proper health, replace these checks by checking health instead
-    assert len(universe._enemy_ships) == 1, "One enemy should be unharmed"  # noqa: SLF001
-    assert universe._enemy_ships[0].pos == enemy_start_right, "The enemy on the right should be unharmed"  # noqa: SLF001
+    assert (enemy_right.health == HEALTH) is not (
+        enemy_up.health == HEALTH
+    ), "Exactly one enemy should be unharmed"
+    assert (
+        universe._enemy_ships[0].health == HEALTH  # noqa: SLF001
+    ), "The enemy on the right should be unharmed"
+
+
+@pytest.mark.parametrize(
+    "matrix",
+    [
+        _STANDARD_MATRIX,
+        _LOW_HEALTH_MATRIX,
+        _PLAYER_VISIBLE_MATRIX,
+        _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
+    ],
+)
+def test_transition_matrix_sums(matrix: dict):
+    """Verify that each row in the transition matrices sums to 1."""
+    for from_state, transitions in matrix.items():
+        total = sum(transitions.values())
+        assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"

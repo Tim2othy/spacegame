@@ -24,10 +24,18 @@ from constants import (
     PLANET_COLORS_SMALL,
     PLANET_RADIUS_MU,
     PLANET_RADIUS_SIGMA,
+    PLAYER_2_COLOR,
     SCREEN_SIZE,
 )
 from profiler import global_profiler
-from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
+from ship import (
+    BulletEnemy,
+    MarkovEnemy,
+    MissileEnemy,
+    PlayerShip,
+    RocketEnemy,
+    ShipInput,
+)
 from universe import Planet, Universe
 
 type Options = dict[str, bool]
@@ -38,8 +46,8 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
 
     Returns a tuple (universe, player_ships)
     """
-    num_enemies = 20 if options["small"] else 40
-    world_size = 15000 if options["small"] else 30000
+    num_enemies = 2 if options["small"] else 20
+    world_size = 20000 if options["small"] else 40000
     world_size_vec = Vec2(world_size, world_size)
     planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
@@ -47,9 +55,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
         PlayerShip(
             world_size_vec / 2,
             Vec2(0, 0),
-            10,
-            Color("darkslategray"),
-            ShipInput.arrows(),
+            spaceship_input=ShipInput.arrows(),
         ),
     ]
     if options["splitscreen"]:
@@ -57,9 +63,8 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
             PlayerShip(
                 world_size_vec / 2 + Vec2(50, 0),
                 Vec2(0, 0),
-                10,
-                Color("yellow"),
-                ShipInput.wasd(),
+                color=PLAYER_2_COLOR,
+                spaceship_input=ShipInput.wasd(),
             )
         )
     planets: list[Planet] = [
@@ -74,7 +79,10 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], ENEMY_SPAWN_WEIGHTS)[0]
+        enemy_type = random.choices(
+            [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy],
+            ENEMY_SPAWN_WEIGHTS,
+        )[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)

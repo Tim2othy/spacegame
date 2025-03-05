@@ -12,14 +12,20 @@ if TYPE_CHECKING:
     from ship import Ship
 
 from constants import (
+    BULLET_DAMAGE,
     EPSILON,
+    FLARE_COLOR,
+    FLARE_DAMAGE,
+    MISSILE_DAMAGE,
     MISSILE_HOMING_DURATION,
     MISSILE_HOMING_THRUST,
+    ROCKET_DAMAGE,
     ROCKET_HOMING_DURATION,
     ROCKET_HOMING_THRUST,
     ROCKET_MIN_SPEED,
     ROCKET_NONHOMING_DURATION,
     ROCKET_TIMES_HOMES,
+    THRUST_COLOR,
 )
 
 
@@ -37,6 +43,7 @@ class Bullet(PhysicalObject):
         """
         super().__init__(pos, vel, 1.0)
         self.color = Color(color)
+        self.damage = BULLET_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
@@ -76,7 +83,8 @@ class Rocket(Bullet):
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
         self._cycle_duration = self.homing_duration + self.nonhoming_duration
-        self.color = Color("red")
+        self.color = Color(color)
+        self.damage = ROCKET_DAMAGE
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics.
@@ -93,21 +101,20 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:  # noqa: SIM102
-            if delta_target_ship != Vec2(0, 0):
-                target_ship_direction = delta_target_ship.normalize()
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):  # noqa: SIM102
+            target_ship_direction = delta_target_ship.normalize()
 
-                if self.target_ship.vel != Vec2(0, 0):
-                    multiplier = max(self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED)
-                else:
-                    multiplier = ROCKET_MIN_SPEED
+            if self.target_ship.vel != Vec2(0, 0):
+                multiplier = max(
+                    self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
+                )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
+            else:
+                multiplier = ROCKET_MIN_SPEED
 
-                desired_velocity = target_ship_direction * multiplier
-                force_direction = desired_velocity - self.vel
+            desired_velocity = target_ship_direction * multiplier
+            force_direction = desired_velocity - self.vel
 
-                if force_direction == Vec2(0, 0):
-                    force_direction = Vec2(EPSILON, EPSILON)
-
+            if force_direction == Vec2(0, 0):
                 force = force_direction.normalize() * self.homing_thrust
                 self.apply_force(force, dt)
         super().step(dt)
@@ -129,20 +136,16 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
-
-            # Spooky homing body
-            self.color = Color("purple")
+            # Thrust flame
             camera.draw_polygon(
-                self.color.lerp(Color("blue"), 0.5),
+                self.color.lerp(THRUST_COLOR, 0.5),
                 [
-                    self.pos + 4 * (left + forward),
-                    self.pos + 4 * (left + backward),
-                    self.pos + 4 * (right + backward),
-                    self.pos + 4 * (right + forward),
+                    self.pos + 3 * (left + backward),
+                    self.pos + 4 * (left + 2 * backward),
+                    self.pos + 4 * (right + 2 * backward),
+                    self.pos + 3 * (right + backward),
                 ],
             )
-        else:
-            self.color = Color("red    ")
 
         # Missile body
         camera.draw_polygon(
@@ -174,7 +177,7 @@ class Missile(Rocket):
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
-        self.color = Color("orange")
+        self.damage = MISSILE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`.
@@ -203,17 +206,16 @@ class Missile(Rocket):
 class Flare(Bullet):
     """A round bullet, bobbing about."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2) -> None:
         """Create a new flare.
 
         Args:
             pos (Vec2): Initial position
             vel (Vec2): Velocity
-            color (Color): Border- and fill-color
 
         """
-        super().__init__(pos, vel, color)
-        self.color = Color("yellow")
+        super().__init__(pos, vel, FLARE_COLOR)
+        self.damage = FLARE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
