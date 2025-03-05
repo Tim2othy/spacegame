@@ -1,4 +1,3 @@
-import math
 import random
 
 import pytest
@@ -97,4 +96,4 @@ def test_transition_matrix_sums(matrix: dict):
     """Verify that each row in the transition matrices sums to 1."""
     for from_state, transitions in matrix.items():
         total = sum(transitions.values())
-        assert math.isclose(total, 1.0, rel_tol=1e-9), f"Row for {from_state} does not sum to 1: {total}"
+        assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"
