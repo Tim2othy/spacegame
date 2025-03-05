@@ -115,10 +115,8 @@ class Rocket(Bullet):
             force_direction = desired_velocity - self.vel
 
             if force_direction == Vec2(0, 0):
-                force_direction = Vec2(EPSILON, EPSILON)
-
-            force = force_direction.normalize() * self.homing_thrust
-            self.apply_force(force, dt)
+                force = force_direction.normalize() * self.homing_thrust
+                self.apply_force(force, dt)
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
