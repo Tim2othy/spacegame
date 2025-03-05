@@ -180,6 +180,9 @@ class MarkovAI:
         relative_pos = target_pos - ship_pos
         relative_vel = target_vel - ship_vel
 
+        if relative_pos == Vec2(0, 0):
+            return Vec2(0, 0)
+
         """
         We need to find the direction where:
             target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
@@ -237,13 +240,7 @@ class MarkovAI:
             BULLET_RELEASE_SPEED * intercept_time
         )
         # Normalize to get pure direction
-        if aim_direction.magnitude() > EPSILON:
-            aim_direction = aim_direction.normalize()
-        else:
-            # Fallback if direction calculation fails
-            aim_direction = relative_pos.normalize()
-
-        return aim_direction
+        return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
 
     def _execute_retreat_behavior(self) -> Vec2:
         """Execute retreat behavior - move away from player.
