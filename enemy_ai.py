@@ -288,7 +288,7 @@ class MarkovAI:
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
 
-        if force_direction.magnitude() != 0:
+        if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.ship.thrust
             self.ship.apply_force(force, dt)
 
