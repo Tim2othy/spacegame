@@ -56,7 +56,6 @@ ENEMY_ACTION_TIMER = 6
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 
 
-GRAY = Color("gray")
 PLAYER_COLOR = Color("darkslategray")
 PLAYER_2_COLOR = Color("darkred")
 

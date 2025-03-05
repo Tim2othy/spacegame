@@ -24,7 +24,6 @@ from constants import (
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_ROF,
     FLARE_SD_RELEASE_SPEED,
-    GRAY,
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     HEALTH,
@@ -48,6 +47,7 @@ if TYPE_CHECKING:
     from camera import Camera
 
 SHIP_SIZE = 10.0
+GRAY = Color("gray")
 
 
 class Ship(Disk):
