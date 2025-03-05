@@ -205,9 +205,8 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            return (
-                relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
-            ).normalize()
+            force = relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
+            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
