@@ -12,7 +12,6 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from constants import (
-    BULLET_ENEMY_COLOR,
     BULLET_RELEASE_SPEED,
     BULLET_ROF,
     DAMAGE_INDICATOR_TIME,
@@ -27,12 +26,9 @@ from constants import (
     GUNBARREL_LENGTH,
     GUNBARREL_WIDTH,
     HEALTH,
-    MARKOV_ENEMY_COLOR,
-    MISSILE_ENEMY_COLOR,
     MISSILE_ROF,
     NUM_FLARES,
     PLAYER_COLOR,
-    ROCKET_ENEMY_COLOR,
     ROCKET_RELEASE_SPEED,
     ROCKET_ROF,
     SD_FLARE_ANGLE,
@@ -48,6 +44,10 @@ if TYPE_CHECKING:
 
 SHIP_SIZE = 10.0
 GRAY = Color("gray")
+BULLET_ENEMY_COLOR = Color("lightblue")
+ROCKET_ENEMY_COLOR = Color("purple")
+MISSILE_ENEMY_COLOR = Color("lime")
+MARKOV_ENEMY_COLOR = Color("red")
 
 
 class Ship(Disk):

@@ -58,11 +58,6 @@ ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 
 PLAYER_COLOR = Color("darkslategray")
 PLAYER_2_COLOR = Color("darkred")
-
-BULLET_ENEMY_COLOR = Color("lightblue")
-ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("lime")
-MARKOV_ENEMY_COLOR = Color("red")
 THRUST_COLOR = Color("orange")
 
 
