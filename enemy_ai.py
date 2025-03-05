@@ -140,14 +140,12 @@ class MarkovAI:
         delta_target_ship = self.target_ship.pos - self.ship.pos
         relative_velocity = self.ship.vel - self.target_ship.vel
 
-        if delta_target_ship != Vec2(0, 0):
-            approach_direction = delta_target_ship.normalize()
-            desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
-            # Force required to change from current relative velocity to desired relative velocity
-            force_direction = desired_relative_vel - relative_velocity
-        else:
-            force_direction = Vec2(0, 0)
-        return force_direction
+        if delta_target_ship == Vec2(0, 0):
+            return Vec2(0, 0)
+        approach_direction = delta_target_ship.normalize()
+        desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
+        # Force required to change from current relative velocity to desired relative velocity
+        return desired_relative_vel - relative_velocity
 
     def _execute_attack_behavior(self) -> Vec2:
         """Execute attack behavior.
