@@ -3,9 +3,6 @@ import random
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from constants import (
-    HEALTH,
-)
 from enemy_ai import (
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     _LOW_HEALTH_MATRIX,
@@ -13,7 +10,14 @@ from enemy_ai import (
     _STANDARD_MATRIX,
     AIState,
 )
-from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
+from ship import (
+    HEALTH,
+    BulletEnemy,
+    MarkovEnemy,
+    MissileEnemy,
+    PlayerShip,
+    RocketEnemy,
+)
 from universe import Asteroid, Universe
 
 

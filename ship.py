@@ -13,25 +13,15 @@ from pygame.math import Vector2 as Vec2
 
 from constants import (
     BULLET_RELEASE_SPEED,
-    BULLET_ROF,
-    DAMAGE_INDICATOR_TIME,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
     ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
     EPSILON,
     FLARE_MEAN_RELEASE_SPEED,
-    FLARE_ROF,
     FLARE_SD_RELEASE_SPEED,
-    GUNBARREL_LENGTH,
-    GUNBARREL_WIDTH,
-    HEALTH,
-    MISSILE_ROF,
-    NUM_FLARES,
     PLAYER_COLOR,
     ROCKET_RELEASE_SPEED,
-    ROCKET_ROF,
-    SD_FLARE_ANGLE,
     THRUST_COLOR,
     generate_complementary_color,
 )
@@ -43,11 +33,27 @@ if TYPE_CHECKING:
     from camera import Camera
 
 SHIP_SIZE = 10.0
+
+# Rate of fire
+BULLET_ROF = 0.08
+ROCKET_ROF = 0.5
+MISSILE_ROF = 3.0
+FLARE_ROF = 5.0
+
 GRAY = Color("gray")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
+HEALTH = 100
+# ship constants
+GUNBARREL_LENGTH = 3  # relative to radius
+GUNBARREL_WIDTH = 0.5  # relative to radius
+
+DAMAGE_INDICATOR_TIME = 1
+"""Time (in seconds) a ship should flash red after taking damage"""
+NUM_FLARES = 40
+SD_FLARE_ANGLE = 25
 
 
 class Ship(Disk):
