@@ -131,3 +131,20 @@ def test_markov_enemy_aim() -> None:
         universe.step(0.01)
 
     assert player_ship.health != HEALTH, "Enemy should have hit the player"
+
+
+def test_markov_low_health_search() -> None:
+    """Test whether a low health MarkovEnemy eventually finds a distant player."""
+    world = Vec2(80000, 80000)
+    player_ship = PlayerShip(Vec2(1000, 1000), Vec2())
+    enemy = MarkovEnemy(Vec2(79500, 79500), Vec2(), player_ship)
+    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+    enemy.health = 1
+    enemy.ai.current_state = AIState.RETREAT
+
+    for _ in range(100000):
+        universe.step(0.01)
+        if player_ship.health < HEALTH:
+            break
+
+    assert player_ship.health < HEALTH, "Enemy should have eventually found and damaged player"
