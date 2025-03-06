@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 from constants import (
     BULLET_DAMAGE,
-    EPSILON,
     FLARE_COLOR,
     FLARE_DAMAGE,
     MISSILE_DAMAGE,
@@ -101,7 +100,7 @@ class Rocket(Bullet):
         is_homing_phase = time_in_current_cycle <= self.homing_duration
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):  # noqa: SIM102
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
             target_ship_direction = delta_target_ship.normalize()
 
             if self.target_ship.vel != Vec2(0, 0):
