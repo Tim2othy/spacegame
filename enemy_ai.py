@@ -32,17 +32,17 @@ class AIState(Enum):
 
 
 _STANDARD_MATRIX = {
-    AIState.SEARCH: {AIState.SEARCH: 0.8, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.SEARCH: 1},
-    AIState.AIM: {AIState.SEARCH: 1},
-    AIState.RETREAT: {AIState.SEARCH: 0.5, AIState.RETREAT: 0.5},
+    AIState.SEARCH: {AIState.SEARCH: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
+    AIState.ATTACK: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.8},
+    AIState.AIM: {AIState.SEARCH: 1.0},
+    AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
 }
 
 _LOW_HEALTH_MATRIX = {
-    AIState.SEARCH: {AIState.SEARCH: 0.9, AIState.RETREAT: 0.1},
-    AIState.ATTACK: {AIState.RETREAT: 1.0},
+    AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.4, AIState.RETREAT: 0.3},
+    AIState.ATTACK: {AIState.SEARCH: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
     AIState.AIM: {AIState.RETREAT: 1.0},
-    AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.RETREAT: 0.7},
+    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.1, AIState.RETREAT: 0.7},
 }
 
 _PLAYER_VISIBLE_MATRIX = {
@@ -54,7 +54,7 @@ _PLAYER_VISIBLE_MATRIX = {
 
 _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {
     AIState.SEARCH: {AIState.SEARCH: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+    AIState.ATTACK: {AIState.ATTACK: 0.0, AIState.AIM: 0.1, AIState.RETREAT: 0.9},
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
