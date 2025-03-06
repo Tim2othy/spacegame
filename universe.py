@@ -23,14 +23,16 @@ if TYPE_CHECKING:
     from ship import BulletEnemy, PlayerShip
 
 from constants import (
-    ASTEROID_ELLIPSIS_PARAMETER,
-    ASTEROID_ORBIT_PARAMETER,
-    ASTEROID_RADIUS_PARAMETER,
-    ASTEROID_SIZE_MIN,
     FPS_HISTORY_LENGTH,
     GRAVITATIONAL_CONSTANT,
     GRID_COLOR,
 )
+
+ASTEROID_SIZE_MIN = 20
+# these are parameters for exponential distributions
+ASTEROID_RADIUS_PARAMETER = 0.05
+ASTEROID_ORBIT_PARAMETER = 0.0004
+ASTEROID_ELLIPSIS_PARAMETER = 0.0001
 
 
 class Planet(Disk):

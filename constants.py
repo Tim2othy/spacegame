@@ -73,14 +73,8 @@ BOUNCE_DAMAGE_THRESHOLD = 1.3e6
 BOUNCE_DAMAGE_SCALAR = 1e-4
 """Bounce-damage is scaled by this amount."""
 
-
-# Asteroid related constants
 ASTEROIDS_PER_PLANET = 5
-ASTEROID_SIZE_MIN = 20
-# these are parameters for exponential distributions
-ASTEROID_RADIUS_PARAMETER = 0.05  # of the radii
-ASTEROID_ORBIT_PARAMETER = 0.0004  # orbit sizes
-ASTEROID_ELLIPSIS_PARAMETER = 0.0001  # and orbit ellipticities
+
 
 GRID_COLOR = Color("darkgreen")
 
