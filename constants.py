@@ -86,4 +86,4 @@ def generate_complementary_color(base_color: Color) -> Color:
     new_s = min(100, s * 1.2)  # Slightly more saturated
     new_v = min(100, v * 1.3)  # Slightly brighter
 
-    return Color.from_hsva(new_h, new_s, new_v, a)
+    return Color.from_hsva(new_h, new_s, new_v, a)  # type: ignore  # noqa: PGH003
