@@ -248,6 +248,8 @@ class MarkovAI:
             Vec2: Force direction
 
         """
+        if (self.ship.pos - self.target_ship.pos).magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+            return Vec2(0, 0)
         return self.ship.pos - self.target_ship.pos
 
     def update(self, dt: float) -> None:
