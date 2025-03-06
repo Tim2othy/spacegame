@@ -39,7 +39,7 @@ _STANDARD_MATRIX = {
 }
 
 _LOW_HEALTH_MATRIX = {
-    AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.4, AIState.RETREAT: 0.3},
+    AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
     AIState.ATTACK: {AIState.SEARCH: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
     AIState.AIM: {AIState.RETREAT: 1.0},
     AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.1, AIState.RETREAT: 0.7},
