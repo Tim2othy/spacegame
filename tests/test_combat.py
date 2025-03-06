@@ -116,3 +116,18 @@ def test_markov_enemy_retreat_behavior() -> None:
 
         distance_squared_1 = (player_ship.pos - enemy.pos).magnitude_squared()
         assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
+
+
+def test_markov_enemy_aim() -> None:
+    """Test that a MarkovEnemy will hit a moving player."""
+    world = Vec2(5000, 5000)
+    player_ship = PlayerShip(world / 2, Vec2(50, 40))
+    enemy = MarkovEnemy(world / 2 + Vec2(-800, 400), Vec2(27, -42), player_ship)
+    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+
+    # Run simulation for a few seconds
+    for _ in range(200):
+        enemy.ai.current_state = AIState.AIM
+        universe.step(0.01)
+
+    assert player_ship.health != HEALTH, "Enemy should have hit the player"
