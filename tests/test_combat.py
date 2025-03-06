@@ -38,6 +38,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy]):
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
+# TODO: add MarkovEnemy here and make sure test passes
 def test_bullet_paths(enemy_type: type[BulletEnemy]):
     world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
