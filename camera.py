@@ -35,9 +35,7 @@ class Camera:
         # Convert `center` to topleft corner
         self.pos: Vec2 = Vec2(center) - Vec2(surface.get_size()) / (2 * zoom)
 
-    def smoothly_transition_to(
-        self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25
-    ) -> None:
+    def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly transition the camera to a new location.
 
         Args:
@@ -85,9 +83,7 @@ class Camera:
 
         self.smoothly_transition_to(Vec2(rect.topleft), new_zoom, dt, transition_time)
 
-    def smoothly_focus_points(
-        self, points: list[Vec2], buff: float, dt: float, transition_time: float = 0.25
-    ) -> None:
+    def smoothly_focus_points(self, points: list[Vec2], buff: float, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
 
         Args:

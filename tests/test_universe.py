@@ -40,9 +40,9 @@ def test_planet_gravitation():
 
     disks: list[Disk] = asteroids + players
     for disk in disks:
-        assert isclose(disk.radius + planet.radius, disk.pos.distance_to(planet.pos), rel_tol=1e-3), (
-            "Gravity should have pulled the object to the planet's surface within 30 seconds"
-        )
+        assert isclose(
+            disk.radius + planet.radius, disk.pos.distance_to(planet.pos), rel_tol=1e-3
+        ), "Gravity should have pulled the object to the planet's surface within 30 seconds"
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
@@ -65,16 +65,14 @@ def test_mutual_bounce(absolute_vel: Vec2):
         universe.step(0.01)
 
     assert asteroid_a.pos.x < asteroid_b.pos.x, "The asteroids shouldn't fly past each other"
-    assert asteroid_a.vel.y == asteroid_b.vel.y == absolute_vel.y, (
-        "The asteroids shouldn't move vertically at all"
-    )
+    assert asteroid_a.vel.y == asteroid_b.vel.y == absolute_vel.y, "The asteroids shouldn't move vertically at all"
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
-    assert absolute_vel.x > asteroid_a.vel.x > (absolute_vel - relative_vel).x - 0.1, (
-        "asteroid_a should be moving to the left with less speed"
-    )
-    assert absolute_vel.x < asteroid_b.vel.x < (absolute_vel + relative_vel).x - 0.1, (
-        "asteroid_b should be moving to the right with less speed"
-    )
+    assert (
+        absolute_vel.x > asteroid_a.vel.x > (absolute_vel - relative_vel).x - 0.1
+    ), "asteroid_a should be moving to the left with less speed"
+    assert (
+        absolute_vel.x < asteroid_b.vel.x < (absolute_vel + relative_vel).x - 0.1
+    ), "asteroid_b should be moving to the right with less speed"
 
 
 @pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
@@ -96,9 +94,7 @@ def test_newtons_cradle(direction_angle: float):
     universe = Universe(world, [], [], [], asteroid_radius * 2)
     first_asteroid = Asteroid(world / 2, direction, asteroid_radius)
     universe.add_asteroids(first_asteroid)
-    other_asteroids = [
-        Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)
-    ]
+    other_asteroids = [Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)]
     universe.add_asteroids(*other_asteroids)
 
     # Run for 2 seconds
@@ -134,9 +130,7 @@ def test_precise_asteroid_collision():
         )
         start_asteroids.append(start_asteroid)
         hit_asteroid = Asteroid(
-            world / 2
-            + direction * (num_directions + 1) * asteroid_radius
-            + 1.99 * direction_rotated * asteroid_radius,
+            world / 2 + direction * (num_directions + 1) * asteroid_radius + 1.99 * direction_rotated * asteroid_radius,
             Vec2(0, 0),
             asteroid_radius,
         )
@@ -149,9 +143,9 @@ def test_precise_asteroid_collision():
         universe.step(0.001)
 
     for hit_asteroid in hit_asteroids:
-        assert 0.001 < hit_asteroid.vel.magnitude() / asteroid_radius < 0.1, (
-            "The hit asteroid should have gained a tiny bit of velocity"
-        )
+        assert (
+            0.001 < hit_asteroid.vel.magnitude() / asteroid_radius < 0.1
+        ), "The hit asteroid should have gained a tiny bit of velocity"
 
 
 def test_precise_collision_failures():
@@ -184,14 +178,12 @@ def test_precise_collision_failures():
             # Verify it really would fail successfully:
             asteroid_b = Asteroid(pos + delta, Vec2(), 100)
             universe.add_asteroids(asteroid_b)
-            assert asteroid_a.intersects_disk(asteroid_b), (
-                "The two asteroids should intersect, the test-setup did not go as expected."
-            )
+            assert asteroid_a.intersects_disk(
+                asteroid_b
+            ), "The two asteroids should intersect, the test-setup did not go as expected."
             universe.apply_bounce()
             assert asteroid_a.pos == pos, "asteroid_a should be unaffected, because collision-tests failed"
-            assert asteroid_b.pos == pos + delta, (
-                "asteroid_b should be unaffected, because collision-tests failed"
-            )
+            assert asteroid_b.pos == pos + delta, "asteroid_b should be unaffected, because collision-tests failed"
             return
 
     pytest.fail(

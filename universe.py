@@ -310,14 +310,10 @@ class Universe:
             return True
 
         for player in self._player_ships:
-            player.projectiles = [
-                p for p in player.projectiles if projectile_check(p, self._enemy_ships, True)
-            ]
+            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships, True)]
 
         for enemy in self._enemy_ships:
-            enemy.projectiles = [
-                p for p in enemy.projectiles if projectile_check(p, self._player_ships, False)
-            ]
+            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships, False)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
@@ -636,9 +632,7 @@ class Universe:
 
         # velocity_asteroid
         total_specific_energy = -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
-        orbital_velocity = (
-            2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)
-        ) ** 0.5
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)) ** 0.5
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 

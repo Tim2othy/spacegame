@@ -168,9 +168,7 @@ async def main() -> None:
 
                 # Draw minimap borders directly on SCREEN_SURFACE if needed
                 minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, universe.size.y)
-                minimap_camera.draw_horizontal_hairline(
-                    MINIMAP_BORDER_COLOR, 0, universe.size.x, universe.size.y - 1
-                )
+                minimap_camera.draw_horizontal_hairline(MINIMAP_BORDER_COLOR, 0, universe.size.x, universe.size.y - 1)
 
                 pygame.display.flip()
                 await asyncio.sleep(0)
@@ -218,9 +216,7 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
         for i, (name, value) in enumerate(options.items()):
             color = (255, 255, 255) if i == option_selection_ix else (100, 100, 100)
             option_text = font.render(f"{name}: <{'On' if value else 'Off'}>", antialias=True, color=color)
-            screen.blit(
-                option_text, option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50))
-            )
+            screen.blit(option_text, option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)))
 
         screen.blit(start_text, start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)))
         pygame.display.flip()
@@ -241,9 +237,7 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
                 elif event.key == pygame.K_DOWN:
                     option_selection_ix = (option_selection_ix + 1) % len(options)
                 elif event.key in {pygame.K_LEFT, pygame.K_RIGHT}:
-                    options[option_names[option_selection_ix]] = not options[
-                        option_names[option_selection_ix]
-                    ]
+                    options[option_names[option_selection_ix]] = not options[option_names[option_selection_ix]]
         await asyncio.sleep(0)
 
     return options

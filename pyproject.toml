@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [tool.ruff]
-line-length = 110
+line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -46,4 +46,4 @@ lint = [
 addopts = "--doctest-modules"
 
 [tool.black]
-line-length = 110
+line-length = 120
