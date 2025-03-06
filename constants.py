@@ -61,17 +61,8 @@ FLARE_SD_RELEASE_SPEED = 28
 RETREAT_HEALTH = 30.0
 DESIRED_APPROACH_SPEED = 500
 
-# physics constants
 GRAVITATIONAL_CONSTANT = 0.2
 EPSILON = 1e-8
-BOUNCINESS = 0.7
-"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
-
-BOUNCE_DAMAGE_THRESHOLD = 1.3e6
-"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
-
-BOUNCE_DAMAGE_SCALAR = 1e-4
-"""Bounce-damage is scaled by this amount."""
 
 ASTEROIDS_PER_PLANET = 5
 

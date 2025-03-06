@@ -11,10 +11,21 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-from constants import BOUNCE_DAMAGE_SCALAR, BOUNCE_DAMAGE_THRESHOLD, BOUNCINESS, GRAVITATIONAL_CONSTANT
+from constants import GRAVITATIONAL_CONSTANT
 
 BLACK = Color("black")
 GRAY = Color("gray")
+
+
+# physics constants
+BOUNCINESS = 0.7
+"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
+
+BOUNCE_DAMAGE_THRESHOLD = 1.3e6
+"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
+
+BOUNCE_DAMAGE_SCALAR = 1e-4
+"""Bounce-damage is scaled by this amount."""
 
 
 class Particle:
