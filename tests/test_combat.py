@@ -11,6 +11,7 @@ from enemy_ai import (
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
     _STANDARD_MATRIX,
+    AIState,
 )
 from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
@@ -97,3 +98,21 @@ def test_transition_matrix_sums(matrix: dict):
     for from_state, transitions in matrix.items():
         total = sum(transitions.values())
         assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"
+
+
+def test_markov_enemy_retreat_behavior() -> None:
+    """Test that a MarkovEnemy moves away from player when in retreat mode."""
+    world = Vec2(1000, 1000)
+    player_ship = PlayerShip(world / 2, Vec2())
+    enemy = MarkovEnemy(world / 2 + Vec2(100, 100), Vec2(), player_ship)
+    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+
+    # Run simulation for a few seconds
+    for _ in range(10):
+        distance_squared_0 = (player_ship.pos - enemy.pos).magnitude_squared()
+        for _ in range(100):
+            enemy.ai.current_state = AIState.RETREAT
+            universe.step(0.01)
+
+        distance_squared_1 = (player_ship.pos - enemy.pos).magnitude_squared()
+        assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
