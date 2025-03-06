@@ -12,11 +12,11 @@ from enemy_ai import (
     _PLAYER_VISIBLE_MATRIX,
     _STANDARD_MATRIX,
 )
-from ship import BulletEnemy, MissileEnemy, PlayerShip, RocketEnemy
+from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Asteroid, Universe
 
 
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
 def test_enemy_hostility(enemy_type: type[BulletEnemy]):
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(1000, 1000)
