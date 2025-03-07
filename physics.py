@@ -98,6 +98,14 @@ class PhysicalObject:
         """
         return self._vel - other._vel  # noqa: SLF001
 
+    def distance_squared_to(self, other: PhysicalObject) -> float:
+        """Return the squared distance between `self` and `other`."""
+        return self.pos_relative_to(other).length_squared()
+
+    def distance_to(self, other: PhysicalObject) -> float:
+        """Return the distance between `self` and `other`."""
+        return self.pos_relative_to(other).length()
+
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
 
