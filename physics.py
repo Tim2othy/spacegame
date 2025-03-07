@@ -37,17 +37,17 @@ class Particle:
         self._vel = Vec2(vel)
         self.color = color  # TODO: Should this be self.color = Color(color)?
         self._max_lifetime = lifetime
-        self.lifetime = lifetime
+        self._lifetime = lifetime
 
     def step(self, dt: float) -> bool:
         """Apply velocity to self and reduce lifetime. Returns True if lifetime has elapsed."""
         self._pos += dt * self._vel
-        self.lifetime -= dt
-        return self.lifetime > 0
+        self._lifetime -= dt
+        return self._lifetime > 0
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        color = BLACK.lerp(self.color, max(0, min(1, self.lifetime / self._max_lifetime)))
+        color = BLACK.lerp(self.color, max(0, min(1, self._lifetime / self._max_lifetime)))
         camera.draw_pixel(color, self._pos)
 
 
