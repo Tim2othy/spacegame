@@ -33,11 +33,11 @@ class Particle:
 
     def __init__(self, pos: Vec2, vel: Vec2, color: Color, lifetime: float) -> None:
         """Create a new Particle."""
-        self._pos = Vec2(pos)
-        self._vel = Vec2(vel)
-        self._base_color = color  # TODO: Should this be self.color = Color(color)?
-        self._max_lifetime = lifetime
-        self._lifetime = lifetime
+        self._pos: Vec2 = Vec2(pos)
+        self._vel: Vec2 = Vec2(vel)
+        self._base_color: Color = color  # TODO: Should this be self.color = Color(color)?
+        self._max_lifetime: float = lifetime
+        self._lifetime: float = lifetime
 
     def step(self, dt: float) -> bool:
         """Apply velocity to self and reduce lifetime. Returns True if lifetime has elapsed."""
