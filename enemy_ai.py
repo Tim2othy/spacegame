@@ -102,10 +102,7 @@ class MarkovAI:
 
         """
         # Get context information
-        delta = self.target.pos_relative_to(self.ship)
-        distance_squared = delta.length_squared()
-
-        can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
+        can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH
 
         # Simply select the appropriate pre-computed matrix based on context
@@ -264,9 +261,9 @@ class MarkovAI:
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.pos_relative_to(
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.distance_squared_to(
             self.target
-        ).length_squared() < ENEMY_FIRE_RANGE_SQUARED
+        ) < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:
