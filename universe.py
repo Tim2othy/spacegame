@@ -638,7 +638,7 @@ class Universe:
             semi_major_axis = current_min_a * random.uniform(1.0, 1.3)
             mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis / current_min_a)
             radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
-            eccentricity = random.betavariate(2, 8)  # mean around 0.2
+            eccentricity = random.betavariate(1, 15)
             true_anomaly = random.uniform(0, 2 * math.pi)
             orbit_direction = random.uniform(0, 2 * math.pi)
             planet_angle = random.choice([90, 270])
