@@ -135,11 +135,9 @@ def test_disk_bounce():
             bounce_count += 1
             assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
 
-            assert isclose(disk_c.radius + disk_b.radius, disk_c._pos.distance_to(disk_b._pos)), "Disks should be flush"
+            assert isclose(disk_c.radius + disk_b.radius, disk_c.distance_to(disk_b)), "Disks should be flush"
         else:
-            assert not isclose(disk_c.radius + disk_b.radius, disk_c._pos.distance_to(disk_b._pos)), (
-                "Disks should not be flush"
-            )
+            assert not isclose(disk_c.radius + disk_b.radius, disk_c.distance_to(disk_b)), "Disks should not be flush"
         if bounce_count <= 0:
             assert disk_c._vel == Vec2(1, 0)
             assert disk_b._vel == Vec2(0, 0)
