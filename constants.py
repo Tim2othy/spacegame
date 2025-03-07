@@ -55,8 +55,8 @@ def generate_complementary_color(base_color: Color) -> Color:
     """
     h, s, v, a = base_color.hsva
 
-    new_h = (h + 180) % 360  # Shift hue by 180° for complementary color
-    new_s = min(100, s * 1.2)  # Slightly more saturated
-    new_v = min(100, v * 1.3)  # Slightly brighter
+    new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
+    new_s = min(100.0, s * 1.2)  # Slightly more saturated
+    new_v = min(100.0, v * 1.3)  # Slightly brighter
 
-    return Color.from_hsva(new_h, new_s, new_v, a)  # type: ignore  # noqa: PGH003
+    return Color.from_hsva(new_h, new_s, new_v, a)
