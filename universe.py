@@ -412,7 +412,7 @@ class Universe:
 
         - p is the player-ship
         - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
-          planets andasteroids
+          planets and asteroids
         - Here, z_chunk_min=2 and z_chunk_max=4.
         - The rectangular grid comprises the chunks. Each rectangle thus has height z_chunk_size,
           and width x_chunk_size.
