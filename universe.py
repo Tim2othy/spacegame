@@ -254,7 +254,7 @@ class Universe:
             self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
 
     def create_particle_cloud(
-        self, source: PhysicalObject, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
+        self, source: PhysicalObject, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
     ) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
@@ -266,7 +266,7 @@ class Universe:
         for _ in range(n):
             random_vel = Vec2()
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
-            vel = initial_vel + random_vel
+            vel = source._vel + random_vel
             random_lifetime = random.uniform(lifetime / 2, lifetime)
             self._particles.append(Particle(source._pos, vel, color, random_lifetime))
 
@@ -294,10 +294,10 @@ class Universe:
                     return False
             for ship in target_ships:
                 if ship.contains_center_of(projectile):
-                    self.create_particle_cloud(ship, 100, ship.color, ship.vel, 150, 2)
+                    self.create_particle_cloud(ship, 100, ship.color, 150, 2)
                     ship.suffer_damage(projectile.damage)
                     if ship.health <= 0:
-                        self.create_particle_cloud(ship, 300, ship.color, ship.vel, 200, 8)
+                        self.create_particle_cloud(ship, 300, ship.color, 200, 8)
                         if is_player_projectile:
                             self._enemy_ships.remove(
                                 ship
