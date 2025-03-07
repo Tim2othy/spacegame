@@ -63,7 +63,7 @@ class Profiler:
         """Profiles the execution time of a method."""
 
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any):  # noqa: ANN401
+        def wrapper(*args: Any, **kwargs: Any) -> Callable:  # noqa: ANN401
             start_time = time.perf_counter_ns()
             result = func(*args, **kwargs)
             end_time = time.perf_counter_ns()
