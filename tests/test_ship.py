@@ -7,7 +7,7 @@ from ship import Ship
 EPSILON = 1e-8
 
 
-def test_shooting():
+def test_shooting() -> None:
     gun_cooldown = 0.123
     bullet_count = 10
     ship = Ship(Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
@@ -28,7 +28,7 @@ def test_shooting():
         assert (reference_delta - delta).length_squared() < EPSILON, "Bullets should be evenly spaced"
 
 
-def test_movement():
+def test_movement() -> None:
     ship = Ship(Vec2(), Vec2(), 10)
     ship.thruster_rot_left = True
     ship.step(0.01)

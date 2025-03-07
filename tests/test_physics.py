@@ -9,13 +9,13 @@ from camera import Camera
 from physics import Disk, PhysicalObject
 
 
-def test_step():
+def test_step() -> None:
     obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
     obj.step(0.25)
     assert obj._pos == Vec2(0.25, -0.25)
 
 
-def test_gravitational_force():
+def test_gravitational_force() -> None:
     obj = PhysicalObject(Vec2(), Vec2(), 1)
     small_force = obj.gravitational_force(PhysicalObject(Vec2(1, 2), Vec2(), 1))
     large_force = obj.gravitational_force(PhysicalObject(Vec2(-1, 2), Vec2(), 2))
@@ -30,7 +30,7 @@ def test_gravitational_force():
     assert isclose(4, small_force.length() / double_distance_force.length())
 
 
-def test_threedimensional_disk_mass_scaling():
+def test_threedimensional_disk_mass_scaling() -> None:
     radius = 1.23
     disk = Disk(Vec2(), Vec2(), radius)
     double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
@@ -41,7 +41,7 @@ def test_threedimensional_disk_mass_scaling():
 
 
 @pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)])
-def test_relative_bounce(relative_vel: Vec2):
+def test_relative_bounce(relative_vel: Vec2) -> None:
     # Bounces should work the same if the disks have the same velocity relative
     # to each other. So if we add an absolute_vel to their velocities, the
     # result shouldn't change.
@@ -73,7 +73,7 @@ def test_relative_bounce(relative_vel: Vec2):
         )
 
 
-def test_disk_drawing():
+def test_disk_drawing() -> None:
     width, height = 50, 50
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
@@ -118,7 +118,7 @@ def test_disk_drawing():
     camera.surface.unlock()
 
 
-def test_disk_bounce():
+def test_disk_bounce() -> None:
     disk_a = Disk(Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
     disk_b = Disk(Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
 

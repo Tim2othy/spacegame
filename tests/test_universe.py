@@ -11,7 +11,7 @@ from universe import Planet, Star, Universe
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
-def test_mutual_bounce(absolute_vel: Vec2):
+def test_mutual_bounce(absolute_vel: Vec2) -> None:
     # Two planets
     #  o   →               ←   O
     #  planet_a     planet_b
@@ -41,7 +41,7 @@ def test_mutual_bounce(absolute_vel: Vec2):
 
 
 @pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
-def test_newtons_cradle(direction_angle: float):
+def test_newtons_cradle(direction_angle: float) -> None:
     # When we have a setup like this:
     #  o-->   oooo
     # We expect it to look something like this afterwards:
@@ -70,7 +70,7 @@ def test_newtons_cradle(direction_angle: float):
     assert other_planets[-1]._vel * direction > 0.01, "Last planet should have gained speed"
 
 
-def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch):
+def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
     # In several different directions, just barely have two planets without gravity graze past each other.
 
     world = Vec2(3000, 3000)
@@ -113,7 +113,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch):
         )
 
 
-def test_precise_collision_failures():
+def test_precise_collision_failures() -> None:
     # This is kind of a bad test, because it tests the implementation of universe-collision
     # is correct by testing that it fails if we relax the rules just a little.
     # This is useful to know, to see that the implementation is maximally efficient.
@@ -158,7 +158,7 @@ def test_precise_collision_failures():
     )
 
 
-def test_star_gravitation():
+def test_star_gravitation() -> None:
     world = Vec2(3000, 3000)
     worldcenter = world / 2
     star = Star(world / 2, 1000)

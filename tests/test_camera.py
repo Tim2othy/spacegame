@@ -6,7 +6,7 @@ from camera import Camera
 EPSILON = 1e-8
 
 
-def test_smoothly_transition_to():
+def test_smoothly_transition_to() -> None:
     camera = Camera(Vec2(1, 1), 1, pygame.Surface((2, 2)))
 
     assert camera.pos == Vec2(0, 0), "Camera's top-left corner should have been at (0,0)"
@@ -32,7 +32,7 @@ def test_smoothly_transition_to():
     assert abs(camera.zoom - target_zoom) < EPSILON, "Camera should have reached target zoom"
 
 
-def test_smoothly_focus_rectangle():
+def test_smoothly_focus_rectangle() -> None:
     camera = Camera(Vec2(1, 1), 1, pygame.Surface((1, 1)))
 
     rect_topleft = Vec2(-70, -60)
@@ -44,7 +44,7 @@ def test_smoothly_focus_rectangle():
     assert abs(1 - camera.zoom * size) < EPSILON
 
 
-def test_smoothly_focus_points():
+def test_smoothly_focus_points() -> None:
     width, height = 10, 10
     buff = 2
     camera = Camera(Vec2(width, height) / 2, 1, pygame.Surface((width, height)))

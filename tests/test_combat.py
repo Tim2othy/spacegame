@@ -15,7 +15,7 @@ from universe import Planet, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
-def test_enemy_hostility(enemy_type: type[BulletEnemy]):
+def test_enemy_hostility(enemy_type: type[BulletEnemy]) -> None:
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
@@ -36,7 +36,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy]):
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 # TODO: add MarkovEnemy here and make sure test passes
-def test_bullet_paths(enemy_type: type[BulletEnemy]):
+def test_bullet_paths(enemy_type: type[BulletEnemy]) -> None:
     world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
 
@@ -87,7 +87,7 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
         _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     ],
 )
-def test_transition_matrix_sums(matrix: dict):
+def test_transition_matrix_sums(matrix: dict) -> None:
     """Verify that each row in the transition matrices sums to 1."""
     for from_state, transitions in matrix.items():
         total = sum(transitions.values())
