@@ -18,7 +18,7 @@ from ship import (
     PlayerShip,
     RocketEnemy,
 )
-from universe import Asteroid, Universe
+from universe import Planet, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
@@ -52,15 +52,15 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
     enemy_right = enemy_type(enemy_start_right, Vec2(0, 0), player_ship)
     enemy_up = enemy_type(enemy_start_up, Vec2(0, 0), player_ship)
 
-    asteroid = Asteroid(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1)
+    planet = Planet(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1)
     universe = Universe(
         world,
         [],
         [player_ship],
         [enemy_right, enemy_up],
-        max(player_ship.radius, enemy_right.radius, enemy_up.radius, asteroid.radius) * 2,
+        max(player_ship.radius, enemy_right.radius, enemy_up.radius, planet.radius) * 2,
     )
-    universe.add_asteroids(asteroid)
+    universe.add_planet(planet)
 
     bullet_right = player_ship.new_bullet(player_ship.pos, Vec2(100, 0))
     bullet_up = player_ship.new_bullet(player_ship.pos, Vec2(0, 100))

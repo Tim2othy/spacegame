@@ -3,22 +3,21 @@ from math import isclose
 from typing import TYPE_CHECKING
 
 import pytest
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from ship import PlayerShip
-from universe import Asteroid, Planet, Universe
+from universe import Planet, Star, Universe
 
 if TYPE_CHECKING:
     from physics import Disk
 
 
-def test_planet_gravitation():
+def test_star_gravitation():
     world = Vec2(3000, 3000)
     worldcenter = world / 2
-    planet = Planet(world / 2, 1000, Color(0, 0, 0))
+    star = Star(world / 2, 1000)
 
-    asteroids = []
+    planet = []
     players = []
     num_disks = 23
     for i in range(num_disks):
@@ -28,50 +27,48 @@ def test_planet_gravitation():
         if i % 4 == 0 or i % 3 == 0:
             players.append(PlayerShip(pos, Vec2(100, -200)))
         else:
-            asteroids.append(Asteroid(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
+            planet.append(Planet(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
 
-    universe = Universe(
-        world, [planet], players, [], max(*(a.radius for a in asteroids), *(p.radius for p in players)) * 2
-    )
-    universe.add_asteroids(*asteroids)
+    universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
+    universe.add_planet(*planet)
 
     for _ in range(30 * 100):
         universe.step(0.01)
 
-    disks: list[Disk] = asteroids + players
+    disks: list[Disk] = planet + players
     for disk in disks:
-        assert isclose(disk.radius + planet.radius, disk.pos.distance_to(planet.pos), rel_tol=1e-3), (
-            "Gravity should have pulled the object to the planet's surface within 30 seconds"
+        assert isclose(disk.radius + star.radius, disk.pos.distance_to(star.pos), rel_tol=1e-3), (
+            "Gravity should have pulled the object to the star's surface within 30 seconds"
         )
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
 def test_mutual_bounce(absolute_vel: Vec2):
-    # Two asteroids
+    # Two planets
     #  o   →               ←   O
-    #  asteroid_a     asteroid_b
+    #  planet_a     planet_b
 
-    # Bounces should be relative to the two asteroids' velocities:
+    # Bounces should be relative to the two planets' velocities:
     start_y = 15
     relative_vel = Vec2(5, 0)
-    # Boost both asteroids by absolute_vel
-    asteroid_a = Asteroid(Vec2(10, start_y), absolute_vel + relative_vel, 1)
-    asteroid_b = Asteroid(Vec2(20, start_y), absolute_vel - relative_vel, 0.9)
+    # Boost both planets by absolute_vel
+    planet_a = Planet(Vec2(10, start_y), absolute_vel + relative_vel, 1)
+    planet_b = Planet(Vec2(20, start_y), absolute_vel - relative_vel, 0.9)
 
-    universe = Universe(Vec2(30, 30), [], [], [], max(asteroid_a.radius, asteroid_b.radius) * 2)
-    universe.add_asteroids(asteroid_a, asteroid_b)
+    universe = Universe(Vec2(30, 30), [], [], [], max(planet_a.radius, planet_b.radius) * 2)
+    universe.add_planet(planet_a, planet_b)
 
     for _ in range(150):
         universe.step(0.01)
 
-    assert asteroid_a.pos.x < asteroid_b.pos.x, "The asteroids shouldn't fly past each other"
-    assert asteroid_a.vel.y == asteroid_b.vel.y == absolute_vel.y, "The asteroids shouldn't move vertically at all"
+    assert planet_a.pos.x < planet_b.pos.x, "The planets shouldn't fly past each other"
+    assert planet_a.vel.y == planet_b.vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
-    assert absolute_vel.x > asteroid_a.vel.x > (absolute_vel - relative_vel).x - 0.1, (
-        "asteroid_a should be moving to the left with less speed"
+    assert absolute_vel.x > planet_a.vel.x > (absolute_vel - relative_vel).x - 0.1, (
+        "planet_a should be moving to the left with less speed"
     )
-    assert absolute_vel.x < asteroid_b.vel.x < (absolute_vel + relative_vel).x - 0.1, (
-        "asteroid_b should be moving to the right with less speed"
+    assert absolute_vel.x < planet_b.vel.x < (absolute_vel + relative_vel).x - 0.1, (
+        "planet_b should be moving to the right with less speed"
     )
 
 
@@ -83,68 +80,69 @@ def test_newtons_cradle(direction_angle: float):
     #         oooo    o->
     # (https://en.wikipedia.org/wiki/Newton's_cradle)
     # At least, if bounciness==1, which is not the case here, but
-    # we still expect the rightmost asteroid to gain velocity afterwards.
+    # we still expect the rightmost planet to gain velocity afterwards.
 
     world = Vec2(3000, 3000)
-    asteroid_radius = 50
+    planet_radius = 50
 
     direction = Vec2()
-    direction.from_polar((asteroid_radius, direction_angle))
+    direction.from_polar((planet_radius, direction_angle))
 
-    universe = Universe(world, [], [], [], asteroid_radius * 2)
-    first_asteroid = Asteroid(world / 2, direction, asteroid_radius)
-    universe.add_asteroids(first_asteroid)
-    other_asteroids = [Asteroid(world / 2 + 2.1 * i * direction, Vec2(), asteroid_radius) for i in range(1, 6)]
-    universe.add_asteroids(*other_asteroids)
+    universe = Universe(world, [], [], [], planet_radius * 2)
+    first_planet = Planet(world / 2, direction, planet_radius)
+    universe.add_planet(first_planet)
+    other_planets = [Planet(world / 2 + 2.1 * i * direction, Vec2(), planet_radius) for i in range(1, 6)]
+    universe.add_planet(*other_planets)
 
     # Run for 2 seconds
     for _ in range(200):
         universe.step(0.01)
 
-    assert first_asteroid.vel * direction < asteroid_radius**2, "First asteroid should have lost speed"
-    assert other_asteroids[-1].vel * direction > 0.01, "Last asteroid should have gained speed"
+    assert first_planet.vel * direction < planet_radius**2, "First planet should have lost speed"
+    assert other_planets[-1].vel * direction > 0.01, "Last planet should have gained speed"
 
 
-def test_precise_asteroid_collision():
-    # In several different directions, just barely have two asteroids graze past each other.
+def test_precise_planet_collision():
+    # In several different directions, just barely have two planets without gravity graze past each other.
 
     world = Vec2(3000, 3000)
-    asteroid_radius = 50
+    planet_radius = 50
 
     num_directions = 23
 
-    universe = Universe(world, [], [], [], asteroid_radius * 2)
+    universe = Universe(world, [], [], [], planet_radius * 2)
 
-    start_asteroids: list[Asteroid] = []
-    hit_asteroids: list[Asteroid] = []
+    universe.apply_gravity = lambda dt: None  # noqa: ARG005
+    start_planets: list[Planet] = []
+    hit_planets: list[Planet] = []
 
     for i in range(num_directions):
         direction = Vec2()
         direction.from_polar((1, i * 360 / num_directions))
         direction_rotated = direction.rotate(90)
 
-        start_asteroid = Asteroid(
-            world / 2 + direction * num_directions * asteroid_radius,
-            direction * asteroid_radius,
-            asteroid_radius,
+        start_planet = Planet(
+            world / 2 + direction * num_directions * planet_radius,
+            direction * planet_radius,
+            planet_radius,
         )
-        start_asteroids.append(start_asteroid)
-        hit_asteroid = Asteroid(
-            world / 2 + direction * (num_directions + 1) * asteroid_radius + 1.99 * direction_rotated * asteroid_radius,
+        start_planets.append(start_planet)
+        hit_planet = Planet(
+            world / 2 + direction * (num_directions + 1) * planet_radius + 1.99 * direction_rotated * planet_radius,
             Vec2(0, 0),
-            asteroid_radius,
+            planet_radius,
         )
-        hit_asteroids.append(hit_asteroid)
+        hit_planets.append(hit_planet)
 
-        universe.add_asteroids(start_asteroid, hit_asteroid)
+        universe.add_planet(start_planet, hit_planet)
 
     # Run the universe for 1 second
     for _ in range(1000):
         universe.step(0.001)
 
-    for hit_asteroid in hit_asteroids:
-        assert 0.001 < hit_asteroid.vel.magnitude() / asteroid_radius < 0.1, (
-            "The hit asteroid should have gained a tiny bit of velocity"
+    for hit_planet in hit_planets:
+        assert 0.001 < hit_planet.vel.magnitude() / planet_radius < 0.1, (
+            "The hit planet should have gained a tiny bit of velocity"
         )
 
 
@@ -158,32 +156,32 @@ def test_precise_collision_failures():
     for _ in range(1000):
         # This sets the universe-chunk-calculation
         universe = Universe(world, [], [], [], 190)
-        # Setting universe.max_nonplanet_size overrides the check for asteroid-radii, without
-        # changing the way chunks are calculated. So asteroids are added to chunks that are
+        # Setting universe.max_nonstar_size overrides the check for planet-radii, without
+        # changing the way chunks are calculated. So planets are added to chunks that are
         # effectively too small for them.
-        universe.max_nonplanet_size = 200
+        universe.max_nonstar_size = 200
 
         pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
-        asteroid_a = Asteroid(pos, Vec2(), 100)
-        universe.add_asteroids(asteroid_a)
+        planet_a = Planet(pos, Vec2(), 100)
+        universe.add_planet(planet_a)
 
         delta = Vec2()
         delta.from_polar((199, random.random() * 360))
 
-        # Now pos + delta has distance 199 from asteroid_a, so if we put an asteroid of
-        # radius 200 at (pos+delta), then that asteroid would definitely intersect asteroid_a,
-        # and hence querying asteroids near (pos+delta) should return asteroid_a
+        # Now pos + delta has distance 199 from planet_a, so if we put an planet of
+        # radius 200 at (pos+delta), then that planet would definitely intersect planet_a,
+        # and hence querying planets near (pos+delta) should return planet_a
 
-        if asteroid_a not in universe._nearby_asteroids(pos + delta):  # noqa: SLF001
+        if planet_a not in universe._nearby_planets(pos + delta):  # noqa: SLF001
             # Verify it really would fail successfully:
-            asteroid_b = Asteroid(pos + delta, Vec2(), 100)
-            universe.add_asteroids(asteroid_b)
-            assert asteroid_a.intersects_disk(asteroid_b), (
-                "The two asteroids should intersect, the test-setup did not go as expected."
+            planet_b = Planet(pos + delta, Vec2(), 100)
+            universe.add_planet(planet_b)
+            assert planet_a.intersects_disk(planet_b), (
+                "The two planets should intersect, the test-setup did not go as expected."
             )
             universe.apply_bounce()
-            assert asteroid_a.pos == pos, "asteroid_a should be unaffected, because collision-tests failed"
-            assert asteroid_b.pos == pos + delta, "asteroid_b should be unaffected, because collision-tests failed"
+            assert planet_a.pos == pos, "planet_a should be unaffected, because collision-tests failed"
+            assert planet_b.pos == pos + delta, "planet_b should be unaffected, because collision-tests failed"
             return
 
     pytest.fail(
