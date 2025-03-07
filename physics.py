@@ -207,7 +207,7 @@ class Disk(PhysicalObject):
         False
 
         """
-        return self.pos_relative_to(pobj).length_squared() < self._radius_squared
+        return self.distance_squared_to(pobj) < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
@@ -232,7 +232,7 @@ class Disk(PhysicalObject):
         True
 
         """
-        return self.pos_relative_to(disk).length_squared() < (self.radius + disk.radius) ** 2
+        return self.distance_squared_to(disk) < (self.radius + disk.radius) ** 2
 
     def bounce_disks(self, disk: Disk) -> float | None:
         """Bounce two disks off each other if they are overlapping.
