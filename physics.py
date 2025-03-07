@@ -199,7 +199,7 @@ class Disk(PhysicalObject):
         False
 
         """
-        return self._pos.distance_squared_to(pobj._pos) < self._radius_squared
+        return self.pos_relative_to(pobj).magnitude_squared() < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
