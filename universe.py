@@ -311,7 +311,7 @@ class Universe:
                         # collision-detection more idiomatic. If we do, we can also change the above calls
                         # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
                         collision_distance_squared = 10**2
-                        if projectile.pos_relative_to(enemy_projectile).length_squared < collision_distance_squared:
+                        if projectile.distance_squared_to(enemy_projectile) < collision_distance_squared:
                             ship.projectiles.remove(enemy_projectile)
                             return False
 
