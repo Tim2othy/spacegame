@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import random
 from itertools import chain
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import pygame
 from pygame import Color
@@ -116,20 +116,20 @@ class Universe:
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
 
-        self._vec_to_planet_chunk = lambda vec: (
-            math.floor(vec.x / max_nonstar_size),
-            math.floor(vec.y / max_nonstar_size),
+        self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
+            math.floor(pobj._pos.x / max_nonstar_size),  # TODO: Private member access
+            math.floor(pobj._pos.y / max_nonstar_size),
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
         star_chunk_size = max(500, 2 * max([p.radius for p in stars], default=0))
-        self._vec_to_star_chunk = lambda vec: (
-            math.floor(vec.x / star_chunk_size),
-            math.floor(vec.y / star_chunk_size),
+        self._pobj_to_star_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
+            math.floor(pobj._pos.x / star_chunk_size),  # TODO: Private member access
+            math.floor(pobj._pos.y / star_chunk_size),
         )
         self._star_chunks: dict[StarChunk, list[Star]] = {}
         for star in stars:
-            chunk = self._vec_to_star_chunk(star._pos)
+            chunk = self._pobj_to_star_chunk(star)
             self._star_chunks.setdefault(chunk, []).append(star)
         self.stars = stars
 
@@ -148,18 +148,18 @@ class Universe:
         for planet in args:
             if planet.radius * 2 > self.max_nonstar_size:
                 raise ValueError
-            chunk = self._vec_to_planet_chunk(planet._pos)
+            chunk = self._pobj_to_planet_chunk(planet)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
-    def _nearby_stars(self, vec: Vec2) -> Iterator[Star]:
-        (x, y) = self._vec_to_star_chunk(vec)
+    def _nearby_stars(self, pobj: PhysicalObject) -> Iterator[Star]:
+        (x, y) = self._pobj_to_star_chunk(pobj)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
                 yield from self._star_chunks.get(chunk, [])
 
-    def _nearby_planets(self, vec: Vec2) -> Iterator[Planet]:
-        (x, y) = self._vec_to_planet_chunk(vec)
+    def _nearby_planets(self, pobj: PhysicalObject) -> Iterator[Planet]:
+        (x, y) = self._pobj_to_planet_chunk(pobj)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
@@ -178,7 +178,7 @@ class Universe:
         for body in self.stars:
             force_sum += pobj.gravitational_force(body)
 
-        for body in self._nearby_planets(pobj._pos):
+        for body in self._nearby_planets(pobj):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
@@ -203,11 +203,11 @@ class Universe:
         # Bounce player_ships
         for player in self._player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in chain(self._enemy_ships, self._nearby_planets(player._pos)):
+            for body in chain(self._enemy_ships, self._nearby_planets(player)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
                     self.create_particles_on_disk(body, player._pos, 25, player.color, 100)
-            for star in self._nearby_stars(player._pos):
+            for star in self._nearby_stars(player):
                 if damage := player.bounce_off_of_disk(star) is not None:
                     player.suffer_damage(damage)
                     self.create_particles_on_disk(star, player._pos, 25, player.color, 100)
@@ -215,20 +215,20 @@ class Universe:
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship._pos)):
+            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship)):
                 if damage := enemy_ship.bounce_disks(body) is not None:
                     enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_disks(body)
-            for star in self._nearby_stars(enemy_ship._pos):
+            for star in self._nearby_stars(enemy_ship):
                 if damage := enemy_ship.bounce_off_of_disk(star) is not None:
                     enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_off_of_disk(star)
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
-            for body in self._nearby_planets(planet._pos):
+            for body in self._nearby_planets(planet):
                 planet.bounce_disks(body)
-            for star in self._nearby_stars(planet._pos):
+            for star in self._nearby_stars(planet):
                 planet.bounce_off_of_disk(star)
 
     def create_particles_on_disk(
@@ -292,7 +292,7 @@ class Universe:
             """
             if not self.contains_point(projectile._pos):
                 return False
-            for body in chain(self._nearby_planets(projectile._pos), self._nearby_stars(projectile._pos)):
+            for body in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
                 if body.intersects_point(projectile._pos):
                     self.create_particles_on_disk(body, projectile._pos, 5, projectile.color, 250)
                     return False
