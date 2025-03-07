@@ -97,7 +97,7 @@ class Rocket(Bullet):
 
         """
         self.homing_timer += dt
-        delta_target_ship = self.target_ship.pos - self._pos
+        delta_target_ship = self.target_ship._pos - self._pos
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration

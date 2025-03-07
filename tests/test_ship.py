@@ -18,7 +18,7 @@ def test_shooting():
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
-    assert all(abs((p._pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
+    assert all(abs((p._pos - ship._pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
         "Bullets should be shot in the direction of the ship"
     )
 

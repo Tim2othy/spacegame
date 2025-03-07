@@ -102,7 +102,7 @@ class MarkovAI:
 
         """
         # Get context information
-        delta = self.target_ship.pos - self.ship.pos
+        delta = self.target_ship._pos - self.ship._pos
         distance_squared = delta.magnitude_squared()
 
         can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
@@ -136,7 +136,7 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        delta_target_ship = self.target_ship.pos - self.ship.pos
+        delta_target_ship = self.target_ship._pos - self.ship._pos
         relative_velocity = self.ship._vel - self.target_ship._vel
 
         if delta_target_ship == Vec2(0, 0):
@@ -156,7 +156,7 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        return self.target_ship.pos - self.ship.pos
+        return self.target_ship._pos - self.ship._pos
 
     def _execute_aim_behavior(self) -> Vec2:
         """Execute behavior with predictive aiming to hit moving targets.
@@ -169,9 +169,9 @@ class MarkovAI:
 
         """
         # Current positions and velocities
-        ship_pos = self.ship.pos
+        ship_pos = self.ship._pos
         ship_vel = self.ship._vel
-        target_pos = self.target_ship.pos
+        target_pos = self.target_ship._pos
         target_vel = self.target_ship._vel
         # Relative position and velocity
         relative_pos = target_pos - ship_pos
@@ -248,9 +248,9 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        if (self.ship.pos - self.target_ship.pos).magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        if (self.ship._pos - self.target_ship._pos).magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
             return Vec2(0, 0)
-        return self.ship.pos - self.target_ship.pos
+        return self.ship._pos - self.target_ship._pos
 
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior.
@@ -270,7 +270,7 @@ class MarkovAI:
         # Only shoot when in attack or aim states and within range
         self.ship.shooting = (
             self.current_state in {AIState.ATTACK, AIState.AIM}
-        ) and self.ship.pos.distance_squared_to(self.target_ship.pos) < ENEMY_FIRE_RANGE_SQUARED
+        ) and self.ship._pos.distance_squared_to(self.target_ship._pos) < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:

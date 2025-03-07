@@ -65,7 +65,7 @@ def test_relative_bounce(relative_vel: Vec2):
     # All the bounces should turn out the same, so compare them to the first bounces
     comparison_a, comparison_b = bounces[0]
     for disk_a, disk_b in bounces[1:]:
-        assert isclose(0, (disk_a.pos - disk_b.pos - comparison_a.pos + comparison_b.pos).magnitude()), (
+        assert isclose(0, (disk_a._pos - disk_b._pos - comparison_a._pos + comparison_b._pos).magnitude()), (
             "Bounce positions should agree relatively"
         )
         assert isclose(0, (disk_a._vel - disk_b._vel - comparison_a._vel + comparison_b._vel).magnitude()), (
@@ -94,7 +94,7 @@ def test_disk_drawing():
             if pixel in (color, black):
                 pixel_circle = pixel == color
                 worldcoor = Vec2(x, y) + camera_center - Vec2(width, height) / 2
-                coordinate_circle = disk.pos.distance_to(worldcoor) < disk.radius
+                coordinate_circle = disk._pos.distance_to(worldcoor) < disk.radius
 
                 if pixel_circle:
                     drawn += 1
@@ -135,9 +135,9 @@ def test_disk_bounce():
             bounce_count += 1
             assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
 
-            assert isclose(disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)), "Disks should be flush"
+            assert isclose(disk_c.radius + disk_b.radius, disk_c._pos.distance_to(disk_b._pos)), "Disks should be flush"
         else:
-            assert not isclose(disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)), (
+            assert not isclose(disk_c.radius + disk_b.radius, disk_c._pos.distance_to(disk_b._pos)), (
                 "Disks should not be flush"
             )
         if bounce_count <= 0:

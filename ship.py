@@ -160,7 +160,7 @@ class Ship(Disk):
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
                 gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
+                bullet_pos = self._pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
@@ -186,7 +186,7 @@ class Ship(Disk):
                     flare_vel = self._vel - flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    self.projectiles.append(self.new_flare(self.pos, flare_vel))
+                    self.projectiles.append(self.new_flare(self._pos, flare_vel))
                 self.flare_cooldown_timer += self._flare_cooldown
 
     def suffer_damage(self, damage: float) -> None:
@@ -247,7 +247,7 @@ class Ship(Disk):
 
         # Helper function for drawing polygons relative to the ship-position
         def drawy(color: Color, points: list[Vec2]) -> None:
-            camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
+            camera.draw_polygon(color, [self._pos + self.radius * p for p in points])
 
         # thruster_backward
         if self.thruster_backward:
@@ -256,8 +256,8 @@ class Ship(Disk):
         # "For his neutral special, he wields a gun"
         camera.draw_line(
             darker_color,
-            self.pos,
-            self.pos + forward * self.radius * GUNBARREL_LENGTH,
+            self._pos,
+            self._pos + forward * self.radius * GUNBARREL_LENGTH,
             GUNBARREL_WIDTH * self.radius,
         )
 
@@ -469,7 +469,7 @@ class BulletEnemy(Ship):
 
         """
         self.action_timer -= dt
-        delta_target_ship = self.target_ship.pos - self.pos
+        delta_target_ship = self.target_ship._pos - self._pos
 
         if self.action_timer <= 0:
             if delta_target_ship == Vec2(0, 0):
@@ -477,7 +477,7 @@ class BulletEnemy(Ship):
             distance_target_ship = delta_target_ship.magnitude()
 
             self.random_point = (
-                self.pos
+                self._pos
                 + (
                     delta_target_ship
                     + Vec2(
@@ -507,7 +507,7 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.decelerate:
                 force_direction = -self._vel
             case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.random_point - self.pos
+                force_direction = self.random_point - self._pos
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.thrust

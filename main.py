@@ -103,7 +103,7 @@ async def main() -> None:
                 topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
                 size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
                 subsurface = screen_surface.subsurface((topleft, size))
-                camera = Camera(player.pos, 1.0, subsurface)
+                camera = Camera(player._pos, 1.0, subsurface)
                 cameras.append(camera)
 
             minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
@@ -133,7 +133,7 @@ async def main() -> None:
                     player_camera = cameras[player_ix]
                     player_camera.start_drawing_new_frame()
                     gameover = (
-                        not universe.contains_point(player_ship.pos) or player_ship.health <= 0
+                        not universe.contains_point(player_ship._pos) or player_ship.health <= 0
                     ) and not options["invincible"]
                     if gameover:
                         gameover_font = pygame.font.Font(None, int(64 / player_count))

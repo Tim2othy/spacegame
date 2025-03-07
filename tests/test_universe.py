@@ -37,7 +37,7 @@ def test_star_gravitation():
 
     disks: list[Disk] = planet + players
     for disk in disks:
-        assert isclose(disk.radius + star.radius, disk.pos.distance_to(star.pos), rel_tol=1e-3), (
+        assert isclose(disk.radius + star.radius, disk._pos.distance_to(star._pos), rel_tol=1e-3), (
             "Gravity should have pulled the object to the star's surface within 30 seconds"
         )
 
@@ -61,7 +61,7 @@ def test_mutual_bounce(absolute_vel: Vec2):
     for _ in range(150):
         universe.step(0.01)
 
-    assert planet_a.pos.x < planet_b.pos.x, "The planets shouldn't fly past each other"
+    assert planet_a._pos.x < planet_b._pos.x, "The planets shouldn't fly past each other"
     assert planet_a._vel.y == planet_b._vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
     assert absolute_vel.x > planet_a._vel.x > (absolute_vel - relative_vel).x - 0.1, (
@@ -180,8 +180,8 @@ def test_precise_collision_failures():
                 "The two planets should intersect, the test-setup did not go as expected."
             )
             universe.apply_bounce()
-            assert planet_a.pos == pos, "planet_a should be unaffected, because collision-tests failed"
-            assert planet_b.pos == pos + delta, "planet_b should be unaffected, because collision-tests failed"
+            assert planet_a._pos == pos, "planet_a should be unaffected, because collision-tests failed"
+            assert planet_b._pos == pos + delta, "planet_b should be unaffected, because collision-tests failed"
             return
 
     pytest.fail(

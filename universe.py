@@ -129,7 +129,7 @@ class Universe:
         )
         self._star_chunks: dict[StarChunk, list[Star]] = {}
         for star in stars:
-            chunk = self._vec_to_star_chunk(star.pos)
+            chunk = self._vec_to_star_chunk(star._pos)
             self._star_chunks.setdefault(chunk, []).append(star)
         self.stars = stars
 
@@ -148,7 +148,7 @@ class Universe:
         for planet in args:
             if planet.radius * 2 > self.max_nonstar_size:
                 raise ValueError
-            chunk = self._vec_to_planet_chunk(planet.pos)
+            chunk = self._vec_to_planet_chunk(planet._pos)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
     def _nearby_stars(self, vec: Vec2) -> Iterator[Star]:
@@ -203,32 +203,32 @@ class Universe:
         # Bounce player_ships
         for player in self._player_ships:
             # For now, don't bounce player-ships off of other player-ships
-            for body in chain(self._enemy_ships, self._nearby_planets(player.pos)):
+            for body in chain(self._enemy_ships, self._nearby_planets(player._pos)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
-                    self.create_particles_on_disk(body, player.pos, 25, player.color, 100)
-            for star in self._nearby_stars(player.pos):
+                    self.create_particles_on_disk(body, player._pos, 25, player.color, 100)
+            for star in self._nearby_stars(player._pos):
                 if damage := player.bounce_off_of_disk(star) is not None:
                     player.suffer_damage(damage)
-                    self.create_particles_on_disk(star, player.pos, 25, player.color, 100)
+                    self.create_particles_on_disk(star, player._pos, 25, player.color, 100)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship.pos)):
+            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship._pos)):
                 if damage := enemy_ship.bounce_disks(body) is not None:
                     enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_disks(body)
-            for star in self._nearby_stars(enemy_ship.pos):
+            for star in self._nearby_stars(enemy_ship._pos):
                 if damage := enemy_ship.bounce_off_of_disk(star) is not None:
                     enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_off_of_disk(star)
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
-            for body in self._nearby_planets(planet.pos):
+            for body in self._nearby_planets(planet._pos):
                 planet.bounce_disks(body)
-            for star in self._nearby_stars(planet.pos):
+            for star in self._nearby_stars(planet._pos):
                 planet.bounce_off_of_disk(star)
 
     def create_particles_on_disk(
@@ -245,11 +245,11 @@ class Universe:
 
         If pos is exactly on disk's center, nothing happens.
         """
-        delta = pos - disk.pos
+        delta = pos - disk._pos
         if delta == Vec2(0, 0):
             return
         delta_normalized = delta.normalize()
-        projected = disk.pos + delta_normalized * disk.radius
+        projected = disk._pos + delta_normalized * disk.radius
         for _ in range(n):
             random_angle = random.uniform(-90.0, 90.0)
             random_vel = disk._vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
@@ -343,7 +343,7 @@ class Universe:
 
         """
         ship = self._player_ships[player_ix]
-        camera.smoothly_focus_points([ship.pos, ship.pos + 1.0 * ship._vel], 500, dt)
+        camera.smoothly_focus_points([ship._pos, ship._pos + 1.0 * ship._vel], 500, dt)
 
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
@@ -362,7 +362,7 @@ class Universe:
         for planets in self._planet_chunks.values():
             for planet in planets:
                 planet.step(dt)
-                new_chunk = self._vec_to_planet_chunk(planet.pos)
+                new_chunk = self._vec_to_planet_chunk(planet._pos)
                 new_planet_chunks.setdefault(new_chunk, []).append(planet)
         self._planet_chunks = new_planet_chunks
 
@@ -634,7 +634,7 @@ class Universe:
         eccentricity = (r_a - r_p) / (r_a + r_p)
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = star.pos + radial_vector * r_initial
+        pos_planet = star._pos + radial_vector * r_initial
 
         # velocity_planet
         total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)

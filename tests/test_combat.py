@@ -47,12 +47,12 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
     world = Vec2(1000, 1000)
     player_ship = PlayerShip(world / 2, Vec2())
 
-    enemy_start_right = Vec2(player_ship.pos + Vec2(500, 0))
-    enemy_start_up = Vec2(player_ship.pos + Vec2(0, 500))
+    enemy_start_right = Vec2(player_ship._pos + Vec2(500, 0))
+    enemy_start_up = Vec2(player_ship._pos + Vec2(0, 500))
     enemy_right = enemy_type(enemy_start_right, Vec2(0, 0), player_ship)
     enemy_up = enemy_type(enemy_start_up, Vec2(0, 0), player_ship)
 
-    planet = Planet(player_ship.pos + Vec2(250, 0), Vec2(0, 0), 1)
+    planet = Planet(player_ship._pos + Vec2(250, 0), Vec2(0, 0), 1)
     universe = Universe(
         world,
         [],
@@ -62,15 +62,15 @@ def test_bullet_paths(enemy_type: type[BulletEnemy]):
     )
     universe.add_planet(planet)
 
-    bullet_right = player_ship.new_bullet(player_ship.pos, Vec2(100, 0))
-    bullet_up = player_ship.new_bullet(player_ship.pos, Vec2(0, 100))
+    bullet_right = player_ship.new_bullet(player_ship._pos, Vec2(100, 0))
+    bullet_up = player_ship.new_bullet(player_ship._pos, Vec2(0, 100))
 
     player_ship.projectiles.append(bullet_right)
     player_ship.projectiles.append(bullet_up)
 
     # Also try shooting the enemy on the right with enemy bullets (hopefully won't work)
-    enemy_up.new_bullet(enemy_right.pos - Vec2(1, 0), Vec2(0.1, 0))
-    enemy_right.new_bullet(enemy_right.pos - Vec2(1, 0), Vec2(0.1, 0))
+    enemy_up.new_bullet(enemy_right._pos - Vec2(1, 0), Vec2(0.1, 0))
+    enemy_right.new_bullet(enemy_right._pos - Vec2(1, 0), Vec2(0.1, 0))
 
     # 10 seconds
     for _ in range(1000):
@@ -110,12 +110,12 @@ def test_markov_enemy_retreat_behavior() -> None:
 
     # Run simulation for a few seconds
     for _ in range(10):
-        distance_squared_0 = (player_ship.pos - enemy.pos).magnitude_squared()
+        distance_squared_0 = (player_ship._pos - enemy._pos).magnitude_squared()
         for _ in range(100):
             enemy.ai.current_state = AIState.RETREAT
             universe.step(0.01)
 
-        distance_squared_1 = (player_ship.pos - enemy.pos).magnitude_squared()
+        distance_squared_1 = (player_ship._pos - enemy._pos).magnitude_squared()
         assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
 
 

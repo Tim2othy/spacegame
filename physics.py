@@ -179,7 +179,7 @@ class Disk(PhysicalObject):
             camera (Camera): Camera to draw on
 
         """
-        camera.draw_circle(self.color, self.pos, self.radius)
+        camera.draw_circle(self.color, self._pos, self.radius)
 
     def intersects_point(self, vec: Vec2) -> bool:
         """Determine whether `vec` is in `self`.
@@ -199,7 +199,7 @@ class Disk(PhysicalObject):
         False
 
         """
-        return self.pos.distance_squared_to(vec) < self._radius_squared
+        return self._pos.distance_squared_to(vec) < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
@@ -224,7 +224,7 @@ class Disk(PhysicalObject):
         True
 
         """
-        return self.pos.distance_squared_to(disk.pos) < (self.radius + disk.radius) ** 2
+        return self._pos.distance_squared_to(disk._pos) < (self.radius + disk.radius) ** 2
 
     def bounce_disks(self, disk: Disk) -> float | None:
         """Bounce two disks off each other if they are overlapping.
@@ -248,7 +248,7 @@ class Disk(PhysicalObject):
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """
-        delta = disk.pos - self.pos
+        delta = disk._pos - self._pos
         radii_sum = self.radius + disk.radius
         distance_squared = delta.magnitude_squared()
 
@@ -280,9 +280,9 @@ class Disk(PhysicalObject):
         overlap = radii_sum - distance
         correction = normal * overlap
         if math.isfinite(self.mass):
-            self.pos -= correction * (1 - self.mass / (self.mass + disk.mass))
+            self._pos -= correction * (1 - self.mass / (self.mass + disk.mass))
         if math.isfinite(disk.mass):
-            disk.pos += correction * (1 - disk.mass / (self.mass + disk.mass))
+            disk._pos += correction * (1 - disk.mass / (self.mass + disk.mass))
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
