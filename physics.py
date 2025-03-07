@@ -35,7 +35,7 @@ class Particle:
         """Create a new Particle."""
         self._pos = Vec2(pos)
         self._vel = Vec2(vel)
-        self.color = color  # TODO: Should this be self.color = Color(color)?
+        self._base_color = color  # TODO: Should this be self.color = Color(color)?
         self._max_lifetime = lifetime
         self._lifetime = lifetime
 
@@ -47,7 +47,7 @@ class Particle:
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        color = BLACK.lerp(self.color, max(0, min(1, self._lifetime / self._max_lifetime)))
+        color = BLACK.lerp(self._base_color, max(0, min(1, self._lifetime / self._max_lifetime)))
         camera.draw_pixel(color, self._pos)
 
 
