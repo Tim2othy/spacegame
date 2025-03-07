@@ -97,7 +97,7 @@ class Rocket(Bullet):
 
         """
         self.homing_timer += dt
-        delta_target_ship = self.target_ship._pos - self._pos
+        delta_target_ship = self.target_ship.pos_relative_to(self)
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
@@ -107,14 +107,7 @@ class Rocket(Bullet):
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
             target_ship_direction = delta_target_ship.normalize()
 
-            if self.target_ship._vel != Vec2(0, 0):
-                multiplier = max(
-                    self.target_ship._vel.magnitude() * 1.1, ROCKET_MIN_SPEED
-                )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
-            else:
-                multiplier = ROCKET_MIN_SPEED
-
-            desired_velocity = target_ship_direction * multiplier
+            desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
             force_direction = desired_velocity - self._vel
 
             if force_direction != Vec2(0, 0):
