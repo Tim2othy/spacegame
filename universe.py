@@ -366,7 +366,7 @@ class Universe:
         for planets in self._planet_chunks.values():
             for planet in planets:
                 planet.step(dt)
-                new_chunk = self._vec_to_planet_chunk(planet._pos)
+                new_chunk = self._pobj_to_planet_chunk(planet)
                 new_planet_chunks.setdefault(new_chunk, []).append(planet)
         self._planet_chunks = new_planet_chunks
 
