@@ -68,7 +68,7 @@ for matrix_name in [
     "_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX",
 ]:
     source_matrix = globals()[matrix_name]
-    complete_matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
+    complete_matrix = {from_state: dict.fromkeys(AIState, 0.0) for from_state in AIState}
 
     for from_state, transitions in source_matrix.items():
         for to_state, prob in transitions.items():
