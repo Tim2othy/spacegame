@@ -290,7 +290,7 @@ class Universe:
                 bool: True if the projectile should stay alive, False otherwise
 
             """
-            if not self.contains_point(projectile._pos):
+            if not self.cointains_center_of(projectile):
                 return False
             for body in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
                 if body.intersects_point(projectile._pos):
@@ -593,7 +593,7 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
-    def contains_point(self, vec: Vec2) -> bool:
+    def cointains_center_of(self, pobj: PhysicalObject) -> bool:
         """Test whether `vec` is contained in `self`'s boundaries.
 
         Args:
@@ -603,7 +603,7 @@ class Universe:
             bool: True iff `self` contains `vec`
 
         """
-        return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
+        return 0 <= pobj._pos.x <= self.size.x and 0 <= pobj._pos.y <= self.size.y
 
     def generate_planet(self, star: Star) -> None:
         """Create an planet orbiting a star.

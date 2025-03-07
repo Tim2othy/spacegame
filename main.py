@@ -133,7 +133,7 @@ async def main() -> None:
                     player_camera = cameras[player_ix]
                     player_camera.start_drawing_new_frame()
                     gameover = (
-                        not universe.contains_point(player_ship._pos) or player_ship.health <= 0
+                        not universe.cointains_center_of(player_ship) or player_ship.health <= 0
                     ) and not options["invincible"]
                     if gameover:
                         gameover_font = pygame.font.Font(None, int(64 / player_count))
