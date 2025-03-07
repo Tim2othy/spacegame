@@ -102,7 +102,7 @@ class MarkovAI:
 
         """
         # Get context information
-        delta = self.target_ship._pos - self.ship._pos
+        delta = self.target_ship.pos_relative_to(self.ship)
         distance_squared = delta.magnitude_squared()
 
         can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
@@ -136,8 +136,8 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        delta_target_ship = self.target_ship._pos - self.ship._pos
-        relative_velocity = self.ship._vel - self.target_ship._vel
+        delta_target_ship = self.target_ship.pos_relative_to(self.ship)
+        relative_velocity = self.ship.vel_relative_to(self.target_ship)
 
         if delta_target_ship == Vec2(0, 0):
             return Vec2(0, 0)
@@ -156,7 +156,7 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        return self.target_ship._pos - self.ship._pos
+        return self.target_ship.pos_relative_to(self.ship)
 
     def _execute_aim_behavior(self) -> Vec2:
         """Execute behavior with predictive aiming to hit moving targets.
@@ -168,14 +168,9 @@ class MarkovAI:
             Vec2: Force direction/aim direction
 
         """
-        # Current positions and velocities
-        ship_pos = self.ship._pos
-        ship_vel = self.ship._vel
-        target_pos = self.target_ship._pos
-        target_vel = self.target_ship._vel
         # Relative position and velocity
-        relative_pos = target_pos - ship_pos
-        relative_vel = target_vel - ship_vel
+        relative_pos = self.target_ship.pos_relative_to(self.ship)
+        relative_vel = self.target_ship.vel_relative_to(self.ship)
 
         if relative_pos == Vec2(0, 0):
             return Vec2(0, 0)
@@ -229,10 +224,10 @@ class MarkovAI:
             return relative_pos.normalize()
 
         # Calculate where to aim to hit the target
-        target_future_pos = target_pos + target_vel * intercept_time
+        target_future_pos = self.target_ship._pos + self.target_ship._vel * intercept_time
 
         # Now calculate what direction the bullet must be fired in
-        aim_direction = (target_future_pos - ship_pos - ship_vel * intercept_time) / (
+        aim_direction = (target_future_pos - self.ship._pos - self.ship._vel * intercept_time) / (
             BULLET_RELEASE_SPEED * intercept_time
         )
         # Normalize to get pure direction
@@ -248,9 +243,10 @@ class MarkovAI:
             Vec2: Force direction
 
         """
-        if (self.ship._pos - self.target_ship._pos).magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        delta = self.ship.pos_relative_to(self.target_ship)
+        if delta.magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
             return Vec2(0, 0)
-        return self.ship._pos - self.target_ship._pos
+        return delta
 
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior.
@@ -268,9 +264,9 @@ class MarkovAI:
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
-        self.ship.shooting = (
-            self.current_state in {AIState.ATTACK, AIState.AIM}
-        ) and self.ship._pos.distance_squared_to(self.target_ship._pos) < ENEMY_FIRE_RANGE_SQUARED
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.pos_relative_to(
+            self._target_ship
+        ).magnitude_squared() < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:
