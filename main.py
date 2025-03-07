@@ -35,6 +35,7 @@ from universe import Star, Universe
 
 type Options = dict[str, bool]
 NUM_PLANETS = 5
+STAR_RADIUS = 8000
 
 
 def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]:
@@ -43,7 +44,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     Returns a tuple (universe, player_ships)
     """
     num_enemies = 2 if options["small"] else 20
-    world_size = 20000 if options["small"] else 40000
+    world_size = 20000 if options["small"] else 100000
     world_size_vec = Vec2(world_size, world_size)
 
     player_ships: list[PlayerShip] = [
@@ -62,8 +63,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
                 spaceship_input=ShipInput.wasd(),
             )
         )
-    stars: list[Star] = [Star(world_size_vec / 2, 2000)]
-
+    stars: list[Star] = [Star(world_size_vec / 2, STAR_RADIUS if not options["small"] else 1000)]
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
