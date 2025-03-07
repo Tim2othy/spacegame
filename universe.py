@@ -13,7 +13,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, Particle, PhysicalObject
 from profiler import global_profiler
-from ship import MissileEnemy
+from ship import MissileEnemy, Ship
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -278,7 +278,7 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet, target_ships: list, is_player_projectile: bool) -> bool:
+        def projectile_check(projectile: Bullet, target_ships: list[Ship], is_player_projectile: bool) -> bool:
             """Check for collision and return whether the projectile should stay alive.
 
             Args:
