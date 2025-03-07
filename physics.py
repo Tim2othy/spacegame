@@ -72,8 +72,8 @@ class PhysicalObject:
         ValueError
 
         """
-        self._pos: Vec2 = Vec2(pos)
-        self._vel: Vec2 = Vec2(vel)
+        self.__pos: Vec2 = Vec2(pos)
+        self.__vel: Vec2 = Vec2(vel)
         if not mass > 0:
             raise ValueError
         self.mass: float = mass
@@ -86,7 +86,7 @@ class PhysicalObject:
         >>> a.pos_relative_to(b)
         Vector2(1, 2)
         """
-        return self._pos - other._pos  # noqa: SLF001
+        return self.__pos - other.__pos  # noqa: SLF001
 
     def vel_relative_to(self, other: PhysicalObject) -> Vec2:
         """Return `self`'s velocity relative to `other`.
@@ -96,7 +96,7 @@ class PhysicalObject:
         >>> a.vel_relative_to(b)
         Vector2(1, 2)
         """
-        return self._vel - other._vel  # noqa: SLF001
+        return self.__vel - other.__vel  # noqa: SLF001
 
     def distance_squared_to(self, other: PhysicalObject) -> float:
         """Return the squared distance between `self` and `other`."""
@@ -113,7 +113,7 @@ class PhysicalObject:
             dt (float): Passed time
 
         """
-        self._pos += dt * self._vel
+        self.__pos += dt * self.__vel
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`.
@@ -122,7 +122,7 @@ class PhysicalObject:
             impulse (Vec2): Impulse to apply
 
         """
-        self._vel += impulse / self.mass
+        self.__vel += impulse / self.mass
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.
