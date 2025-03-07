@@ -177,7 +177,7 @@ class Disk(PhysicalObject):
         mass = radius**3 * math.pi * 4 / 3
         super().__init__(pos, vel, mass)
         self.radius: float = radius
-        self._radius_squared: float = radius**2
+        self.__radius_squared: float = radius**2
         self.color: Color = Color(color)
 
     def draw(self, camera: Camera) -> None:
@@ -207,7 +207,7 @@ class Disk(PhysicalObject):
         False
 
         """
-        return self.distance_squared_to(pobj) < self._radius_squared
+        return self.distance_squared_to(pobj) < self.__radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
