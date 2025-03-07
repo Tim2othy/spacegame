@@ -18,16 +18,16 @@ def test_shooting():
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
-    assert all(abs((p.pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
+    assert all(abs((p._pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
         "Bullets should be shot in the direction of the ship"
     )
 
-    reference_delta = ship.projectiles[1].pos - ship.projectiles[0].pos
-    previous_projectile_pos = ship.projectiles[1].pos
+    reference_delta = ship.projectiles[1]._pos - ship.projectiles[0]._pos
+    previous_projectile_pos = ship.projectiles[1]._pos
     for p in ship.projectiles[2:]:
-        delta = p.pos - previous_projectile_pos
+        delta = p._pos - previous_projectile_pos
         assert (reference_delta - delta).magnitude_squared() < EPSILON, "Bullets should be evenly spaced"
-        previous_projectile_pos = p.pos
+        previous_projectile_pos = p._pos
 
 
 def test_movement():
@@ -37,5 +37,5 @@ def test_movement():
     ship.thruster_rot_left = False
     ship.thruster_forward = True
     ship.step(0.01)
-    assert ship.vel.x > 0, "Ship should be moving forward"
-    assert ship.vel.y > 0, "Ship should be moving forward"
+    assert ship._vel.x > 0, "Ship should be moving forward"
+    assert ship._vel.y > 0, "Ship should be moving forward"

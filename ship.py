@@ -108,8 +108,8 @@ class Ship(Disk):
         self.projectile_color = generate_complementary_color(color)
 
         self.angle: float = 0
-        self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 0.15 * self.mass
+        self.thrust: float = 250 * self._mass
+        self.rotation_thrust: float = 0.15 * self._mass
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
@@ -150,7 +150,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = self.vel + forward * self.projectile_speed
+                bullet_vel = self._vel + forward * self.projectile_speed
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -183,7 +183,7 @@ class Ship(Disk):
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = forward.rotate(random_rotation)
-                    flare_vel = self.vel - flare_direction * random.normalvariate(
+                    flare_vel = self._vel - flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
                     self.projectiles.append(self.new_flare(self.pos, flare_vel))
@@ -505,7 +505,7 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = delta_target_ship
             case BulletEnemy.Action.decelerate:
-                force_direction = -self.vel
+                force_direction = -self._vel
             case BulletEnemy.Action.accelerate_randomly:
                 force_direction = self.random_point - self.pos
 

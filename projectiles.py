@@ -55,13 +55,13 @@ class Bullet(PhysicalObject):
             camera (Camera): Camera to draw on
 
         """
-        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
         camera.draw_polygon(
             self.color,
             [
-                self.pos + 4 * forward,
-                self.pos + 4 * forward.rotate(150),
-                self.pos + 4 * forward.rotate(-150),
+                self._pos + 4 * forward,
+                self._pos + 4 * forward.rotate(150),
+                self._pos + 4 * forward.rotate(-150),
             ],
         )
 
@@ -81,7 +81,7 @@ class Rocket(Bullet):
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
-        self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
+        self.homing_thrust = ROCKET_HOMING_THRUST * self._mass
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
@@ -97,7 +97,7 @@ class Rocket(Bullet):
 
         """
         self.homing_timer += dt
-        delta_target_ship = self.target_ship.pos - self.pos
+        delta_target_ship = self.target_ship.pos - self._pos
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
@@ -107,15 +107,15 @@ class Rocket(Bullet):
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
             target_ship_direction = delta_target_ship.normalize()
 
-            if self.target_ship.vel != Vec2(0, 0):
+            if self.target_ship._vel != Vec2(0, 0):
                 multiplier = max(
-                    self.target_ship.vel.magnitude() * 1.1, ROCKET_MIN_SPEED
+                    self.target_ship._vel.magnitude() * 1.1, ROCKET_MIN_SPEED
                 )  # TODO(Tim2othy): this violates relativity, https://github.com/Tim2othy/spacegame/issues/80
             else:
                 multiplier = ROCKET_MIN_SPEED
 
             desired_velocity = target_ship_direction * multiplier
-            force_direction = desired_velocity - self.vel
+            force_direction = desired_velocity - self._vel
 
             if force_direction != Vec2(0, 0):
                 force = force_direction.normalize() * self.homing_thrust
@@ -129,7 +129,7 @@ class Rocket(Bullet):
             camera (Camera): Camera to draw on
 
         """
-        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -143,10 +143,10 @@ class Rocket(Bullet):
             camera.draw_polygon(
                 self.color.lerp(THRUST_COLOR, 0.5),
                 [
-                    self.pos + 3 * (left + backward),
-                    self.pos + 4 * (left + 2 * backward),
-                    self.pos + 4 * (right + 2 * backward),
-                    self.pos + 3 * (right + backward),
+                    self._pos + 3 * (left + backward),
+                    self._pos + 4 * (left + 2 * backward),
+                    self._pos + 4 * (right + 2 * backward),
+                    self._pos + 3 * (right + backward),
                 ],
             )
 
@@ -154,11 +154,11 @@ class Rocket(Bullet):
         camera.draw_polygon(
             self.color,
             [
-                self.pos + 3 * (left + forward),
-                self.pos + 3 * (left + backward),
-                self.pos + 3 * (right + backward),
-                self.pos + 3 * (right + forward),
-                self.pos + 2 * (3 * forward),
+                self._pos + 3 * (left + forward),
+                self._pos + 3 * (left + backward),
+                self._pos + 3 * (right + backward),
+                self._pos + 3 * (right + forward),
+                self._pos + 2 * (3 * forward),
             ],
         )
 
@@ -177,7 +177,7 @@ class Missile(Rocket):
 
         """
         super().__init__(pos, vel, color, target_ship)
-        self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
+        self.homing_thrust = MISSILE_HOMING_THRUST * self._mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
         self.damage = MISSILE_DAMAGE
@@ -189,7 +189,7 @@ class Missile(Rocket):
             camera (Camera): Camera to draw on
 
         """
-        forward = self.vel.normalize() if self.vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -197,11 +197,11 @@ class Missile(Rocket):
         camera.draw_polygon(
             self.color,
             [
-                self.pos + 3 * (left + forward),
-                self.pos + 5 * (left + 5 * backward),
-                self.pos + 5 * (right + 5 * backward),
-                self.pos + 3 * (right + forward),
-                self.pos + 2 * (8 * forward),
+                self._pos + 3 * (left + forward),
+                self._pos + 5 * (left + 5 * backward),
+                self._pos + 5 * (right + 5 * backward),
+                self._pos + 3 * (right + forward),
+                self._pos + 2 * (8 * forward),
             ],
         )
 
@@ -222,4 +222,4 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        camera.draw_circle(self.color, self.pos, 3)
+        camera.draw_circle(self.color, self._pos, 3)

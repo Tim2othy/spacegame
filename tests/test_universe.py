@@ -62,12 +62,12 @@ def test_mutual_bounce(absolute_vel: Vec2):
         universe.step(0.01)
 
     assert planet_a.pos.x < planet_b.pos.x, "The planets shouldn't fly past each other"
-    assert planet_a.vel.y == planet_b.vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
+    assert planet_a._vel.y == planet_b._vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
-    assert absolute_vel.x > planet_a.vel.x > (absolute_vel - relative_vel).x - 0.1, (
+    assert absolute_vel.x > planet_a._vel.x > (absolute_vel - relative_vel).x - 0.1, (
         "planet_a should be moving to the left with less speed"
     )
-    assert absolute_vel.x < planet_b.vel.x < (absolute_vel + relative_vel).x - 0.1, (
+    assert absolute_vel.x < planet_b._vel.x < (absolute_vel + relative_vel).x - 0.1, (
         "planet_b should be moving to the right with less speed"
     )
 
@@ -98,8 +98,8 @@ def test_newtons_cradle(direction_angle: float):
     for _ in range(200):
         universe.step(0.01)
 
-    assert first_planet.vel * direction < planet_radius**2, "First planet should have lost speed"
-    assert other_planets[-1].vel * direction > 0.01, "Last planet should have gained speed"
+    assert first_planet._vel * direction < planet_radius**2, "First planet should have lost speed"
+    assert other_planets[-1]._vel * direction > 0.01, "Last planet should have gained speed"
 
 
 def test_precise_planet_collision():
@@ -141,7 +141,7 @@ def test_precise_planet_collision():
         universe.step(0.001)
 
     for hit_planet in hit_planets:
-        assert 0.001 < hit_planet.vel.magnitude() / planet_radius < 0.1, (
+        assert 0.001 < hit_planet._vel.magnitude() / planet_radius < 0.1, (
             "The hit planet should have gained a tiny bit of velocity"
         )
 

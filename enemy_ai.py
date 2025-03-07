@@ -137,7 +137,7 @@ class MarkovAI:
 
         """
         delta_target_ship = self.target_ship.pos - self.ship.pos
-        relative_velocity = self.ship.vel - self.target_ship.vel
+        relative_velocity = self.ship._vel - self.target_ship._vel
 
         if delta_target_ship == Vec2(0, 0):
             return Vec2(0, 0)
@@ -170,9 +170,9 @@ class MarkovAI:
         """
         # Current positions and velocities
         ship_pos = self.ship.pos
-        ship_vel = self.ship.vel
+        ship_vel = self.ship._vel
         target_pos = self.target_ship.pos
-        target_vel = self.target_ship.vel
+        target_vel = self.target_ship._vel
         # Relative position and velocity
         relative_pos = target_pos - ship_pos
         relative_vel = target_vel - ship_vel

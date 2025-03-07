@@ -12,7 +12,7 @@ from physics import Disk, PhysicalObject
 def test_step():
     obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
     obj.step(0.25)
-    assert obj.pos == Vec2(0.25, -0.25)
+    assert obj._pos == Vec2(0.25, -0.25)
 
 
 def test_gravitational_force():
@@ -35,7 +35,7 @@ def test_threedimensional_disk_mass_scaling():
     disk = Disk(Vec2(), Vec2(), radius)
     double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
 
-    assert isclose(2**3, double_size_disk.mass / disk.mass), (
+    assert isclose(2**3, double_size_disk._mass / disk._mass), (
         "Scaling the radius by `t` should scale the mass by a factor `t**3`"
     )
 
@@ -51,14 +51,14 @@ def test_relative_bounce(relative_vel: Vec2):
         disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
         disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
 
-        relative_vel, disk_a.vel - disk_b.vel
+        relative_vel, disk_a._vel - disk_b._vel
         disk_a.bounce_off_of_disk(disk_b)
-        relative_vel, disk_a.vel - disk_b.vel
+        relative_vel, disk_a._vel - disk_b._vel
 
-        assert disk_a.vel.y == (absolute_vel + relative_vel).y, "Disk's vertical velocity should be unchanged"
-        assert disk_a.vel.x < (absolute_vel + relative_vel).x - 0.1, "Disk's horizontal velocity should be reduced"
-        assert disk_b.vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
-        assert disk_b.vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
+        assert disk_a._vel.y == (absolute_vel + relative_vel).y, "Disk's vertical velocity should be unchanged"
+        assert disk_a._vel.x < (absolute_vel + relative_vel).x - 0.1, "Disk's horizontal velocity should be reduced"
+        assert disk_b._vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
+        assert disk_b._vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
 
         bounces.append((disk_a, disk_b))
 
@@ -68,7 +68,7 @@ def test_relative_bounce(relative_vel: Vec2):
         assert isclose(0, (disk_a.pos - disk_b.pos - comparison_a.pos + comparison_b.pos).magnitude()), (
             "Bounce positions should agree relatively"
         )
-        assert isclose(0, (disk_a.vel - disk_b.vel - comparison_a.vel + comparison_b.vel).magnitude()), (
+        assert isclose(0, (disk_a._vel - disk_b._vel - comparison_a._vel + comparison_b._vel).magnitude()), (
             "Bounce velocities should agree relatively"
         )
 
@@ -141,12 +141,12 @@ def test_disk_bounce():
                 "Disks should not be flush"
             )
         if bounce_count <= 0:
-            assert disk_c.vel == Vec2(1, 0)
-            assert disk_b.vel == Vec2(0, 0)
+            assert disk_c._vel == Vec2(1, 0)
+            assert disk_b._vel == Vec2(0, 0)
         if bounce_count >= 1:
-            assert disk_c.vel.x < 0, "Disk should be moving to the left"
-            assert disk_c.vel.y > 0, "Disk should be moving up"
+            assert disk_c._vel.x < 0, "Disk should be moving to the left"
+            assert disk_c._vel.y > 0, "Disk should be moving up"
 
-        assert disk_b.vel == Vec2(0, 0), "Disk_b should be unaffected"
+        assert disk_b._vel == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1

@@ -72,11 +72,11 @@ class PhysicalObject:
         ValueError
 
         """
-        self.pos = Vec2(pos)
-        self.vel = Vec2(vel)
+        self._pos = Vec2(pos)
+        self._vel = Vec2(vel)
         if not mass > 0:
             raise ValueError
-        self.mass = mass
+        self._mass = mass
 
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
@@ -85,7 +85,7 @@ class PhysicalObject:
             dt (float): Passed time
 
         """
-        self.pos += dt * self.vel
+        self._pos += dt * self._vel
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`.
@@ -94,7 +94,7 @@ class PhysicalObject:
             impulse (Vec2): Impulse to apply
 
         """
-        self.vel += impulse / self.mass
+        self._vel += impulse / self._mass
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`.
@@ -116,11 +116,11 @@ class PhysicalObject:
             Vec2: Resulting force to apply to `self`
 
         """
-        delta = pobj.pos - self.pos  # point from `self` to `pobj`
+        delta = pobj._pos - self._pos  # point from `self` to `pobj`
         if delta == Vec2(0, 0):
             return Vec2(0, 0)
         dist_squared = delta.magnitude_squared()
-        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+        force_magnitude = GRAVITATIONAL_CONSTANT * self._mass * pobj._mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
         return normalised_delta * force_magnitude
 
@@ -240,7 +240,7 @@ class Disk(PhysicalObject):
         distance = math.sqrt(distance_squared)
         normal = delta / distance if distance_squared > 0 else Vec2(1, 0)
 
-        relative_velocity = disk.vel - self.vel
+        relative_velocity = disk._vel - self._vel
         vel_along_normal = relative_velocity.dot(normal)
 
         # If the disks are moving apart already, skip the collision response.
@@ -249,7 +249,7 @@ class Disk(PhysicalObject):
 
         # Compute impulse scalar based on the collision response formula.
         impulse_scalar = -(1 + BOUNCINESS) * vel_along_normal
-        impulse_scalar /= 1 / self.mass + 1 / disk.mass
+        impulse_scalar /= 1 / self._mass + 1 / disk._mass
         impulse = impulse_scalar * normal
 
         self.add_impulse(-impulse)
@@ -259,10 +259,10 @@ class Disk(PhysicalObject):
         # Respect the relative mass.
         overlap = radii_sum - distance
         correction = normal * overlap
-        if math.isfinite(self.mass):
-            self.pos -= correction * (1 - self.mass / (self.mass + disk.mass))
-        if math.isfinite(disk.mass):
-            disk.pos += correction * (1 - disk.mass / (self.mass + disk.mass))
+        if math.isfinite(self._mass):
+            self.pos -= correction * (1 - self._mass / (self._mass + disk._mass))
+        if math.isfinite(disk._mass):
+            disk.pos += correction * (1 - disk._mass / (self._mass + disk._mass))
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
@@ -287,7 +287,7 @@ class Disk(PhysicalObject):
 
         """
         # HACK: Treat the static disk as if it had infinite mass
-        old_mass, disk.mass = disk.mass, float("inf")
+        old_mass, disk._mass = disk._mass, float("inf")
         bounce = self.bounce_disks(disk)
-        disk.mass = old_mass
+        disk._mass = old_mass
         return bounce

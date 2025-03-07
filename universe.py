@@ -178,7 +178,7 @@ class Universe:
         for body in self.stars:
             force_sum += pobj.gravitational_force(body)
 
-        for body in self._nearby_planets(pobj.pos):
+        for body in self._nearby_planets(pobj._pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
@@ -252,7 +252,7 @@ class Universe:
         projected = disk.pos + delta_normalized * disk.radius
         for _ in range(n):
             random_angle = random.uniform(-90.0, 90.0)
-            random_vel = disk.vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_vel = disk._vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
             random_color = disk.color.lerp(color, random.random())
             random_lifetime = random.uniform(lifetime / 2.0, lifetime)
             self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
@@ -290,14 +290,14 @@ class Universe:
                 bool: True if the projectile should stay alive, False otherwise
 
             """
-            if not self.contains_point(projectile.pos):
+            if not self.contains_point(projectile._pos):
                 return False
-            for body in chain(self._nearby_planets(projectile.pos), self._nearby_stars(projectile.pos)):
-                if body.intersects_point(projectile.pos):
-                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
+            for body in chain(self._nearby_planets(projectile._pos), self._nearby_stars(projectile._pos)):
+                if body.intersects_point(projectile._pos):
+                    self.create_particles_on_disk(body, projectile._pos, 5, projectile.color, 250)
                     return False
             for ship in target_ships:
-                if ship.intersects_point(projectile.pos):
+                if ship.intersects_point(projectile._pos):
                     self.create_particle_cloud(ship.pos, 100, ship.color, ship.vel, 150, 2)
                     ship.suffer_damage(projectile.damage)
                     if ship.health <= 0:
@@ -311,7 +311,7 @@ class Universe:
                 if isinstance(ship, MissileEnemy):
                     for enemy_projectile in ship.projectiles[:]:
                         collision_distance = 10
-                        if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
+                        if (projectile._pos - enemy_projectile._pos).length() < collision_distance:
                             ship.projectiles.remove(enemy_projectile)
                             return False
 
@@ -343,7 +343,7 @@ class Universe:
 
         """
         ship = self._player_ships[player_ix]
-        camera.smoothly_focus_points([ship.pos, ship.pos + 1.0 * ship.vel], 500, dt)
+        camera.smoothly_focus_points([ship.pos, ship.pos + 1.0 * ship._vel], 500, dt)
 
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
@@ -637,8 +637,8 @@ class Universe:
         pos_planet = star.pos + radial_vector * r_initial
 
         # velocity_planet
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * star._mass / (2 * semi_major_axis)
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star._mass / r_initial + total_specific_energy)) ** 0.5
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
