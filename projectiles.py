@@ -81,7 +81,7 @@ class Rocket(Bullet):
         """
         super().__init__(pos, vel, color)
         self.target_ship = target_ship
-        self.homing_thrust = ROCKET_HOMING_THRUST * self._mass
+        self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
@@ -177,7 +177,7 @@ class Missile(Rocket):
 
         """
         super().__init__(pos, vel, color, target_ship)
-        self.homing_thrust = MISSILE_HOMING_THRUST * self._mass
+        self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
         self.damage = MISSILE_DAMAGE

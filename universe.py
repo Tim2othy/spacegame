@@ -637,8 +637,8 @@ class Universe:
         pos_planet = star.pos + radial_vector * r_initial
 
         # velocity_planet
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * star._mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star._mass / r_initial + total_specific_energy)) ** 0.5
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 

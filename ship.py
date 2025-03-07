@@ -108,8 +108,8 @@ class Ship(Disk):
         self.projectile_color = generate_complementary_color(color)
 
         self.angle: float = 0
-        self.thrust: float = 250 * self._mass
-        self.rotation_thrust: float = 0.15 * self._mass
+        self.thrust: float = 250 * self.mass
+        self.rotation_thrust: float = 0.15 * self.mass
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
