@@ -1,3 +1,4 @@
+from itertools import chain
 import random
 from math import isclose
 from typing import TYPE_CHECKING
@@ -184,8 +185,7 @@ def test_star_gravitation():
     for _ in range(30 * 100):
         universe.step(0.01)
 
-    disks: list[Disk] = planet + players
-    for disk in disks:
+    for disk in chain(planet, players):
         assert isclose(disk.radius + star.radius, disk.distance_to(star), rel_tol=1e-3), (
             "Gravity should have pulled the object to the star's surface within 30 seconds"
         )
