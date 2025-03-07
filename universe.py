@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import math
 import random
 from itertools import chain
@@ -273,7 +274,7 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet, target_ships: list[Ship], is_player_projectile: bool) -> bool:
+        def projectile_check(projectile: Bullet, target_ships: Sequence[Ship], is_player_projectile: bool) -> bool:
             """Check for collision and return whether the projectile should stay alive.
 
             Args:
