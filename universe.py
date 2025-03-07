@@ -51,7 +51,7 @@ class Star(Disk):
 
 
 class Planet(Disk):
-    """A gray disk that doesn't exert gravitational force, and isn't stationary."""
+    """A disk that doesn't exert gravitational force, and isn't stationary."""
 
     def __init__(self, pos: Vec2, vel: Vec2, radius: float) -> None:
         """Create a new Planet.
@@ -62,7 +62,8 @@ class Planet(Disk):
             radius (float): Radius
 
         """
-        super().__init__(pos, vel, radius)
+        color = Color(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+        super().__init__(pos, vel, radius, color)
 
 
 type PlanetChunk = tuple[int, int]
