@@ -38,15 +38,15 @@ PLANET_ELLIPSIS_PARAMETER = 0.001
 class Star(Disk):
     """A stationary disk."""
 
-    def __init__(self, pos: Vec2, radius: float, color: Color) -> None:
+    def __init__(self, pos: Vec2, radius: float) -> None:
         """Create a new star.
 
         Args:
             pos (Vec2): Fixed position
             radius (float): Radius
-            color (Color): Color
 
         """
+        color = Color(random.randint(200, 255), random.randint(150, 255), random.randint(0, 150))
         super().__init__(pos, Vec2(0, 0), radius, color)
 
 

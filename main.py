@@ -62,7 +62,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
                 spaceship_input=ShipInput.wasd(),
             )
         )
-    stars: list[Star] = [Star(world_size_vec / 2, 2000, Color("yellow"))]
+    stars: list[Star] = [Star(world_size_vec / 2, 2000)]
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
