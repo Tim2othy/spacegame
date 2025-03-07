@@ -11,31 +11,6 @@ MINIMAP_SIZE = Vec2(400, 400)
 FPS_HISTORY_LENGTH = 180  # how many frames to keep for FPS calculation
 MINIMAP_BORDER_COLOR = Color("aquamarine")
 
-# planet constants
-PLANET_RADIUS_MU = 6.2
-PLANET_RADIUS_SIGMA = 0.2
-PLANET_COLORS_SMALL = []
-PLANET_COLORS_LARGE = [
-    Color("khaki"),
-    Color("darkred"),
-    Color("royalblue"),
-    Color("mediumpurple"),
-    Color("darkslategray"),
-    Color("darkgreen"),
-    Color("crimson"),
-    Color("coral"),
-    Color("blue"),
-    Color("green"),
-    Color("yellow"),
-    Color("turquoise"),
-    Color("deeppink"),
-    Color("darkorange"),
-    Color("lightblue"),
-    Color("plum"),
-    Color("slategray"),
-    Color("navy"),
-]
-
 
 # Enemy Action and Spawn
 ENEMY_SPAWN_WEIGHTS = [0.3, 0.3, 0.2, 0.2]
