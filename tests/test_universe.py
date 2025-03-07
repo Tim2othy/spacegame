@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from physics import Disk
 
 
-def test_star_gravitation():  # TODO: This test takes around 5 seconds to run, all the other tests are 3 seconds total.
+def test_star_gravitation():
     world = Vec2(30000, 30000)
     worldcenter = world / 2
     star = Star(world / 2, 10000)
@@ -22,7 +22,7 @@ def test_star_gravitation():  # TODO: This test takes around 5 seconds to run, a
     num_disks = 23
     for i in range(num_disks):
         offset = Vec2()
-        offset.from_polar((12000, 360 * i / num_disks))
+        offset.from_polar((10500, 360 * i / num_disks))
         pos = worldcenter + offset
         if i % 4 == 0 or i % 3 == 0:
             players.append(PlayerShip(pos, Vec2(100, -200)))
@@ -32,14 +32,14 @@ def test_star_gravitation():  # TODO: This test takes around 5 seconds to run, a
     universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
     universe.add_planet(*planet)
 
-    for _ in range(30 * 100):
+    for _ in range(8 * 100):
         universe.step(0.01)
 
     disks: list[Disk] = planet + players
     for disk in disks:
         assert isclose(
             disk.radius + star.radius, disk.pos.distance_to(star.pos), rel_tol=1e-3
-        ), "Gravity should have pulled the object to the star's surface within 30 seconds"
+        ), "Gravity should have pulled the object to the star's surface within 8 seconds"
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
