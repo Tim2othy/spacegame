@@ -292,12 +292,12 @@ class Universe:
             """
             if not self.cointains_center_of(projectile):
                 return False
-            for body in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
-                if body.intersects_point(projectile._pos):
-                    self.create_particles_on_disk(body, projectile, 5, projectile.color, 250)
+            for disk in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
+                if disk.contains_center_of(projectile):
+                    self.create_particles_on_disk(disk, projectile, 5, projectile.color, 250)
                     return False
             for ship in target_ships:
-                if ship.intersects_point(projectile._pos):
+                if ship.contains_center_of(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, ship.vel, 150, 2)
                     ship.suffer_damage(projectile.damage)
                     if ship.health <= 0:
@@ -310,8 +310,8 @@ class Universe:
                     return False
                 if isinstance(ship, MissileEnemy):
                     for enemy_projectile in ship.projectiles[:]:
-                        collision_distance = 10
-                        if (projectile._pos - enemy_projectile._pos).length() < collision_distance:
+                        collision_distance_squared = 10**2
+                        if projectile.pos_relative_to(enemy_projectile).magnitude_squared < collision_distance_squared:
                             ship.projectiles.remove(enemy_projectile)
                             return False
 
