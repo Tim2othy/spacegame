@@ -310,6 +310,10 @@ class Universe:
                     return False
                 if isinstance(ship, MissileEnemy):
                     for enemy_projectile in ship.projectiles[:]:
+                        # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
+                        # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
+                        # collision-detection more idiomatic. If we do, we can also change the above calls
+                        # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
                         collision_distance_squared = 10**2
                         if projectile.pos_relative_to(enemy_projectile).magnitude_squared < collision_distance_squared:
                             ship.projectiles.remove(enemy_projectile)
