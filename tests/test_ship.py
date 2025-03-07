@@ -23,8 +23,8 @@ def test_shooting():
     )
 
     reference_delta = ship.projectiles[1].pos_relative_to(ship.projectiles[0])
-    for i in range(1, len(ship.projectiles)):
-        delta = ship.projectiles[i + 1].pos_relative_to(ship.projectiles[i])
+    for i in range(2, len(ship.projectiles)):
+        delta = ship.projectiles[i].pos_relative_to(ship.projectiles[i - 1])
         assert (reference_delta - delta).length_squared() < EPSILON, "Bullets should be evenly spaced"
 
 
