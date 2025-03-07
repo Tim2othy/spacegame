@@ -13,36 +13,6 @@ if TYPE_CHECKING:
     from physics import Disk
 
 
-def test_star_gravitation():
-    world = Vec2(3000, 3000)
-    worldcenter = world / 2
-    star = Star(world / 2, 1000)
-
-    planet = []
-    players = []
-    num_disks = 23
-    for i in range(num_disks):
-        offset = Vec2()
-        offset.from_polar((1500, 360 * i / num_disks))
-        pos = worldcenter + offset
-        if i % 4 == 0 or i % 3 == 0:
-            players.append(PlayerShip(pos, Vec2(100, -200)))
-        else:
-            planet.append(Planet(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
-
-    universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
-    universe.add_planet(*planet)
-
-    for _ in range(30 * 100):
-        universe.step(0.01)
-
-    disks: list[Disk] = planet + players
-    for disk in disks:
-        assert isclose(disk.radius + star.radius, disk.distance_to(star), rel_tol=1e-3), (
-            "Gravity should have pulled the object to the star's surface within 30 seconds"
-        )
-
-
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
 def test_mutual_bounce(absolute_vel: Vec2):
     # Two planets
@@ -188,3 +158,33 @@ def test_precise_collision_failures():
         "The universe collision-detection should have failed at some point in the above loop, but it did "
         "not, which indicates the implementation of collision-detection is not maximally efficient."
     )
+
+
+def test_star_gravitation():
+    world = Vec2(3000, 3000)
+    worldcenter = world / 2
+    star = Star(world / 2, 1000)
+
+    planet = []
+    players = []
+    num_disks = 23
+    for i in range(num_disks):
+        offset = Vec2()
+        offset.from_polar((1500, 360 * i / num_disks))
+        pos = worldcenter + offset
+        if i % 4 == 0 or i % 3 == 0:
+            players.append(PlayerShip(pos, Vec2(100, -200)))
+        else:
+            planet.append(Planet(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
+
+    universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
+    universe.add_planet(*planet)
+
+    for _ in range(30 * 100):
+        universe.step(0.01)
+
+    disks: list[Disk] = planet + players
+    for disk in disks:
+        assert isclose(disk.radius + star.radius, disk.distance_to(star), rel_tol=1e-3), (
+            "Gravity should have pulled the object to the star's surface within 30 seconds"
+        )
