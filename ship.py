@@ -469,7 +469,7 @@ class BulletEnemy(Ship):
 
         """
         self.action_timer -= dt
-        delta_target_ship = self.target_ship._pos - self._pos
+        delta_target_ship = self.target_ship.pos_relative_to(self)
 
         if self.action_timer <= 0:
             if delta_target_ship == Vec2(0, 0):
