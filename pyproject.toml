@@ -28,6 +28,7 @@ ignore = [
     "D",       # Disable all doc in tests
     "ANN201",  # Disable return-type-annotation
     "PLR2004", # Allow magic values
+    "SLF001",  # Allow accessing protected attributes
 ]
 
 [dependency-groups]
