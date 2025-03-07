@@ -72,11 +72,11 @@ class PhysicalObject:
         ValueError
 
         """
-        self._pos = Vec2(pos)
-        self._vel = Vec2(vel)
+        self._pos: Vec2 = Vec2(pos)
+        self._vel: Vec2 = Vec2(vel)
         if not mass > 0:
             raise ValueError
-        self.mass = mass
+        self.mass: float = mass
 
     def pos_relative_to(self, other: PhysicalObject) -> Vec2:
         """Return `self`'s position relative to `other`.
