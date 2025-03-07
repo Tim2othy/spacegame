@@ -74,8 +74,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, stars, player_ships, enemy_ships, 10000)
-    for _ in range(NUM_PLANETS):
-        universe.generate_planet(stars[0])
+    universe.generate_planet(stars[0], NUM_PLANETS)
 
     return universe, player_ships
 

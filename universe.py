@@ -605,11 +605,12 @@ class Universe:
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def generate_planet(self, star: Star) -> None:
+    def generate_planet(self, star: Star, num_planets: int) -> None:
         """Create an planet orbiting a star.
 
         Args:
             star (Star): The star to orbit
+            num_planets (int): Number of planets to generate
 
         What the random variables do:
         - radius_planet - pretty obvious
@@ -620,26 +621,28 @@ class Universe:
         - planet_angle  - does it go clockwise or anticlockwise
 
         """
-        # random variables
-        planet_radius_lambda = 1 / (PLANET_RADIUS_PARAMETER * star.radius)
-        radius_planet = min(PLANET_SIZE_MIN + random.expovariate(planet_radius_lambda), self.max_nonstar_size / 2)
-        r_p = star.radius + radius_planet + random.expovariate(PLANET_ORBIT_PARAMETER)
-        r_a = r_p + random.expovariate(PLANET_ELLIPSIS_PARAMETER)
-        true_anomaly = random.uniform(0, 2 * math.pi)
-        orbit_direction = random.uniform(0, 2 * math.pi)
-        planet_angle = random.choice([90, 270])
+        for _ in range(num_planets):
 
-        # pos_planet
-        semi_major_axis = (r_p + r_a) / 2
-        eccentricity = (r_a - r_p) / (r_a + r_p)
-        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
-        radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = star.pos + radial_vector * r_initial
+            # random variables
+            planet_radius_lambda = 1 / (PLANET_RADIUS_PARAMETER * star.radius)
+            radius_planet = min(PLANET_SIZE_MIN + random.expovariate(planet_radius_lambda), self.max_nonstar_size / 2)
+            r_p = star.radius + radius_planet + random.expovariate(PLANET_ORBIT_PARAMETER)
+            r_a = r_p + random.expovariate(PLANET_ELLIPSIS_PARAMETER)
+            true_anomaly = random.uniform(0, 2 * math.pi)
+            orbit_direction = random.uniform(0, 2 * math.pi)
+            planet_angle = random.choice([90, 270])
 
-        # velocity_planet
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
-        tangential_vector = radial_vector.rotate(planet_angle)
-        vel_planet = tangential_vector * orbital_velocity
+            # pos_planet
+            semi_major_axis = (r_p + r_a) / 2
+            eccentricity = (r_a - r_p) / (r_a + r_p)
+            r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
+            radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
+            pos_planet = star.pos + radial_vector * r_initial
 
-        self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
+            # velocity_planet
+            total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
+            orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
+            tangential_vector = radial_vector.rotate(planet_angle)
+            vel_planet = tangential_vector * orbital_velocity
+
+            self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
