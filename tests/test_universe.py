@@ -103,7 +103,7 @@ def test_newtons_cradle(direction_angle: float):
 
 
 def test_precise_planet_collision():
-    # In several different directions, just barely have two planets graze past each other.
+    # In several different directions, just barely have two planets without gravity graze past each other.
 
     world = Vec2(3000, 3000)
     planet_radius = 50
@@ -112,6 +112,7 @@ def test_precise_planet_collision():
 
     universe = Universe(world, [], [], [], planet_radius * 2)
 
+    universe.apply_gravity = lambda dt: None  # noqa: ARG005
     start_planets: list[Planet] = []
     hit_planets: list[Planet] = []
 
