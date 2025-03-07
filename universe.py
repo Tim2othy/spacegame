@@ -206,11 +206,11 @@ class Universe:
             for body in chain(self._enemy_ships, self._nearby_planets(player)):
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
-                    self.create_particles_on_disk(body, player._pos, 25, player.color, 100)
+                    self.create_particles_on_disk(body, player, 25, player.color, 100)
             for star in self._nearby_stars(player):
                 if damage := player.bounce_off_of_disk(star) is not None:
                     player.suffer_damage(damage)
-                    self.create_particles_on_disk(star, player._pos, 25, player.color, 100)
+                    self.create_particles_on_disk(star, player, 25, player.color, 100)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
@@ -232,11 +232,11 @@ class Universe:
                 planet.bounce_off_of_disk(star)
 
     def create_particles_on_disk(
-        self, disk: Disk, pos: Vec2, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
+        self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
     ) -> None:
         """Create `n` particles on the disk's surface.
 
-        `pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        `projected_pobj._pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
         away from `disk` with max-magnitude `blast_vel` in addition to `disk`'s current velocity.
         Colors are randomly sampled from interpolation
         between `disk.color` and `color`.
@@ -245,7 +245,7 @@ class Universe:
 
         If pos is exactly on disk's center, nothing happens.
         """
-        delta = pos - disk._pos
+        delta = projected_pobj.pos_relative_to(disk)
         if delta == Vec2(0, 0):
             return
         delta_normalized = delta.normalize()
@@ -258,7 +258,7 @@ class Universe:
             self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
 
     def create_particle_cloud(
-        self, pos: Vec2, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
+        self, source: PhysicalObject, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
     ) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
@@ -272,7 +272,7 @@ class Universe:
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
             vel = initial_vel + random_vel
             random_lifetime = random.uniform(lifetime / 2, lifetime)
-            self._particles.append(Particle(pos, vel, color, random_lifetime))
+            self._particles.append(Particle(source._pos, vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
@@ -294,14 +294,14 @@ class Universe:
                 return False
             for body in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
                 if body.intersects_point(projectile._pos):
-                    self.create_particles_on_disk(body, projectile._pos, 5, projectile.color, 250)
+                    self.create_particles_on_disk(body, projectile, 5, projectile.color, 250)
                     return False
             for ship in target_ships:
                 if ship.intersects_point(projectile._pos):
-                    self.create_particle_cloud(ship.pos, 100, ship.color, ship.vel, 150, 2)
+                    self.create_particle_cloud(ship, 100, ship.color, ship.vel, 150, 2)
                     ship.suffer_damage(projectile.damage)
                     if ship.health <= 0:
-                        self.create_particle_cloud(ship.pos, 300, ship.color, ship.vel, 200, 8)
+                        self.create_particle_cloud(ship, 300, ship.color, ship.vel, 200, 8)
                         if is_player_projectile:
                             self._enemy_ships.remove(
                                 ship
