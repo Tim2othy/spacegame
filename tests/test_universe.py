@@ -1,7 +1,6 @@
-from itertools import chain
 import random
+from itertools import chain
 from math import isclose
-from typing import TYPE_CHECKING
 
 import pytest
 from pygame.math import Vector2 as Vec2
@@ -9,9 +8,6 @@ from pygame.math import Vector2 as Vec2
 from physics import PhysicalObject
 from ship import PlayerShip
 from universe import Planet, Star, Universe
-
-if TYPE_CHECKING:
-    from physics import Disk
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
