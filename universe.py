@@ -28,9 +28,9 @@ from constants import (
     GRID_COLOR,
 )
 
-PLANET_SIZE_PARAMETER = 6.7
-SIGMA_PLANET_RADIUS = 0.5
-ORBIT_CORRELATION_FACTOR = 0.4  # tweak this value to control the strength of the correlation
+PLANET_SIZE_PARAMETER = 5.9
+SIGMA_PLANET_RADIUS = 0.3
+ORBIT_CORRELATION_FACTOR = 0.05
 
 
 class Star(Disk):
@@ -635,8 +635,8 @@ class Universe:
         for _ in range(num_planets):
 
             # random variables
-            semi_major_axis = current_min_a * random.uniform(1.0, 1.3)
-            mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis / current_min_a)
+            semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
+            mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
             radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
             eccentricity = random.betavariate(1, 15)
             true_anomaly = random.uniform(0, 2 * math.pi)
