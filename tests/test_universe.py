@@ -13,16 +13,16 @@ if TYPE_CHECKING:
 
 
 def test_star_gravitation():  # TODO: This test takes around 5 seconds to run, all the other tests are 3 seconds total.
-    world = Vec2(3000, 3000)
+    world = Vec2(30000, 30000)
     worldcenter = world / 2
-    star = Star(world / 2, 1000)
+    star = Star(world / 2, 10000)
 
     planet = []
     players = []
     num_disks = 23
     for i in range(num_disks):
         offset = Vec2()
-        offset.from_polar((1500, 360 * i / num_disks))
+        offset.from_polar((12000, 360 * i / num_disks))
         pos = worldcenter + offset
         if i % 4 == 0 or i % 3 == 0:
             players.append(PlayerShip(pos, Vec2(100, -200)))
