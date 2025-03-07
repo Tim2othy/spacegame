@@ -78,6 +78,26 @@ class PhysicalObject:
             raise ValueError
         self._mass = mass
 
+    def pos_relative_to(self, other: PhysicalObject) -> Vec2:
+        """Return `self`'s position relative to `other`.
+
+        >>> a = PhysicalObject(Vec2(2, 3), Vec2(), 1)
+        >>> b = PhysicalObject(Vec2(1, 1), Vec2(), 1)
+        >>> a.pos_relative_to(b)
+        Vector2(1, 2)
+        """
+        return self._pos - other._pos  # noqa: SLF001
+
+    def vel_relative_to(self, other: PhysicalObject) -> Vec2:
+        """Return `self`'s velocity relative to `other`.
+
+        >>> a = PhysicalObject(Vec2(), Vec2(2, 3), 1)
+        >>> b = PhysicalObject(Vec2(), Vec2(1, 1), 1)
+        >>> a.vel_relative_to(b)
+        Vector2(1, 2)
+        """
+        return self._vel - other._vel  # noqa: SLF001
+
     def step(self, dt: float) -> None:
         """Apply its velocity to `self`.
 
