@@ -37,7 +37,7 @@ def test_star_gravitation():
 
     disks: list[Disk] = planet + players
     for disk in disks:
-        assert isclose(disk.radius + star.radius, disk._pos.distance_to(star._pos), rel_tol=1e-3), (
+        assert isclose(disk.radius + star.radius, disk.distance_to(star), rel_tol=1e-3), (
             "Gravity should have pulled the object to the star's surface within 30 seconds"
         )
 
