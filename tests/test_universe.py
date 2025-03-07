@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pygame.math import Vector2 as Vec2
 
+from physics import PhysicalObject
 from ship import PlayerShip
 from universe import Planet, Star, Universe
 
@@ -169,8 +170,9 @@ def test_precise_collision_failures():
         # Now pos + delta has distance 199 from planet_a, so if we put an planet of
         # radius 200 at (pos+delta), then that planet would definitely intersect planet_a,
         # and hence querying planets near (pos+delta) should return planet_a
+        dummy_pobj = PhysicalObject(pos + delta, Vec2(), 1)  # We only need it for its dummy_pobj._pos
 
-        if planet_a not in universe._nearby_planets(pos + delta):
+        if planet_a not in universe._nearby_planets(dummy_pobj):
             # Verify it really would fail successfully:
             planet_b = Planet(pos + delta, Vec2(), 100)
             universe.add_planet(planet_b)
