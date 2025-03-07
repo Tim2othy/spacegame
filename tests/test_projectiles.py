@@ -2,12 +2,12 @@ import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from projectiles import Bullet, Missile, Rocket
+from projectiles import Missile, Rocket
 from ship import Ship
 
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
-def test_homing(bullet_type: type[Bullet]):
+def test_homing(bullet_type: type[Missile | Rocket]):
     ship = Ship(Vec2(512, -1024), Vec2(4, 8), 10)
     projectile = bullet_type(Vec2(10, -15), Vec2(8, 29), Color(0, 0, 0), ship)
 
