@@ -172,7 +172,7 @@ def test_precise_collision_failures():
         # radius 200 at (pos+delta), then that planet would definitely intersect planet_a,
         # and hence querying planets near (pos+delta) should return planet_a
 
-        if planet_a not in universe._nearby_planets(pos + delta):  # noqa: SLF001
+        if planet_a not in universe._nearby_planets(pos + delta):
             # Verify it really would fail successfully:
             planet_b = Planet(pos + delta, Vec2(), 100)
             universe.add_planet(planet_b)
