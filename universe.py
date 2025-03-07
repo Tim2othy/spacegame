@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 import math
 import random
 from itertools import chain
@@ -17,7 +16,7 @@ from profiler import global_profiler
 from ship import MissileEnemy, Ship
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable, Iterator, Sequence
 
     from camera import Camera
     from projectiles import Bullet
