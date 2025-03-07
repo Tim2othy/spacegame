@@ -22,11 +22,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import BulletEnemy, PlayerShip
 
-from constants import (
-    FPS_HISTORY_LENGTH,
-    GRAVITATIONAL_CONSTANT,
-    GRID_COLOR,
-)
+from constants import FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
 PLANET_SIZE_MIN = 600
 # these are parameters for exponential distributions
@@ -543,10 +539,7 @@ class Universe:
 
         """
         for pobj in chain(
-            *self._planet_chunks.values(),
-            *self._star_chunks.values(),
-            self._enemy_ships,
-            self._player_ships,
+            *self._planet_chunks.values(), *self._star_chunks.values(), self._enemy_ships, self._player_ships
         ):
             pobj.draw(camera)
 

@@ -122,9 +122,7 @@ def test_precise_planet_collision():
         direction_rotated = direction.rotate(90)
 
         start_planet = Planet(
-            world / 2 + direction * num_directions * planet_radius,
-            direction * planet_radius,
-            planet_radius,
+            world / 2 + direction * num_directions * planet_radius, direction * planet_radius, planet_radius
         )
         start_planets.append(start_planet)
         hit_planet = Planet(

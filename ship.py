@@ -255,10 +255,7 @@ class Ship(Disk):
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
-            darker_color,
-            self._pos,
-            self._pos + forward * self.radius * GUNBARREL_LENGTH,
-            GUNBARREL_WIDTH * self.radius,
+            darker_color, self._pos, self._pos + forward * self.radius * GUNBARREL_LENGTH, GUNBARREL_WIDTH * self.radius
         )
 
         # thruster_rot_left, material
@@ -439,12 +436,7 @@ class BulletEnemy(Ship):
         ],
     )
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        target_ship: Ship,
-    ) -> None:
+    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
         """Create a new enemy ship.
 
         Args:

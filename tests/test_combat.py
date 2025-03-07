@@ -10,14 +10,7 @@ from enemy_ai import (
     _STANDARD_MATRIX,
     AIState,
 )
-from ship import (
-    HEALTH,
-    BulletEnemy,
-    MarkovEnemy,
-    MissileEnemy,
-    PlayerShip,
-    RocketEnemy,
-)
+from ship import HEALTH, BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Planet, Universe
 
 

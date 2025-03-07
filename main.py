@@ -23,14 +23,7 @@ from constants import (
     SCREEN_SIZE,
 )
 from profiler import global_profiler
-from ship import (
-    BulletEnemy,
-    MarkovEnemy,
-    MissileEnemy,
-    PlayerShip,
-    RocketEnemy,
-    ShipInput,
-)
+from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
 from universe import Star, Universe
 
 type Options = dict[str, bool]
@@ -47,30 +40,18 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     world_size_vec = Vec2(world_size, world_size)
 
     player_ships: list[PlayerShip] = [
-        PlayerShip(
-            world_size_vec / 4,
-            Vec2(0, 0),
-            spaceship_input=ShipInput.arrows(),
-        ),
+        PlayerShip(world_size_vec / 4, Vec2(0, 0), spaceship_input=ShipInput.arrows()),
     ]
     if options["splitscreen"]:
         player_ships.append(
-            PlayerShip(
-                world_size_vec / 5,
-                Vec2(0, 0),
-                color=PLAYER_2_COLOR,
-                spaceship_input=ShipInput.wasd(),
-            )
+            PlayerShip(world_size_vec / 5, Vec2(0, 0), color=PLAYER_2_COLOR, spaceship_input=ShipInput.wasd())
         )
     stars: list[Star] = [Star(world_size_vec / 2, 2000)]
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
         pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices(
-            [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy],
-            ENEMY_SPAWN_WEIGHTS,
-        )[0]
+        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], ENEMY_SPAWN_WEIGHTS)[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
     universe = Universe(world_size_vec, stars, player_ships, enemy_ships, 10000)
