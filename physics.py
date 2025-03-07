@@ -199,11 +199,11 @@ class Disk(PhysicalObject):
             bool: True iff `pobj` is in `self`
 
         >>> disk = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk.contains_center_of(Vec2(0, 0))
+        >>> disk.contains_center_of(PhysicalObject(Vec2(0, 0), Vec2(), 1))
         True
-        >>> disk.contains_center_of(Vec2(1, -1))
+        >>> disk.contains_center_of(PhysicalObject(Vec2(1, -1), Vec2(), 1))
         True
-        >>> disk.contains_center_of(Vec2(2, 1))
+        >>> disk.contains_center_of(PhysicalObject(Vec2(2, 1), Vec2(), 1))
         False
 
         """
