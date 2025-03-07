@@ -476,17 +476,10 @@ class BulletEnemy(Ship):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
             distance_target_ship = delta_target_ship.length()
 
-            self.random_point = (
-                self._pos
-                + (
-                    delta_target_ship
-                    + Vec2(
-                        random.uniform(-distance_target_ship, distance_target_ship),
-                        random.uniform(-distance_target_ship, distance_target_ship),
-                    )
-                )
-                / 2
-            )
+            random_x = random.uniform(-distance_target_ship, distance_target_ship)
+            random_y = random.uniform(-distance_target_ship, distance_target_ship)
+            # TODO@tim2othy: What is this supposed to do? Maybe add a comment?  ~lumi-a
+            self.random_point = self._pos + (delta_target_ship + Vec2(random_x, random_y)) / 2
 
             if delta_target_ship.length_squared() < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
