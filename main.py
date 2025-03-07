@@ -15,15 +15,10 @@ from pygame.math import Vector2 as Vec2
 
 from camera import Camera
 from constants import (
-    ASTEROIDS_PER_PLANET,
     ENEMY_SPAWN_WEIGHTS,
     FPS_HISTORY_LENGTH,
     MINIMAP_BORDER_COLOR,
     MINIMAP_SIZE,
-    PLANET_COLORS_LARGE,
-    PLANET_COLORS_SMALL,
-    PLANET_RADIUS_MU,
-    PLANET_RADIUS_SIGMA,
     PLAYER_2_COLOR,
     SCREEN_SIZE,
 )
@@ -36,9 +31,10 @@ from ship import (
     RocketEnemy,
     ShipInput,
 )
-from universe import Planet, Universe
+from universe import Star, Universe
 
 type Options = dict[str, bool]
+NUM_PLANETS = 5
 
 
 def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]:
@@ -49,11 +45,10 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     num_enemies = 2 if options["small"] else 20
     world_size = 20000 if options["small"] else 40000
     world_size_vec = Vec2(world_size, world_size)
-    planet_colors = PLANET_COLORS_SMALL if options["small"] else PLANET_COLORS_LARGE
 
     player_ships: list[PlayerShip] = [
         PlayerShip(
-            world_size_vec / 2,
+            world_size_vec / 4,
             Vec2(0, 0),
             spaceship_input=ShipInput.arrows(),
         ),
@@ -61,20 +56,13 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
     if options["splitscreen"]:
         player_ships.append(
             PlayerShip(
-                world_size_vec / 2 + Vec2(50, 0),
+                world_size_vec / 5,
                 Vec2(0, 0),
                 color=PLAYER_2_COLOR,
                 spaceship_input=ShipInput.wasd(),
             )
         )
-    planets: list[Planet] = [
-        Planet(
-            Vec2(random.uniform(0, world_size), random.uniform(0, world_size)),
-            random.lognormvariate(PLANET_RADIUS_MU, PLANET_RADIUS_SIGMA),
-            color,
-        )
-        for color in planet_colors
-    ]
+    stars: list[Star] = [Star(world_size_vec / 2, 2000)]
 
     enemy_ships: list[BulletEnemy] = []
     for _ in range(num_enemies):
@@ -85,10 +73,9 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
         )[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
-    universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)
-    for planet in planets:
-        for _ in range(ASTEROIDS_PER_PLANET):
-            universe.generate_asteroid(planet)
+    universe = Universe(world_size_vec, stars, player_ships, enemy_ships, 10000)
+    for _ in range(NUM_PLANETS):
+        universe.generate_planet(stars[0])
 
     return universe, player_ships
 
