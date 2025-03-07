@@ -110,12 +110,12 @@ def test_markov_enemy_retreat_behavior() -> None:
 
     # Run simulation for a few seconds
     for _ in range(10):
-        distance_squared_0 = (player_ship._pos - enemy._pos).magnitude_squared()
+        distance_squared_0 = (player_ship._pos - enemy._pos).length_squared()
         for _ in range(100):
             enemy.ai.current_state = AIState.RETREAT
             universe.step(0.01)
 
-        distance_squared_1 = (player_ship._pos - enemy._pos).magnitude_squared()
+        distance_squared_1 = (player_ship._pos - enemy._pos).length_squared()
         assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
 
 

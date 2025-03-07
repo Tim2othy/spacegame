@@ -26,7 +26,7 @@ def test_shooting():
     previous_projectile_pos = ship.projectiles[1]._pos
     for p in ship.projectiles[2:]:
         delta = p._pos - previous_projectile_pos
-        assert (reference_delta - delta).magnitude_squared() < EPSILON, "Bullets should be evenly spaced"
+        assert (reference_delta - delta).length_squared() < EPSILON, "Bullets should be evenly spaced"
         previous_projectile_pos = p._pos
 
 

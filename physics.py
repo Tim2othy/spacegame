@@ -147,10 +147,10 @@ class PhysicalObject:
         delta = pobj.pos_relative_to(self)
         if delta == Vec2(0, 0):
             return Vec2(0, 0)
-        dist_squared = delta.magnitude_squared()
-        force_magnitude = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
+        dist_squared = delta.length_squared()
+        force_length = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
-        return normalised_delta * force_magnitude
+        return normalised_delta * force_length
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`. Implemented by subclasses.
@@ -207,7 +207,7 @@ class Disk(PhysicalObject):
         False
 
         """
-        return self.pos_relative_to(pobj).magnitude_squared() < self._radius_squared
+        return self.pos_relative_to(pobj).length_squared() < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
@@ -232,7 +232,7 @@ class Disk(PhysicalObject):
         True
 
         """
-        return self.pos_relative_to(disk).magnitude_squared() < (self.radius + disk.radius) ** 2
+        return self.pos_relative_to(disk).length_squared() < (self.radius + disk.radius) ** 2
 
     def bounce_disks(self, disk: Disk) -> float | None:
         """Bounce two disks off each other if they are overlapping.
@@ -258,7 +258,7 @@ class Disk(PhysicalObject):
         """
         delta = disk.pos_relative_to(self)
         radii_sum = self.radius + disk.radius
-        distance_squared = delta.magnitude_squared()
+        distance_squared = delta.length_squared()
 
         # Check for intersection
         if distance_squared >= radii_sum**2:

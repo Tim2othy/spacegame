@@ -141,7 +141,7 @@ def test_precise_planet_collision():
         universe.step(0.001)
 
     for hit_planet in hit_planets:
-        assert 0.001 < hit_planet._vel.magnitude() / planet_radius < 0.1, (
+        assert 0.001 < hit_planet._vel.length() / planet_radius < 0.1, (
             "The hit planet should have gained a tiny bit of velocity"
         )
 

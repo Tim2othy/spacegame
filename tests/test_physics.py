@@ -26,8 +26,8 @@ def test_gravitational_force():
     assert large_force.y > 0
     assert double_distance_force.x > 0
     assert double_distance_force.y > 0
-    assert isclose(2, large_force.magnitude() / small_force.magnitude())
-    assert isclose(4, small_force.magnitude() / double_distance_force.magnitude())
+    assert isclose(2, large_force.length() / small_force.length())
+    assert isclose(4, small_force.length() / double_distance_force.length())
 
 
 def test_threedimensional_disk_mass_scaling():
@@ -65,10 +65,10 @@ def test_relative_bounce(relative_vel: Vec2):
     # All the bounces should turn out the same, so compare them to the first bounces
     comparison_a, comparison_b = bounces[0]
     for disk_a, disk_b in bounces[1:]:
-        assert isclose(0, (disk_a._pos - disk_b._pos - comparison_a._pos + comparison_b._pos).magnitude()), (
+        assert isclose(0, (disk_a._pos - disk_b._pos - comparison_a._pos + comparison_b._pos).length()), (
             "Bounce positions should agree relatively"
         )
-        assert isclose(0, (disk_a._vel - disk_b._vel - comparison_a._vel + comparison_b._vel).magnitude()), (
+        assert isclose(0, (disk_a._vel - disk_b._vel - comparison_a._vel + comparison_b._vel).length()), (
             "Bounce velocities should agree relatively"
         )
 

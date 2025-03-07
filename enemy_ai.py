@@ -103,7 +103,7 @@ class MarkovAI:
         """
         # Get context information
         delta = self.target.pos_relative_to(self.ship)
-        distance_squared = delta.magnitude_squared()
+        distance_squared = delta.length_squared()
 
         can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH
@@ -189,9 +189,9 @@ class MarkovAI:
         """
 
         # Quadratic equation coefficients:
-        a = relative_vel.magnitude_squared() - BULLET_RELEASE_SPEED**2
+        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
         b = 2 * relative_pos.dot(relative_vel)
-        c = relative_pos.magnitude_squared()
+        c = relative_pos.length_squared()
 
         # Standard quadratic formula
         discriminant = b**2 - 4 * a * c
@@ -199,7 +199,7 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
+            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
             return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
@@ -216,7 +216,7 @@ class MarkovAI:
         else:
             # No positive solution, target moving too fast or in wrong direction
             # Fall back to simple leading shot
-            intercept_time = relative_pos.magnitude() / BULLET_RELEASE_SPEED
+            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED
 
         # Calculate predicted position
         if intercept_time <= 0:
@@ -244,7 +244,7 @@ class MarkovAI:
 
         """
         delta = self.ship.pos_relative_to(self.target)
-        if delta.magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        if delta.length_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
             return Vec2(0, 0)
         return delta
 
@@ -266,7 +266,7 @@ class MarkovAI:
         # Only shoot when in attack or aim states and within range
         self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.pos_relative_to(
             self.target
-        ).magnitude_squared() < ENEMY_FIRE_RANGE_SQUARED
+        ).length_squared() < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:

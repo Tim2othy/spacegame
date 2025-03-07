@@ -474,7 +474,7 @@ class BulletEnemy(Ship):
         if self.action_timer <= 0:
             if delta_target_ship == Vec2(0, 0):
                 delta_target_ship = Vec2(EPSILON, EPSILON)
-            distance_target_ship = delta_target_ship.magnitude()
+            distance_target_ship = delta_target_ship.length()
 
             self.random_point = (
                 self._pos
@@ -488,7 +488,7 @@ class BulletEnemy(Ship):
                 / 2
             )
 
-            if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE_SQUARED:
+            if delta_target_ship.length_squared() < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
                 [self.current_action] = random.choices(
@@ -515,7 +515,7 @@ class BulletEnemy(Ship):
 
         self.shooting = (
             self.current_action == BulletEnemy.Action.accelerate_to_player
-            and delta_target_ship.magnitude_squared() < ENEMY_FIRE_RANGE_SQUARED
+            and delta_target_ship.length_squared() < ENEMY_FIRE_RANGE_SQUARED
         )
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
