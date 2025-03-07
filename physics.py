@@ -181,25 +181,25 @@ class Disk(PhysicalObject):
         """
         camera.draw_circle(self.color, self._pos, self.radius)
 
-    def intersects_point(self, vec: Vec2) -> bool:
-        """Determine whether `vec` is in `self`.
+    def contains_center_of(self, pobj: PhysicalObject) -> bool:
+        """Determine whether the center of `pobj` is in `self`.
 
         Args:
-            vec (Vec2): Vector to test for intersection
+            pobj (Vec2): Vector to test for intersection
 
         Returns:
-            bool: True iff `vec` is in `self`
+            bool: True iff `pobj` is in `self`
 
         >>> disk = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk.intersects_point(Vec2(0, 0))
+        >>> disk.contains_center_of(Vec2(0, 0))
         True
-        >>> disk.intersects_point(Vec2(1, -1))
+        >>> disk.contains_center_of(Vec2(1, -1))
         True
-        >>> disk.intersects_point(Vec2(2, 1))
+        >>> disk.contains_center_of(Vec2(2, 1))
         False
 
         """
-        return self._pos.distance_squared_to(vec) < self._radius_squared
+        return self._pos.distance_squared_to(pobj._pos) < self._radius_squared
 
     def intersects_disk(self, disk: Disk) -> bool:
         """Determine whether `self` intersects another Disk.
