@@ -224,7 +224,7 @@ class Disk(PhysicalObject):
         True
 
         """
-        return self._pos.distance_squared_to(disk._pos) < (self.radius + disk.radius) ** 2
+        return self.pos_relative_to(disk).magnitude_squared() < (self.radius + disk.radius) ** 2
 
     def bounce_disks(self, disk: Disk) -> float | None:
         """Bounce two disks off each other if they are overlapping.
@@ -248,7 +248,7 @@ class Disk(PhysicalObject):
             float | None: If float, impact velocity of bounce. None if no bounce occurred.
 
         """
-        delta = disk._pos - self._pos
+        delta = disk.pos_relative_to(self)
         radii_sum = self.radius + disk.radius
         distance_squared = delta.magnitude_squared()
 
@@ -260,7 +260,7 @@ class Disk(PhysicalObject):
         distance = math.sqrt(distance_squared)
         normal = delta / distance if distance_squared > 0 else Vec2(1, 0)
 
-        relative_velocity = disk._vel - self._vel
+        relative_velocity = disk.vel_relative_to(self)
         vel_along_normal = relative_velocity.dot(normal)
 
         # If the disks are moving apart already, skip the collision response.
@@ -282,7 +282,7 @@ class Disk(PhysicalObject):
         if math.isfinite(self.mass):
             self._pos -= correction * (1 - self.mass / (self.mass + disk.mass))
         if math.isfinite(disk.mass):
-            disk._pos += correction * (1 - disk.mass / (self.mass + disk.mass))
+            disk._pos += correction * (1 - disk.mass / (self.mass + disk.mass))  # noqa: SLF001
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
