@@ -14,6 +14,6 @@ def test_homing(bullet_type: type[Bullet]):
     for _ in range(2000):
         projectile.step(0.01)
         ship.step(0.01)
-        if ship.intersects_point(projectile._pos):
+        if ship.contains_center_of(projectile):
             return
     pytest.fail("The projectile should have hit the ship.")
