@@ -7,16 +7,16 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from ship import PlayerShip
-from universe import Asteroid, Planet, Universe
+from universe import Asteroid, Star, Universe
 
 if TYPE_CHECKING:
     from physics import Disk
 
 
-def test_planet_gravitation():
+def test_star_gravitation():
     world = Vec2(3000, 3000)
     worldcenter = world / 2
-    planet = Planet(world / 2, 1000, Color(0, 0, 0))
+    star = Star(world / 2, 1000, Color(0, 0, 0))
 
     asteroids = []
     players = []
@@ -31,7 +31,7 @@ def test_planet_gravitation():
             asteroids.append(Asteroid(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
 
     universe = Universe(
-        world, [planet], players, [], max(*(a.radius for a in asteroids), *(p.radius for p in players)) * 2
+        world, [star], players, [], max(*(a.radius for a in asteroids), *(p.radius for p in players)) * 2
     )
     universe.add_asteroids(*asteroids)
 
@@ -41,8 +41,8 @@ def test_planet_gravitation():
     disks: list[Disk] = asteroids + players
     for disk in disks:
         assert isclose(
-            disk.radius + planet.radius, disk.pos.distance_to(planet.pos), rel_tol=1e-3
-        ), "Gravity should have pulled the object to the planet's surface within 30 seconds"
+            disk.radius + star.radius, disk.pos.distance_to(star.pos), rel_tol=1e-3
+        ), "Gravity should have pulled the object to the star's surface within 30 seconds"
 
 
 @pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
@@ -158,10 +158,10 @@ def test_precise_collision_failures():
     for _ in range(1000):
         # This sets the universe-chunk-calculation
         universe = Universe(world, [], [], [], 190)
-        # Setting universe.max_nonplanet_size overrides the check for asteroid-radii, without
+        # Setting universe.max_nonstar_size overrides the check for asteroid-radii, without
         # changing the way chunks are calculated. So asteroids are added to chunks that are
         # effectively too small for them.
-        universe.max_nonplanet_size = 200
+        universe.max_nonstar_size = 200
 
         pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
         asteroid_a = Asteroid(pos, Vec2(), 100)

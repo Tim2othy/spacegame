@@ -35,11 +35,11 @@ ASTEROID_ORBIT_PARAMETER = 0.0002
 ASTEROID_ELLIPSIS_PARAMETER = 0.001
 
 
-class Planet(Disk):
+class Star(Disk):
     """A stationary disk."""
 
     def __init__(self, pos: Vec2, radius: float, color: Color) -> None:
-        """Create a new planet.
+        """Create a new star.
 
         Args:
             pos (Vec2): Fixed position
@@ -66,7 +66,7 @@ class Asteroid(Disk):
 
 
 type AsteroidChunk = tuple[int, int]
-type PlanetChunk = tuple[int, int]
+type StarChunk = tuple[int, int]
 
 
 class Universe:
@@ -79,36 +79,36 @@ class Universe:
     def __init__(
         self,
         size: Vec2,
-        planets: list[Planet],
+        stars: list[Star],
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
-        max_nonplanet_size: float,
+        max_nonstar_size: float,
     ) -> None:
         """Create a new universe.
 
-        Assumes planets are immutable.
+        Assumes stars are immutable.
 
         Assumes every asteroid and ship has an axis-aligned-bounding-box
-        of size at most max_nonplanet_size. For disks, that means their diameter must not
-        exceed max_nonplanet_size. If violated, collision-detection may ignore large objects.
-        A smaller max_nonplanet_size speeds up collision-detection, so choose the smallest value
+        of size at most max_nonstar_size. For disks, that means their diameter must not
+        exceed max_nonstar_size. If violated, collision-detection may ignore large objects.
+        A smaller max_nonstar_size speeds up collision-detection, so choose the smallest value
         possible.
 
-        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonplanet_size.
+        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonstar_size.
 
         Args:
             size (Vec2): Width and height
-            planets (list[Planet]): Planets
+            stars (list[Star]): Stars
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
-            max_nonplanet_size: float
+            max_nonstar_size: float
 
         """
         self.size = Vec2(size)
-        self.max_nonplanet_size = max_nonplanet_size
+        self.max_nonstar_size = max_nonstar_size
 
-        if any(2 * ship.radius > max_nonplanet_size for ship in player_ships) or any(
-            2 * ship.radius > max_nonplanet_size for ship in enemy_ships
+        if any(2 * ship.radius > max_nonstar_size for ship in player_ships) or any(
+            2 * ship.radius > max_nonstar_size for ship in enemy_ships
         ):
             raise ValueError
 
@@ -116,45 +116,45 @@ class Universe:
         self._enemy_ships = enemy_ships
 
         self._vec_to_asteroid_chunk = lambda vec: (
-            math.floor(vec.x / max_nonplanet_size),
-            math.floor(vec.y / max_nonplanet_size),
+            math.floor(vec.x / max_nonstar_size),
+            math.floor(vec.y / max_nonstar_size),
         )
         self._asteroid_chunks: dict[AsteroidChunk, list[Asteroid]] = {}
 
-        planet_chunk_size = max(500, 2 * max([p.radius for p in planets], default=0))
-        self._vec_to_planet_chunk = lambda vec: (
-            math.floor(vec.x / planet_chunk_size),
-            math.floor(vec.y / planet_chunk_size),
+        star_chunk_size = max(500, 2 * max([p.radius for p in stars], default=0))
+        self._vec_to_star_chunk = lambda vec: (
+            math.floor(vec.x / star_chunk_size),
+            math.floor(vec.y / star_chunk_size),
         )
-        self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
-        for planet in planets:
-            chunk = self._vec_to_planet_chunk(planet.pos)
-            self._planet_chunks.setdefault(chunk, []).append(planet)
+        self._star_chunks: dict[StarChunk, list[Star]] = {}
+        for star in stars:
+            chunk = self._vec_to_star_chunk(star.pos)
+            self._star_chunks.setdefault(chunk, []).append(star)
 
         self._particles: list[Particle] = []
 
     def add_asteroids(self, *args: Asteroid) -> None:
         """Add asteroids to the universe.
 
-        Raises a ValueError if the asteroid's size exceeds the universe's max_nonplanet_size.
+        Raises a ValueError if the asteroid's size exceeds the universe's max_nonstar_size.
 
-        TODO: We could also check if the asteroid's size exceeds max_nonplanet_size, and if it does,
-        update max_nonplanet_size and rebuild the chunks. Would be slow, but should hopefully happen
+        TODO: We could also check if the asteroid's size exceeds max_nonstar_size, and if it does,
+        update max_nonstar_size and rebuild the chunks. Would be slow, but should hopefully happen
         rarely, would provide a better API (callers need not settle on a size limit upfront), and
         wouldn't cause runtime-exceptions.
         """
         for asteroid in args:
-            if asteroid.radius * 2 > self.max_nonplanet_size:
+            if asteroid.radius * 2 > self.max_nonstar_size:
                 raise ValueError
             chunk = self._vec_to_asteroid_chunk(asteroid.pos)
             self._asteroid_chunks.setdefault(chunk, []).append(asteroid)
 
-    def _nearby_planets(self, vec: Vec2) -> Iterator[Planet]:
-        (x, y) = self._vec_to_planet_chunk(vec)
+    def _nearby_stars(self, vec: Vec2) -> Iterator[Star]:
+        (x, y) = self._vec_to_star_chunk(vec)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
-                yield from self._planet_chunks.get(chunk, [])
+                yield from self._star_chunks.get(chunk, [])
 
     def _nearby_asteroids(self, vec: Vec2) -> Iterator[Asteroid]:
         (x, y) = self._vec_to_asteroid_chunk(vec)
@@ -172,7 +172,7 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self._nearby_planets(pobj.pos):
+        for body in self._nearby_stars(pobj.pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
@@ -192,7 +192,7 @@ class Universe:
         """Run all bounce-interactions within `self`."""
         # Bounce-Hierarchy:
         # player_ships > enemy_ships > asteroids
-        # Planets are separate.
+        # Stars are separate.
 
         # Bounce player_ships
         for player in self._player_ships:
@@ -201,10 +201,10 @@ class Universe:
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
                     self.create_particles_on_disk(body, player.pos, 25, player.color, 100)
-            for planet in self._nearby_planets(player.pos):
-                if damage := player.bounce_off_of_disk(planet) is not None:
+            for star in self._nearby_stars(player.pos):
+                if damage := player.bounce_off_of_disk(star) is not None:
                     player.suffer_damage(damage)
-                    self.create_particles_on_disk(planet, player.pos, 25, player.color, 100)
+                    self.create_particles_on_disk(star, player.pos, 25, player.color, 100)
 
         # Bounce enemy_ships
         for ix, enemy_ship in enumerate(self._enemy_ships):
@@ -213,17 +213,17 @@ class Universe:
                 if damage := enemy_ship.bounce_disks(body) is not None:
                     enemy_ship.suffer_damage(damage)
                 enemy_ship.bounce_disks(body)
-            for planet in self._nearby_planets(enemy_ship.pos):
-                if damage := enemy_ship.bounce_off_of_disk(planet) is not None:
+            for star in self._nearby_stars(enemy_ship.pos):
+                if damage := enemy_ship.bounce_off_of_disk(star) is not None:
                     enemy_ship.suffer_damage(damage)
-                enemy_ship.bounce_off_of_disk(planet)
+                enemy_ship.bounce_off_of_disk(star)
 
         # Bounce asteroids
         for asteroid in chain(*self._asteroid_chunks.values()):
             for body in self._nearby_asteroids(asteroid.pos):
                 asteroid.bounce_disks(body)
-            for planet in self._nearby_planets(asteroid.pos):
-                asteroid.bounce_off_of_disk(planet)
+            for star in self._nearby_stars(asteroid.pos):
+                asteroid.bounce_off_of_disk(star)
 
     def create_particles_on_disk(
         self, disk: Disk, pos: Vec2, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
@@ -286,7 +286,7 @@ class Universe:
             """
             if not self.contains_point(projectile.pos):
                 return False
-            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_planets(projectile.pos)):
+            for body in chain(self._nearby_asteroids(projectile.pos), self._nearby_stars(projectile.pos)):
                 if body.intersects_point(projectile.pos):
                     self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
                     return False
@@ -412,7 +412,7 @@ class Universe:
 
         - p is the player-ship
         - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
-          planets and asteroids
+          stars and asteroids
         - Here, z_chunk_min=2 and z_chunk_max=4.
         - The rectangular grid comprises the chunks. Each rectangle thus has height z_chunk_size,
           and width x_chunk_size.
@@ -424,7 +424,7 @@ class Universe:
         by the two diagonal lines) crosses the (z+1)*z_chunk_size line, and round to the nearest chunk.
 
         For this, it suffices to know the points X1, X2 where the camera's periphery crosses the
-        1*z_chunk_size line (so the plane containing the ship, planets, asteroid), because then
+        1*z_chunk_size line (so the plane containing the ship, stars, asteroid), because then
         the x-coordinates X1', X2' of the crossing-points with the (z+1)*z_chunk_size line are simply:
             X1' = camera_worldspace_center.x - (camera_worldspace_center.x - X1) * (z+1)
                 = (z+1)*X1 - z*camera_worldspace_center.x
@@ -534,7 +534,7 @@ class Universe:
         """
         for pobj in chain(
             *self._asteroid_chunks.values(),
-            *self._planet_chunks.values(),
+            *self._star_chunks.values(),
             self._enemy_ships,
             self._player_ships,
         ):
@@ -599,27 +599,25 @@ class Universe:
         """
         return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
 
-    def generate_asteroid(self, planet: Planet) -> None:
-        """Create an asteroid orbiting a planet.
+    def generate_asteroid(self, star: Star) -> None:
+        """Create an asteroid orbiting a star.
 
         Args:
-            planet (Planet): The planet to orbit
+            star (Star): The star to orbit
 
         What the random variables do:
         - radius_asteroid - pretty obvious
-        - r_a             - shortest distance to planet during orbit
-        - r_p             - largest distance to planet during orbit
+        - r_a             - shortest distance to star during orbit
+        - r_p             - largest distance to star during orbit
         - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
-        - orbit_direction - in which direction (in degrees) of the planet it starts
+        - orbit_direction - in which direction (in degrees) of the star it starts
         - asteroid_angle  - does it go clockwise or anticlockwise
 
         """
         # random variables
-        asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * planet.radius)
-        radius_asteroid = min(
-            ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda), self.max_nonplanet_size / 2
-        )
-        r_p = planet.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
+        asteroid_radius_lambda = 1 / (ASTEROID_RADIUS_PARAMETER * star.radius)
+        radius_asteroid = min(ASTEROID_SIZE_MIN + random.expovariate(asteroid_radius_lambda), self.max_nonstar_size / 2)
+        r_p = star.radius + radius_asteroid + random.expovariate(ASTEROID_ORBIT_PARAMETER)
         r_a = r_p + random.expovariate(ASTEROID_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
@@ -630,11 +628,11 @@ class Universe:
         eccentricity = (r_a - r_p) / (r_a + r_p)
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_asteroid = planet.pos + radial_vector * r_initial
+        pos_asteroid = star.pos + radial_vector * r_initial
 
         # velocity_asteroid
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * planet.mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * planet.mass / r_initial + total_specific_energy)) ** 0.5
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
         tangential_vector = radial_vector.rotate(asteroid_angle)
         velocity_asteroid = tangential_vector * orbital_velocity
 
