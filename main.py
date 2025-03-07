@@ -73,7 +73,7 @@ def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]
         )[0]
         enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
 
-    universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 100)
+    universe = Universe(world_size_vec, planets, player_ships, enemy_ships, 10000)
     for _ in range(ASTEROIDS_PER_PLANET):
         universe.generate_asteroid(planets[0])
 
