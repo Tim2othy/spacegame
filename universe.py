@@ -131,6 +131,7 @@ class Universe:
         for star in stars:
             chunk = self._vec_to_star_chunk(star.pos)
             self._star_chunks.setdefault(chunk, []).append(star)
+        self.star = stars[0]
 
         self._particles: list[Particle] = []
 
@@ -173,7 +174,10 @@ class Universe:
 
         """
         force_sum = Vec2(0, 0)
-        for body in self._nearby_stars(pobj.pos):
+        # We can assume only one Star exists
+        force_sum += pobj.gravitational_force(self.star)
+
+        for body in self._nearby_planets(pobj.pos):
             force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
