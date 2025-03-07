@@ -18,9 +18,9 @@ def test_shooting():
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
-    assert all(
-        abs((p.pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles
-    ), "Bullets should be shot in the direction of the ship"
+    assert all(abs((p.pos - ship.pos).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
+        "Bullets should be shot in the direction of the ship"
+    )
 
     reference_delta = ship.projectiles[1].pos - ship.projectiles[0].pos
     previous_projectile_pos = ship.projectiles[1].pos
