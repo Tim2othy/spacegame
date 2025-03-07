@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from physics import Disk
 
 
-def test_star_gravitation():
+def test_star_gravitation():  # TODO: This test takes around 5 seconds to run, all the other tests are 3 seconds total.
     world = Vec2(3000, 3000)
     worldcenter = world / 2
     star = Star(world / 2, 1000)
