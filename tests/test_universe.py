@@ -73,7 +73,7 @@ def test_newtons_cradle(direction_angle: float):
     assert other_planets[-1]._vel * direction > 0.01, "Last planet should have gained speed"
 
 
-def test_precise_planet_collision():
+def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch):
     # In several different directions, just barely have two planets without gravity graze past each other.
 
     world = Vec2(3000, 3000)
@@ -81,9 +81,10 @@ def test_precise_planet_collision():
 
     num_directions = 23
 
+    # To prevent planets from gravitating
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
     universe = Universe(world, [], [], [], planet_radius * 2)
 
-    universe.apply_gravity = lambda dt: None  # noqa: ARG005
     start_planets: list[Planet] = []
     hit_planets: list[Planet] = []
 
