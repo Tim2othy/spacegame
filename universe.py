@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import random
 from itertools import chain
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color
@@ -16,7 +16,7 @@ from profiler import global_profiler
 from ship import MissileEnemy
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from camera import Camera
     from projectiles import Bullet
