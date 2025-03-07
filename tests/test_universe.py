@@ -3,7 +3,6 @@ from math import isclose
 from typing import TYPE_CHECKING
 
 import pytest
-from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from ship import PlayerShip
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 def test_star_gravitation():
     world = Vec2(3000, 3000)
     worldcenter = world / 2
-    star = Star(world / 2, 1000, Color(0, 0, 0))
+    star = Star(world / 2, 1000)
 
     planet = []
     players = []
