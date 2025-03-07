@@ -136,7 +136,7 @@ class PhysicalObject:
             Vec2: Resulting force to apply to `self`
 
         """
-        delta = pobj._pos - self._pos  # point from `self` to `pobj`
+        delta = pobj.pos_relative_to(self)
         if delta == Vec2(0, 0):
             return Vec2(0, 0)
         dist_squared = delta.magnitude_squared()
