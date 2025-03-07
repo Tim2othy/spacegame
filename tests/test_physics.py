@@ -65,10 +65,10 @@ def test_relative_bounce(relative_vel: Vec2):
     # All the bounces should turn out the same, so compare them to the first bounces
     comparison_a, comparison_b = bounces[0]
     for disk_a, disk_b in bounces[1:]:
-        assert isclose(0, disk_a.pos_relative_to(disk_b) - comparison_a.pos_relative_to(comparison_b).length()), (
+        assert isclose(0, (disk_a.pos_relative_to(disk_b) - comparison_a.pos_relative_to(comparison_b)).length()), (
             "Bounce positions should agree relatively"
         )
-        assert isclose(0, disk_a.vel_relative_to(disk_b) - comparison_a.vel_relative_to(comparison_b).length()), (
+        assert isclose(0, (disk_a.vel_relative_to(disk_b) - comparison_a.vel_relative_to(comparison_b)).length()), (
             "Bounce velocities should agree relatively"
         )
 
