@@ -32,10 +32,10 @@ def test_step(relative_pos: Vec2) -> None:
 
 
 def test_gravitational_force() -> None:
-    obj = PhysicalObject(Vec2(), Vec2(), 1)
-    small_force = obj.gravitational_force(PhysicalObject(Vec2(1, 2), Vec2(), 1))
-    large_force = obj.gravitational_force(PhysicalObject(Vec2(-1, 2), Vec2(), 2))
-    double_distance_force = obj.gravitational_force(PhysicalObject(Vec2(2, 4), Vec2(), 1))
+    obj = PhysicalObject(ORIGIN, Vec2(), Vec2(), 1)
+    small_force = obj.gravitational_force(PhysicalObject(obj, Vec2(1, 2), Vec2(), 1))
+    large_force = obj.gravitational_force(PhysicalObject(obj, Vec2(-1, 2), Vec2(), 2))
+    double_distance_force = obj.gravitational_force(PhysicalObject(obj, 2 * Vec2(1, 2), Vec2(), 1))
     assert small_force.x > 0
     assert small_force.y > 0
     assert large_force.x < 0
