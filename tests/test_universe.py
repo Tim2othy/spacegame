@@ -44,24 +44,30 @@ def test_newtons_cradle(direction_angle: float) -> None:
     # At least, if bounciness==1, which is not the case here, but
     # we still expect the rightmost planet to gain velocity afterwards.
 
-    world = Vec2(3000, 3000)
-    planet_radius = 50
+    radius = 50
+    universe = Universe(None, radius * 2)
 
     direction = Vec2()
-    direction.from_polar((planet_radius, direction_angle))
+    direction.from_polar((radius, direction_angle))
 
-    universe = Universe(world, [], [], [], planet_radius * 2)
-    first_planet = Planet(world / 2, direction, planet_radius)
-    universe.add_planet(first_planet)
-    other_planets = [Planet(world / 2 + 2.1 * i * direction, Vec2(), planet_radius) for i in range(1, 6)]
-    universe.add_planet(*other_planets)
+    first_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(), relative_vel=direction, radius=radius))
+    first_planet_reference = MovingObject(first_planet, Vec2(), Vec2())
+    other_planets = [
+        universe.add_planet(PlanetConfig(relative_pos=2.1 * i * direction, radius=radius)) for i in range(1, 6)
+    ]
+    last_planet_reference = MovingObject(other_planets[-1], Vec2(), Vec2())
 
     # Run for 2 seconds
     for _ in range(200):
         universe.step(0.01)
 
-    assert first_planet._vel * direction < planet_radius**2, "First planet should have lost speed"
-    assert other_planets[-1]._vel * direction > 0.01, "Last planet should have gained speed"
+    assert first_planet.vel_relative_to(first_planet_reference) * direction < -0.1, (
+        "First planet should have lost speed"
+    )
+
+    assert other_planets[-1].vel_relative_to(last_planet_reference) * direction > 0.1, (
+        "Last planet should have gained speed"
+    )
 
 
 def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
