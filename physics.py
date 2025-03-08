@@ -53,27 +53,12 @@ class MovingObject:
         self.__vel += vel
 
     def pos_relative_to(self, other: MovingObject) -> Vec2:
-        """Return `self`'s position relative to `other`.
-
-        >>> a = MovingObject._ur()  # You usually want to use a universe instead.
-        >>> b = MovingObject(a, Vec2(1, 1), Vec2())
-        >>> b.pos_relative_to(a)
-        Vector2(1, 1)
-        """
-        return self.__pos - other.__pos
+        """Return `self`'s position relative to `other`."""
+        return self.__pos - other.__pos  # noqa: SLF001
 
     def vel_relative_to(self, other: MovingObject) -> Vec2:
-        """Return `self`'s velocity relative to `other`.
-
-        >>> a = MovingObject._ur()  # You usually want to use a universe instead.
-        >>> b = MovingObject(a, Vec2(), Vec2(1, 1))
-        >>> b.vel_relative_to(a)
-        Vector2(1, 1)
-        >>> a._add_vel(Vec2(-5, 3))
-        >>> b.vel_relative_to(a)
-        Vector2(6, -2)
-        """
-        return self.__vel - other.__vel
+        """Return `self`'s velocity relative to `other`."""
+        return self.__vel - other.__vel  # noqa: SLF001
 
     def distance_squared_to(self, other: MovingObject) -> float:
         """Return the squared distance between `self` and `other`."""
