@@ -251,7 +251,10 @@ class Universe:
             enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
-        """Run input-logic for player-ships."""
+        """Run input-logic for player-ships.
+
+        `keys` is typically retreived using `pygame.key.get_pressed()`.
+        """
         for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 

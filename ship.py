@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import math
 import random
 from enum import Enum, auto
@@ -374,6 +375,15 @@ PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
 
 @dataclass
 class PlayerShipConfig:
+    """Configuration for a player-spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the player-spaceship
+        relative_vel (Vec2): Relative velocity of the player-spaceship
+        color (Color): Color of the player-spaceship
+        spaceship_input (ShipInput): Controls for the player-spaceship
+    """
+
     relative_pos: Vec2
     relative_vel: Vec2 = ZERO_VEC2
     color: Color = PLAYER_COLOR
@@ -400,11 +410,7 @@ class PlayerShip(Ship):
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
 
-        `keys` is typically retreived using `pygame.key.get_pressed()`
-
-        Args:
-            keys (pygame.key.ScancodeWrapper): Pressed keys
-
+        `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
         self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
         self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
