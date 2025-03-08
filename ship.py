@@ -364,7 +364,7 @@ class PlayerShipConfig:
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     color: Color = field(default_factory=lambda: Color("darkslategray"))
-    input: ShipInput = field(default_factory=lambda: ShipInput.arrows())
+    input: ShipInput = field(default_factory=ShipInput.arrows)
 
 
 class PlayerShip(Ship):

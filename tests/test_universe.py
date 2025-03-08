@@ -87,7 +87,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
         direction.from_polar((1, i * 360 / num_directions))
         direction_rotated = direction.rotate(90)
 
-        start_planet = universe.add_planet(
+        _start_planet = universe.add_planet(
             PlanetConfig(
                 relative_pos=direction * num_directions * radius,
                 relative_vel=direction * radius,
