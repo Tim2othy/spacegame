@@ -40,6 +40,7 @@ MISSILE_ROF = 3.0
 FLARE_ROF = 5.0
 
 GRAY = Color("gray")
+ZERO_VEC2 = Vec2(0, 0)
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
@@ -371,6 +372,14 @@ class ShipInput:
 PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
 
 
+@dataclass
+class PlayerShipConfig:
+    relative_pos: Vec2
+    relative_vel: Vec2 = ZERO_VEC2
+    color: Color = PLAYER_COLOR
+    spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS
+
+
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
@@ -379,21 +388,11 @@ class PlayerShip(Ship):
         relative_to: MovingObject,
         relative_pos: Vec2,
         relative_vel: Vec2,
-        size: float = SHIP_SIZE,
         color: Color = PLAYER_COLOR,
         spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
     ) -> None:
-        """Create a new player-spaceship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            size (float): Radius of disk-body
-            color (Color): Material color
-            spaceship_input (SpaceshipInput): Map from keys to actions
-
-        """
-        super().__init__(relative_to, relative_pos, relative_vel, size, color, BULLET_ROF, BULLET_RELEASE_SPEED)
+        """Create a new player-spaceship."""
+        super().__init__(relative_to, relative_pos, relative_vel, SHIP_SIZE, color, BULLET_ROF, BULLET_RELEASE_SPEED)
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
