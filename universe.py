@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 import random
 from itertools import chain
@@ -31,6 +31,7 @@ PLANET_SIZE_MIN = 600
 PLANET_RADIUS_PARAMETER = 0.02
 PLANET_ORBIT_PARAMETER = 0.0002
 PLANET_ELLIPSIS_PARAMETER = 0.001
+ZERO_VEC2 = Vec2(0, 0)
 
 
 class Star(Disk):
@@ -45,7 +46,7 @@ class Star(Disk):
 @dataclass
 class PlanetConfig:
     relative_pos: Vec2
-    relative_vel: Vec2
+    relative_vel: Vec2 = field(default=ZERO_VEC2)
     radius: float
 
 
