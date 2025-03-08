@@ -103,7 +103,7 @@ class Universe:
         self.max_nonstar_size = max_nonstar_size
 
         # Messed-up object-instantiation to bootstrap a reference MovingObject.
-        # This is a necessary hack. Think thrice before copying this code.
+        # Think thrice before copying this code.
         self.star: MovingObject | Star = object.__new__(MovingObject)
         self.star._MovingObject__pos = Vec2(0, 0)  # noqa: SLF001
         self.star._MovingObject__vel = Vec2(0, 0)  # noqa: SLF001
@@ -263,6 +263,7 @@ class Universe:
                 if ship.contains_center_of(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
+                    return False
                 # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
                 # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
                 # collision-detection more idiomatic. If we do, we can also change the above calls
