@@ -110,7 +110,7 @@ class Rocket(Bullet):
             target_ship_direction = delta_target_ship.normalize()
 
             desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
-            force_direction = desired_velocity - self._vel
+            force_direction = desired_velocity - self.vel_relative_to(self.target_ship)
 
             if force_direction != Vec2(0, 0):
                 force = force_direction.normalize() * self.homing_thrust
