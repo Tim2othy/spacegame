@@ -44,6 +44,15 @@ class Star(Disk):
 
 @dataclass
 class PlanetConfig:
+    """Configuration for a planet.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the planet
+        relative_vel (Vec2): Relative velocity of the planet
+        radius (float): Radius of the planet
+
+    """
+
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     radius: float
