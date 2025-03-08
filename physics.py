@@ -54,7 +54,14 @@ class MovingObject:
         """Apply velocity to `self`."""
         self.__pos += dt * self.__vel
 
-    def add_vel(self, vel: Vec2) -> None:
+    def _shift(self, delta: Vec2) -> None:
+        """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing.
+
+        This is currently only used for shifting disks apart when they intersect.
+        """
+        self.__pos += delta
+
+    def _add_vel(self, vel: Vec2) -> None:
         """Add `vel` to  `self`'s velocity. Be careful with relativity."""
         self.__vel += vel
 
@@ -135,7 +142,7 @@ class PhysicalObject(MovingObject):
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`."""
-        self.add_vel(impulse / self.mass)
+        self._add_vel(impulse / self.mass)
 
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`."""
