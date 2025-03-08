@@ -227,25 +227,15 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet) -> bool:
-            """Check for collision and return whether the projectile should stay alive.
-
-            Args:
-                projectile (Bullet): The projectile to check
-                target_ships (list): Ships that can be hit by this projectile
-                is_player_projectile (bool): Whether this is a player's projectile
-
-            Returns:
-                bool: True if the projectile should stay alive, False otherwise
-
-            """
+        def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
+            """Check for collision and return whether the projectile should stay alive."""
             if self.star.contains_center_of(projectile) or not self.cointains_center_of(projectile):
                 return False
             for planet in self._nearby_planets(projectile):
                 if planet.contains_center_of(projectile):
                     self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
                     return False
-            for ship in chain(self._player_ships, self._enemy_ships):
+            for ship in ships_it_can_hit:
                 if ship.contains_center_of(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150, 2)
                     ship.suffer_damage(projectile.damage)
@@ -262,10 +252,10 @@ class Universe:
             return True
 
         for player in self._player_ships:
-            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships, True)]
+            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships)]
 
         for enemy in self._enemy_ships:
-            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships, False)]
+            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
