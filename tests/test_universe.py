@@ -10,12 +10,12 @@ from ship import PlayerShip
 from universe import Planet, PlanetConfig, Star, Universe
 
 
-def test_mutual_bounce() -> None:
+def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
     # Two planets
     #  o   -->        <--  O
     #  planet_a     planet_b
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    # Bounces should be relative to the two planets' velocities:
     universe = Universe(None, 2)
     planet_a = universe.add_planet(PlanetConfig(relative_pos=Vec2(-5, 0), relative_vel=Vec2(5, 0), radius=0.5))
     planet_b = universe.add_planet(PlanetConfig(relative_pos=Vec2(5, 0), relative_vel=Vec2(-5, 0), radius=1.0))
@@ -35,7 +35,7 @@ def test_mutual_bounce() -> None:
 
 
 @pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
-def test_newtons_cradle(direction_angle: float) -> None:
+def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float) -> None:
     # When we have a setup like this:
     #  o-->   oooo
     # We expect it to look something like this afterwards:
@@ -43,6 +43,7 @@ def test_newtons_cradle(direction_angle: float) -> None:
     # (https://en.wikipedia.org/wiki/Newton's_cradle)
     # At least, if bounciness==1, which is not the case here, but
     # we still expect the rightmost planet to gain velocity afterwards.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
     radius = 50
     universe = Universe(None, radius * 2)
