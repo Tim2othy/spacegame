@@ -25,7 +25,7 @@ from constants import (
     generate_complementary_color,
 )
 from enemy_ai import MarkovAI
-from physics import Disk
+from physics import Disk, MovingObject
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -60,8 +60,9 @@ class Ship(Disk):
 
     def __init__(
         self,
-        pos: Vec2,
-        vel: Vec2,
+        relative_to: MovingObject,
+        relative_pos: Vec2,
+        relative_vel: Vec2,
         size: float = SHIP_SIZE,
         color: Color = GRAY,
         gun_cooldown: float = BULLET_ROF,
@@ -87,7 +88,7 @@ class Ship(Disk):
         ValueError
 
         """
-        super().__init__(pos, vel, size, color)
+        super().__init__(relative_to, relative_pos, relative_vel, size, color)
         self.size: float = size
 
         self.health: float = HEALTH
