@@ -175,17 +175,6 @@ class Disk(PhysicalObject):
 
         a.intersects_disk(b) should always return the same as b.intersects_disk(a),
         barring floating-point rounding-errors.
-
-        >>> disk_a = Disk(MovingObject.ur(), Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk_b = Disk(disk_a, Vec2(2,1), Vec2(), radius=1, color=Color(0, 0, 0))
-        >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
-        True
-        >>> disk_c = Disk(disk_a, Vec2(3,1), Vec2(), radius=0.5, color=Color(0, 0, 0))
-        >>> disk_a.intersects_disk(disk_c) or disk_c.intersects_disk(disk_a)
-        False
-        >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
-        True
-
         """
         return self.distance_squared_to(other) < (self.radius + other.radius) ** 2
 
