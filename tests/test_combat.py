@@ -1,4 +1,5 @@
 import random
+import sys
 
 import pytest
 from pygame.math import Vector2 as Vec2
@@ -24,7 +25,9 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy]) -> None:
 
     enemy = enemy_type(player_ship, random_relative_pos, Vec2(0, 0), player_ship)
 
-    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+    universe = Universe(
+        world, sys.float_info.epsilon, [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2
+    )
     starting_health = player_ship.health
 
     # 30 seconds
