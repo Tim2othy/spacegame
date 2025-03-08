@@ -451,7 +451,7 @@ class BulletEnemy(Ship):
         accelerate_to_player = auto()
         accelerate_randomly = auto()
 
-    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, target_ship: Ship) -> None:
+    def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
         """Create a new enemy ship.
 
         Args:
@@ -462,17 +462,18 @@ class BulletEnemy(Ship):
         """
         super().__init__(
             relative_to,
-            relative_pos,
-            relative_vel,
+            config.relative_pos,
+            config.relative_vel,
             self.SHIP_SIZE,
             self.SHIP_COLOR,
             self.SHIP_GUN_COOLDOWN,
             self.SHIP_PROJECTILE_SPEED,
         )
 
+        self.target: Ship = config.target_ship
+
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
-        self.target: Ship = target_ship
         self.projectiles: list[Bullet] = []
         self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
 
