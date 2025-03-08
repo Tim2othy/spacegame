@@ -351,9 +351,6 @@ class ShipInput:
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
 
 
-PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
-
-
 @dataclass
 class PlayerShipConfig:
     """Configuration for a player-spaceship.
@@ -367,9 +364,9 @@ class PlayerShipConfig:
     """
 
     relative_pos: Vec2
-    relative_vel: Vec2 = field(default=ZERO_VEC2)
-    color: Color = field(default=PLAYER_COLOR)
-    input: ShipInput = field(default=PLAYER_DEFAULT_CONTROLS)
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    color: Color = field(default_factory=lambda: Color("darkslategray"))
+    input: ShipInput = field(default_factory=lambda: ShipInput.arrows())
 
 
 class PlayerShip(Ship):
@@ -413,7 +410,7 @@ class EnemyShipConfig:
     """
 
     relative_pos: Vec2
-    relative_vel: Vec2 = field(default=ZERO_VEC2)
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     target_ship: Ship
 
 
