@@ -130,7 +130,7 @@ class Ship(Disk):
         """Create a new Flare at `pos` with velocity `vel`, relative to self."""
         return Flare(self, pos, vel)
 
-    def shoot(self, dt: float) -> None:
+    def handle_shooting(self, dt: float) -> None:
         """Handle bullet-shooting."""
         if not self.shooting:
             # The ship doesn't want to shoot at the moment,
@@ -160,7 +160,7 @@ class Ship(Disk):
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
 
-    def release_flares(self, dt: float) -> None:
+    def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
         if not self.releasing_flares:
             # The ship doesn't want to release flares at the moment,
@@ -213,8 +213,8 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.step(dt)
 
-        self.shoot(dt)
-        self.release_flares(dt)
+        self.handle_shooting(dt)
+        self.handle_flares(dt)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera."""

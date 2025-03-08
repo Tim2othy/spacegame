@@ -14,7 +14,7 @@ def test_shooting() -> None:
 
     ship.angle = tau / 8
     ship.shooting = True
-    ship.shoot(bullet_count * gun_cooldown)
+    ship.handle_shooting(bullet_count * gun_cooldown)
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
