@@ -145,12 +145,7 @@ class Universe:
 
     @global_profiler.profile_method
     def apply_gravity(self, dt: float) -> None:
-        """Apply gravity to all of `self`'s objects.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply gravity to all of `self`'s objects."""
         for pobj in chain(self._player_ships, self._enemy_ships, *self._planet_chunks.values()):
             self.apply_gravity_to(pobj, dt)
 
