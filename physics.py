@@ -190,10 +190,10 @@ class Disk(PhysicalObject):
         barring floating-point rounding-errors.
 
         >>> disk_a = Disk(MovingObject.ur(), Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk_b = Disk(Vec2(2,1), Vec2(), radius=1, color=Color(0, 0, 0))
+        >>> disk_b = Disk(disk_a, Vec2(2,1), Vec2(), radius=1, color=Color(0, 0, 0))
         >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
         True
-        >>> disk_c = Disk(Vec2(3,1), Vec2(), radius=0.5, color=Color(0, 0, 0))
+        >>> disk_c = Disk(disk_a, Vec2(3,1), Vec2(), radius=0.5, color=Color(0, 0, 0))
         >>> disk_a.intersects_disk(disk_c) or disk_c.intersects_disk(disk_a)
         False
         >>> disk_b.intersects_disk(disk_c) and disk_c.intersects_disk(disk_b)
