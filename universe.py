@@ -76,14 +76,12 @@ class Universe:
     def __init__(
         self,
         size: Vec2,
-        stars: list[Star],
+        star_size: float,
         player_ships: list[PlayerShip],
         enemy_ships: list[BulletEnemy],
         max_nonstar_size: float,
     ) -> None:
-        """Create a new universe.
-
-        Assumes stars are immutable.
+        """Create a new universe with one star at the center.
 
         Assumes every planet and ship has an axis-aligned-bounding-box
         of size at most max_nonstar_size. For disks, that means their diameter must not
@@ -92,10 +90,11 @@ class Universe:
         possible.
 
         Raises a ValueError if any player-ship or enemy-ship is larger than max_nonstar_size.
+        Raises a ValueError if star_size is not strictly positive.
 
         Args:
             size (Vec2): Width and height
-            stars (list[Star]): Stars
+            star_size (float): The size of the star, must be positive.
             player_ships (list[Ship]): List of player-ships
             enemy_ships (list[BulletEnemy]): Enemy fleet
             max_nonstar_size: float
@@ -108,6 +107,8 @@ class Universe:
             2 * ship.radius > max_nonstar_size for ship in enemy_ships
         ):
             raise ValueError
+        if not star_size > 0:
+            raise ValueError
 
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
@@ -118,16 +119,7 @@ class Universe:
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
-        star_chunk_size = max(500, 2 * max([p.radius for p in stars], default=0))
-        self._pobj_to_star_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
-            math.floor(pobj._pos.x / star_chunk_size),  # TODO: Private member access
-            math.floor(pobj._pos.y / star_chunk_size),
-        )
-        self._star_chunks: dict[StarChunk, list[Star]] = {}
-        for star in stars:
-            chunk = self._pobj_to_star_chunk(star)
-            self._star_chunks.setdefault(chunk, []).append(star)
-        self.stars = stars
+        self.star = Star()
 
         self._particles: list[Particle] = []
 
