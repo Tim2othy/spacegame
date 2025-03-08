@@ -130,13 +130,16 @@ class Universe:
         self._enemy_ships.append(ship)
         return ship
 
-    def add_planet(self, *args: Planet) -> None:
-        """Add planets to the universe. Raises a ValueError if the size exceeds the universe's max_nonstar_size."""
-        for planet in args:
-            if planet.radius * 2 > self.max_nonstar_size:
-                raise ValueError
-            chunk = self._pobj_to_planet_chunk(planet)
-            self._planet_chunks.setdefault(chunk, []).append(planet)
+    def add_planet(self, planet_config: PlanetConfig) -> Planet:
+        """Add planet to a universe from its config. Returns (a reference to) the created planet.
+
+        Raises a ValueError if the planet's radius exceeds the max_nonstar_size.
+        """
+        if planet_config.radius * 2 > self.max_nonstar_size:
+            raise ValueError
+        planet = Planet(self.star, planet_config)
+        chunk = self._pobj_to_planet_chunk(planet)
+        self._planet_chunks.setdefault(chunk, []).append(planet)
 
     def _nearby_planets(self, pobj: PhysicalObject) -> Iterator[Planet]:
         (x, y) = self._pobj_to_planet_chunk(pobj)
