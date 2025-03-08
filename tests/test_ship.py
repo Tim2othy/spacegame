@@ -2,15 +2,18 @@ from math import tau
 
 from pygame.math import Vector2 as Vec2
 
+from physics import MovingObject
 from ship import Ship
 
 EPSILON = 1e-8
+
+ORIGIN = MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 def test_shooting() -> None:
     gun_cooldown = 0.123
     bullet_count = 10
-    ship = Ship(Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
+    ship = Ship(ORIGIN, Vec2(), Vec2(), 10, gun_cooldown=gun_cooldown)
 
     ship.angle = tau / 8
     ship.shooting = True
@@ -29,11 +32,11 @@ def test_shooting() -> None:
 
 
 def test_movement() -> None:
-    ship = Ship(Vec2(), Vec2(), 10)
+    ship = Ship(ORIGIN, Vec2(), Vec2(), 10)
     ship.thruster_rot_left = True
     ship.step(0.01)
     ship.thruster_rot_left = False
     ship.thruster_forward = True
     ship.step(0.01)
-    assert ship._vel.x > 0, "Ship should be moving forward"
-    assert ship._vel.y > 0, "Ship should be moving forward"
+    assert ship.vel_relative_to(ORIGIN).x > 0, "Ship should be moving forward"
+    assert ship.vel_relative_to(ORIGIN).y > 0, "Ship should be moving upward"
