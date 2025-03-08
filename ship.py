@@ -382,6 +382,7 @@ class PlayerShipConfig:
         relative_vel (Vec2): Relative velocity of the player-spaceship
         color (Color): Color of the player-spaceship
         spaceship_input (ShipInput): Controls for the player-spaceship
+
     """
 
     relative_pos: Vec2
@@ -418,6 +419,22 @@ class PlayerShip(Ship):
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
+
+
+@dataclass
+class EnemyShipConfig:
+    """Configuration for an enemy-spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the enemy-spaceship
+        relative_vel (Vec2): Relative velocity of the enemy-spaceship
+        target_ship (Ship): Ship to target
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = ZERO_VEC2
+    target_ship: Ship
 
 
 class BulletEnemy(Ship):
