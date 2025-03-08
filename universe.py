@@ -102,8 +102,8 @@ class Universe:
         self.star = Star(MovingObject.ur(), Vec2(), star_size)
 
         self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
-            math.floor(pobj._pos.x / max_nonstar_size),  # TODO: Private member access
-            math.floor(pobj._pos.y / max_nonstar_size),
+            math.floor(pobj.pos_relative_to(self.star) / max_nonstar_size),
+            math.floor(pobj.pos_relative_to(self.star) / max_nonstar_size),
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
