@@ -118,12 +118,12 @@ def test_simple_disk_bounce() -> None:
 
 
 def test_disk_bounce() -> None:
-    disk_a = Disk(Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
-    disk_b = Disk(Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
+    disk_a = Disk(ORIGIN, Vec2(), Vec2(), radius=1, color=Color(0, 0, 0))
+    disk_b = Disk(disk_a, Vec2(4, 0), Vec2(), radius=2, color=Color(0, 0, 0))
 
     assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 
-    disk_c = Disk(Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
+    disk_c = Disk(disk_a, Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
 
     bounce_count = 0
     for _ in range(200):
@@ -138,12 +138,12 @@ def test_disk_bounce() -> None:
         else:
             assert not isclose(disk_c.radius + disk_b.radius, disk_c.distance_to(disk_b)), "Disks should not be flush"
         if bounce_count <= 0:
-            assert disk_c._vel == Vec2(1, 0)
-            assert disk_b._vel == Vec2(0, 0)
+            assert disk_c.vel_relative_to(ORIGIN) == Vec2(1, 0)
+            assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0)
         if bounce_count >= 1:
-            assert disk_c._vel.x < 0, "Disk should be moving to the left"
-            assert disk_c._vel.y > 0, "Disk should be moving up"
+            assert disk_c.vel_relative_to(ORIGIN).x < 0, "Disk should be moving to the left"
+            assert disk_c.vel_relative_to(ORIGIN).y > 0, "Disk should be moving up"
 
-        assert disk_b._vel == Vec2(0, 0), "Disk_b should be unaffected"
+        assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1
