@@ -150,7 +150,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = self._vel + forward * self.projectile_speed
+                bullet_vel = forward * self.projectile_speed
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -160,7 +160,7 @@ class Ship(Disk):
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
                 gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = self._pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
+                bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
