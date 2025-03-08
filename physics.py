@@ -101,14 +101,7 @@ class PhysicalObject(MovingObject):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
-        """Create a new PhysicalObject.
-
-        Raises a ValueError if the mass is not strictly positive.
-
-        Args:
-            pos (Vec2): Object's position, usually its center
-            vel (Vec2): Object's velocity (ignore relativity please)
-            mass (float): Object's mass. Must be strictly positive.
+        """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive.
 
         >>> PhysicalObject(Vec2(), Vec2(), 1).mass
         1
