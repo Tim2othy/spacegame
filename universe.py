@@ -152,35 +152,33 @@ class Universe:
     @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        # Bounce-Hierarchy:
-        # player_ships > enemy_ships > planets
-        # Stars are separate.
 
-        # Bounce player_ships
-        for player in self._player_ships:
-            # For now, don't bounce player-ships off of other player-ships
-            for body in chain(self._enemy_ships, self._nearby_planets(player)):
-                if damage := player.bounce_disks(body) is not None:
-                    player.suffer_damage(damage)
-                    self.create_particles_on_disk(body, player, 25, player.color, 100)
-            if player.intersects_disk(self.star):
-                player.suffer_damage(float("inf"))
+        ships: list[Ship] = list(*self._player_ships, *self._enemy_ships)
 
-        # Bounce enemy_ships
-        for ix, enemy in enumerate(self._enemy_ships):
-            # But it *is* fun to bounce enemies off of each other
-            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy)):
-                if damage := enemy.bounce_disks(body) is not None:
-                    enemy.suffer_damage(damage)
-            if enemy.intersects_disk(self.star):
-                enemy.suffer_damage(float("inf"))
+        for ix, ship in enumerate(ships):
+            # Bounce ships off of each other
+            for other_ship in ships[ix + 1 :]:
+                if damage := ship.bounce_disks(other_ship) is not None:
+                    ship.suffer_damage(damage)
+                    other_ship.suffer_damage(damage)
+                    self.create_particles_on_disk(ship, other_ship, 25, other_ship.color, 100)
+                    self.create_particles_on_disk(other_ship, ship, 25, ship.color, 100)
+            for planet in self._nearby_planets(ship):
+                if damage := ship.bounce_disks(planet) is not None:
+                    ship.suffer_damage(damage)
+                    self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
+            if ship.intersects_disk(self.star):
+                ship.suffer_damage(float("inf"))
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
+            # TODO: Could this be optimised by not checking all pairs of planets?
             for body in self._nearby_planets(planet):
                 planet.bounce_disks(body)
-            for star in self._nearby_stars(planet):
-                planet.bounce_off_of_disk(star)
+            # TODO: This is unrealistic and dumb, but destroying planets that fall into the star
+            # isn't fun, either? At any rate, if nobody bounces off of stars anymore, we can probably
+            # finally deprecate Disk.bounce_off_of_disk (I hate that method)
+            planet.bounce_off_of_disk(self.star)
 
     def create_particles_on_disk(
         self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
