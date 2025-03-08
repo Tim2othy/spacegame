@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import random
-from enum import Enum
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import pygame
@@ -428,14 +428,12 @@ class BulletEnemy(Ship):
     SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
     SHIP_SIZE = SHIP_SIZE
 
-    Action = Enum(
-        "Action",
-        [
-            "accelerate_to_player",
-            "accelerate_randomly",
-            "decelerate",
-        ],
-    )
+    class Action(Enum):
+        """Actions the BulletEnemy might take."""
+
+        accelerate_to_player = auto()
+        accelerate_randomly = auto()
+        decelerate = auto()
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, target_ship: Ship) -> None:
         """Create a new enemy ship.
