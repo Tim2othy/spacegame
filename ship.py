@@ -518,8 +518,8 @@ class RocketEnemy(BulletEnemy):
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new rocket targeting `self.target_ship`."""
-        return Rocket(pos, vel, self.projectile_color, self.target)
+        """Create a new rocket relative to `self` targeting `self.target`."""
+        return Rocket(self, pos, vel, self.projectile_color, self.target)
 
 
 class MissileEnemy(BulletEnemy):
@@ -531,8 +531,8 @@ class MissileEnemy(BulletEnemy):
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.projectile_color, self.target)
+        """Create a new missile relative to `self` targeting `self.target`."""
+        return Missile(self, pos, vel, self.projectile_color, self.target)
 
 
 class MarkovEnemy(BulletEnemy):
