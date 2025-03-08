@@ -14,14 +14,13 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk, MovingObject, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
-from ship import MissileEnemy, Ship
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
 
     from camera import Camera
     from projectiles import Bullet
-    from ship import BulletEnemy, PlayerShip
+    from ship import BulletEnemy, PlayerShip, Ship
 
 from constants import FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
@@ -153,7 +152,6 @@ class Universe:
     @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-
         ships: list[Ship] = list(*self._player_ships, *self._enemy_ships)
 
         for ix, ship in enumerate(ships):
