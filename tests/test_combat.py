@@ -100,49 +100,47 @@ def test_transition_matrix_sums(matrix: dict) -> None:
 
 def test_markov_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
-    world = Vec2(1000, 1000)
-    player = PlayerShip(MovingObject.ur(), world / 2, Vec2())
-    enemy = MarkovEnemy(world / 2 + Vec2(100, 100), Vec2(), player)
-    universe = Universe(world, [], [player], [enemy], max(player.radius, enemy.radius) * 2)
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
 
     # Run simulation for a few seconds
     for _ in range(10):
-        distance_squared_0 = player.distance_to(enemy)
+        distance_squared_0 = player.distance_squared_to(enemy)
         for _ in range(100):
             enemy.ai.current_state = AIState.RETREAT
             universe.step(0.01)
 
-        distance_squared_1 = player.distance_to(enemy)
+        distance_squared_1 = player.distance_squared_to(enemy)
         assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
 
 
+# TODO: Parametrise over relative velocities of player and markov enemy
 def test_markov_enemy_aim() -> None:
     """Test that a MarkovEnemy will hit a moving player."""
-    world = Vec2(5000, 5000)
-    player_ship = PlayerShip(world / 2, Vec2(50, 40))
-    enemy = MarkovEnemy(world / 2 + Vec2(-800, 400), Vec2(27, -42), player_ship)
-    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
 
     # Run simulation for a few seconds
     for _ in range(200):
         enemy.ai.current_state = AIState.AIM
         universe.step(0.01)
 
-    assert player_ship.health != HEALTH, "Enemy should have hit the player"
+    assert player.health != HEALTH, "Enemy should have hit the player"
 
 
 def test_markov_low_health_search() -> None:
     """Test whether a low health MarkovEnemy eventually finds a distant player."""
-    world = Vec2(80000, 80000)
-    player_ship = PlayerShip(Vec2(1000, 1000), Vec2())
-    enemy = MarkovEnemy(Vec2(79500, 79500), Vec2(), player_ship)
-    universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
     enemy.health = 1
     enemy.ai.current_state = AIState.RETREAT
 
     for _ in range(100000):
         universe.step(0.01)
-        if player_ship.health < HEALTH:
+        if player.health < HEALTH:
             break
 
-    assert player_ship.health < HEALTH, "Enemy should have eventually found and damaged player"
+    assert player.health < HEALTH, "Enemy should have eventually found and damaged player"
