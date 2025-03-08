@@ -33,7 +33,6 @@ class MovingObject:
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new MovingObject relative to another MovingObject."""
-        # If you ever change this implementation, also check whether to change MovingObject._ur
         self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
         self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
