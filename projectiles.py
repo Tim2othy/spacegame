@@ -161,7 +161,9 @@ class Rocket(Bullet):
 class Missile(Rocket):
     """A pentagonal bullet, homing on a target-ship."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color, target_ship: "Ship") -> None:
+    def __init__(
+        self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: "Ship"
+    ) -> None:
         """Create a new Missile targeting `target_ship`.
 
         Args:
@@ -171,7 +173,7 @@ class Missile(Rocket):
             target_ship (Ship): Ship to home in on
 
         """
-        super().__init__(pos, vel, color, target_ship)
+        super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
         self.homing_duration = MISSILE_HOMING_DURATION
