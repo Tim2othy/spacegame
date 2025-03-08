@@ -125,13 +125,6 @@ class Universe:
             chunk = self._pobj_to_planet_chunk(planet)
             self._planet_chunks.setdefault(chunk, []).append(planet)
 
-    def _nearby_stars(self, pobj: PhysicalObject) -> Iterator[Star]:
-        (x, y) = self._pobj_to_star_chunk(pobj)
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                chunk = (x + i, y + j)
-                yield from self._star_chunks.get(chunk, [])
-
     def _nearby_planets(self, pobj: PhysicalObject) -> Iterator[Planet]:
         (x, y) = self._pobj_to_planet_chunk(pobj)
         for i in range(-1, 2):
