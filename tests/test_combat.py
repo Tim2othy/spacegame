@@ -10,6 +10,7 @@ from enemy_ai import (
     _STANDARD_MATRIX,
     AIState,
 )
+from physics import MovingObject
 from ship import HEALTH, BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Planet, Universe
 
@@ -18,9 +19,10 @@ from universe import Planet, Universe
 def test_enemy_hostility(enemy_type: type[BulletEnemy]) -> None:
     """Verify that any enemy will eventually find and hit the player."""
     world = Vec2(1000, 1000)
-    player_ship = PlayerShip(world / 2, Vec2())
+    player_ship = PlayerShip(MovingObject.ur(), world / 2, Vec2())
+    random_relative_pos = Vec2(random.random() * world.x, random.random() * world.y) / 2.0
 
-    enemy = enemy_type(Vec2(random.random() * world.x, random.random() * world.y), Vec2(0, 0), player_ship)
+    enemy = enemy_type(player_ship, random_relative_pos, Vec2(0, 0), player_ship)
 
     universe = Universe(world, [], [player_ship], [enemy], max(player_ship.radius, enemy.radius) * 2)
     starting_health = player_ship.health
