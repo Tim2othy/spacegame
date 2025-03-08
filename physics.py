@@ -61,20 +61,23 @@ class MovingObject:
     def pos_relative_to(self, other: MovingObject) -> Vec2:
         """Return `self`'s position relative to `other`.
 
-        >>> a = MovingObject(Vec2(2, 3), Vec2())
-        >>> b = MovingObject(Vec2(1, 1), Vec2())
-        >>> a.pos_relative_to(b)
-        Vector2(1, 2)
+        >>> a = MovingObject.ur()
+        >>> b = MovingObject(a, Vec2(1, 1), Vec2())
+        >>> b.pos_relative_to(a)
+        Vector2(1, 1)
         """
         return self.__pos - other.__pos
 
     def vel_relative_to(self, other: MovingObject) -> Vec2:
         """Return `self`'s velocity relative to `other`.
 
-        >>> a = MovingObject(Vec2(), Vec2(2, 3))
-        >>> b = MovingObject(Vec2(), Vec2(1, 1))
-        >>> a.vel_relative_to(b)
-        Vector2(1, 2)
+        >>> a = MovingObject.ur()
+        >>> b = MovingObject(a, Vec2(), Vec2(1, 1))
+        >>> b.vel_relative_to(a)
+        Vector2(1, 1)
+        >>> a.add_vel(Vec2(-5, 3))
+        >>> b.vel_relative_to(a)
+        Vector2(6, -2)
         """
         return self.__vel - other.__vel
 
