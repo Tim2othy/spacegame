@@ -383,8 +383,9 @@ class PlayerShip(Ship):
 
     def __init__(
         self,
-        pos: Vec2,
-        vel: Vec2,
+        relative_to: MovingObject,
+        relative_pos: Vec2,
+        relative_vel: Vec2,
         size: float = SHIP_SIZE,
         color: Color = PLAYER_COLOR,
         spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
@@ -399,7 +400,7 @@ class PlayerShip(Ship):
             spaceship_input (SpaceshipInput): Map from keys to actions
 
         """
-        super().__init__(pos, vel, size, color, BULLET_ROF, BULLET_RELEASE_SPEED)
+        super().__init__(relative_to, relative_pos, relative_vel, size, color, BULLET_ROF, BULLET_RELEASE_SPEED)
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
