@@ -11,29 +11,36 @@ from enemy_ai import (
     AIState,
 )
 from physics import MovingObject
-from ship import HEALTH, BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
+from ship import (
+    HEALTH,
+    BulletEnemy,
+    EnemyShipConfig,
+    MarkovEnemy,
+    MissileEnemy,
+    PlayerShip,
+    PlayerShipConfig,
+    RocketEnemy,
+)
 from universe import Planet, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
-def test_enemy_hostility(enemy_type: type[BulletEnemy]) -> None:
+@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
+def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
     """Verify that any enemy will eventually find and hit the player."""
-    world = Vec2(1000, 1000)
-    player_ship = PlayerShip(MovingObject.ur(), world / 2, Vec2())
-    random_relative_pos = Vec2(random.random() * world.x, random.random() * world.y) / 2.0
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    _enemy = universe.add_enemy(EnemyShipConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
 
-    enemy = enemy_type(player_ship, random_relative_pos, Vec2(0, 0), player_ship)
-
-    universe = Universe(world, None, max(player_ship.radius, enemy.radius) * 2)
-    starting_health = player_ship.health
+    starting_health = player.health
 
     # 30 seconds
     for _ in range(3000):
         universe.step(0.01)
-        if player_ship.health < starting_health:
+        if player.health < starting_health:
             break
 
-    assert player_ship.health < starting_health
+    assert player.health < starting_health
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
