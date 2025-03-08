@@ -64,8 +64,6 @@ class Universe:
         self,
         size: Vec2,
         star_size: float | None,
-        player_ships: list[PlayerShip],
-        enemy_ships: list[BulletEnemy],
         max_nonstar_size: float,
     ) -> None:
         """Create a new universe that can have one star at the center.
@@ -78,24 +76,16 @@ class Universe:
         A smaller max_nonstar_size speeds up collision-detection, so choose the smallest value
         possible.
 
-        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonstar_size.
         Raises a ValueError if star_size is a float and not strictly positive.
 
         Args:
             size (Vec2): Width and height
             star_size (float | None): The size of the star, must be positive.
-            player_ships (list[Ship]): List of player-ships
-            enemy_ships (list[BulletEnemy]): Enemy fleet
             max_nonstar_size: float
 
         """
         self.size = Vec2(size)
         self.max_nonstar_size = max_nonstar_size
-
-        if any(2 * ship.radius > max_nonstar_size for ship in player_ships) or any(
-            2 * ship.radius > max_nonstar_size for ship in enemy_ships
-        ):
-            raise ValueError
 
         self.star: MovingObject | Star = MovingObject.ur()
         if star_size is not None:
@@ -103,8 +93,8 @@ class Universe:
                 raise ValueError
             self.star = Star(self.star, Vec2(), star_size)
 
-        self._player_ships = player_ships
-        self._enemy_ships = enemy_ships
+        self._player_ships: list[PlayerShip] = []
+        self._enemy_ships: list[BulletEnemy] = []
 
         def pobj_to_planet_chunk(pobj: PhysicalObject) -> PlanetChunk:
             pos = pobj.pos_relative_to(self.star) / max_nonstar_size
