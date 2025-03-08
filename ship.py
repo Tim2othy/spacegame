@@ -452,14 +452,7 @@ class BulletEnemy(Ship):
         accelerate_randomly = auto()
 
     def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
-        """Create a new enemy ship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-
-        """
+        """Create a new enemy ship."""
         super().__init__(
             relative_to,
             config.relative_pos,
@@ -478,12 +471,7 @@ class BulletEnemy(Ship):
         self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
 
     def step(self, dt: float) -> None:
-        """Apply physics and "AI" to `self`.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply physics and "AI" to `self`."""
         self.action_timer -= dt
         can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
 
@@ -560,23 +548,11 @@ class MarkovEnemy(BulletEnemy):
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
     def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
-        """Create a new Markov-based enemy ship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-
-        """
+        """Create a new Markov-based enemy ship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.target_ship)
         self.ai = MarkovAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
-        """Apply physics and AI to this ship.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply physics and AI to this ship."""
         self.ai.update(dt)
         Ship.step(self, dt)
