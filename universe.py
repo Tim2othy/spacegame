@@ -508,9 +508,16 @@ class Universe:
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
         """Draw gridlines on `camera`."""
+        # TODO: Choose one of these options:
+        # 1. Use a grid relative to the camera's position (universe is unbounded now)
+        # 2. Use a polar grid centered on self.star, relative to the camera's position
+        # 3. Don't use any grid at all (the background-stars will guide your way)
+        #
+        # I like option 2.    ~lumi-a
+
         gridline_spacing = 500
-        width = self.size.x
-        height = self.size.y
+        width = 3000
+        height = 3000
 
         for x in range(0, int(width + 1), gridline_spacing):
             camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)
