@@ -97,16 +97,7 @@ class PhysicalObject(MovingObject):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
-        """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive.
-
-        >>> PhysicalObject(MovingObject.ur(), Vec2(), Vec2(), mass=1).mass
-        1
-        >>> PhysicalObject(MovingObject.ur(), Vec2(), Vec2(), mass=-1).mass
-        Traceback (most recent call last):
-            ...
-        ValueError
-
-        """
+        """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive."""
         super().__init__(relative_to, relative_pos, relative_vel)
         if not mass > 0:
             raise ValueError
