@@ -388,25 +388,24 @@ class PlayerShipConfig:
     relative_pos: Vec2
     relative_vel: Vec2 = ZERO_VEC2
     color: Color = PLAYER_COLOR
-    spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS
+    input: ShipInput = PLAYER_DEFAULT_CONTROLS
 
 
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    def __init__(
-        self,
-        relative_to: MovingObject,
-        relative_pos: Vec2,
-        relative_vel: Vec2,
-        color: Color = PLAYER_COLOR,
-        spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
-    ) -> None:
+    def __init__(self, relative_to: MovingObject, config: PlayerShipConfig) -> None:
         """Create a new player-spaceship."""
         super().__init__(
-            relative_to, relative_pos, relative_vel, SHIP_SIZE, color, BULLET_RATE_OF_FIRE, BULLET_RELEASE_SPEED
+            relative_to,
+            config.relative_pos,
+            config.relative_vel,
+            SHIP_SIZE,
+            config.color,
+            BULLET_RATE_OF_FIRE,
+            BULLET_RELEASE_SPEED,
         )
-        self.spaceship_input = spaceship_input
+        self.spaceship_input = config.input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
