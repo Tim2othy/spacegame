@@ -36,6 +36,18 @@ class MovingObject:
         self.__pos: Vec2 = relative_to.__pos + relative_pos
         self.__vel: Vec2 = relative_to.__vel + relative_vel
 
+    @classmethod
+    def ur(cls: type) -> MovingObject:
+        """Create a new MovingObject that is not relative to anything in particular.
+
+        Because you need a MovingObject to initialise a MovingObject, the ur-MovingObject
+        can be used to start creating other MovingObjects relative to.
+        """
+        dummy_reference: MovingObject = object.__new__(cls)
+        dummy_reference.__pos = Vec2(0, 0)  # noqa: SLF001
+        dummy_reference.__vel = Vec2(0, 0)  # noqa: SLF001
+        return MovingObject(dummy_reference, Vec2(0, 0), Vec2(0, 0))
+
     def step(self, dt: float) -> None:
         """Apply velocity to `self`."""
         self.__pos += dt * self.__vel
