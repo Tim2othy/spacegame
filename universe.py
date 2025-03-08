@@ -106,15 +106,7 @@ class Universe:
         self._particles: list[Particle] = []
 
     def add_planet(self, *args: Planet) -> None:
-        """Add planets to the universe.
-
-        Raises a ValueError if the planet's size exceeds the universe's max_nonstar_size.
-
-        TODO: We could also check if the planet's size exceeds max_nonstar_size, and if it does,
-        update max_nonstar_size and rebuild the chunks. Would be slow, but should hopefully happen
-        rarely, would provide a better API (callers need not settle on a size limit upfront), and
-        wouldn't cause runtime-exceptions.
-        """
+        """Add planets to the universe. Raises a ValueError if the size exceeds the universe's max_nonstar_size."""
         for planet in args:
             if planet.radius * 2 > self.max_nonstar_size:
                 raise ValueError
