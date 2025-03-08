@@ -128,12 +128,12 @@ class Ship(Disk):
         return direction
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new bullet at `pos` with velocity `vel`."""
-        return Bullet(pos, vel, self.projectile_color)
+        """Create a new bullet at `pos` with velocity `vel`, relative to self."""
+        return Bullet(self, pos, vel, self.projectile_color)
 
     def new_flare(self, pos: Vec2, vel: Vec2) -> Flare:
-        """Create a new Flare at `pos` with velocity `vel`."""
-        return Flare(pos, vel)
+        """Create a new Flare at `pos` with velocity `vel`, relative to self."""
+        return Flare(self, pos, vel)
 
     def shoot(self, dt: float) -> None:
         """Handle bullet-shooting."""
