@@ -11,8 +11,8 @@ ORIGIN = MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
 def test_homing(bullet_type: type[Missile | Rocket]) -> None:
-    ship = Ship(ORIGIN, Vec2(512, -1024), Vec2(4, 8), 10)
-    projectile = bullet_type(Vec2(10, -15), Vec2(8, 29), Color(0, 0, 0), ship)
+    ship = Ship(ORIGIN, Vec2(), Vec2(), 10)
+    projectile = bullet_type(ship, Vec2(-500, -500), Vec2(100, 0), Color(0, 0, 0), ship)
 
     for _ in range(2000):
         projectile.step(0.01)
