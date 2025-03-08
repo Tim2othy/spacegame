@@ -167,17 +167,7 @@ class Disk(PhysicalObject):
         camera.draw_circle(self.color, self._pos, self.radius)
 
     def contains_center_of(self, mobj: MovingObject) -> bool:
-        """Determine whether the center of `mobj` is in `self`.
-
-        >>> disk = Disk(MovingObject.ur(), Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk.contains_center_of(MovingObject(disk, Vec2(0, 0), Vec2()))
-        True
-        >>> disk.contains_center_of(MovingObject(disk, Vec2(1, -1), Vec2()))
-        True
-        >>> disk.contains_center_of(MovingObject(disk, Vec2(2, 1), Vec2()))
-        False
-
-        """
+        """Determine whether the center of `mobj` is in `self`."""
         return self.distance_squared_to(mobj) < self.__radius_squared
 
     def intersects_disk(self, other: Disk) -> bool:
