@@ -455,7 +455,7 @@ class BulletEnemy(Ship):
 
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
-        self.target_ship: Ship = target_ship
+        self.target: Ship = target_ship
         self.projectiles: list[Bullet] = []
         self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
 
@@ -468,7 +468,7 @@ class BulletEnemy(Ship):
         """
         self.action_timer -= dt
         if self.action_timer <= 0:
-            distance_to_target_squared = self.target_ship.distance_squared_to(self)
+            distance_to_target_squared = self.target.distance_squared_to(self)
             if distance_to_target_squared < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
@@ -488,13 +488,13 @@ class BulletEnemy(Ship):
                     # to the distance to the player, we should eventually find a non-accelerating player.
                     random_x = random.gauss(sigma=distance_to_target)
                     random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = MovingObject(self.target_ship, Vec2(random_x, random_y), Vec2())
+                    self.seek_towards = MovingObject(self.target, Vec2(random_x, random_y), Vec2())
 
             self.action_timer = ENEMY_ACTION_TIMER
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = self.target_ship.pos_relative_to(self)
+                force_direction = self.target.pos_relative_to(self)
             case BulletEnemy.Action.accelerate_randomly:
                 force_direction = self.seek_towards.pos_relative_to(self)
 
@@ -521,7 +521,7 @@ class RocketEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket targeting `self.target_ship`."""
-        return Rocket(pos, vel, self.projectile_color, self.target_ship)
+        return Rocket(pos, vel, self.projectile_color, self.target)
 
 
 class MissileEnemy(BulletEnemy):
@@ -534,7 +534,7 @@ class MissileEnemy(BulletEnemy):
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.projectile_color, self.target_ship)
+        return Missile(pos, vel, self.projectile_color, self.target)
 
 
 class MarkovEnemy(BulletEnemy):
