@@ -6,7 +6,7 @@ import pytest
 from pygame.math import Vector2 as Vec2
 
 from physics import MovingObject, PhysicalObject
-from ship import PlayerShip
+from ship import PlayerShip, PlayerShipConfig
 from universe import Planet, PlanetConfig, Star, Universe
 
 
@@ -148,30 +148,32 @@ def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
-def test_star_gravitation() -> None:
-    world = Vec2(3000, 3000)
-    worldcenter = world / 2
-    star = Star(world / 2, 1000)
+def test_gravitational_well() -> None:
+    universe = Universe(None, 5000 * 2)
+    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(), radius=5000))
 
-    planet = []
-    players = []
     num_disks = 23
     for i in range(num_disks):
-        offset = Vec2()
-        offset.from_polar((1500, 360 * i / num_disks))
-        pos = worldcenter + offset
+        pos = Vec2()
+        pos.from_polar((7500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
-            players.append(PlayerShip(pos, Vec2(100, -200)))
+            universe.add_player(PlayerShipConfig(relative_pos=pos, relative_vel=Vec2(100, -200)))
         else:
-            planet.append(Planet(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
+            universe.add_planet(PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29))
 
-    universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
-    universe.add_planet(*planet)
-
-    for _ in range(30 * 100):
+    for _ in range(25 * 100):
         universe.step(0.01)
 
-    for disk in chain(planet, players):
-        assert isclose(disk.radius + star.radius, disk.distance_to(star), rel_tol=1e-3), (
-            "Gravity should have pulled the object to the star's surface within 30 seconds"
-        )
+    disks: list[Planet | PlayerShip] = list(chain(*universe._planet_chunks.values())) + universe._player_ships
+    assert len(disks) == num_disks + 1, (
+        "The universe should still contain exactly `num_disks+1` disks."
+        " This test might fail because player-ships or planets are destroyed when crashing into the planet."
+    )
+    for disk in disks:
+        dist = disk.distance_to(big_planet)
+        # Don't consider the distance of the big planet from itself.
+        if dist != 0:
+            assert isclose(disk.radius + big_planet.radius, dist, rel_tol=1e-3), (
+                "Gravity should have pulled the object to the planet's surface within 25 seconds."
+                " This test might fail because player-ships or planets are destroyed when crashing into the planet."
+            )
