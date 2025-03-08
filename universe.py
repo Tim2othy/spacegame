@@ -267,12 +267,7 @@ class Universe:
 
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
-        """Run the universe-logic, also for the object `self` contains.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Run the universe-logic, also for the object `self` contains."""
         # Ship
         for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
@@ -295,12 +290,7 @@ class Universe:
 
     @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
-        """Draw `self`'s parallaxing background on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self`'s parallaxing background on `camera`."""
         # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
         random_state = random.getstate()
         # TODO: Try caching star-chunks to their final on-screen locations.
@@ -452,12 +442,7 @@ class Universe:
 
     @global_profiler.profile_method
     def draw(self, camera: Camera) -> None:
-        """Draw all of `self` on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw all of `self` on `camera`."""
         for pobj in chain(
             *self._planet_chunks.values(), *self._star_chunks.values(), self._enemy_ships, self._player_ships
         ):
@@ -494,12 +479,7 @@ class Universe:
 
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
-        """Draw grid on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw gridlines on `camera`."""
         gridline_spacing = 500
         width = self.size.x
         height = self.size.y
@@ -511,15 +491,7 @@ class Universe:
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
     def cointains_center_of(self, pobj: PhysicalObject) -> bool:
-        """Test whether `vec` is contained in `self`'s boundaries.
-
-        Args:
-            vec (Vec2): Vec to test for containment
-
-        Returns:
-            bool: True iff `self` contains `vec`
-
-        """
+        """Return whether `vec` is contained in `self`'s boundaries."""
         pos = pobj.pos_relative_to(self.star)
         return 0 <= pos.x <= self.size.x and 0 <= pos.y <= self.size.y
 
