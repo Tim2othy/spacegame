@@ -101,7 +101,7 @@ def test_transition_matrix_sums(matrix: dict) -> None:
 def test_markov_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
     world = Vec2(1000, 1000)
-    player = PlayerShip(world / 2, Vec2())
+    player = PlayerShip(MovingObject.ur(), world / 2, Vec2())
     enemy = MarkovEnemy(world / 2 + Vec2(100, 100), Vec2(), player)
     universe = Universe(world, [], [player], [enemy], max(player.radius, enemy.radius) * 2)
 
