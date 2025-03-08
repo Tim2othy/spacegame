@@ -220,13 +220,10 @@ class MarkovAI:
             # Fallback if no solution found
             return relative_pos.normalize()
 
-        # Calculate where to aim to hit the target
-        target_future_pos = self.target._pos + self.target._vel * intercept_time
-
         # Now calculate what direction the bullet must be fired in
-        aim_direction = (target_future_pos - self.ship._pos - self.ship._vel * intercept_time) / (
-            BULLET_RELEASE_SPEED * intercept_time
-        )
+        # TODO: Give aim_unscaled a better name, I (lumi-a) have no idea what that variable represents
+        aim_unscaled = self.target.pos_relative_to(self.ship) + self.target.vel_relative_to(self.ship) * intercept_time
+        aim_direction = aim_unscaled / (BULLET_RELEASE_SPEED * intercept_time)
         # Normalize to get pure direction
         return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
 
