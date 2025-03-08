@@ -37,21 +37,6 @@ class MovingObject:
         self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
         self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
-    @staticmethod
-    def _ur() -> MovingObject:
-        """Create a new MovingObject that is not relative to anything in particular.
-
-        Instead of this, you'll usually want to instantiate a universe instead.
-
-        Because you need a MovingObject to initialise a MovingObject, the ur-MovingObject
-        can be used to start creating other MovingObjects relative to.
-        """
-        # Create a reference-object at (0,0)
-        dummy_reference = object.__new__(MovingObject)
-        dummy_reference.__pos = Vec2(0, 0)  # noqa: SLF001
-        dummy_reference.__vel = Vec2(0, 0)  # noqa: SLF001
-        return dummy_reference
-
     def step(self, dt: float) -> None:
         """Apply velocity to `self`."""
         self.__pos += dt * self.__vel
@@ -70,7 +55,7 @@ class MovingObject:
     def pos_relative_to(self, other: MovingObject) -> Vec2:
         """Return `self`'s position relative to `other`.
 
-        >>> a = MovingObject.ur()
+        >>> a = MovingObject._ur()  # You usually want to use a universe instead.
         >>> b = MovingObject(a, Vec2(1, 1), Vec2())
         >>> b.pos_relative_to(a)
         Vector2(1, 1)
@@ -80,7 +65,7 @@ class MovingObject:
     def vel_relative_to(self, other: MovingObject) -> Vec2:
         """Return `self`'s velocity relative to `other`.
 
-        >>> a = MovingObject.ur()
+        >>> a = MovingObject._ur()  # You usually want to use a universe instead.
         >>> b = MovingObject(a, Vec2(), Vec2(1, 1))
         >>> b.vel_relative_to(a)
         Vector2(1, 1)

@@ -87,7 +87,11 @@ class Universe:
         self.size = Vec2(size)
         self.max_nonstar_size = max_nonstar_size
 
-        self.star: MovingObject | Star = MovingObject._ur()
+        # Messed-up object-instantiation to bootstrap a reference MovingObject.
+        # Think thrice before copying this code.
+        self.star: MovingObject | Star = object.__new__(MovingObject)
+        self._MovingObject__pos = Vec2(0, 0)
+        self._MovingObject__vel = Vec2(0, 0)
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError
