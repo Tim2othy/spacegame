@@ -21,7 +21,7 @@ from ship import (
     PlayerShipConfig,
     RocketEnemy,
 )
-from universe import Planet, Universe
+from universe import Planet, PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
@@ -43,47 +43,43 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2
     assert player.health < starting_health
 
 
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 # TODO: add MarkovEnemy here and make sure test passes
-def test_bullet_paths(enemy_type: type[BulletEnemy]) -> None:
-    world = Vec2(1000, 1000)
-    player_ship = PlayerShip(MovingObject.ur(), world / 2, Vec2())
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
+def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
+    monkeypatch.setattr(Universe.apply_gravity, lambda _self, _dt: None)
+    monkeypatch.setattr(BulletEnemy.step_ai, lambda _self, _dt: None)
 
-    enemy_right = enemy_type(player_ship, Vec2(500, 0), Vec2(0, 0), player_ship)
-    enemy_up = enemy_type(player_ship, Vec2(0, 500), Vec2(0, 0), player_ship)
+    universe = Universe(1, 100)
+    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(-500, 0)))
+    enemy_up = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(-500, 500), target_ship=player), enemy_type)
+    enemy_right = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(500, 0), target_ship=player), enemy_type)
+    enemy_down = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(-500, -500), target_ship=player), enemy_type)
+    _planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(-500, 250), radius=1))
 
-    planet = Planet(player_ship, Vec2(250, 0), Vec2(0, 0), 1)
-    universe = Universe(
-        world,
-        sys.float_info.epsilon,
-        [player_ship],
-        [enemy_right, enemy_up],
-        max(player_ship.radius, enemy_right.radius, enemy_up.radius, planet.radius) * 2,
-    )
-    universe.add_planet(planet)
+    bullet_up = player.new_bullet(Vec2(), Vec2(0, 100))
+    bullet_right = player.new_bullet(Vec2(), Vec2(100, 0))
+    bullet_down = player.new_bullet(Vec2(), Vec2(0, -100))
 
-    bullet_right = player_ship.new_bullet(Vec2(), Vec2(100, 0))
-    bullet_up = player_ship.new_bullet(Vec2(), Vec2(0, 100))
-
-    player_ship.projectiles.append(bullet_right)
-    player_ship.projectiles.append(bullet_up)
+    player.projectiles.extend([bullet_up, bullet_right, bullet_down])
 
     # Also try shooting the enemy on the right with enemy bullets (hopefully won't work)
-    enemy_up.new_bullet(enemy_right.pos_relative_to(enemy_up) - Vec2(1, 0), Vec2(0.1, 0))
-    enemy_right.new_bullet(-Vec2(1, 0), Vec2(0.1, 0))
+
+    enemy_up.projectiles.extend(
+        [
+            enemy_up.new_bullet(enemy_right.pos_relative_to(enemy_up) - Vec2(1, 0), Vec2(0.1, 0)),
+            enemy_right.new_bullet(-Vec2(1, 0), Vec2(0.1, 0)),
+            enemy_down.new_bullet(enemy_right.pos_relative_to(enemy_down) - Vec2(1, 0), Vec2(0.1, 0)),
+        ]
+    )
 
     # 10 seconds
     for _ in range(1000):
-        # Cull enemies to prevent them from moving
-        for enemy in [enemy_up, enemy_right]:
-            enemy.action_timer = 1e8
-            enemy.seek_towards = MovingObject(enemy, Vec2(), Vec2())
-            enemy.current_action = BulletEnemy.Action.accelerate_randomly
         universe.step(0.01)
 
-    assert len(player_ship.projectiles) == 0, "Both bullets should have hit something"
-    assert (enemy_right.health == HEALTH) is not (enemy_up.health == HEALTH), "Exactly one enemy should be unharmed"
-    assert universe._enemy_ships[0].health == HEALTH, "The enemy on the right should be unharmed"
+    assert len(player.projectiles) == 0, "All player-bullets should have hit something"
+    assert enemy_up.health == HEALTH, "The enemy on the top should be unharmed"
+    assert enemy_right.health == HEALTH, "The enemy on the right should be unharmed"
+    assert enemy_down.health < HEALTH, "The enemy on the bottom should be harmed"
 
 
 @pytest.mark.parametrize(
