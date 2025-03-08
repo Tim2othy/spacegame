@@ -5,39 +5,33 @@ from math import isclose
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from physics import PhysicalObject
+from physics import MovingObject, PhysicalObject
 from ship import PlayerShip
-from universe import Planet, Star, Universe
+from universe import Planet, PlanetConfig, Star, Universe
 
 
-@pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
-def test_mutual_bounce(absolute_vel: Vec2) -> None:
+def test_mutual_bounce() -> None:
     # Two planets
-    #  o   →               ←   O
+    #  o   -->        <--  O
     #  planet_a     planet_b
 
     # Bounces should be relative to the two planets' velocities:
-    start_y = 15
-    relative_vel = Vec2(5, 0)
-    # Boost both planets by absolute_vel
-    planet_a = Planet(Vec2(10, start_y), absolute_vel + relative_vel, 1)
-    planet_b = Planet(Vec2(20, start_y), absolute_vel - relative_vel, 0.9)
-
-    universe = Universe(Vec2(30, 30), [], [], [], max(planet_a.radius, planet_b.radius) * 2)
-    universe.add_planet(planet_a, planet_b)
+    universe = Universe(None, 2)
+    planet_a = universe.add_planet(PlanetConfig(relative_pos=Vec2(-5, 0), relative_vel=Vec2(5, 0), radius=0.5))
+    planet_b = universe.add_planet(PlanetConfig(relative_pos=Vec2(5, 0), relative_vel=Vec2(-5, 0), radius=1.0))
+    original_a_state = MovingObject(planet_a, Vec2(), Vec2())
+    original_b_state = MovingObject(planet_b, Vec2(), Vec2())
 
     for _ in range(150):
         universe.step(0.01)
 
-    assert planet_a._pos.x < planet_b._pos.x, "The planets shouldn't fly past each other"
-    assert planet_a._vel.y == planet_b._vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
+    assert planet_a.pos_relative_to(planet_b).x < 0, "The planets shouldn't fly past each other"
+    assert planet_a.vel_relative_to(original_a_state).y == 0 == planet_b.vel_relative_to(original_b_state).y, (
+        "The planets shouldn't move vertically at all"
+    )
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
-    assert absolute_vel.x > planet_a._vel.x > (absolute_vel - relative_vel).x - 0.1, (
-        "planet_a should be moving to the left with less speed"
-    )
-    assert absolute_vel.x < planet_b._vel.x < (absolute_vel + relative_vel).x - 0.1, (
-        "planet_b should be moving to the right with less speed"
-    )
+    assert planet_a.vel_relative_to(original_a_state).x < -0.1, "planet_a should be moving to the left with less speed"
+    assert planet_b.vel_relative_to(original_b_state).x > 0.1, "planet_b should be moving to the right with less speed"
 
 
 @pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
