@@ -132,14 +132,8 @@ class Universe:
                 chunk = (x + i, y + j)
                 yield from self._planet_chunks.get(chunk, [])
 
-    def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
-        """Affect pobj by `self`'s entire gravity.
-
-        Args:
-            dt (float): Passed time
-            pobj (PhysicalObject): Object to affect
-
-        """
+    def apply_gravity_to(self, pobj: PhysicalObject, dt: float) -> None:
+        """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
 
         # We can assume only one Star exists
@@ -158,7 +152,7 @@ class Universe:
 
         """
         for pobj in chain(self._player_ships, self._enemy_ships, *self._planet_chunks.values()):
-            self.apply_gravity_to_obj(dt, pobj)
+            self.apply_gravity_to(pobj, dt)
 
     @global_profiler.profile_method
     def apply_bounce(self) -> None:
