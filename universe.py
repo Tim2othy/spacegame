@@ -99,14 +99,13 @@ class Universe:
 
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
+        self.star = Star(MovingObject.ur(), Vec2(), star_size)
 
         self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
             math.floor(pobj._pos.x / max_nonstar_size),  # TODO: Private member access
             math.floor(pobj._pos.y / max_nonstar_size),
         )
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
-
-        self.star = Star()
 
         self._particles: list[Particle] = []
 
