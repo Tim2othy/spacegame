@@ -198,13 +198,15 @@ class Universe:
         if delta == Vec2(0, 0):
             return
         delta_normalized = delta.normalize()
-        projected = disk._pos + delta_normalized * disk.radius
+        projected_relative_to_center = delta_normalized * disk.radius
         for _ in range(n):
             random_lifetime = random.uniform(0.5, 1.0)
             random_angle = random.uniform(-90.0, 90.0)
-            random_vel = disk._vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_vel = delta_normalized.rotate(random_angle) * blast_vel * random.random()
             random_color = disk.color.lerp(color, random.random())
-            self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
+            self._particles.append(
+                Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
+            )
 
     def create_particle_cloud(self, source: PhysicalObject, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles forming a blast-cloud around pos.
