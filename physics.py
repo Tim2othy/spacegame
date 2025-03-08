@@ -90,7 +90,7 @@ class Particle(MovingObject):
 
 
 class PhysicalObject(MovingObject):
-    """A physical object with dynamic position, dynamic velocity, and constant strictly positive mass."""
+    """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
