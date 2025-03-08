@@ -256,24 +256,12 @@ class Universe:
             enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
-        """Run input-logic for player-ships.
-
-        Args:
-            keys (pygame.key.ScancodeWrapper): Pressed keys
-
-        """
+        """Run input-logic for player-ships."""
         for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 
     def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
-        """Move the camera to `self.player_ships[player_ix]`.
-
-        Args:
-            camera (Camera): Camera to move
-            player_ix (int): Player to focus on
-            dt (float): Passed time
-
-        """
+        """Focus the camera on `self.player_ships[player_ix]`."""
         ship = self._player_ships[player_ix]
         camera.smoothly_focus_points([ship._pos, ship._pos + 1.0 * ship._vel], 500, dt)
 
