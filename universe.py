@@ -70,6 +70,8 @@ class Universe:
     ) -> None:
         """Create a new universe that can have one star at the center.
 
+        If star_size is None, the universe will have no star, otherwise it will have a star of size star_size.
+
         Assumes every planet and ship has an axis-aligned-bounding-box
         of size at most max_nonstar_size. For disks, that means their diameter must not
         exceed max_nonstar_size. If violated, collision-detection may ignore large objects.
@@ -95,12 +97,11 @@ class Universe:
         ):
             raise ValueError
 
-        if star_size is None:
-            self.star: MovingObject | Star = MovingObject.ur()
-        else:
+        self.star: MovingObject | Star = MovingObject.ur()
+        if star_size is not None:
             if not star_size > 0:
                 raise ValueError
-            self.star = Star(MovingObject.ur(), Vec2(), star_size)
+            self.star = Star(self.star, Vec2(), star_size)
 
         self._player_ships = player_ships
         self._enemy_ships = enemy_ships
@@ -141,8 +142,8 @@ class Universe:
         """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
 
-        # We can assume only one Star exists
-        force_sum += pobj.gravitational_force(self.star)
+        if isinstance(self.star, Star):
+            force_sum += pobj.gravitational_force(self.star)
         for body in self._nearby_planets(pobj):
             force_sum += pobj.gravitational_force(body)
 
@@ -171,7 +172,7 @@ class Universe:
                 if damage := ship.bounce_disks(planet) is not None:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
-            if ship.intersects_disk(self.star):
+            if isinstance(self.star, Star) and ship.intersects_disk(self.star):
                 ship.suffer_damage(float("inf"))  # 💀
 
         # Bounce planets
@@ -182,7 +183,8 @@ class Universe:
             # TODO: This is unrealistic and dumb, but destroying planets that fall into the star
             # isn't fun, either? At any rate, if nobody bounces off of stars anymore, we can probably
             # finally deprecate Disk.bounce_off_of_disk (I hate that method)
-            planet.bounce_off_of_disk(self.star)
+            if isinstance(self.star, Star):
+                planet.bounce_off_of_disk(self.star)
 
     def create_particles_on_disk(
         self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float
@@ -232,7 +234,9 @@ class Universe:
 
         def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
             """Check for collision and return whether the projectile should stay alive."""
-            if self.star.contains_center_of(projectile) or not self.cointains_center_of(projectile):
+            if not self.cointains_center_of(projectile):
+                return False
+            if isinstance(self.star, Star) and self.star.contains_center_of(projectile):
                 return False
             for planet in self._nearby_planets(projectile):
                 if planet.contains_center_of(projectile):
