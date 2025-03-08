@@ -56,29 +56,13 @@ def test_threedimensional_disk_mass_scaling() -> None:
     )
 
 
-def test_bounce() -> None:
-    disk_a = Disk(ORIGIN, Vec2(), Vec2(), 1)
-    disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
-
-    disk_a.bounce_off_of_disk(disk_b)
-
-    assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
-    assert disk_a.vel_relative_to(ORIGIN).x > 0.05, (
-        "Disk's horizontal velocity should be increased due to non-elastic bounce"
-    )
-    assert disk_b.vel_relative_to(disk_a).y == 0, "Disk's vertical velocity should be unchanged"
-    assert disk_b.vel_relative_to(disk_a).x < 1 - 0.05, (
-        "Disk's horizontal velocity should be reduced due to non-elastic bounce"
-    )
-
-
 def test_disk_drawing() -> None:
     width, height = 50, 50
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
     camera_center = Vec2(-3, 4)
     camera = Camera(camera_center, 1, Surface((width, height)))
-    disk = Disk(Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
+    disk = Disk(ORIGIN, Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
     disk.draw(camera)
     camera.surface.lock()
 
@@ -115,6 +99,22 @@ def test_disk_drawing() -> None:
     )
 
     camera.surface.unlock()
+
+
+def test_simple_disk_bounce() -> None:
+    disk_a = Disk(ORIGIN, Vec2(), Vec2(), 1)
+    disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
+
+    disk_a.bounce_off_of_disk(disk_b)
+
+    assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_a.vel_relative_to(ORIGIN).x > 0.05, (
+        "Disk's horizontal velocity should be increased due to non-elastic bounce"
+    )
+    assert disk_b.vel_relative_to(disk_a).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_b.vel_relative_to(disk_a).x < 1 - 0.05, (
+        "Disk's horizontal velocity should be reduced due to non-elastic bounce"
+    )
 
 
 def test_disk_bounce() -> None:
