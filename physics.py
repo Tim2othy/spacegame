@@ -125,15 +125,7 @@ class PhysicalObject(MovingObject):
         self.add_impulse(force * dt)
 
     def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
-        """Calculate gravitational force between `pobj` and `self` affecting `self`.
-
-        Args:
-            pobj (PhysicalObject): Other PhysicalObject to gravitate towards
-
-        Returns:
-            Vec2: Resulting force to apply to `self`
-
-        """
+        """Calculate gravitational force between `pobj` and `self` affecting `self`."""
         delta = pobj.pos_relative_to(self)
         if delta == Vec2(0, 0):
             return Vec2(0, 0)
@@ -143,12 +135,7 @@ class PhysicalObject(MovingObject):
         return normalised_delta * force_length
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`. Implemented by subclasses.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera`. Implemented by subclasses."""
 
 
 class Disk(PhysicalObject):
