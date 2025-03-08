@@ -227,20 +227,20 @@ def test_planet_gravitational_collision(disk_class):
     # Test that two planets or 1 Planet one PlayerShip collide due to gravity.
     world = Vec2(4000, 4000)
     world_center = world / 2
-    inital_distance = 800
+    initial_distance = 800
 
     small_object = disk_class(world_center, Vec2(0, 0), 40)
-    planet_large = Planet(world_center + Vec2(inital_distance, 0), Vec2(0, 0), radius=300)
+    planet_large = Planet(world_center + Vec2(initial_distance, 0), Vec2(0, 0), radius=300)
 
     sum_radii = small_object.radius + planet_large.radius
 
     current_distance = planet_large.pos.distance_to(small_object.pos)
 
-    # Create universe with
+    # Create universe
     if disk_class == Planet:
         universe = Universe(world, [], [], [], MAX_NONSTAR_SIZE)
         universe.add_planet(small_object, planet_large)
-    else:  # PlayerShip
+    else:
         universe = Universe(world, [], [small_object], [], MAX_NONSTAR_SIZE)
         universe.add_planet(planet_large)
 
@@ -251,7 +251,7 @@ def test_planet_gravitational_collision(disk_class):
         if current_distance < sum_radii + 1:
             break
 
-    assert inital_distance > sum_radii + 100, "There should be some distance between the objects"
+    assert initial_distance > sum_radii + 100, "There should be some distance between the objects"
     assert (
         sum_radii + 1 > current_distance >= sum_radii
     ), f"Objects should have collided. Final distance is: {current_distance}"
