@@ -75,8 +75,9 @@ class Ship(Disk):
         Raises a ValueError if `gun_cooldown` is not strictly positive.
 
         Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
+            relative_to (MovingObject): Object to spawn relative to
+            relative_pos (Vec2): Initial position
+            relative_vel (Vec2): Initial velocity
             size (float): Radius of disk-body
             color (Color): Material and bullet color
             gun_cooldown (float): Minimum time between shots
