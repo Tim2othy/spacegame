@@ -103,19 +103,19 @@ class Universe:
         self.max_nonstar_size = max_nonstar_size
         # Messed-up object-instantiation to bootstrap a reference MovingObject.
         # Think thrice before copying this code.
-        self.star: MovingObject | Star = (
+        self.__star: MovingObject | Star = (
             MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
         )
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError
-            self.star = Star(self.star, Vec2(), star_size)
+            self.__star = Star(self.__star, Vec2(), star_size)
 
         self._player_ships: list[PlayerShip] = []
         self._enemy_ships: list[BulletEnemy] = []
 
         def pobj_to_planet_chunk(pobj: PhysicalObject) -> PlanetChunk:
-            pos = pobj.pos_relative_to(self.star) / max_nonstar_size
+            pos = pobj.pos_relative_to(self.__star) / max_nonstar_size
             return (math.floor(pos.x), math.floor(pos.y))
 
         self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = pobj_to_planet_chunk
@@ -125,13 +125,13 @@ class Universe:
 
     def add_player(self, ship_config: PlayerShipConfig) -> PlayerShip:
         """Add a player-ship from its config, relative to the star. Returns (a reference to) the created ship."""
-        ship = PlayerShip(self.star, ship_config)
+        ship = PlayerShip(self.__star, ship_config)
         self._player_ships.append(ship)
         return ship
 
     def add_enemy(self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy]) -> BulletEnemy:
         """Add an enemy-ship from its config, relative to the star. Returns (a reference to) the created ship."""
-        ship = ship_type(self.star, ship_config)
+        ship = ship_type(self.__star, ship_config)
         self._enemy_ships.append(ship)
         return ship
 
@@ -142,7 +142,7 @@ class Universe:
         """
         if planet_config.radius * 2 > self.max_nonstar_size:
             raise ValueError
-        planet = Planet(self.star, planet_config)
+        planet = Planet(self.__star, planet_config)
         chunk = self._pobj_to_planet_chunk(planet)
         self._planet_chunks.setdefault(chunk, []).append(planet)
 
@@ -157,8 +157,8 @@ class Universe:
         """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
 
-        if isinstance(self.star, Star):
-            force_sum += pobj.gravitational_force(self.star)
+        if isinstance(self.__star, Star):
+            force_sum += pobj.gravitational_force(self.__star)
         for body in self._nearby_planets(pobj):
             force_sum += pobj.gravitational_force(body)
 
@@ -187,7 +187,7 @@ class Universe:
                 if damage := ship.bounce_disks(planet) is not None:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
-            if isinstance(self.star, Star) and ship.intersects_disk(self.star):
+            if isinstance(self.__star, Star) and ship.intersects_disk(self.__star):
                 ship.suffer_damage(float("inf"))  # 💀
 
         # Bounce planets
@@ -198,8 +198,8 @@ class Universe:
             # TODO: This is unrealistic and dumb, but destroying planets that fall into the star
             # isn't fun, either? At any rate, if nobody bounces off of stars anymore, we can probably
             # finally deprecate Disk.bounce_off_of_disk (I hate that method)
-            if isinstance(self.star, Star):
-                planet.bounce_off_of_disk(self.star)
+            if isinstance(self.__star, Star):
+                planet.bounce_off_of_disk(self.__star)
 
     def create_particles_on_disk(
         self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float
@@ -252,7 +252,7 @@ class Universe:
             # TODO: Add lifetime to bullets. The universe being unbounded now, they life forever and
             # will cause eventual lag.
 
-            if isinstance(self.star, Star) and self.star.contains_center_of(projectile):
+            if isinstance(self.__star, Star) and self.__star.contains_center_of(projectile):
                 return False
             for planet in self._nearby_planets(projectile):
                 if planet.contains_center_of(projectile):
