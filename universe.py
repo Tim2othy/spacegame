@@ -101,10 +101,11 @@ class Universe:
         self._enemy_ships = enemy_ships
         self.star = Star(MovingObject.ur(), Vec2(), star_size)
 
-        self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = lambda pobj: (
-            math.floor(pobj.pos_relative_to(self.star) / max_nonstar_size),
-            math.floor(pobj.pos_relative_to(self.star) / max_nonstar_size),
-        )
+        def pobj_to_planet_chunk(pobj: PhysicalObject) -> PlanetChunk:
+            pos = pobj.pos_relative_to(self.star) / max_nonstar_size
+            return (math.floor(pos.x), math.floor(pos.y))
+
+        self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = pobj_to_planet_chunk
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
         self._particles: list[Particle] = []
