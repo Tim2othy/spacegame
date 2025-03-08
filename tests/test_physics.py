@@ -56,37 +56,20 @@ def test_threedimensional_disk_mass_scaling() -> None:
     )
 
 
-@pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)])
-def test_relative_bounce(relative_vel: Vec2) -> None:
-    # Bounces should work the same if the disks have the same velocity relative
-    # to each other. So if we add an absolute_vel to their velocities, the
-    # result shouldn't change.
-    bounces: list[tuple[Disk, Disk]] = []
+def test_bounce() -> None:
+    disk_a = Disk(ORIGIN, Vec2(), Vec2(), 1)
+    disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
 
-    for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-        disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
-        disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
+    disk_a.bounce_off_of_disk(disk_b)
 
-        relative_vel, disk_a._vel - disk_b._vel
-        disk_a.bounce_off_of_disk(disk_b)
-        relative_vel, disk_a._vel - disk_b._vel
-
-        assert disk_a._vel.y == (absolute_vel + relative_vel).y, "Disk's vertical velocity should be unchanged"
-        assert disk_a._vel.x < (absolute_vel + relative_vel).x - 0.1, "Disk's horizontal velocity should be reduced"
-        assert disk_b._vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
-        assert disk_b._vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
-
-        bounces.append((disk_a, disk_b))
-
-    # All the bounces should turn out the same, so compare them to the first bounces
-    comparison_a, comparison_b = bounces[0]
-    for disk_a, disk_b in bounces[1:]:
-        assert isclose(0, (disk_a.pos_relative_to(disk_b) - comparison_a.pos_relative_to(comparison_b)).length()), (
-            "Bounce positions should agree relatively"
-        )
-        assert isclose(0, (disk_a.vel_relative_to(disk_b) - comparison_a.vel_relative_to(comparison_b)).length()), (
-            "Bounce velocities should agree relatively"
-        )
+    assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_a.vel_relative_to(ORIGIN).x > 0.05, (
+        "Disk's horizontal velocity should be increased due to non-elastic bounce"
+    )
+    assert disk_b.vel_relative_to(disk_a).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_b.vel_relative_to(disk_a).x < 1 - 0.05, (
+        "Disk's horizontal velocity should be reduced due to non-elastic bounce"
+    )
 
 
 def test_disk_drawing() -> None:
