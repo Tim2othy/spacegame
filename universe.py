@@ -520,7 +520,8 @@ class Universe:
             bool: True iff `self` contains `vec`
 
         """
-        return 0 <= pobj._pos.x <= self.size.x and 0 <= pobj._pos.y <= self.size.y
+        pos = pobj.pos_relative_to(self.star)
+        return 0 <= pos.x <= self.size.x and 0 <= pos.y <= self.size.y
 
     def generate_planet(self, star: Star) -> None:
         """Create an planet orbiting a star.
