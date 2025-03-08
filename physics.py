@@ -82,7 +82,7 @@ class MovingObject:
         >>> b = MovingObject(a, Vec2(), Vec2(1, 1))
         >>> b.vel_relative_to(a)
         Vector2(1, 1)
-        >>> a.add_vel(Vec2(-5, 3))
+        >>> a._add_vel(Vec2(-5, 3))
         >>> b.vel_relative_to(a)
         Vector2(6, -2)
         """
