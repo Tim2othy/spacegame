@@ -89,9 +89,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
 
         _start_planet = universe.add_planet(
             PlanetConfig(
-                relative_pos=direction * num_directions * radius,
-                relative_vel=direction * radius,
-                radius=radius,
+                relative_pos=direction * num_directions * radius, relative_vel=direction * radius, radius=radius
             )
         )
 

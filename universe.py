@@ -78,11 +78,7 @@ class Universe:
     Coordinates are implicitly zero-based.
     """
 
-    def __init__(
-        self,
-        star_size: float | None,
-        max_nonstar_size: float,
-    ) -> None:
+    def __init__(self, star_size: float | None, max_nonstar_size: float) -> None:
         """Create a new universe that can have one star at the center.
 
         If star_size is None, the universe will have no star, otherwise it will have a star of size star_size.
