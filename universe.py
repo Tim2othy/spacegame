@@ -172,7 +172,6 @@ class Universe:
             for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy)):
                 if damage := enemy.bounce_disks(body) is not None:
                     enemy.suffer_damage(damage)
-                enemy.bounce_disks(body)
             if enemy.intersects_disk(self.star):
                 enemy.suffer_damage(float("inf"))
 
