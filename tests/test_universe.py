@@ -202,7 +202,7 @@ def test_planet_generation():
     universe = Universe(world, [center_star], [], [], MAX_NONSTAR_SIZE)
     universe.generate_planet(center_star, NUM_PLANETS)
 
-    allowed_oob_errors = 2
+    allowed_oob_errors = 2  # 2 out of 50 are allowed to be out of bounds.
 
     # run test 10 times
     for _ in range(10):
@@ -219,4 +219,4 @@ def test_planet_generation():
             if not (0 < planet.pos.x < LARGE_WORLD_SIZE) or not (0 < planet.pos.y < LARGE_WORLD_SIZE):
                 allowed_oob_errors -= 1
 
-                assert allowed_oob_errors >= 0, f"Too many Planets outside universe bounds e.g.: {planet.pos}"
+                assert allowed_oob_errors >= 0, f"Planets are outside universe bounds too often e.g.: {planet.pos}"
