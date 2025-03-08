@@ -13,6 +13,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Disk, MovingObject, Particle, PhysicalObject
 from profiler import global_profiler
+from projectiles import Missile
 from ship import MissileEnemy, Ship
 
 if TYPE_CHECKING:
@@ -226,7 +227,7 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet, target_ships: Sequence[Ship], is_player_projectile: bool) -> bool:
+        def projectile_check(projectile: Bullet) -> bool:
             """Check for collision and return whether the projectile should stay alive.
 
             Args:
@@ -238,35 +239,25 @@ class Universe:
                 bool: True if the projectile should stay alive, False otherwise
 
             """
-            if not self.cointains_center_of(projectile):
+            if self.star.contains_center_of(projectile) or not self.cointains_center_of(projectile):
                 return False
-            for disk in chain(self._nearby_planets(projectile), self._nearby_stars(projectile)):
-                if disk.contains_center_of(projectile):
-                    self.create_particles_on_disk(disk, projectile, 5, projectile.color, 250)
+            for planet in self._nearby_planets(projectile):
+                if planet.contains_center_of(projectile):
+                    self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
                     return False
-            for ship in target_ships:
+            for ship in chain(self._player_ships, self._enemy_ships):
                 if ship.contains_center_of(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150, 2)
                     ship.suffer_damage(projectile.damage)
-                    if ship.health <= 0:
-                        self.create_particle_cloud(ship, 300, ship.color, 200, 8)
-                        if is_player_projectile:
-                            self._enemy_ships.remove(
-                                ship
-                            )  # TODO: We should probably do _enemy_ships.remove(ship) somewhere else, not
-                            # sure where though. Then we could also remove the boolean positional argument.
+                # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
+                # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
+                # collision-detection more idiomatic. If we do, we can also change the above calls
+                # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
+                # We should then also change the same call in test_projectiles.py.
+                if isinstance(projectile, Missile) and any(
+                    other_projectile.distance_squared_to(projectile) < 10**2 for other_projectile in ship.projectiles
+                ):
                     return False
-                if isinstance(ship, MissileEnemy):
-                    for enemy_projectile in ship.projectiles[:]:
-                        # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
-                        # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
-                        # collision-detection more idiomatic. If we do, we can also change the above calls
-                        # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
-                        # We should then also change the same call in test_projectiles.py.
-                        collision_distance_squared = 10**2
-                        if projectile.distance_squared_to(enemy_projectile) < collision_distance_squared:
-                            ship.projectiles.remove(enemy_projectile)
-                            return False
 
             return True
 
