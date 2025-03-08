@@ -143,7 +143,8 @@ class Universe:
         force_sum = Vec2(0, 0)
 
         # We can assume only one Star exists
-        for body in chain(self.stars, self._nearby_planets(pobj)):
+        force_sum += pobj.gravitational_force(self.star)
+        for body in self._nearby_planets(pobj):
             force_sum += pobj.gravitational_force(body)
 
         pobj.apply_force(force_sum, dt)
