@@ -64,6 +64,14 @@ class MovingObject:
         """
         return self.__vel - other.__vel
 
+    def distance_squared_to(self, other: MovingObject) -> float:
+        """Return the squared distance between `self` and `other`."""
+        return self.pos_relative_to(other).length_squared()
+
+    def distance_to(self, other: MovingObject) -> float:
+        """Return the distance between `self` and `other`."""
+        return self.pos_relative_to(other).length()
+
 
 class Particle(MovingObject):
     """A single-pixel particle with a color, velocity, and limited lifetime."""
@@ -114,14 +122,6 @@ class PhysicalObject(MovingObject):
         if not mass > 0:
             raise ValueError
         self.mass: float = mass
-
-    def distance_squared_to(self, other: PhysicalObject) -> float:
-        """Return the squared distance between `self` and `other`."""
-        return self.pos_relative_to(other).length_squared()
-
-    def distance_to(self, other: PhysicalObject) -> float:
-        """Return the distance between `self` and `other`."""
-        return self.pos_relative_to(other).length()
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`."""
