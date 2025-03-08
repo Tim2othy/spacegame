@@ -528,7 +528,7 @@ class MarkovEnemy(BulletEnemy):
 
     def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
         """Create a new Markov-based enemy ship."""
-        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.target_ship)
+        super().__init__(relative_to, config)
         self.ai = MarkovAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
