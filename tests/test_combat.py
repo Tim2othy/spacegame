@@ -1,4 +1,3 @@
-import random
 
 import pytest
 from pygame.math import Vector2 as Vec2
@@ -10,18 +9,16 @@ from enemy_ai import (
     _STANDARD_MATRIX,
     AIState,
 )
-from physics import MovingObject
 from ship import (
     HEALTH,
     BulletEnemy,
     EnemyShipConfig,
     MarkovEnemy,
     MissileEnemy,
-    PlayerShip,
     PlayerShipConfig,
     RocketEnemy,
 )
-from universe import Planet, PlanetConfig, Universe
+from universe import PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])

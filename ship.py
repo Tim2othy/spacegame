@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
 import random
+from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
@@ -16,11 +16,9 @@ from constants import (
     BULLET_RELEASE_SPEED,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
-    ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_SD_RELEASE_SPEED,
-    PLAYER_COLOR,
     ROCKET_RELEASE_SPEED,
     THRUST_COLOR,
     generate_complementary_color,
