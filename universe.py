@@ -181,7 +181,7 @@ class Universe:
             planet.bounce_off_of_disk(self.star)
 
     def create_particles_on_disk(
-        self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
+        self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float
     ) -> None:
         """Create `n` particles on the disk's surface.
 
@@ -190,7 +190,7 @@ class Universe:
         Colors are randomly sampled from interpolation
         between `disk.color` and `color`.
 
-        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        The particles' lifetime is randomly sampled from (0.5, 1.0).
 
         If pos is exactly on disk's center, nothing happens.
         """
@@ -200,27 +200,25 @@ class Universe:
         delta_normalized = delta.normalize()
         projected = disk._pos + delta_normalized * disk.radius
         for _ in range(n):
+            random_lifetime = random.uniform(0.5, 1.0)
             random_angle = random.uniform(-90.0, 90.0)
             random_vel = disk._vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
             random_color = disk.color.lerp(color, random.random())
-            random_lifetime = random.uniform(lifetime / 2.0, lifetime)
             self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
 
-    def create_particle_cloud(
-        self, source: PhysicalObject, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
-    ) -> None:
+    def create_particle_cloud(self, source: PhysicalObject, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
         Particles' velocity are spherically sampled with length between 0 and blast_vel, added
         to `initial_vel`.
 
-        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        The particles' lifetime is randomly sampled from (0.5, 1.0).
         """
         for _ in range(n):
+            random_lifetime = random.uniform(0.5, 1.0)
             random_vel = Vec2()
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
             vel = source._vel + random_vel
-            random_lifetime = random.uniform(lifetime / 2, lifetime)
             self._particles.append(Particle(source._pos, vel, color, random_lifetime))
 
     @global_profiler.profile_method
