@@ -145,6 +145,7 @@ class Universe:
         planet = Planet(self.__star, planet_config)
         chunk = self._pobj_to_planet_chunk(planet)
         self._planet_chunks.setdefault(chunk, []).append(planet)
+        return planet
 
     def _nearby_planets(self, pobj: PhysicalObject) -> Iterator[Planet]:
         (x, y) = self._pobj_to_planet_chunk(pobj)
