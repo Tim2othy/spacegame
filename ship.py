@@ -111,13 +111,7 @@ class Ship(Disk):
         self.thruster_forward: bool = False
 
     def get_faced_direction(self) -> Vec2:
-        """Get `self`'s faced direction from its `angle`.
-
-        Returns:
-            Vec2: Faced direction, normalized
-
-        """
-        # For unknown reasons, `Vec2.from_polar((self.angle, 1))` won't work.
+        """Get `self`'s (normalized) faced direction from its `angle`."""
         direction = Vec2()
         direction.from_polar((1, self.angle))
         return direction
