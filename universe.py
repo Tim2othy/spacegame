@@ -163,22 +163,18 @@ class Universe:
                 if damage := player.bounce_disks(body) is not None:
                     player.suffer_damage(damage)
                     self.create_particles_on_disk(body, player, 25, player.color, 100)
-            for star in self._nearby_stars(player):
-                if damage := player.bounce_off_of_disk(star) is not None:
-                    player.suffer_damage(damage)
-                    self.create_particles_on_disk(star, player, 25, player.color, 100)
+            if player.intersects_disk(self.star):
+                player.suffer_damage(float("inf"))
 
         # Bounce enemy_ships
-        for ix, enemy_ship in enumerate(self._enemy_ships):
+        for ix, enemy in enumerate(self._enemy_ships):
             # But it *is* fun to bounce enemies off of each other
-            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship)):
-                if damage := enemy_ship.bounce_disks(body) is not None:
-                    enemy_ship.suffer_damage(damage)
-                enemy_ship.bounce_disks(body)
-            for star in self._nearby_stars(enemy_ship):
-                if damage := enemy_ship.bounce_off_of_disk(star) is not None:
-                    enemy_ship.suffer_damage(damage)
-                enemy_ship.bounce_off_of_disk(star)
+            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy)):
+                if damage := enemy.bounce_disks(body) is not None:
+                    enemy.suffer_damage(damage)
+                enemy.bounce_disks(body)
+            if enemy.intersects_disk(self.star):
+                enemy.suffer_damage(float("inf"))
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
