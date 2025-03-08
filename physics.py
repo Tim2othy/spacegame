@@ -150,12 +150,7 @@ class Disk(PhysicalObject):
         self.color: Color = Color(color)
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera`."""
         camera.draw_circle(self.color, self._pos, self.radius)
 
     def contains_center_of(self, pobj: PhysicalObject) -> bool:
