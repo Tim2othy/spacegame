@@ -14,6 +14,7 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk, MovingObject, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
+from ship import EnemyShipConfig, PlayerShipConfig
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -108,6 +109,12 @@ class Universe:
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
         self._particles: list[Particle] = []
+
+    def add_player(self, ship_config: PlayerShipConfig) -> PlayerShip:
+        """Add a player-ship to the universe from its config. Returns (a reference to) the created ship."""
+        ship = PlayerShip(self.star, ship_config)
+        self._player_ships.append(ship)
+        return ship
 
     def add_planet(self, *args: Planet) -> None:
         """Add planets to the universe. Raises a ValueError if the size exceeds the universe's max_nonstar_size."""
