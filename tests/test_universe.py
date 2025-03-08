@@ -73,43 +73,43 @@ def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float)
 
 def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
     # In several different directions, just barely have two planets without gravity graze past each other.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    world = Vec2(3000, 3000)
-    planet_radius = 50
+    radius = 50
+    universe = Universe(None, radius * 2)
 
     num_directions = 23
 
-    # To prevent planets from gravitating
-    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
-    universe = Universe(world, [], [], [], planet_radius * 2)
-
-    start_planets: list[Planet] = []
-    hit_planets: list[Planet] = []
+    hit_planets: list[tuple[Planet, MovingObject]] = []
 
     for i in range(num_directions):
         direction = Vec2()
         direction.from_polar((1, i * 360 / num_directions))
         direction_rotated = direction.rotate(90)
 
-        start_planet = Planet(
-            world / 2 + direction * num_directions * planet_radius, direction * planet_radius, planet_radius
+        start_planet = universe.add_planet(
+            PlanetConfig(
+                relative_pos=direction * num_directions * radius,
+                relative_vel=direction * radius,
+                radius=radius,
+            )
         )
-        start_planets.append(start_planet)
-        hit_planet = Planet(
-            world / 2 + direction * (num_directions + 1) * planet_radius + 1.99 * direction_rotated * planet_radius,
-            Vec2(0, 0),
-            planet_radius,
-        )
-        hit_planets.append(hit_planet)
 
-        universe.add_planet(start_planet, hit_planet)
+        hit_planet = universe.add_planet(
+            PlanetConfig(
+                relative_pos=direction * (num_directions + 1) * radius + 1.99 * direction_rotated * radius,
+                radius=radius,
+            )
+        )
+        hit_planet_reference = MovingObject(hit_planet, Vec2(), Vec2())
+        hit_planets.append((hit_planet, hit_planet_reference))
 
     # Run the universe for 1 second
     for _ in range(1000):
         universe.step(0.001)
 
-    for hit_planet in hit_planets:
-        assert 0.001 < hit_planet._vel.length() / planet_radius < 0.1, (
+    for hit_planet, hit_planet_reference in hit_planets:
+        assert 0.001 < hit_planet.vel_relative_to(hit_planet_reference).length() / radius < 0.1, (
             "The hit planet should have gained a tiny bit of velocity"
         )
 
