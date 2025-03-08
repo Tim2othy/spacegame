@@ -170,12 +170,12 @@ class Disk(PhysicalObject):
     def contains_center_of(self, mobj: MovingObject) -> bool:
         """Determine whether the center of `mobj` is in `self`.
 
-        >>> disk = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
-        >>> disk.contains_center_of(MovingObject(Vec2(0, 0), Vec2()))
+        >>> disk = Disk(MovingObject.ur(), Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
+        >>> disk.contains_center_of(MovingObject(disk, Vec2(0, 0), Vec2()))
         True
-        >>> disk.contains_center_of(MovingObject(Vec2(1, -1), Vec2()))
+        >>> disk.contains_center_of(MovingObject(disk, Vec2(1, -1), Vec2()))
         True
-        >>> disk.contains_center_of(MovingObject(Vec2(2, 1), Vec2()))
+        >>> disk.contains_center_of(MovingObject(disk, Vec2(2, 1), Vec2()))
         False
 
         """
