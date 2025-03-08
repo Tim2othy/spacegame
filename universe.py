@@ -214,10 +214,10 @@ class Universe:
         Particles' velocity are spherically sampled with length between 0 and blast_vel, added
         to `initial_vel`.
 
-        The particles' lifetime is randomly sampled from (0.5, 1.0).
+        The particles' lifetime is randomly sampled from (1.0, 2.0).
         """
         for _ in range(n):
-            random_lifetime = random.uniform(0.5, 1.0)
+            random_lifetime = random.uniform(1.0, 2.0)
             random_vel = Vec2()
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
             self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
@@ -236,7 +236,7 @@ class Universe:
                     return False
             for ship in ships_it_can_hit:
                 if ship.contains_center_of(projectile):
-                    self.create_particle_cloud(ship, 100, ship.color, 150, 2)
+                    self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
                 # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
                 # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
