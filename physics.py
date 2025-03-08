@@ -120,9 +120,9 @@ class PhysicalObject(MovingObject):
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive.
 
-        >>> PhysicalObject(Vec2(), Vec2(), 1).mass
+        >>> PhysicalObject(MovingObject.ur(), Vec2(), Vec2(), mass=1).mass
         1
-        >>> PhysicalObject(Vec2(), Vec2(), -1).mass
+        >>> PhysicalObject(MovingObject.ur(), Vec2(), Vec2(), mass=-1).mass
         Traceback (most recent call last):
             ...
         ValueError
