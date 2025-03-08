@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 import random
 from enum import Enum, auto
@@ -367,9 +367,9 @@ class PlayerShipConfig:
     """
 
     relative_pos: Vec2
-    relative_vel: Vec2 = ZERO_VEC2
-    color: Color = PLAYER_COLOR
-    input: ShipInput = PLAYER_DEFAULT_CONTROLS
+    relative_vel: Vec2 = field(default=ZERO_VEC2)
+    color: Color = field(default=PLAYER_COLOR)
+    input: ShipInput = field(default=PLAYER_DEFAULT_CONTROLS)
 
 
 class PlayerShip(Ship):
