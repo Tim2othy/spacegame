@@ -37,15 +37,15 @@ class MovingObject:
         self.__pos: Vec2 = relative_to.__pos + relative_pos
         self.__vel: Vec2 = relative_to.__vel + relative_vel
 
-    @classmethod
-    def ur(cls: type) -> MovingObject:
+    @staticmethod
+    def ur() -> MovingObject:
         """Create a new MovingObject that is not relative to anything in particular.
 
         Because you need a MovingObject to initialise a MovingObject, the ur-MovingObject
         can be used to start creating other MovingObjects relative to.
         """
         # Create a reference-object at (0,0)
-        dummy_reference: MovingObject = object.__new__(cls)
+        dummy_reference = object.__new__(MovingObject)
         dummy_reference.__pos = Vec2(0, 0)  # noqa: SLF001
         dummy_reference.__vel = Vec2(0, 0)  # noqa: SLF001
         return dummy_reference
@@ -189,7 +189,7 @@ class Disk(PhysicalObject):
         a.intersects_disk(b) should always return the same as b.intersects_disk(a),
         barring floating-point rounding-errors.
 
-        >>> disk_a = Disk(Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
+        >>> disk_a = Disk(MovingObject.ur(), Vec2(0,0), Vec2(), radius=2, color=Color(0, 0, 0))
         >>> disk_b = Disk(Vec2(2,1), Vec2(), radius=1, color=Color(0, 0, 0))
         >>> disk_a.intersects_disk(disk_b) or disk_b.intersects_disk(disk_a)
         True
