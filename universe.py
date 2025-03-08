@@ -116,6 +116,12 @@ class Universe:
         self._player_ships.append(ship)
         return ship
 
+    def add_enemy(self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy]) -> BulletEnemy:
+        """Add an enemy-ship to the universe from its config. Returns (a reference to) the created ship."""
+        ship = ship_type(self.star, ship_config)
+        self._enemy_ships.append(ship)
+        return ship
+
     def add_planet(self, *args: Planet) -> None:
         """Add planets to the universe. Raises a ValueError if the size exceeds the universe's max_nonstar_size."""
         for planet in args:
