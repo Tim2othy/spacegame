@@ -16,11 +16,19 @@ ORIGIN._MovingObject__pos = Vec2(0, 0)  # noqa: SLF001
 ORIGIN._MovingObject__vel = Vec2(0, 0)  # noqa: SLF001
 
 
-@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20), Vec2(0, 0)])
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+@pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
+    obj = MovingObject(ORIGIN, relative_pos, relative_vel)
+    assert obj.pos_relative_to(ORIGIN) == relative_pos
+    assert obj.vel_relative_to(ORIGIN) == relative_vel
+
+
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 def test_step(relative_pos: Vec2) -> None:
     obj = MovingObject(ORIGIN, relative_pos, Vec2(1, -1))
     obj.step(0.25)
-    assert obj.pos_relative_to(ORIGIN) == Vec2(0.25, -0.25)
+    assert obj.pos_relative_to(ORIGIN) - relative_pos == Vec2(0.25, -0.25)
 
 
 def test_gravitational_force() -> None:
