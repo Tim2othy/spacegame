@@ -80,7 +80,6 @@ class Universe:
 
     def __init__(
         self,
-        size: Vec2,
         star_size: float | None,
         max_nonstar_size: float,
     ) -> None:
@@ -97,12 +96,10 @@ class Universe:
         Raises a ValueError if star_size is a float and not strictly positive.
 
         Args:
-            size (Vec2): Width and height
             star_size (float | None): The size of the star, must be positive.
             max_nonstar_size: float
 
         """
-        self.size = Vec2(size)
         self.max_nonstar_size = max_nonstar_size
 
         # Messed-up object-instantiation to bootstrap a reference MovingObject.
