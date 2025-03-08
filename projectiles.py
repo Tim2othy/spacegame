@@ -6,7 +6,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import PhysicalObject
+from physics import MovingObject, PhysicalObject
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -35,7 +35,7 @@ FLARE_COLOR = Color("yellow")
 class Bullet(PhysicalObject):
     """A triangular bullet."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color) -> None:
+    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
         """Create a new basic Bullet.
 
         Args:
@@ -44,7 +44,7 @@ class Bullet(PhysicalObject):
             color (Color): Border- and fill-color
 
         """
-        super().__init__(pos, vel, 1.0)
+        super().__init__(relative_to, relative_pos, relative_vel, 1.0)
         self.color = Color(color)
         self.damage = BULLET_DAMAGE
 
