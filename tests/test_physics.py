@@ -48,8 +48,8 @@ def test_gravitational_force() -> None:
 
 def test_threedimensional_disk_mass_scaling() -> None:
     radius = 1.23
-    disk = Disk(Vec2(), Vec2(), radius)
-    double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
+    disk = Disk(ORIGIN, Vec2(), Vec2(), radius)
+    double_size_disk = Disk(disk, Vec2(), Vec2(), radius * 2)
 
     assert isclose(2**3, double_size_disk.mass / disk.mass), (
         "Scaling the radius by `t` should scale the mass by a factor `t**3`"
