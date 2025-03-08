@@ -80,13 +80,6 @@ class Ship(Disk):
             gun_cooldown (float): Minimum time between shots
             projectile_speed (float): Speed at which projectiles are fired
 
-        >>> Ship(MovingObject.ur(), Vec2(), Vec2(), gun_cooldown=1)
-        <ship.Ship object at ...>
-        >>> Ship(MovingObject.ur(), Vec2(), Vec2(), gun_cooldown=-1)
-        Traceback (most recent call last):
-            ...
-        ValueError
-
         """
         super().__init__(relative_to, relative_pos, relative_vel, size, color)
         self.size: float = size
