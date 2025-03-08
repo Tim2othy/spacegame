@@ -101,12 +101,11 @@ class Universe:
 
         """
         self.max_nonstar_size = max_nonstar_size
-
         # Messed-up object-instantiation to bootstrap a reference MovingObject.
         # Think thrice before copying this code.
-        self.star: MovingObject | Star = object.__new__(MovingObject)
-        self.star._MovingObject__pos = Vec2(0, 0)  # noqa: SLF001
-        self.star._MovingObject__vel = Vec2(0, 0)  # noqa: SLF001
+        self.star: MovingObject | Star = (
+            MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
+        )
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError

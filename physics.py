@@ -36,6 +36,21 @@ class MovingObject:
         self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
         self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
+    @staticmethod
+    def _new_origin_and_only_use_this_if_you_really_know_what_you_are_doing() -> MovingObject:
+        """Create a new MovingObject that can act as an origin to bootstrap other MovingObjects.
+
+        You probably want to create a universe instead.
+
+        MovingObjects need to be created relative to other MovingObjects, so this MovingObject
+        acts as an ur-object.
+        """
+        # This is messed up. Think thrice before copying this code.
+        origin = object.__new__(MovingObject)
+        origin.__pos = Vec2(0, 0)  # noqa: SLF001
+        origin.__vel = Vec2(0, 0)  # noqa: SLF001
+        return origin
+
     def step(self, dt: float) -> None:
         """Apply velocity to `self`."""
         self.__pos += dt * self.__vel

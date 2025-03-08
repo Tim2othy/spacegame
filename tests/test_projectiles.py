@@ -2,13 +2,16 @@ import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
+from physics import MovingObject
 from projectiles import Missile, Rocket
 from ship import Ship
+
+ORIGIN = MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
 def test_homing(bullet_type: type[Missile | Rocket]) -> None:
-    ship = Ship(Vec2(512, -1024), Vec2(4, 8), 10)
+    ship = Ship(ORIGIN, Vec2(512, -1024), Vec2(4, 8), 10)
     projectile = bullet_type(Vec2(10, -15), Vec2(8, 29), Color(0, 0, 0), ship)
 
     for _ in range(2000):

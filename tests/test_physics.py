@@ -9,11 +9,7 @@ from camera import Camera
 from physics import Disk, MovingObject, PhysicalObject
 
 
-# Messed-up object-instantiation to bootstrap a reference MovingObject.
-# Think thrice before copying this code.
-ORIGIN = object.__new__(MovingObject)
-ORIGIN._MovingObject__pos = Vec2(0, 0)  # noqa: SLF001
-ORIGIN._MovingObject__vel = Vec2(0, 0)  # noqa: SLF001
+ORIGIN = MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
