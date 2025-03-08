@@ -188,22 +188,13 @@ class Ship(Disk):
         """Deal damage to the ship and activate its damage-indicator.
 
         Does nothing if damage is <= 0.
-
-        Args:
-            damage (float): Amount of damage to deal.
-
         """
         if damage > 0:
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float) -> None:
-        """Physics, control, and bullet-stepping for `self`.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Step physics, control, and `self`'s bullets."""
         if self.thruster_rot_left:
             self.angle += self.rotation_thrust * dt
         if self.thruster_rot_right:
@@ -226,12 +217,7 @@ class Ship(Disk):
         self.release_flares(dt)
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera."""
         forward = self.get_faced_direction()
         right = Vec2(-forward.y, forward.x)
         left = -right
