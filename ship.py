@@ -447,8 +447,7 @@ class BulletEnemy(Ship):
         self.projectiles: list[Bullet] = []
         self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
 
-    def step(self, dt: float) -> None:
-        """Apply physics and "AI" to `self`."""
+    def step_ai(self, dt: float) -> None:
         self.action_timer -= dt
         can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
 
@@ -489,6 +488,9 @@ class BulletEnemy(Ship):
         self.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
+    def step(self, dt: float) -> None:
+        """Apply physics and "AI" to `self`."""
+        self.step_ai(dt)
         super().step(dt)
 
 
