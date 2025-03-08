@@ -413,7 +413,7 @@ class EnemyShipConfig:
     """
 
     relative_pos: Vec2
-    relative_vel: Vec2 = ZERO_VEC2
+    relative_vel: Vec2 = field(default=ZERO_VEC2)
     target_ship: Ship
 
 
