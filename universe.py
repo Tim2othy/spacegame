@@ -87,7 +87,7 @@ class Universe:
         self.size = Vec2(size)
         self.max_nonstar_size = max_nonstar_size
 
-        self.star: MovingObject | Star = MovingObject.ur()
+        self.star: MovingObject | Star = MovingObject._ur()
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError

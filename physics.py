@@ -33,13 +33,15 @@ class MovingObject:
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new MovingObject relative to another MovingObject."""
-        # If you ever change this implementation, also check whether to change MovingObject.ur
-        self.__pos: Vec2 = relative_to.__pos + relative_pos
-        self.__vel: Vec2 = relative_to.__vel + relative_vel
+        # If you ever change this implementation, also check whether to change MovingObject._ur
+        self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
+        self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
     @staticmethod
-    def ur() -> MovingObject:
+    def _ur() -> MovingObject:
         """Create a new MovingObject that is not relative to anything in particular.
+
+        Instead of this, you'll usually want to instantiate a universe instead.
 
         Because you need a MovingObject to initialise a MovingObject, the ur-MovingObject
         can be used to start creating other MovingObjects relative to.
