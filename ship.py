@@ -467,9 +467,10 @@ class BulletEnemy(Ship):
 
         """
         self.action_timer -= dt
+        can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
+
         if self.action_timer <= 0:
-            distance_to_target_squared = self.target.distance_squared_to(self)
-            if distance_to_target_squared < ENEMY_VISUAL_RANGE_SQUARED:
+            if can_see_target:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
                 [self.current_action] = random.choices(
@@ -483,7 +484,7 @@ class BulletEnemy(Ship):
                     # Accelerate towards a random point near the player.
                     # TODO: Due to this action, the enemy still implicitly sees the
                     # player from far away. Decide whether this is desirable, and rewrite otherwise.
-                    distance_to_target = math.sqrt(distance_to_target_squared)
+                    distance_to_target = self.target.distance_to(self)
                     # I think (but haven't proved) that, by choosing the standard-deviation proportional
                     # to the distance to the player, we should eventually find a non-accelerating player.
                     random_x = random.gauss(sigma=distance_to_target)
@@ -502,10 +503,7 @@ class BulletEnemy(Ship):
             force = force_direction.normalize() * self.thrust
             self.apply_force(force, dt)
 
-        self.shooting = (
-            self.current_action == BulletEnemy.Action.accelerate_to_player
-            and distance_to_target_squared < ENEMY_FIRE_RANGE_SQUARED
-        )
+        self.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
         super().step(dt)
