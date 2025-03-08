@@ -168,7 +168,7 @@ class Universe:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
             if ship.intersects_disk(self.star):
-                ship.suffer_damage(float("inf"))
+                ship.suffer_damage(float("inf"))  # 💀
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
