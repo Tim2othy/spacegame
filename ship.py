@@ -460,6 +460,7 @@ class BulletEnemy(Ship):
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship: Ship = target_ship
         self.projectiles: list[Bullet] = []
+        self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
@@ -469,10 +470,8 @@ class BulletEnemy(Ship):
 
         """
         self.action_timer -= dt
-        delta_target_ship = self.target_ship.pos_relative_to(self)
-        distance_to_target_squared = delta_target_ship.length_squared()
-
         if self.action_timer <= 0:
+            distance_to_target_squared = self.target_ship.distance_squared_to(self)
             if distance_to_target_squared < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
@@ -484,15 +483,26 @@ class BulletEnemy(Ship):
                     weights=ENEMY_ACTION_WEIGHTS,
                 )
 
+                if self.current_action == BulletEnemy.Action.accelerate_randomly:
+                    # Accelerate towards a random point near the player.
+                    # TODO: Due to this action, the enemy still implicitly sees the
+                    # player from far away. Decide whether this is desirable, and rewrite otherwise.
+                    distance_to_target = math.sqrt(distance_to_target_squared)
+                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
+                    # to the distance to the player, we should eventually find a non-accelerating player.
+                    random_x = random.gauss(sigma=distance_to_target)
+                    random_y = random.gauss(sigma=distance_to_target)
+                    self.seek_towards = MovingObject(self.target_ship, Vec2(random_x, random_y), Vec2())
+
             self.action_timer = ENEMY_ACTION_TIMER
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = delta_target_ship
+                force_direction = self.target_ship.pos_relative_to(self)
             case BulletEnemy.Action.decelerate:
-                force_direction = -self._vel
-            case BulletEnemy.Action.accelerate_randomly:
                 force_direction = Vec2(0, 0)
+            case BulletEnemy.Action.accelerate_randomly:
+                force_direction = self.seek_towards.pos_relative_to(self)
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.thrust
