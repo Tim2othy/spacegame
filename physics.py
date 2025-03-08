@@ -263,9 +263,9 @@ class Disk(PhysicalObject):
         overlap = radii_sum - distance
         correction = normal * overlap
         if math.isfinite(self.mass):
-            self._pos -= correction * (1 - self.mass / (self.mass + other.mass))
+            self._shift(-correction * (1 - self.mass / (self.mass + other.mass)))
         if math.isfinite(other.mass):
-            other._pos += correction * (1 - other.mass / (self.mass + other.mass))  # noqa: SLF001
+            other._shift(correction * (1 - other.mass / (self.mass + other.mass)))  # noqa: SLF001
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
