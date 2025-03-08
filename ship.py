@@ -351,7 +351,7 @@ class ShipInput:
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PlayerShipConfig:
     """Configuration for a player-spaceship.
 
@@ -398,7 +398,7 @@ class PlayerShip(Ship):
         self.releasing_flares = keys[self.spaceship_input.release_flares]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnemyShipConfig:
     """Configuration for an enemy-spaceship.
 

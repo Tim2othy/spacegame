@@ -42,7 +42,7 @@ class Star(Disk):
         super().__init__(relative_to, relative_pos, Vec2(0, 0), radius, star_color)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PlanetConfig:
     """Configuration for a planet.
 
