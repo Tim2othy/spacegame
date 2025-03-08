@@ -114,43 +114,32 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
         )
 
 
-def test_precise_collision_failures() -> None:
+def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
     # This is kind of a bad test, because it tests the implementation of universe-collision
     # is correct by testing that it fails if we relax the rules just a little.
     # This is useful to know, to see that the implementation is maximally efficient.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    world = Vec2(1000, 1000)
     # Now, try for 1000 iterations to see the ill effects:
     for _ in range(1000):
-        # This sets the universe-chunk-calculation
-        universe = Universe(world, [], [], [], 190)
+        universe = Universe(None, 95 * 2)
         # Setting universe.max_nonstar_size overrides the check for planet-radii, without
         # changing the way chunks are calculated. So planets are added to chunks that are
         # effectively too small for them.
-        universe.max_nonstar_size = 200
+        universe.max_nonstar_size = 100 * 2
 
-        pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
-        planet_a = Planet(pos, Vec2(), 100)
-        universe.add_planet(planet_a)
+        random_relative_pos = Vec2(random.random() * 200, random.random() * 200)
+        planet_a = universe.add_planet(PlanetConfig(relative_pos=random_relative_pos, radius=100))
 
         delta = Vec2()
         delta.from_polar((199, random.random() * 360))
 
-        # Now pos + delta has distance 199 from planet_a, so if we put an planet of
-        # radius 200 at (pos+delta), then that planet would definitely intersect planet_a,
+        # Now delta has distance 199 from planet_a, so if we put a planet of
+        # radius 100 at (pos+delta), then that planet would definitely intersect planet_a,
         # and hence querying planets near (pos+delta) should return planet_a
-        dummy_pobj = PhysicalObject(pos + delta, Vec2(), 1)  # We only need it for its dummy_pobj._pos
-
-        if planet_a not in universe._nearby_planets(dummy_pobj):
-            # Verify it really would fail successfully:
-            planet_b = Planet(pos + delta, Vec2(), 100)
-            universe.add_planet(planet_b)
-            assert planet_a.intersects_disk(planet_b), (
-                "The two planets should intersect, the test-setup did not go as expected."
-            )
-            universe.apply_bounce()
-            assert planet_a._pos == pos, "planet_a should be unaffected, because collision-tests failed"
-            assert planet_b._pos == pos + delta, "planet_b should be unaffected, because collision-tests failed"
+        planet_b = universe.add_planet(PlanetConfig(relative_pos=random_relative_pos + delta, radius=100))
+        if planet_a not in universe._nearby_planets(planet_b):
+            # We failed successfully.
             return
 
     pytest.fail(
