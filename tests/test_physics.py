@@ -6,13 +6,21 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Disk, PhysicalObject
+from physics import Disk, MovingObject, PhysicalObject
 
 
-def test_step() -> None:
-    obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
+# Messed-up object-instantiation to bootstrap a reference MovingObject.
+# Think thrice before copying this code.
+ORIGIN = object.__new__(MovingObject)
+ORIGIN._MovingObject__pos = Vec2(0, 0)  # noqa: SLF001
+ORIGIN._MovingObject__vel = Vec2(0, 0)  # noqa: SLF001
+
+
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20), Vec2(0, 0)])
+def test_step(relative_pos: Vec2) -> None:
+    obj = MovingObject(ORIGIN, relative_pos, Vec2(1, -1))
     obj.step(0.25)
-    assert obj._pos == Vec2(0.25, -0.25)
+    assert obj.pos_relative_to(ORIGIN) == Vec2(0.25, -0.25)
 
 
 def test_gravitational_force() -> None:
