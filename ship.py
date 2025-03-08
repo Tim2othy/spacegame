@@ -34,10 +34,10 @@ if TYPE_CHECKING:
 SHIP_SIZE = 10.0
 
 # Rate of fire
-BULLET_ROF = 0.08
-ROCKET_ROF = 0.5
-MISSILE_ROF = 3.0
-FLARE_ROF = 5.0
+BULLET_RATE_OF_FIRE = 0.08
+ROCKET_RATE_OF_FIRE = 0.5
+MISSILE_RATE_OF_FIRE = 3.0
+FLARE_RATE_OF_FIRE = 5.0
 
 GRAY = Color("gray")
 ZERO_VEC2 = Vec2(0, 0)
@@ -66,7 +66,7 @@ class Ship(Disk):
         relative_vel: Vec2,
         size: float = SHIP_SIZE,
         color: Color = GRAY,
-        gun_cooldown: float = BULLET_ROF,
+        gun_cooldown: float = BULLET_RATE_OF_FIRE,
         projectile_speed: float = BULLET_RELEASE_SPEED,
     ) -> None:
         """Create a new spaceship.
@@ -92,7 +92,7 @@ class Ship(Disk):
         if not gun_cooldown > 0:
             raise ValueError
         self._gun_cooldown: float = gun_cooldown
-        self._flare_cooldown: float = FLARE_ROF
+        self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
@@ -392,7 +392,9 @@ class PlayerShip(Ship):
         spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
     ) -> None:
         """Create a new player-spaceship."""
-        super().__init__(relative_to, relative_pos, relative_vel, SHIP_SIZE, color, BULLET_ROF, BULLET_RELEASE_SPEED)
+        super().__init__(
+            relative_to, relative_pos, relative_vel, SHIP_SIZE, color, BULLET_RATE_OF_FIRE, BULLET_RELEASE_SPEED
+        )
         self.spaceship_input = spaceship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
@@ -416,7 +418,7 @@ class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
     SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_ROF
+    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
     SHIP_SIZE = SHIP_SIZE
 
@@ -506,7 +508,7 @@ class RocketEnemy(BulletEnemy):
 
     # Override class configuration for RocketEnemy
     SHIP_COLOR = ROCKET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = ROCKET_ROF
+    SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
@@ -519,7 +521,7 @@ class MissileEnemy(BulletEnemy):
 
     # Override class configuration for MissileEnemy
     SHIP_COLOR = MISSILE_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = MISSILE_ROF
+    SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
