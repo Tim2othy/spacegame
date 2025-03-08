@@ -28,20 +28,58 @@ BOUNCE_DAMAGE_SCALAR = 1e-4
 """Bounce-damage is scaled by this amount."""
 
 
-class Particle:
+class MovingObject:
+    """An object with dynamic position and dynamic velocity."""
+
+    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2) -> None:
+        """Create a new MovingObject relative to another MovingObject."""
+        self.__pos: Vec2 = relative_to.__pos + relative_pos
+        self.__vel: Vec2 = relative_to.__vel + relative_vel
+
+    def step(self, dt: float) -> None:
+        """Apply velocity to `self`."""
+        self.__pos += dt * self.__vel
+
+    def add_vel(self, vel: Vec2) -> None:
+        """Add `vel` to  `self`'s velocity. Be careful with relativity."""
+        self.__vel += vel
+
+    def pos_relative_to(self, other: MovingObject) -> Vec2:
+        """Return `self`'s position relative to `other`.
+
+        >>> a = MovingObject(Vec2(2, 3), Vec2())
+        >>> b = MovingObject(Vec2(1, 1), Vec2())
+        >>> a.pos_relative_to(b)
+        Vector2(1, 2)
+        """
+        return self.__pos - other.__pos
+
+    def vel_relative_to(self, other: MovingObject) -> Vec2:
+        """Return `self`'s velocity relative to `other`.
+
+        >>> a = MovingObject(Vec2(), Vec2(2, 3))
+        >>> b = MovingObject(Vec2(), Vec2(1, 1))
+        >>> a.vel_relative_to(b)
+        Vector2(1, 2)
+        """
+        return self.__vel - other.__vel
+
+
+class Particle(MovingObject):
     """A single-pixel particle with a color, velocity, and limited lifetime."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, color: Color, lifetime: float) -> None:
+    def __init__(
+        self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, color: Color, lifetime: float
+    ) -> None:
         """Create a new Particle."""
-        self._pos: Vec2 = Vec2(pos)
-        self._vel: Vec2 = Vec2(vel)
-        self._base_color: Color = color  # TODO: Should this be self.color = Color(color)?
+        super().__init__(relative_to, relative_pos, relative_vel)
+        self._base_color: Color = Color(color)
         self._max_lifetime: float = lifetime
         self._lifetime: float = lifetime
 
     def step(self, dt: float) -> bool:
-        """Apply velocity to self and reduce lifetime. Returns True if lifetime has elapsed."""
-        self._pos += dt * self._vel
+        """Apply velocity to self and reduce lifetime. Return whether the lifetime has elapsed."""
+        super().step(dt)
         self._lifetime -= dt
         return self._lifetime > 0
 
@@ -51,10 +89,10 @@ class Particle:
         camera.draw_pixel(color, self._pos)
 
 
-class PhysicalObject:
+class PhysicalObject(MovingObject):
     """A physical object with dynamic position, dynamic velocity, and constant strictly positive mass."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, mass: float) -> None:
+    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject.
 
         Raises a ValueError if the mass is not strictly positive.
@@ -72,31 +110,10 @@ class PhysicalObject:
         ValueError
 
         """
-        self.__pos: Vec2 = Vec2(pos)
-        self.__vel: Vec2 = Vec2(vel)
+        super().__init__(relative_to, relative_pos, relative_vel)
         if not mass > 0:
             raise ValueError
         self.mass: float = mass
-
-    def pos_relative_to(self, other: PhysicalObject) -> Vec2:
-        """Return `self`'s position relative to `other`.
-
-        >>> a = PhysicalObject(Vec2(2, 3), Vec2(), 1)
-        >>> b = PhysicalObject(Vec2(1, 1), Vec2(), 1)
-        >>> a.pos_relative_to(b)
-        Vector2(1, 2)
-        """
-        return self.__pos - other.__pos  # noqa: SLF001
-
-    def vel_relative_to(self, other: PhysicalObject) -> Vec2:
-        """Return `self`'s velocity relative to `other`.
-
-        >>> a = PhysicalObject(Vec2(), Vec2(2, 3), 1)
-        >>> b = PhysicalObject(Vec2(), Vec2(1, 1), 1)
-        >>> a.vel_relative_to(b)
-        Vector2(1, 2)
-        """
-        return self.__vel - other.__vel  # noqa: SLF001
 
     def distance_squared_to(self, other: PhysicalObject) -> float:
         """Return the squared distance between `self` and `other`."""
@@ -106,32 +123,12 @@ class PhysicalObject:
         """Return the distance between `self` and `other`."""
         return self.pos_relative_to(other).length()
 
-    def step(self, dt: float) -> None:
-        """Apply its velocity to `self`.
-
-        Args:
-            dt (float): Passed time
-
-        """
-        self.__pos += dt * self.__vel
-
     def add_impulse(self, impulse: Vec2) -> None:
-        """Add an impulse to `self`.
-
-        Args:
-            impulse (Vec2): Impulse to apply
-
-        """
-        self.__vel += impulse / self.mass
+        """Add an impulse to `self`."""
+        self.add_vel(impulse / self.mass)
 
     def apply_force(self, force: Vec2, dt: float) -> None:
-        """Apply a force to `self`.
-
-        Args:
-            force (Vec2): Force to apply
-            dt (float): Passed time
-
-        """
+        """Apply a force to `self`."""
         self.add_impulse(force * dt)
 
     def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
