@@ -220,3 +220,34 @@ def test_planet_generation():
                 allowed_oob_errors -= 1
 
                 assert allowed_oob_errors >= 0, f"Planets are outside universe bounds too often e.g.: {planet.pos}"
+
+
+def test_planet_gravitational_collision():
+    # Test that two close planets with different masses will collide due to gravity.
+    world = Vec2(4000, 4000)
+    world_center = world / 2
+    inital_distance = 800
+
+    # Create planets
+    planet_small = Planet(world_center, Vec2(0, 0), radius=200)
+    planet_large = Planet(world_center + Vec2(inital_distance, 0), Vec2(0, 0), radius=300)
+
+    sum_radii = planet_small.radius + planet_large.radius
+
+    current_distance = planet_large.pos.distance_to(planet_small.pos)
+
+    # Create universe with the two planets
+    universe = Universe(world, [], [], [], MAX_NONSTAR_SIZE)
+    universe.add_planet(planet_small, planet_large)
+
+    # Run simulation for 20 seconds
+    for _ in range(2000):
+        universe.step(0.01)
+        current_distance = planet_large.pos.distance_to(planet_small.pos)
+        if current_distance < sum_radii + 1:
+            break
+
+    assert inital_distance > sum_radii + 100, "There should be some distance between the planets"
+    assert (
+        sum_radii + 1 > current_distance >= sum_radii
+    ), f"Planets should have had some distance to cover and should have collided. Final distance is: {current_distance}"
