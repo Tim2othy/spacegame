@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import math
 import random
+from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING
 
@@ -15,14 +15,14 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk, MovingObject, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
-from ship import EnemyShipConfig, PlayerShipConfig
+from ship import BulletEnemy, EnemyShipConfig, PlayerShip, PlayerShipConfig
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
 
     from camera import Camera
     from projectiles import Bullet
-    from ship import BulletEnemy, PlayerShip, Ship
+    from ship import Ship
 
 from constants import FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
