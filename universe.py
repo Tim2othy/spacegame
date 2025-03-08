@@ -220,8 +220,7 @@ class Universe:
             random_lifetime = random.uniform(0.5, 1.0)
             random_vel = Vec2()
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
-            vel = source._vel + random_vel
-            self._particles.append(Particle(source._pos, vel, color, random_lifetime))
+            self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
