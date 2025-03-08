@@ -250,8 +250,9 @@ class Universe:
 
         def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
             """Check for collision and return whether the projectile should stay alive."""
-            if not self.cointains_center_of(projectile):
-                return False
+            # TODO: Add lifetime to bullets. The universe being unbounded now, they life forever and
+            # will cause eventual lag.
+
             if isinstance(self.star, Star) and self.star.contains_center_of(projectile):
                 return False
             for planet in self._nearby_planets(projectile):
@@ -524,11 +525,6 @@ class Universe:
 
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
-
-    def cointains_center_of(self, pobj: PhysicalObject) -> bool:
-        """Return whether `vec` is contained in `self`'s boundaries."""
-        pos = pobj.pos_relative_to(self.star)
-        return 0 <= pos.x <= self.size.x and 0 <= pos.y <= self.size.y
 
     def generate_planet(self, star: Star) -> None:
         """Create an planet orbiting a star.
