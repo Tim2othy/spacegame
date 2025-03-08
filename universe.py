@@ -128,19 +128,19 @@ class Universe:
         self._particles: list[Particle] = []
 
     def add_player(self, ship_config: PlayerShipConfig) -> PlayerShip:
-        """Add a player-ship to the universe from its config. Returns (a reference to) the created ship."""
+        """Add a player-ship from its config, relative to the star. Returns (a reference to) the created ship."""
         ship = PlayerShip(self.star, ship_config)
         self._player_ships.append(ship)
         return ship
 
     def add_enemy(self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy]) -> BulletEnemy:
-        """Add an enemy-ship to the universe from its config. Returns (a reference to) the created ship."""
+        """Add an enemy-ship from its config, relative to the star. Returns (a reference to) the created ship."""
         ship = ship_type(self.star, ship_config)
         self._enemy_ships.append(ship)
         return ship
 
     def add_planet(self, planet_config: PlanetConfig) -> Planet:
-        """Add planet to a universe from its config. Returns (a reference to) the created planet.
+        """Add a planet from its config, relative to the star. Returns (a reference to) the created planet.
 
         Raises a ValueError if the planet's radius exceeds the max_nonstar_size.
         """
