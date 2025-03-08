@@ -433,7 +433,6 @@ class BulletEnemy(Ship):
 
         accelerate_to_player = auto()
         accelerate_randomly = auto()
-        decelerate = auto()
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, target_ship: Ship) -> None:
         """Create a new enemy ship.
@@ -476,7 +475,6 @@ class BulletEnemy(Ship):
                 [self.current_action] = random.choices(
                     population=[
                         BulletEnemy.Action.accelerate_randomly,
-                        BulletEnemy.Action.decelerate,
                     ],
                     weights=ENEMY_ACTION_WEIGHTS,
                 )
@@ -497,8 +495,6 @@ class BulletEnemy(Ship):
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
                 force_direction = self.target_ship.pos_relative_to(self)
-            case BulletEnemy.Action.decelerate:
-                force_direction = Vec2(0, 0)
             case BulletEnemy.Action.accelerate_randomly:
                 force_direction = self.seek_towards.pos_relative_to(self)
 
