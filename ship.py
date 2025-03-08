@@ -460,7 +460,6 @@ class BulletEnemy(Ship):
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.target_ship: Ship = target_ship
         self.projectiles: list[Bullet] = []
-        self.random_point: Vec2 = Vec2(0.0, 0.0)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`.
@@ -472,14 +471,8 @@ class BulletEnemy(Ship):
         self.action_timer -= dt
         delta_target_ship = self.target_ship.pos_relative_to(self)
         distance_to_target_squared = delta_target_ship.length_squared()
-        distance_to_target = math.sqrt(distance_to_target_squared)
 
         if self.action_timer <= 0:
-            random_x = random.uniform(-distance_to_target, distance_to_target)
-            random_y = random.uniform(-distance_to_target, distance_to_target)
-            # TODO@tim2othy: What is this supposed to do? Maybe add a comment?  ~lumi-a
-            self.random_point = self._pos + (delta_target_ship + Vec2(random_x, random_y)) / 2
-
             if distance_to_target_squared < ENEMY_VISUAL_RANGE_SQUARED:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
@@ -499,7 +492,7 @@ class BulletEnemy(Ship):
             case BulletEnemy.Action.decelerate:
                 force_direction = -self._vel
             case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.random_point - self._pos
+                force_direction = Vec2(0, 0)
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.thrust
