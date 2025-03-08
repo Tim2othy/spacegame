@@ -546,7 +546,7 @@ class MarkovEnemy(BulletEnemy):
     # Override class configuration for MarkovEnemy
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
+    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, target_ship: Ship) -> None:
         """Create a new Markov-based enemy ship.
 
         Args:
@@ -555,7 +555,7 @@ class MarkovEnemy(BulletEnemy):
             target_ship (Ship): Ship to target
 
         """
-        super().__init__(pos, vel, target_ship)
+        super().__init__(relative_to, relative_pos, relative_vel, target_ship)
         self.ai = MarkovAI(self, target_ship)
 
     def step(self, dt: float) -> None:
