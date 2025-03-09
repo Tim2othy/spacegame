@@ -72,7 +72,7 @@ async def main() -> None:
             # Draw each camera's view
             for player, camera in players_and_cameras:
                 camera.start_drawing_new_frame()
-                if player.health <= 0 and not options["invincible"]:
+                if player.health <= 0:
                     gameover_font = pygame.font.Font(None, int(64 / player_count))
                     camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     pygame.display.flip()
