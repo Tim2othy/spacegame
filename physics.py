@@ -109,7 +109,7 @@ class Particle(PosVel):
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
         color = BLACK.lerp(self._base_color, max(0, min(1, self._lifetime / self._max_lifetime)))
-        camera.draw_pixel(color, self._pos)
+        camera.draw_pixel(color, self)
 
 
 class Body(PosVel):
