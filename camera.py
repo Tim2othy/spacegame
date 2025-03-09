@@ -21,10 +21,13 @@ class Camera(Pos):
         """Construct a new camera, tracking a fixed object."""
         super().__init__(tracking, Vec2(0, 0))
         self._buff: float = buff
-        self._tracking = tracking
+        self._tracking: PosVel = tracking
+        self._zoom: float = 2.0
+
         self._surface: pygame.Surface = surface
-        self._surface_size = Vec2(*surface.get_size())
-        self._zoom = 2
+        surface_size: tuple[int, int] = surface.get_size()
+        self._surface_size: Vec2 = Vec2(*surface_size)
+        self._surface_rect: Rect = Rect((0,0), surface_size)
 
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
