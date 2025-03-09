@@ -92,7 +92,7 @@ class Camera(Pos):
         if self._rectangle_intersects_surface(enclosing_rect):
             pygame.draw.polygon(self._surface, color, surfacespace_points)
 
-    def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
+    def draw_line(self, color: Color, start: Pos, end: Pos, thickness: float) -> None:
         """Draw a worldspace-line with a given thickness."""
         screenspace_start, screenspace_end = self._world_to_surface(start), self._world_to_surface(end)
         enclosing_rect = _get_enclosing_rect((screenspace_start, screenspace_end))
