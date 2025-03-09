@@ -78,14 +78,14 @@ async def main() -> None:
             options = await show_menu(screen_surface, options, font)
             universe, player_ships = universe_from_options(options)
 
-            cameras: list[Camera] = []
+            players_and_cameras: list[tuple[PlayerShip, Camera]] = []
             player_count = len(player_ships)
             for player_ix, player in enumerate(player_ships):
                 topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
                 size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
                 subsurface = screen_surface.subsurface((topleft, size))
                 camera = Camera(subsurface, player, 1.0 / 4.0)
-                cameras.append(camera)
+                players_and_cameras.append((player, camera))
 
             clock = pygame.time.Clock()
 
@@ -107,19 +107,18 @@ async def main() -> None:
                 universe.step(dt)
 
                 # Draw each camera's view and then blit it into SCREEN_SURFACE
-                for player_ix, player_ship in enumerate(player_ships):
-                    player_camera = cameras[player_ix]
-                    player_camera.start_drawing_new_frame()
-                    if player_ship.health <= 0 and not options["invincible"]:
+                for player, camera in players_and_cameras:
+                    camera.start_drawing_new_frame()
+                    if player.health <= 0 and not options["invincible"]:
                         gameover_font = pygame.font.Font(None, int(64 / player_count))
-                        player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
+                        camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                         pygame.display.flip()
                         await asyncio.sleep(2)
                         running = False
                         break
                     camera.step()
-                    universe.draw(player_camera)
-                    universe.draw_text(player_camera, player, sum(fps) / len(fps))
+                    universe.draw(camera)
+                    universe.draw_text(camera, player, sum(fps) / len(fps))
 
                 pygame.display.flip()
                 await asyncio.sleep(0)
