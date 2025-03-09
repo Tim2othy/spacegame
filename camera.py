@@ -5,6 +5,7 @@ surfacespace == Coordinates on the screen
 """
 
 from __future__ import annotations
+from typing import Iterable
 
 import pygame
 from pygame import Color, Rect
@@ -71,8 +72,8 @@ class Camera(Pos):
         if self._rectangle_intersects_surface(enclosing_rect):
             pygame.draw.circle(self._surface, color, surfacespace_center, surfacespace_radius)
 
-    def draw_polygon(self, color: Color, points: list[Pos]) -> None:
-        """Draw a filled polygon."""
+    def draw_polygon(self, color: Color, points: Iterable[Pos]) -> None:
+        """Draw a filled worldspace-polygon."""
         cpoints = [self._world_to_surface(p) for p in points]
         # Soft check for point-surface-intersection:
         enclosing_rect = _get_enclosing_rect(cpoints)
@@ -163,15 +164,7 @@ class Camera(Pos):
 
 
 def _get_enclosing_rect(points: list[Vec2]) -> Rect:
-    """Get the smallest rectangle enclosing all points.
-
-    Args:
-        points (list[Vec2]): Points to enclose
-
-    Returns:
-        Rect: Rectangle fitting all points snugly
-
-    """
+    """Get the smallest rectangle enclosing all points."""
     minx = miny = float("inf")
     maxx = maxy = float("-inf")
     for point in points:
