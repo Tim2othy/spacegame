@@ -172,7 +172,7 @@ class Ship(Disk):
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = forward.rotate(random_rotation)
-                    flare_vel = self._vel - flare_direction * random.normalvariate(
+                    flare_vel = -flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
                     self.projectiles.append(self.new_flare(Vec2(0, 0), flare_vel))

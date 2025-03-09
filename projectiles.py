@@ -159,9 +159,9 @@ class Missile(Rocket):
 class Flare(Bullet):
     """A round bullet, designed to distract other bullets, but also capable of harming enemies."""
 
-    def __init__(self, pos: Vec2, vel: Vec2) -> None:
+    def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new flare."""
-        super().__init__(pos, vel, FLARE_COLOR)
+        super().__init__(relative_to, relative_pos, relative_vel, FLARE_COLOR)
         self.damage = FLARE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
