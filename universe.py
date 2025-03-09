@@ -607,7 +607,7 @@ class Universe:
                 player.health = float("inf")
 
         for _ in range(num_enemies):
-            random_radius = random.uniform(star_size, star_size * 2)
+            random_radius = random.uniform(star_size, star_size * 5)
             random_angle = random.uniform(0, 360)
             vec = Vec2(0, 0)
             vec.from_polar((random_radius, random_angle))
