@@ -23,6 +23,7 @@ class Camera(Pos):
         self._buff: float = buff
         self._tracking = tracking
         self._surface: pygame.Surface = surface
+        self._surface_size = Vec2(*surface.get_size())
         self._zoom = 2
 
     def step(self) -> None:
