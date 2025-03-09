@@ -55,7 +55,7 @@ class Bullet(Body):
             camera (Camera): Camera to draw on
 
         """
-        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         camera.draw_polygon(
             self.color,
             [Pos(self, 4 * forward), Pos(self, 4 * forward.rotate(150)), Pos(self, 4 * forward.rotate(-150))],
@@ -120,7 +120,7 @@ class Rocket(Bullet):
             camera (Camera): Camera to draw on
 
         """
-        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -182,7 +182,7 @@ class Missile(Rocket):
             camera (Camera): Camera to draw on
 
         """
-        forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
+        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward

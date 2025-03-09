@@ -222,7 +222,7 @@ class Universe:
     def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles on the disk's surface.
 
-        `projected_pobj._pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        `projected_from` is projected onto `disk`'s surface, with velocity randomly sampled to face
         away from `disk` with max-length `blast_vel` in addition to `disk`'s current velocity.
         Colors are randomly sampled from interpolation
         between `disk.color` and `color`.
