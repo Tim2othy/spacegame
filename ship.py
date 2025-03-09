@@ -306,37 +306,29 @@ class Ship(Disk):
             projectile.draw(camera)
 
 
+type PygameKey = int
+
+
+@dataclass
 class ShipInput:
-    """Specification for which keys trigger what spaceship-action."""
+    """Specification for which keys trigger what spaceship-action.
 
-    type PygameKey = int
+    Attributes:
+        thruster_rot_left (pygame_key): Left rotation thruster's key
+        thruster_rot_right (pygame_key): Right rotation thruster's key
+        thruster_forward (pygame_key): Forward thruster's key
+        thruster_backward (pygame_key): Backward thruster's key
+        shoot (pygame_key): Pew pew key
+        release_flares (pygame_key): Flare-release key
 
-    def __init__(
-        self,
-        thruster_rot_left: PygameKey,
-        thruster_rot_right: PygameKey,
-        thruster_forward: PygameKey,
-        thruster_backward: PygameKey,
-        shoot: PygameKey,
-        release_flares: PygameKey,
-    ) -> None:
-        """Create a new map from keys to spaceship-actions.
+    """
 
-        Args:
-            thruster_rot_left (pygame_key): Left rotation thruster's key
-            thruster_rot_right (pygame_key): Right rotation thruster's key
-            thruster_forward (pygame_key): Forward thruster's key
-            thruster_backward (pygame_key): Backward thruster's key
-            shoot (pygame_key): Pew pew key
-            release_flares (pygame_key): Flare-release key
-
-        """
-        self.thruster_rot_left = thruster_rot_left
-        self.thruster_rot_right = thruster_rot_right
-        self.thruster_forward = thruster_forward
-        self.thruster_backward = thruster_backward
-        self.shoot = shoot
-        self.release_flares = release_flares
+    thruster_rot_left: PygameKey
+    thruster_rot_right: PygameKey
+    thruster_forward: PygameKey
+    thruster_backward: PygameKey
+    shoot: PygameKey
+    release_flares: PygameKey
 
     @classmethod
     def arrows(cls) -> ShipInput:
