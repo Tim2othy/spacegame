@@ -36,10 +36,7 @@ class StaticObject:
         self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
 
     def _shift(self, delta: Vec2) -> None:
-        """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing.
-
-        This is currently only used for shifting disks apart when they intersect.
-        """
+        """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing."""
         self.__pos += delta
 
     def pos_relative_to(self, other: StaticObject) -> Vec2:
@@ -80,7 +77,7 @@ class MovingObject(StaticObject):
 
     def step(self, dt: float) -> None:
         """Apply velocity to `self`."""
-        self._StaticObject__pos += dt * self.__vel
+        self._shift(self.__vel * dt)
 
     def _add_vel(self, vel: Vec2) -> None:
         """Add `vel` to  `self`'s velocity. Be careful with relativity."""
