@@ -37,7 +37,6 @@ MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
 
 GRAY = Color("gray")
-ZERO_VEC2 = Vec2(0, 0)
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")

@@ -68,7 +68,6 @@ class Planet(Disk):
 
 
 type PlanetChunk = tuple[int, int]
-type StarChunk = tuple[int, int]
 
 
 @dataclass
