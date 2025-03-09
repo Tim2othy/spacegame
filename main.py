@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import fields
 import platform
 import sys
 from collections import deque
@@ -38,7 +39,7 @@ async def main() -> None:
 
     while keep_playing:
         options = await show_menu(screen_surface, options, font)
-        universe, player_ships = universe_from_options(options)
+        universe, player_ships = Universe.from_options(options)
 
         players_and_cameras: list[tuple[PlayerShip, Camera]] = []
         player_count = len(player_ships)
@@ -94,7 +95,7 @@ async def main() -> None:
     sys.exit()
 
 
-async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
+async def show_menu(screen: Surface, options: UniverseOptions, font: Font) -> UniverseOptions:
     """Display the main menu until player presses Enter.
 
     Args:
@@ -110,22 +111,24 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
     title_text = font.render("Space Game", antialias=True, color=Color("White"))
     start_text = font.render("Press Enter to Start", antialias=True, color=Color("White"))
 
+    option_fields = list(fields(options))
+
     def draw_menu() -> None:
         screen.fill(Color("Black"))
 
         screen.blit(title_text, title_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 6)))
 
-        for i, (name, value) in enumerate(options.items()):
+        for i, field in enumerate(option_fields):
             color = (255, 255, 255) if i == option_selection_ix else (100, 100, 100)
-            option_text = font.render(f"{name}: <{'On' if value else 'Off'}>", antialias=True, color=color)
+            option_text = font.render(
+                f"{field.name}: <{'On' if getattr(options, field.name) else 'Off'}>", antialias=True, color=color
+            )
             screen.blit(option_text, option_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 3 + i * 50)))
 
         screen.blit(start_text, start_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] * 5 / 6)))
         pygame.display.flip()
 
-    option_names = list(options.keys())
-    waiting = True
-    while waiting:
+    while True:
         draw_menu()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -133,16 +136,17 @@ async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    waiting = False
-                elif event.key == pygame.K_UP:
-                    option_selection_ix = (option_selection_ix - 1) % len(options)
+                    return options
+                if event.key == pygame.K_UP:
+                    option_selection_ix = (option_selection_ix - 1) % len(option_fields)
                 elif event.key == pygame.K_DOWN:
-                    option_selection_ix = (option_selection_ix + 1) % len(options)
+                    option_selection_ix = (option_selection_ix + 1) % len(option_fields)
                 elif event.key in {pygame.K_LEFT, pygame.K_RIGHT}:
-                    options[option_names[option_selection_ix]] = not options[option_names[option_selection_ix]]
+                    field = option_fields[option_selection_ix]
+                    # TODO: Since we already have a `field: Field`, is there something more
+                    # idiomatic than setattr, getattr?
+                    setattr(options, field.name, not getattr(options, field.name))
         await asyncio.sleep(0)
-
-    return options
 
 
 if __name__ == "__main__":
