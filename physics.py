@@ -112,7 +112,7 @@ class Particle(PosVel):
         camera.draw_pixel(color, self._pos)
 
 
-class PhysicalObject(PosVel):
+class Body(PosVel):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
@@ -130,7 +130,7 @@ class PhysicalObject(PosVel):
         """Apply a force to `self`."""
         self.add_impulse(force * dt)
 
-    def gravitational_force(self, pobj: PhysicalObject) -> Vec2:
+    def gravitational_force(self, pobj: Body) -> Vec2:
         """Calculate gravitational force between `pobj` and `self` affecting `self`."""
         delta = pobj.pos_relative_to(self)
         if delta == Vec2(0, 0):
@@ -144,7 +144,7 @@ class PhysicalObject(PosVel):
         """Draw `self` on `camera`. Implemented by subclasses."""
 
 
-class Disk(PhysicalObject):
+class Disk(Body):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
     def __init__(

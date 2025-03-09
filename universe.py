@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, PosVel, Particle, PhysicalObject
+from physics import Disk, PosVel, Particle, Body
 from profiler import global_profiler
 from projectiles import Missile
 from ship import BulletEnemy, EnemyConfig, PlayerShip, PlayerConfig
@@ -106,11 +106,11 @@ class Universe:
         self._player_ships: list[PlayerShip] = []
         self._enemy_ships: list[BulletEnemy] = []
 
-        def pobj_to_planet_chunk(pobj: PhysicalObject) -> PlanetChunk:
+        def pobj_to_planet_chunk(pobj: Body) -> PlanetChunk:
             pos = pobj.pos_relative_to(self.__star) / max_nonstar_size
             return (math.floor(pos.x), math.floor(pos.y))
 
-        self._pobj_to_planet_chunk: Callable[[PhysicalObject], PlanetChunk] = pobj_to_planet_chunk
+        self._pobj_to_planet_chunk: Callable[[Body], PlanetChunk] = pobj_to_planet_chunk
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
         self._particles: list[Particle] = []
@@ -148,14 +148,14 @@ class Universe:
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
 
-    def _nearby_planets(self, pobj: PhysicalObject) -> Iterator[Planet]:
+    def _nearby_planets(self, pobj: Body) -> Iterator[Planet]:
         (x, y) = self._pobj_to_planet_chunk(pobj)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
                 yield from self._planet_chunks.get(chunk, [])
 
-    def apply_gravity_to(self, pobj: PhysicalObject, dt: float) -> None:
+    def apply_gravity_to(self, pobj: Body, dt: float) -> None:
         """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
 
@@ -204,7 +204,7 @@ class Universe:
                 planet.bounce_off_of_disk(self.__star)
 
     def create_particles_on_disk(
-        self, disk: Disk, projected_pobj: PhysicalObject, n: int, color: Color, blast_vel: float
+        self, disk: Disk, projected_pobj: Body, n: int, color: Color, blast_vel: float
     ) -> None:
         """Create `n` particles on the disk's surface.
 
@@ -231,7 +231,7 @@ class Universe:
                 Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
             )
 
-    def create_particle_cloud(self, source: PhysicalObject, n: int, color: Color, blast_vel: float) -> None:
+    def create_particle_cloud(self, source: Body, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
         Particles' velocity are spherically sampled with length between 0 and blast_vel, added

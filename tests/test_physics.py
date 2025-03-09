@@ -6,7 +6,7 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Disk, PosVel, PhysicalObject
+from physics import Disk, PosVel, Body
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
@@ -27,10 +27,10 @@ def test_step(relative_pos: Vec2) -> None:
 
 
 def test_gravitational_force() -> None:
-    obj = PhysicalObject(ORIGIN, Vec2(), Vec2(), 1)
-    small_force = obj.gravitational_force(PhysicalObject(obj, Vec2(1, 2), Vec2(), 1))
-    large_force = obj.gravitational_force(PhysicalObject(obj, Vec2(-1, 2), Vec2(), 2))
-    double_distance_force = obj.gravitational_force(PhysicalObject(obj, 2 * Vec2(1, 2), Vec2(), 1))
+    obj = Body(ORIGIN, Vec2(), Vec2(), 1)
+    small_force = obj.gravitational_force(Body(obj, Vec2(1, 2), Vec2(), 1))
+    large_force = obj.gravitational_force(Body(obj, Vec2(-1, 2), Vec2(), 2))
+    double_distance_force = obj.gravitational_force(Body(obj, 2 * Vec2(1, 2), Vec2(), 1))
     assert small_force.x > 0
     assert small_force.y > 0
     assert large_force.x < 0

@@ -6,7 +6,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import PosVel, PhysicalObject
+from physics import PosVel, Body
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -32,7 +32,7 @@ ROCKET_MIN_SPEED = 500.0
 FLARE_COLOR = Color("yellow")
 
 
-class Bullet(PhysicalObject):
+class Bullet(Body):
     """A triangular bullet."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
