@@ -69,77 +69,66 @@ async def main() -> None:
     font = pygame.font.Font(None, 36)
     options: Options = {"small": False, "splitscreen": False, "invincible": False}
 
-    try:
-        pygame.display.set_caption("Space Game")
-        screen_surface = pygame.display.set_mode(SCREEN_SIZE)
-        keep_playing = True
+    pygame.display.set_caption("Space Game")
+    screen_surface = pygame.display.set_mode(SCREEN_SIZE)
+    keep_playing = True
 
-        while keep_playing:
-            options = await show_menu(screen_surface, options, font)
-            universe, player_ships = universe_from_options(options)
+    while keep_playing:
+        options = await show_menu(screen_surface, options, font)
+        universe, player_ships = universe_from_options(options)
 
-            players_and_cameras: list[tuple[PlayerShip, Camera]] = []
-            player_count = len(player_ships)
-            for player_ix, player in enumerate(player_ships):
-                topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
-                size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
-                subsurface = screen_surface.subsurface((topleft, size))
-                camera = Camera(subsurface, player, 1.0 / 4.0)
-                players_and_cameras.append((player, camera))
+        players_and_cameras: list[tuple[PlayerShip, Camera]] = []
+        player_count = len(player_ships)
+        for player_ix, player in enumerate(player_ships):
+            topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
+            size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
+            subsurface = screen_surface.subsurface((topleft, size))
+            camera = Camera(subsurface, player, 1.0 / 4.0)
+            players_and_cameras.append((player, camera))
 
-            clock = pygame.time.Clock()
+        clock = pygame.time.Clock()
 
-            fps: deque[float] = deque()
-            running = True
+        fps: deque[float] = deque()
+        running = True
 
-            while running:
-                if any(e.type == pygame.QUIT for e in pygame.event.get()):
+        while running:
+            if any(e.type == pygame.QUIT for e in pygame.event.get()):
+                running = False
+                keep_playing = False
+                break
+
+            dt = clock.tick() / 1_000
+            fps.append(clock.get_fps())
+            if len(fps) > FPS_HISTORY_LENGTH:
+                fps.popleft()
+
+            universe.handle_input(pygame.key.get_pressed())
+            universe.step(dt)
+
+            # Draw each camera's view
+            for player, camera in players_and_cameras:
+                camera.start_drawing_new_frame()
+                if player.health <= 0 and not options["invincible"]:
+                    gameover_font = pygame.font.Font(None, int(64 / player_count))
+                    camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
+                    pygame.display.flip()
+                    await asyncio.sleep(2)
                     running = False
-                    keep_playing = False
                     break
+                camera.step()
+                universe.draw(camera)
+                universe.draw_text(camera, player, sum(fps) / len(fps))
 
-                dt = clock.tick() / 1_000
-                fps.append(clock.get_fps())
-                if len(fps) > FPS_HISTORY_LENGTH:
-                    fps.popleft()
-
-                universe.handle_input(pygame.key.get_pressed())
-                universe.step(dt)
-
-                # Draw each camera's view
-                for player, camera in players_and_cameras:
-                    camera.start_drawing_new_frame()
-                    if player.health <= 0 and not options["invincible"]:
-                        gameover_font = pygame.font.Font(None, int(64 / player_count))
-                        camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
-                        pygame.display.flip()
-                        await asyncio.sleep(2)
-                        running = False
-                        break
-                    camera.step()
-                    universe.draw(camera)
-                    universe.draw_text(camera, player, sum(fps) / len(fps))
-
-                pygame.display.flip()
-                await asyncio.sleep(0)
-
-    except Exception as e:
-        if screen_surface:
-            screen_surface.fill((0, 0, 0))
-            error_text = font.render(f"Error: {e!s}", antialias=True, color=Color("White"))
-            error_rect = error_text.get_rect(center=(SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
-            screen_surface.blit(error_text, error_rect)
             pygame.display.flip()
-            await asyncio.sleep(5)
-        raise
-    finally:
-        profiler_stats = global_profiler.stats_to_str()
-        print(profiler_stats)  # noqa: T201
-        if sys.platform == "emscripten":
-            platform.console.log(profiler_stats)
+            await asyncio.sleep(0)
 
-        pygame.quit()
-        sys.exit()
+    profiler_stats = global_profiler.stats_to_str()
+    print(profiler_stats)  # noqa: T201
+    if sys.platform == "emscripten":
+        platform.console.log(profiler_stats)
+
+    pygame.quit()
+    sys.exit()
 
 
 async def show_menu(screen: Surface, options: Options, font: Font) -> Options:
