@@ -3,7 +3,7 @@ from math import tau
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
-from ship import Ship
+from ship import Ship, ShipConfig
 
 EPSILON = 1e-8
 
@@ -13,7 +13,7 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 def test_shooting() -> None:
     gun_cooldown = 0.123
     bullet_count = 10
-    ship = Ship(ORIGIN, Vec2(0, 0), Vec2(0, 0), 10, gun_cooldown=gun_cooldown)
+    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=gun_cooldown))
 
     ship.angle = tau / 8
     ship.shooting = True
@@ -32,7 +32,7 @@ def test_shooting() -> None:
 
 
 def test_movement() -> None:
-    ship = Ship(ORIGIN, Vec2(0, 0), Vec2(0, 0), 10)
+    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
     ship.thruster_rot_left = True
     ship.step(0.01)
     ship.thruster_rot_left = False
