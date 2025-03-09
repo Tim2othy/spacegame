@@ -11,14 +11,14 @@ import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
-from physics import Pos, PosVelObj
+from physics import Pos, PosVel
 from profiler import global_profiler
 
 
 class Camera(Pos):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, surface: pygame.Surface, tracking: PosVelObj, buff: float) -> None:
+    def __init__(self, surface: pygame.Surface, tracking: PosVel, buff: float) -> None:
         """Construct a new camera, tracking a fixed object."""
         super().__init__()
         self._buff: float

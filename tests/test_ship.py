@@ -2,12 +2,12 @@ from math import tau
 
 from pygame.math import Vector2 as Vec2
 
-from physics import PosVelObj
+from physics import PosVel
 from ship import Ship
 
 EPSILON = 1e-8
 
-ORIGIN = PosVelObj._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
+ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 def test_shooting() -> None:
