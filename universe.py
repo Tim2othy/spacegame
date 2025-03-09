@@ -106,9 +106,9 @@ class Universe:
         self._player_ships: list[PlayerShip] = []
         self._enemy_ships: list[BulletEnemy] = []
 
-        def pobj_to_planet_chunk(pobj: Pos) -> PlanetChunk:
-            pos = pobj.pos_relative_to(self.__star) / max_nonstar_size
-            return (math.floor(pos.x), math.floor(pos.y))
+        def pobj_to_planet_chunk(pos: Pos) -> PlanetChunk:
+            pos_in_universe = pos.pos_relative_to(self.__star) / max_nonstar_size
+            return (math.floor(pos_in_universe.x), math.floor(pos_in_universe.y))
 
         self._pobj_to_planet_chunk: Callable[[Pos], PlanetChunk] = pobj_to_planet_chunk
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
@@ -148,8 +148,8 @@ class Universe:
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
 
-    def _nearby_planets(self, pobj: Body) -> Iterator[Planet]:
-        (x, y) = self._pobj_to_planet_chunk(pobj)
+    def _nearby_planets(self, pos: Pos) -> Iterator[Planet]:
+        (x, y) = self._pobj_to_planet_chunk(pos)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
