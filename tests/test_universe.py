@@ -147,13 +147,13 @@ def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_gravitational_well() -> None:
-    universe = Universe(None, 5000 * 2)
-    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), radius=5000))
+    universe = Universe(None, 10_000 * 2)
+    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), radius=10_000))
 
     num_disks = 23
     for i in range(num_disks):
         pos = Vec2(0, 0)
-        pos.from_polar((7500, 360 * i / num_disks))
+        pos.from_polar((12_500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
             universe.add_player(PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet)
         else:
