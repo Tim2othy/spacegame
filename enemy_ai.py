@@ -197,8 +197,7 @@ class MarkovAI:
             return relative_pos.normalize()
 
         # Now calculate what direction the bullet must be fired in
-        aim_direction = (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
-        return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
+        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
 
     def _execute_retreat_behavior(self) -> Vec2:
         """Return force required for the retreat-behavior."""
