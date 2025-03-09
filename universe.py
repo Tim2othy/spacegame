@@ -585,7 +585,7 @@ class Universe:
         # pos_planet
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = disk.pos + radial_vector * r_initial
+        pos_planet = radial_vector * r_initial
 
         # velocity_planet
         total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
@@ -593,7 +593,9 @@ class Universe:
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
-        return self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
+        return self.add_planet(
+            PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet), relative_to=disk
+        )
 
         # TODO: This update is useless. These changes are still here from when I merged branches.
         #       We should probably rename generate_planet to generate_planets.            ~lumi-a
