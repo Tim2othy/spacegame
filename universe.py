@@ -542,7 +542,7 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
-    def generate_planet(self, disk: Disk | None = None) -> None:
+    def generate_planet(self, disk: Disk | None = None) -> Planet:
         """Create a planet orbiting a Disk, defaulting to the universe's star."""
         """
         What the random variables do:
@@ -593,7 +593,7 @@ class Universe:
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
-        self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
+        return self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
 
         # TODO: This update is useless. These changes are still here from when I merged branches.
         #       We should probably rename generate_planet to generate_planets.            ~lumi-a
