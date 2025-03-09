@@ -45,7 +45,7 @@ class Camera(Pos):
 
     def _world_to_surface(self, pos: Pos) -> Vec2:
         """Transform a Pos to surfacespace."""
-        return pos.pos_relative_to(self) * self.zoom
+        return pos.pos_relative_to(self) * self._zoom
 
     @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
