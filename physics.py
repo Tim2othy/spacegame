@@ -161,9 +161,9 @@ class Disk(Body):
         """Draw `self` on `camera`."""
         camera.draw_circle(self.color, self._pos, self.radius)
 
-    def contains_center_of(self, mobj: PosVel) -> bool:
-        """Determine whether the center of `mobj` is in `self`."""
-        return self.distance_squared_to(mobj) < self.__radius_squared
+    def contains_center_of(self, pos: Pos) -> bool:
+        """Determine whether the center of `pos` is in `self`."""
+        return self.distance_squared_to(pos) < self.__radius_squared
 
     def intersects_disk(self, other: Disk) -> bool:
         """Determine whether `self` intersects `other`.
