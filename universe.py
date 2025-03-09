@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, PosVel, Particle, Body
+from physics import Disk, Pos, PosVel, Particle, Body
 from profiler import global_profiler
 from projectiles import Missile
 from ship import BulletEnemy, EnemyConfig, PlayerShip, PlayerConfig
@@ -106,11 +106,11 @@ class Universe:
         self._player_ships: list[PlayerShip] = []
         self._enemy_ships: list[BulletEnemy] = []
 
-        def pobj_to_planet_chunk(pobj: Body) -> PlanetChunk:
+        def pobj_to_planet_chunk(pobj: Pos) -> PlanetChunk:
             pos = pobj.pos_relative_to(self.__star) / max_nonstar_size
             return (math.floor(pos.x), math.floor(pos.y))
 
-        self._pobj_to_planet_chunk: Callable[[Body], PlanetChunk] = pobj_to_planet_chunk
+        self._pobj_to_planet_chunk: Callable[[Pos], PlanetChunk] = pobj_to_planet_chunk
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
 
         self._particles: list[Particle] = []
