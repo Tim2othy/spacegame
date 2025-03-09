@@ -174,7 +174,7 @@ class Ship(Disk):
                     flare_vel = self._vel - flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    self.projectiles.append(self.new_flare(self._pos, flare_vel))
+                    self.projectiles.append(self.new_flare(Vec2(0, 0), flare_vel))
                 self.flare_cooldown_timer += self._flare_cooldown
 
     def suffer_damage(self, damage: float) -> None:
@@ -221,7 +221,7 @@ class Ship(Disk):
 
         # Helper function for drawing polygons relative to the ship-position
         def drawy(color: Color, points: list[Vec2]) -> None:
-            camera.draw_polygon(color, [self._pos + self.radius * p for p in points])
+            camera.draw_polygon(color, [Pos(self, self.radius * p) for p in points])
 
         # thruster_backward
         if self.thruster_backward:
@@ -229,7 +229,7 @@ class Ship(Disk):
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
-            darker_color, self._pos, self._pos + forward * self.radius * GUNBARREL_LENGTH, GUNBARREL_WIDTH * self.radius
+            darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
 
         # thruster_rot_left, material
