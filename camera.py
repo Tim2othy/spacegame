@@ -22,11 +22,20 @@ if TYPE_CHECKING:
 class Camera(Pos):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, surface: pygame.Surface, tracking: PosVel) -> None:
-        """Construct a new camera, tracking a fixed object."""
+    def __init__(self, surface: pygame.Surface, tracking: PosVel, zoom: float) -> None:
+        """Construct a new camera, tracking a fixed object.
+
+        Raises a ValueError if `zoom` is not strictly positive.
+        Higher `zoom` = Fewer objects fit on screen,
+        `zoom`==1 corresponds to 1 pixel per unit.
+
+        TODO: The effective `zoom` should actually be independent of screen-size.
+        """
         super().__init__(tracking, Vec2(0, 0))
         self._tracking: PosVel = tracking
-        self._zoom: float = 2.0
+        if not zoom > 0:
+            raise ValueError
+        self._zoom: float = zoom
 
         self._surface: pygame.Surface = surface
         surface_size: tuple[int, int] = surface.get_size()
