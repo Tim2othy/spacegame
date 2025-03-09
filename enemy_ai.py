@@ -221,10 +221,7 @@ class MarkovAI:
             return relative_pos.normalize()
 
         # Now calculate what direction the bullet must be fired in
-        # TODO: Give aim_unscaled a better name, I (lumi-a) have no idea what that variable represents
-        aim_unscaled = relative_pos + relative_vel * intercept_time
-        aim_direction = aim_unscaled / (BULLET_RELEASE_SPEED * intercept_time)
-        # Normalize to get pure direction
+        aim_direction = (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
         return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
 
     def _execute_retreat_behavior(self) -> Vec2:
