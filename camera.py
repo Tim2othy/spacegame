@@ -105,9 +105,7 @@ class Camera(Pos):
     def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text at a surfacespace-position, or centered on the surface if not provided."""
         rendered = font.render(text, antialias=True, color=color)
-        if pos is None:
-            width, height = self._surface.get_size()
-            pos = Vec2((width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2)
+        pos = pos or (self._surface_size - Vec2(*rendered.get_size())) / 2
         self._surface.blit(rendered, pos)
 
 
