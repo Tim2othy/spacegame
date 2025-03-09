@@ -6,7 +6,7 @@ import math
 import random
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import pygame
 from pygame import Color
@@ -87,6 +87,9 @@ class UniverseOptions:
     invincible: bool = False
 
 
+T = TypeVar("T", bound=BulletEnemy)
+
+
 class Universe:
     """A collection of celestial objects, forming a Universe.
 
@@ -140,9 +143,7 @@ class Universe:
         self._player_ships.append(ship)
         return ship
 
-    def add_enemy(
-        self, ship_config: EnemyConfig, ship_type: type[BulletEnemy], *, relative_to: None | PosVel = None
-    ) -> BulletEnemy:
+    def add_enemy(self, ship_config: EnemyConfig, ship_type: type[T], *, relative_to: None | PosVel = None) -> T:
         """Add an enemy-ship from its config and return (a reference to) the created ship.
 
         If relative_to is None, the planet is created relative to the universe's star.
