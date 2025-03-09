@@ -106,11 +106,6 @@ class Universe:
         possible.
 
         Raises a ValueError if star_size is a float and not strictly positive.
-
-        Args:
-            star_size (float | None): The size of the star, must be positive.
-            max_nonstar_size: float
-
         """
         self.max_nonstar_size = max_nonstar_size
         self.__star: PosVel | Star = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
@@ -499,14 +494,7 @@ class Universe:
 
     @global_profiler.profile_method
     def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
-        """Draw "debugging" text on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-            player (PlayerShip): Player to display information about
-            fps (float): Current fps
-
-        """
+        """Draw "debugging" text on `camera`."""
         font_size = 32
         font = pygame.font.Font(None, font_size)
 

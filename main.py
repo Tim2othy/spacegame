@@ -93,17 +93,7 @@ async def main() -> None:
 
 
 async def show_menu(screen: Surface, options: UniverseOptions, font: Font) -> UniverseOptions:
-    """Display the main menu until player presses Enter.
-
-    Args:
-        screen (Surface): To fill and render text on
-        options (Options): Current options
-        font (Font): Font to use for rendering
-
-    Returns:
-        Options: Updated options
-
-    """
+    """Display the main menu until player presses Enter, and return updated options."""
     option_selection_ix = 0
     title_text = font.render("Space Game", antialias=True, color=Color("White"))
     start_text = font.render("Press Enter to Start", antialias=True, color=Color("White"))

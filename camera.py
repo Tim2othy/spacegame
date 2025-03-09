@@ -67,14 +67,7 @@ class Camera(Pos):
             self._surface.set_at((int(surfacepoint.x), int(surfacepoint.y)), color)
 
     def draw_circle(self, color: Color, center: Pos, radius: float) -> None:
-        """Draw a worldspace-circle.
-
-        Args:
-            color (Color): Border- and fill-color
-            center (Pos): Worldspace-center of the circle
-            radius (float): Worldspace-radius of the circle
-
-        """
+        """Draw a worldspace-circle."""
         surfacespace_center = self._world_to_surface(center)
         surfacespace_radius = radius * self._zoom
         surfacespace_radius_vec = Vec2(surfacespace_radius, surfacespace_radius)
