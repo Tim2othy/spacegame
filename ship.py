@@ -367,11 +367,7 @@ class PlayerShip(Ship):
         # TODO: Are nested dataclasses possible so that we don't have to copy everything over again?
         super().__init__(
             relative_to,
-            ShipConfig(
-                relative_pos=config.relative_pos,
-                relative_vel=config.relative_vel,
-                color=config.color,
-            ),
+            ShipConfig(relative_pos=config.relative_pos, relative_vel=config.relative_vel, color=config.color),
         )
         self.spaceship_input = config.ship_input
 

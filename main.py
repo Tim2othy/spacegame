@@ -14,10 +14,7 @@ from pygame import Color, Surface
 from pygame.font import Font
 
 from camera import Camera
-from constants import (
-    FPS_HISTORY_LENGTH,
-    SCREEN_SIZE,
-)
+from constants import FPS_HISTORY_LENGTH, SCREEN_SIZE
 from profiler import global_profiler
 from universe import Universe, UniverseOptions
 
