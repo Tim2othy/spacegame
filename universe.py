@@ -510,12 +510,12 @@ class Universe:
     def draw_grid(self, camera: Camera) -> None:
         """Draw gridlines on `camera`."""
         # TODO: Choose one of these options:
-        # 1. Use a grid relative to the camera's position (universe is unbounded now)
-        # 2. Use a polar grid centered on self.star, relative to the camera's position
+        # 1. Use a grid clamped to the camera's position (universe is unbounded now)
+        # 2. Use a polar grid centered on self.star, clamped to the camera's position
         # 3. Don't use any grid at all (the background-stars will guide your way)
         #
         # I like option 2.    ~lumi-a
-
+        return
         gridline_spacing = 500
         width = 3000
         height = 3000
