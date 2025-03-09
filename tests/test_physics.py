@@ -6,7 +6,7 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Body, Disk, PosVel
+from physics import Body, Disk, Pos, PosVel
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
@@ -55,10 +55,14 @@ def test_disk_drawing() -> None:
     width, height = 50, 50
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
-    camera_center = Vec2(-3, 4)
-    camera = Camera(camera_center, 1, Surface((width, height)))
+
+    camera_center = Pos(ORIGIN, Vec2(-3, 4))
+    camera = Camera(Surface((width, height)), camera_center)
+    camera.step()
+
     disk = Disk(ORIGIN, Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
     disk.draw(camera)
+
     camera._surface.lock()
 
     good = 0
@@ -71,8 +75,8 @@ def test_disk_drawing() -> None:
             # Ignore anti-aliasing
             if pixel in (color, black):
                 pixel_circle = pixel == color
-                worldcoor = Vec2(x, y) + camera_center - Vec2(width, height) / 2
-                coordinate_circle = disk._pos.distance_to(worldcoor) < disk.radius
+                worldcoor = Pos(camera_center, Vec2(x, y) - Vec2(width, height) / 2)
+                coordinate_circle = disk.distance_to(worldcoor) < disk.radius
 
                 if pixel_circle:
                     drawn += 1
