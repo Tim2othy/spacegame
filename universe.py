@@ -26,11 +26,9 @@ if TYPE_CHECKING:
 
 from constants import ENEMY_SPAWN_WEIGHTS, FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
-PLANET_SIZE_MIN = 600
-# these are parameters for exponential distributions
-PLANET_RADIUS_PARAMETER = 0.02
-PLANET_ORBIT_PARAMETER = 0.0002
-PLANET_ELLIPSIS_PARAMETER = 0.001
+PLANET_SIZE_PARAMETER = 5.9
+SIGMA_PLANET_RADIUS = 0.3
+ORBIT_CORRELATION_FACTOR = 0.05
 
 
 class Star(Disk):
@@ -548,12 +546,22 @@ class Universe:
         """Create a planet orbiting a Disk, defaulting to the universe's star."""
         """
         What the random variables do:
-        - radius_planet - pretty obvious
-        - r_a             - shortest distance to star during orbit
-        - r_p             - largest distance to star during orbit
+        - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
+        - radius_planet   - follows a lognormal distribution.
+        - eccentricity    - how non round orbit is - drawn from a beta distribution
         - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
         - orbit_direction - in which direction (in degrees) of the star it starts
         - planet_angle  - does it go clockwise or anticlockwise
+
+        The method:
+        1. Starts with a minimum semi-major axis (just beyond the star).
+        2. For each planet, picks a new semi-major axis by multiplying the previous orbit
+            by a random factor (ensuring increasing distance).
+        3. Samples a low eccentricity from a beta distribution.
+        4. Determines the planet's radius from a lognormal distribution whose mean is slightly
+            shifted with the orbit distance.
+        5. Calculates the orbit geometry and initial position/velocity.
+        6. Updates the minimum allowed semi-major axis for the next planet.
 
         """
 
@@ -563,21 +571,21 @@ class Universe:
                 return
             disk = self.__star
 
+        current_min_a = disk.radius * 2
+
         # random variables
-        planet_radius_lambda = 1 / (PLANET_RADIUS_PARAMETER * disk.radius)
-        radius_planet = min(PLANET_SIZE_MIN + random.expovariate(planet_radius_lambda), self.max_nonstar_size / 2)
-        r_p = disk.radius + radius_planet + random.expovariate(PLANET_ORBIT_PARAMETER)
-        r_a = r_p + random.expovariate(PLANET_ELLIPSIS_PARAMETER)
+        semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
+        mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+        radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+        eccentricity = random.betavariate(1, 15)
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
         planet_angle = random.choice([90, 270])
 
         # pos_planet
-        semi_major_axis = (r_p + r_a) / 2
-        eccentricity = (r_a - r_p) / (r_a + r_p)
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = radial_vector * r_initial
+        pos_planet = disk.pos + radial_vector * r_initial
 
         # velocity_planet
         total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
@@ -585,9 +593,13 @@ class Universe:
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
-        self.add_planet(
-            PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet), relative_to=disk
-        )
+        self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
+
+        # TODO: This update is useless. These changes are still here from when I merged branches.
+        #       We should probably rename generate_planet to generate_planets.            ~lumi-a
+        r_a = semi_major_axis * (1 + eccentricity)
+        # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+        current_min_a = r_a + radius_planet
 
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
