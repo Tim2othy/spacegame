@@ -579,7 +579,9 @@ class Universe:
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
-        self.add_planet(Planet(pos_planet, vel_planet, radius_planet), relative_to=disk)
+        self.add_planet(
+            PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet), relative_to=disk
+        )
 
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
