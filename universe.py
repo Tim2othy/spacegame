@@ -119,26 +119,35 @@ class Universe:
 
         self._particles: list[Particle] = []
 
-    def add_player(self, ship_config: PlayerShipConfig) -> PlayerShip:
-        """Add a player-ship from its config, relative to the star. Returns (a reference to) the created ship."""
-        ship = PlayerShip(self.__star, ship_config)
+    def add_player(self, ship_config: PlayerShipConfig, *, relative_to: None | MovingObject = None) -> PlayerShip:
+        """Add a player-ship from its config and return (a reference to) the created ship.
+
+        If relative_to is None, the planet is created relative to the universe's star.
+        """
+        ship = PlayerShip(relative_to or self.__star, ship_config)
         self._player_ships.append(ship)
         return ship
 
-    def add_enemy(self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy]) -> BulletEnemy:
-        """Add an enemy-ship from its config, relative to the star. Returns (a reference to) the created ship."""
-        ship = ship_type(self.__star, ship_config)
+    def add_enemy(
+        self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy], *, relative_to: None | MovingObject = None
+    ) -> BulletEnemy:
+        """Add an enemy-ship from its config and return (a reference to) the created ship.
+
+        If relative_to is None, the planet is created relative to the universe's star.
+        """
+        ship = ship_type(relative_to or self.__star, ship_config)
         self._enemy_ships.append(ship)
         return ship
 
-    def add_planet(self, planet_config: PlanetConfig) -> Planet:
-        """Add a planet from its config, relative to the star. Returns (a reference to) the created planet.
+    def add_planet(self, planet_config: PlanetConfig, *, relative_to: None | MovingObject = None) -> Planet:
+        """Add a planet from its config. Returns (a reference to) the created planet.
 
+        If relative_to is None, the planet is created relative to the universe's star.
         Raises a ValueError if the planet's radius exceeds the max_nonstar_size.
         """
         if planet_config.radius * 2 > self.max_nonstar_size:
             raise ValueError
-        planet = Planet(self.__star, planet_config)
+        planet = Planet(relative_to or self.__star, planet_config)
         chunk = self._pobj_to_planet_chunk(planet)
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
