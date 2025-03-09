@@ -27,7 +27,7 @@ class Camera(Pos):
         self._surface: pygame.Surface = surface
         surface_size: tuple[int, int] = surface.get_size()
         self._surface_size: Vec2 = Vec2(*surface_size)
-        self._surface_rect: Rect = Rect((0,0), surface_size)
+        self._surface_rect: Rect = Rect((0, 0), surface_size)
 
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
@@ -35,9 +35,8 @@ class Camera(Pos):
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
         """Return whether a screenspace-rectangle intersects the camera's screen."""
-        own_rect = Rect((0, 0), self._surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
-        return own_rect.colliderect(rect.inflate(1, 1))
+        return self._surface_rect.colliderect(rect.inflate(1, 1))
 
     def _world_to_screen(self, pos: Pos) -> Vec2:
         """Transform a Pos to screenspace."""
@@ -51,9 +50,8 @@ class Camera(Pos):
     def draw_pixel(self, color: Color, pos: Pos) -> None:
         """Draw a worldspace-pixel at position `pos` on screen."""
         screenpoint = self._world_to_screen(pos)
-        if 0 <= screenpoint.x < 
-
-        self._surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
+        if self._surface_rect.collidepoint(screenpoint):
+            self._surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a worldspace-circle on screen.
