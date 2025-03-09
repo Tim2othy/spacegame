@@ -27,38 +27,6 @@ from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy
 from universe import Star, Universe
 
 type Options = dict[str, bool]
-NUM_PLANETS = 5
-
-
-def universe_from_options(options: Options) -> tuple[Universe, list[PlayerShip]]:
-    """Create a universe from `options`.
-
-    Returns a tuple (universe, player_ships)
-    """
-    num_enemies = 2 if options["small"] else 20
-    world_size = 20000 if options["small"] else 40000
-    world_size_vec = Vec2(world_size, world_size)
-
-    player_ships: list[PlayerShip] = [
-        PlayerShip(world_size_vec / 4, Vec2(0, 0), spaceship_input=ShipInput.arrows()),
-    ]
-    if options["splitscreen"]:
-        player_ships.append(
-            PlayerShip(world_size_vec / 5, Vec2(0, 0), color=PLAYER_2_COLOR, spaceship_input=ShipInput.wasd())
-        )
-    stars: list[Star] = [Star(world_size_vec / 2, 2000)]
-
-    enemy_ships: list[BulletEnemy] = []
-    for _ in range(num_enemies):
-        pos = Vec2(random.uniform(0, world_size_vec.x), random.uniform(0, world_size_vec.y))
-        enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], ENEMY_SPAWN_WEIGHTS)[0]
-        enemy_ships.append(enemy_type(pos, Vec2(0, 0), random.choice(player_ships)))
-
-    universe = Universe(world_size_vec, stars, player_ships, enemy_ships, 10000)
-    for _ in range(NUM_PLANETS):
-        universe.generate_planet(stars[0])
-
-    return universe, player_ships
 
 
 async def main() -> None:

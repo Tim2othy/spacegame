@@ -19,9 +19,6 @@ ENEMY_VISUAL_RANGE_SQUARED = 2000**2
 ENEMY_ACTION_TIMER = 6
 ENEMY_ACTION_WEIGHTS = [0.7, 0.3]
 
-
-PLAYER_COLOR = Color("darkslategray")
-PLAYER_2_COLOR = Color("darkred")
 THRUST_COLOR = Color("orange")
 
 

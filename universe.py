@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import Body, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile
-from ship import BulletEnemy, EnemyConfig, PlayerConfig, PlayerShip
+from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-from constants import FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
+from constants import ENEMY_SPAWN_WEIGHTS, FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
 PLANET_SIZE_MIN = 600
 # these are parameters for exponential distributions
@@ -69,6 +69,22 @@ class Planet(Disk):
 
 type PlanetChunk = tuple[int, int]
 type StarChunk = tuple[int, int]
+
+
+@dataclass
+class UniverseOptions:
+    """Options for creating pre-made universes.
+
+    Attributes:
+        small (bool): Whether the universe should be small
+        splitscreen (bool): Whether there should be one or two players
+        invincible (bool): Whether players should be invincible
+
+    """
+
+    small: bool
+    splitscreen: bool
+    invincible: bool
 
 
 class Universe:
@@ -254,6 +270,7 @@ class Universe:
 
             if isinstance(self.__star, Star) and self.__star.contains_center_of(projectile):
                 return False
+            # TODO: Projectiles aren't destroyed by the star, are they?
             for planet in self._nearby_planets(projectile):
                 if planet.contains_center_of(projectile):
                     self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
@@ -523,12 +540,9 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
-    def generate_planet(self, star: Star) -> None:
-        """Create an planet orbiting a star.
-
-        Args:
-            star (Star): The star to orbit
-
+    def generate_planet(self, disk: Disk | None = None) -> None:
+        """Create a planet orbiting a Disk, defaulting to the universe's star."""
+        """
         What the random variables do:
         - radius_planet - pretty obvious
         - r_a             - shortest distance to star during orbit
@@ -538,10 +552,15 @@ class Universe:
         - planet_angle  - does it go clockwise or anticlockwise
 
         """
+        # TODO: This method will crash if the universe doesn't have a star.
+
+        if disk is None:
+            disk = self.__star
+
         # random variables
-        planet_radius_lambda = 1 / (PLANET_RADIUS_PARAMETER * star.radius)
+        planet_radius_lambda = 1 / (PLANET_RADIUS_PARAMETER * disk.radius)
         radius_planet = min(PLANET_SIZE_MIN + random.expovariate(planet_radius_lambda), self.max_nonstar_size / 2)
-        r_p = star.radius + radius_planet + random.expovariate(PLANET_ORBIT_PARAMETER)
+        r_p = disk.radius + radius_planet + random.expovariate(PLANET_ORBIT_PARAMETER)
         r_a = r_p + random.expovariate(PLANET_ELLIPSIS_PARAMETER)
         true_anomaly = random.uniform(0, 2 * math.pi)
         orbit_direction = random.uniform(0, 2 * math.pi)
@@ -552,12 +571,46 @@ class Universe:
         eccentricity = (r_a - r_p) / (r_a + r_p)
         r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
         radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = star._pos + radial_vector * r_initial
+        pos_planet = radial_vector * r_initial
 
         # velocity_planet
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
         tangential_vector = radial_vector.rotate(planet_angle)
         vel_planet = tangential_vector * orbital_velocity
 
-        self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
+        self.add_planet(Planet(pos_planet, vel_planet, radius_planet), relative_to=disk)
+
+    @staticmethod
+    def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
+        """Create a universe from `options`."""
+
+        star_size = 100 if options.small else 2000
+        num_enemies = 2 if options.small else 20
+        num_planets = 5 if options.small else 10
+
+        universe = Universe(2000, 1000)
+        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
+
+        if options.splitscreen:
+            second_config = PlayerConfig(
+                relative_pos=Vec2(100, 0), color=Color("darkred"), spaceship_input=ShipInput.wasd()
+            )
+            second_player = universe.add_player(second_config, relative_to=player_ships[0])
+            player_ships.append(second_player)
+
+        for _ in range(num_enemies):
+            random_radius = random.uniform(star_size, star_size * 2)
+            random_angle = random.uniform(0, math.tau)
+            vec = Vec2(0, 0)
+            vec.from_polar((random_radius, random_angle))
+
+            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], ENEMY_SPAWN_WEIGHTS)[0]
+            targeting = random.choice(player_ships)
+
+            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
+
+        for _ in range(num_planets):
+            universe.generate_planet()
+
+        return universe, player_ships
