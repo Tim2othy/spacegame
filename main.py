@@ -106,7 +106,7 @@ async def main() -> None:
                 universe.handle_input(pygame.key.get_pressed())
                 universe.step(dt)
 
-                # Draw each camera's view and then blit it into SCREEN_SURFACE
+                # Draw each camera's view
                 for player, camera in players_and_cameras:
                     camera.start_drawing_new_frame()
                     if player.health <= 0 and not options["invincible"]:
