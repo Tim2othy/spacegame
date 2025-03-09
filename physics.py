@@ -100,9 +100,9 @@ class Particle(PosVel):
         self._max_lifetime: float = lifetime
         self._lifetime: float = lifetime
 
-    def step(self, dt: float) -> bool:
+    def step_and_survives(self, dt: float) -> bool:
         """Apply velocity to self and reduce lifetime. Return whether the lifetime has elapsed."""
-        super().step(dt)
+        self.step(dt)
         self._lifetime -= dt
         return self._lifetime > 0
 

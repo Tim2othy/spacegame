@@ -322,7 +322,7 @@ class Universe:
                 new_planet_chunks.setdefault(new_chunk, []).append(planet)
         self._planet_chunks = new_planet_chunks
 
-        self._particles = [p for p in self._particles if p.step(dt)]
+        self._particles = [p for p in self._particles if p.step_and_survives(dt)]
 
         # Physics
         self.apply_gravity(dt)
