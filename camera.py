@@ -11,39 +11,39 @@ import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
-from physics import PosObj
+from physics import PosObj, PosVelObj
 from profiler import global_profiler
 
 
 class Camera(PosObj):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, surface: pygame.Surface, step: Callable[..., PosObj]) -> None:
-        """Construct a new camera."""
+    def __init__(self, surface: pygame.Surface, tracking: PosVelObj, buff: float) -> None:
+        """Construct a new camera, tracking a fixed object."""
         super().__init__()
-        self.zoom: float = 1
-        self.surface: pygame.Surface = surface
-        self._step: Callable[..., PosObj] = step
+        self._buff: float
+        self._tracking = tracking
+        self._surface: pygame.Surface = surface
 
-    def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25) -> None:
+    def step(self, dt: float) -> None:
+        """Update the camera's position and zoom to track the object it's tracking."""
+
+    def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_speed: float = 0.25) -> None:
         """Smoothly transition the camera to a new location.
 
-        Args:
-            new_pos (Vec2): New camera worldspace topleft corner
-            new_zoom (float): New zoom-factor
-            dt (float): Time-factor (for the smooth operation)
-            transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25
+        The amount of transition is proportional to min(1, dt / transition_speed), e.g.
+        - If dt = transition_speed/2, the camera transitions halfway to the new zoom and position
+        - If dt = transition_speed, the camera instantly assumes the new zoom and position
 
         """
         dist = self.pos.distance_to(new_pos)
-        self.pos.move_towards_ip(new_pos, dist * dt / transition_time)
+        self.pos.move_towards_ip(new_pos, dist * dt / transition_speed)
 
         # This makes it easier to write, please don't judge me
         zoomy = Vec2(self.zoom, 0)
         new_zoomy = Vec2(new_zoom, 0)
         dist = abs(self.zoom - new_zoom)
-        self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_time).x
+        self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_speed).x
 
     def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
@@ -56,8 +56,8 @@ class Camera(PosObj):
 
         """
         ratio = rect.width / rect.height
-        surface_width = self.surface.get_width()
-        surface_height = self.surface.get_height()
+        surface_width = self._surface.get_width()
+        surface_height = self._surface.get_height()
         desired_ratio = surface_width / surface_height
 
         if ratio > desired_ratio:
@@ -98,7 +98,7 @@ class Camera(PosObj):
             bool: True iff screenspace-rectangle intersects the screen
 
         """
-        own_rect = Rect((0, 0), self.surface.get_size())
+        own_rect = Rect((0, 0), self._surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
@@ -109,14 +109,14 @@ class Camera(PosObj):
     @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
         """Fill the camera's surface black to prepare for drawing a new frame."""
-        self.surface.fill(Color("black"))
+        self._surface.fill(Color("black"))
 
     def draw_pixel(self, color: Color, point: Vec2) -> None:
         """Draw a  worldspace-pixel on screen."""
         screenpoint = self._world_to_screen(point)
 
         # TODO: Should we check if screenpoint is on screen?
-        self.surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
+        self._surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
         """Draw a worldspace-circle on screen.
@@ -133,21 +133,15 @@ class Camera(PosObj):
         # soft check for circle-screen-intersection:
         enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
         if self._rectangle_intersects_screen(enclosing_rect):
-            pygame.draw.circle(self.surface, color, (x, y), r)
+            pygame.draw.circle(self._surface, color, (x, y), r)
 
-    def draw_polygon(self, color: Color, points: list[Vec2]) -> None:
-        """Draw a worldspace-polygon on screen.
-
-        Args:
-            color (Color): Border- and fill-color
-            points (list[Vec2]): Worldspace-points
-
-        """
+    def draw_polygon(self, color: Color, points: list[PosObj]) -> None:
+        """Draw a polygon on screen."""
         cpoints = [self._world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
         enclosing_rect = _get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
-            pygame.draw.polygon(self.surface, color, cpoints)
+            pygame.draw.polygon(self._surface, color, cpoints)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw a worldspace-line with a given thickness.
@@ -183,11 +177,11 @@ class Camera(PosObj):
 
         """
         tstart, tend = self._world_to_screen(start), self._world_to_screen(end)
-        screen_rect = Rect((0, 0), self.surface.get_size())
+        screen_rect = Rect((0, 0), self._surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x1, y1), (x2, y2)) = clipped_line
-            pygame.draw.line(self.surface, color, (x1, y1), (x2, y2))
+            pygame.draw.line(self._surface, color, (x1, y1), (x2, y2))
 
     def draw_vertical_hairline(self, color: Color, x: float, starty: float, endy: float) -> None:
         """Draw a vertical worldspace-line of single-pixel-thickness.
@@ -200,11 +194,11 @@ class Camera(PosObj):
 
         """
         tstart, tend = (self._world_to_screen(Vec2(x, starty)), self._world_to_screen(Vec2(x, endy)))
-        screen_rect = Rect((0, 0), self.surface.get_size())
+        screen_rect = Rect((0, 0), self._surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x, y1), (_, y2)) = clipped_line
-            pygame.draw.line(self.surface, color, (x, y1), (x, y2))
+            pygame.draw.line(self._surface, color, (x, y1), (x, y2))
 
     def draw_horizontal_hairline(self, color: Color, startx: float, endx: float, y: float) -> None:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
@@ -217,11 +211,11 @@ class Camera(PosObj):
 
         """
         tstart, tend = (self._world_to_screen(Vec2(startx, y)), self._world_to_screen(Vec2(endx, y)))
-        screen_rect = Rect((0, 0), self.surface.get_size())
+        screen_rect = Rect((0, 0), self._surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
             ((x1, y), (x2, _)) = clipped_line
-            pygame.draw.line(self.surface, color, (x1, y), (x2, y))
+            pygame.draw.line(self._surface, color, (x1, y), (x2, y))
 
     def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text on screen at screenspace-position, or centered on screen.
@@ -236,9 +230,9 @@ class Camera(PosObj):
         """
         rendered = font.render(text, antialias=True, color=color)
         if pos is None:
-            width, height = self.surface.get_size()
+            width, height = self._surface.get_size()
             pos = Vec2((width - rendered.get_width()) / 2, (height - rendered.get_height()) / 2)
-        self.surface.blit(rendered, pos)
+        self._surface.blit(rendered, pos)
 
     def draw_image(self, image: pygame.Surface, pos: Vec2) -> None:
         """Draw an image on screen at screenspace-position.
@@ -251,7 +245,7 @@ class Camera(PosObj):
         zoomed_image = pygame.transform.scale(
             image, (int(image.get_width() * self.zoom), int(image.get_height() * self.zoom))
         )
-        self.surface.blit(zoomed_image, self._world_to_screen(pos))
+        self._surface.blit(zoomed_image, self._world_to_screen(pos))
 
 
 def _get_enclosing_rect(points: list[Vec2]) -> Rect:

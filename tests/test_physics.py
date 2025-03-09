@@ -59,7 +59,7 @@ def test_disk_drawing() -> None:
     camera = Camera(camera_center, 1, Surface((width, height)))
     disk = Disk(ORIGIN, Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
     disk.draw(camera)
-    camera.surface.lock()
+    camera._surface.lock()
 
     good = 0
     bad = 0
@@ -67,7 +67,7 @@ def test_disk_drawing() -> None:
 
     for y in range(height):
         for x in range(width):
-            pixel = camera.surface.get_at((x, y))
+            pixel = camera._surface.get_at((x, y))
             # Ignore anti-aliasing
             if pixel in (color, black):
                 pixel_circle = pixel == color
@@ -93,7 +93,7 @@ def test_disk_drawing() -> None:
         "The area we drew should be close in size to the circle's idealised area"
     )
 
-    camera.surface.unlock()
+    camera._surface.unlock()
 
 
 def test_simple_disk_bounce() -> None:
