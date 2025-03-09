@@ -589,7 +589,6 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-
         star_size = 100 if options.small else 500
         num_enemies = 2 if options.small else 20
         num_planets = 5 if options.small else 10

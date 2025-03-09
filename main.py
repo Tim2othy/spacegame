@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 import asyncio
-from dataclasses import fields
 import platform
 import sys
 from collections import deque
+from dataclasses import fields
 from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color, Surface
 from pygame.font import Font
-from universe import Universe, UniverseOptions
 
 from camera import Camera
 from constants import (
@@ -20,6 +19,7 @@ from constants import (
     SCREEN_SIZE,
 )
 from profiler import global_profiler
+from universe import Universe, UniverseOptions
 
 if TYPE_CHECKING:
     from ship import PlayerShip
