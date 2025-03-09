@@ -29,66 +29,6 @@ class Camera(Pos):
         """Update the camera's position and zoom to track the object it's tracking."""
         self._shift(self._tracking.pos_relative_to(self))
 
-    def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_speed: float = 0.25) -> None:
-        """Smoothly transition the camera to a new location.
-
-        The amount of transition is proportional to min(1, dt / transition_speed), e.g.
-        - If dt = transition_speed/2, the camera transitions halfway to the new zoom and position
-        - If dt = transition_speed, the camera instantly assumes the new zoom and position
-
-        """
-        dist = self.pos.distance_to(new_pos)
-        self.pos.move_towards_ip(new_pos, dist * dt / transition_speed)
-
-        # This makes it easier to write, please don't judge me
-        zoomy = Vec2(self.zoom, 0)
-        new_zoomy = Vec2(new_zoom, 0)
-        dist = abs(self.zoom - new_zoom)
-        self.zoom = zoomy.move_towards(new_zoomy, dist * dt / transition_speed).x
-
-    def smoothly_focus_rect(self, rect: Rect, dt: float, transition_time: float = 0.25) -> None:
-        """Smoothly move the camera so that a worldspace-rectangle is visible entirely, but not more.
-
-        Args:
-            rect (Rect): Worldspace-rectangle to fit to
-            dt (float): Time-factor (for the smooth operation)
-            transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25
-
-        """
-        ratio = rect.width / rect.height
-        surface_width = self._surface.get_width()
-        surface_height = self._surface.get_height()
-        desired_ratio = surface_width / surface_height
-
-        if ratio > desired_ratio:
-            # Width dominates, height is too small
-            new_zoom = surface_width / rect.width
-            new_height = rect.width / desired_ratio
-            rect.inflate_ip(0, new_height - rect.height)
-        else:
-            # Height dominates, width is too small
-            new_zoom = surface_height / rect.height
-            new_width = rect.height * desired_ratio
-            rect.inflate_ip(new_width - rect.width, 0)
-
-        self.smoothly_transition_to(Vec2(rect.topleft), new_zoom, dt, transition_time)
-
-    def smoothly_focus_points(self, points: list[Vec2], buff: float, dt: float, transition_time: float = 0.25) -> None:
-        """Smoothly focus camera so that a list of worldspace-points is visible, with an additional buffer.
-
-        Args:
-            points (list[Vec2]): Worldspace-points to focus on. Hopefully nonempty.
-            buff (float): Worldspace-buffer around the points
-            dt (float): Time-factor (for the smooth operation)
-            transition_time (float, optional): After this amount of dt has passed,
-                the camera will have fully transitioned. Defaults to 0.25
-
-        """
-        enclosing_rect = _get_enclosing_rect(points)
-        buffed_rect = enclosing_rect.inflate(2 * buff, 2 * buff)
-        self.smoothly_focus_rect(buffed_rect, dt, transition_time)
-
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
         """Determine whether a screenspace-rectangle intersects the camera's screen.
 
@@ -112,11 +52,11 @@ class Camera(Pos):
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self._surface.fill(Color("black"))
 
-    def draw_pixel(self, color: Color, point: Vec2) -> None:
-        """Draw a  worldspace-pixel on screen."""
-        screenpoint = self._world_to_screen(point)
+    def draw_pixel(self, color: Color, pos: Pos) -> None:
+        """Draw a worldspace-pixel at position `pos` on screen."""
+        screenpoint = self._world_to_screen(pos)
+        if 0 <= screenpoint.x < 
 
-        # TODO: Should we check if screenpoint is on screen?
         self._surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
 
     def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
