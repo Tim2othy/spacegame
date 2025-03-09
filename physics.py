@@ -28,12 +28,39 @@ BOUNCE_DAMAGE_SCALAR = 1e-4
 """Bounce-damage is scaled by this amount."""
 
 
-class MovingObject:
+class StaticObject:
+    """An object with a dynamic position, but no velocity."""
+
+    def __init__(self, relative_to: StaticObject, relative_pos: Vec2) -> None:
+        """Create a new StaticObject relative to another StaticObject."""
+        self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
+
+    def _shift(self, delta: Vec2) -> None:
+        """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing.
+
+        This is currently only used for shifting disks apart when they intersect.
+        """
+        self.__pos += delta
+
+    def pos_relative_to(self, other: StaticObject) -> Vec2:
+        """Return `self`'s position relative to `other`."""
+        return self.__pos - other.__pos  # noqa: SLF001
+
+    def distance_squared_to(self, other: StaticObject) -> float:
+        """Return the squared distance between `self` and `other`."""
+        return self.pos_relative_to(other).length_squared()
+
+    def distance_to(self, other: StaticObject) -> float:
+        """Return the distance between `self` and `other`."""
+        return self.pos_relative_to(other).length()
+
+
+class MovingObject(StaticObject):
     """An object with dynamic position and dynamic velocity."""
 
     def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new MovingObject relative to another MovingObject."""
-        self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
+        super().__init__(relative_to, relative_pos)
         self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
     @staticmethod
@@ -47,40 +74,21 @@ class MovingObject:
         """
         # This is messed up. Think thrice before copying this code.
         origin = object.__new__(MovingObject)
-        origin.__pos = Vec2(0, 0)  # noqa: SLF001
+        origin._StaticObject__pos = Vec2(0, 0)  # noqa: SLF001
         origin.__vel = Vec2(0, 0)  # noqa: SLF001
         return origin
 
     def step(self, dt: float) -> None:
         """Apply velocity to `self`."""
-        self.__pos += dt * self.__vel
-
-    def _shift(self, delta: Vec2) -> None:
-        """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing.
-
-        This is currently only used for shifting disks apart when they intersect.
-        """
-        self.__pos += delta
+        self._StaticObject__pos += dt * self.__vel
 
     def _add_vel(self, vel: Vec2) -> None:
         """Add `vel` to  `self`'s velocity. Be careful with relativity."""
         self.__vel += vel
 
-    def pos_relative_to(self, other: MovingObject) -> Vec2:
-        """Return `self`'s position relative to `other`."""
-        return self.__pos - other.__pos  # noqa: SLF001
-
     def vel_relative_to(self, other: MovingObject) -> Vec2:
         """Return `self`'s velocity relative to `other`."""
         return self.__vel - other.__vel  # noqa: SLF001
-
-    def distance_squared_to(self, other: MovingObject) -> float:
-        """Return the squared distance between `self` and `other`."""
-        return self.pos_relative_to(other).length_squared()
-
-    def distance_to(self, other: MovingObject) -> float:
-        """Return the distance between `self` and `other`."""
-        return self.pos_relative_to(other).length()
 
 
 class Particle(MovingObject):
