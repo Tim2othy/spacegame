@@ -219,4 +219,5 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        camera.draw_circle(self.color, self._pos, 3)
+        # TODO: This is no longer necessary if bullets finally become subclasses of Disk
+        camera.draw_circle(self.color, self, 3)
