@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, MovingObject, Particle, PhysicalObject
+from physics import Disk, PosVelObj, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
 from ship import BulletEnemy, EnemyShipConfig, PlayerShip, PlayerShipConfig
@@ -36,7 +36,7 @@ PLANET_ELLIPSIS_PARAMETER = 0.001
 class Star(Disk):
     """A stationary disk."""
 
-    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, radius: float) -> None:
+    def __init__(self, relative_to: PosVelObj, relative_pos: Vec2, radius: float) -> None:
         """Create a new star."""
         star_color = Color(random.randint(200, 255), random.randint(150, 255), random.randint(0, 150))
         super().__init__(relative_to, relative_pos, Vec2(0, 0), radius, star_color)
@@ -61,7 +61,7 @@ class PlanetConfig:
 class Planet(Disk):
     """A disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(self, relative_to: MovingObject, config: PlanetConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: PlanetConfig) -> None:
         """Create a new Planet."""
         color = Color(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.radius, color)
@@ -97,11 +97,7 @@ class Universe:
 
         """
         self.max_nonstar_size = max_nonstar_size
-        # Messed-up object-instantiation to bootstrap a reference MovingObject.
-        # Think thrice before copying this code.
-        self.__star: MovingObject | Star = (
-            MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
-        )
+        self.__star: PosVelObj | Star = PosVelObj._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError
@@ -119,7 +115,7 @@ class Universe:
 
         self._particles: list[Particle] = []
 
-    def add_player(self, ship_config: PlayerShipConfig, *, relative_to: None | MovingObject = None) -> PlayerShip:
+    def add_player(self, ship_config: PlayerShipConfig, *, relative_to: None | PosVelObj = None) -> PlayerShip:
         """Add a player-ship from its config and return (a reference to) the created ship.
 
         If relative_to is None, the planet is created relative to the universe's star.
@@ -129,7 +125,7 @@ class Universe:
         return ship
 
     def add_enemy(
-        self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy], *, relative_to: None | MovingObject = None
+        self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy], *, relative_to: None | PosVelObj = None
     ) -> BulletEnemy:
         """Add an enemy-ship from its config and return (a reference to) the created ship.
 
@@ -139,7 +135,7 @@ class Universe:
         self._enemy_ships.append(ship)
         return ship
 
-    def add_planet(self, planet_config: PlanetConfig, *, relative_to: None | MovingObject = None) -> Planet:
+    def add_planet(self, planet_config: PlanetConfig, *, relative_to: None | PosVelObj = None) -> Planet:
         """Add a planet from its config. Returns (a reference to) the created planet.
 
         If relative_to is None, the planet is created relative to the universe's star.

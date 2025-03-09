@@ -24,7 +24,7 @@ from constants import (
     generate_complementary_color,
 )
 from enemy_ai import MarkovAI
-from physics import Disk, MovingObject
+from physics import Disk, PosVelObj
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class Ship(Disk):
 
     def __init__(
         self,
-        relative_to: MovingObject,
+        relative_to: PosVelObj,
         relative_pos: Vec2,
         relative_vel: Vec2,
         size: float = SHIP_SIZE,
@@ -73,7 +73,7 @@ class Ship(Disk):
         Raises a ValueError if `gun_cooldown` is not strictly positive.
 
         Args:
-            relative_to (MovingObject): Object to spawn relative to
+            relative_to (PosVelObject): Object to spawn relative to
             relative_pos (Vec2): Initial position
             relative_vel (Vec2): Initial velocity
             size (float): Radius of disk-body
@@ -370,7 +370,7 @@ class PlayerShipConfig:
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    def __init__(self, relative_to: MovingObject, config: PlayerShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: PlayerShipConfig) -> None:
         """Create a new player-spaceship."""
         super().__init__(
             relative_to,
@@ -426,7 +426,7 @@ class BulletEnemy(Ship):
         accelerate_to_player = auto()
         accelerate_randomly = auto()
 
-    def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: EnemyShipConfig) -> None:
         """Create a new enemy ship."""
         super().__init__(
             relative_to,
@@ -443,7 +443,7 @@ class BulletEnemy(Ship):
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.projectiles: list[Bullet] = []
-        self.seek_towards: MovingObject = MovingObject(self, Vec2(), Vec2())
+        self.seek_towards: PosVelObj = PosVelObj(self, Vec2(), Vec2())
 
     def step_ai(self, dt: float) -> None:
         self.action_timer -= dt
@@ -469,7 +469,7 @@ class BulletEnemy(Ship):
                     # to the distance to the player, we should eventually find a non-accelerating player.
                     random_x = random.gauss(sigma=distance_to_target)
                     random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = MovingObject(self.target, Vec2(random_x, random_y), Vec2())
+                    self.seek_towards = PosVelObj(self.target, Vec2(random_x, random_y), Vec2())
 
             self.action_timer = ENEMY_ACTION_TIMER
 
@@ -524,7 +524,7 @@ class MarkovEnemy(BulletEnemy):
     # Override class configuration for MarkovEnemy
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def __init__(self, relative_to: MovingObject, config: EnemyShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: EnemyShipConfig) -> None:
         """Create a new Markov-based enemy ship."""
         super().__init__(relative_to, config)
         self.ai = MarkovAI(self, config.target_ship)

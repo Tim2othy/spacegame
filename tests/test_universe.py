@@ -5,7 +5,7 @@ from math import isclose
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from physics import MovingObject
+from physics import PosVelObj
 from ship import PlayerShip, PlayerShipConfig
 from universe import Planet, PlanetConfig, Universe
 
@@ -19,8 +19,8 @@ def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
     universe = Universe(None, 2)
     planet_a = universe.add_planet(PlanetConfig(relative_pos=Vec2(-5, 0), relative_vel=Vec2(5, 0), radius=0.5))
     planet_b = universe.add_planet(PlanetConfig(relative_pos=Vec2(5, 0), relative_vel=Vec2(-5, 0), radius=1.0))
-    original_a_state = MovingObject(planet_a, Vec2(), Vec2())
-    original_b_state = MovingObject(planet_b, Vec2(), Vec2())
+    original_a_state = PosVelObj(planet_a, Vec2(), Vec2())
+    original_b_state = PosVelObj(planet_b, Vec2(), Vec2())
 
     for _ in range(150):
         universe.step(0.01)
@@ -52,11 +52,11 @@ def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float)
     direction.from_polar((radius, direction_angle))
 
     first_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(), relative_vel=direction, radius=radius))
-    first_planet_reference = MovingObject(first_planet, Vec2(), Vec2())
+    first_planet_reference = PosVelObj(first_planet, Vec2(), Vec2())
     other_planets = [
         universe.add_planet(PlanetConfig(relative_pos=2.1 * i * direction, radius=radius)) for i in range(1, 6)
     ]
-    last_planet_reference = MovingObject(other_planets[-1], Vec2(), Vec2())
+    last_planet_reference = PosVelObj(other_planets[-1], Vec2(), Vec2())
 
     # Run for 2 seconds
     for _ in range(200):
@@ -80,7 +80,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
 
     num_directions = 23
 
-    hit_planets: list[tuple[Planet, MovingObject]] = []
+    hit_planets: list[tuple[Planet, PosVelObj]] = []
 
     for i in range(num_directions):
         direction = Vec2()
@@ -99,7 +99,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
                 radius=radius,
             )
         )
-        hit_planet_reference = MovingObject(hit_planet, Vec2(), Vec2())
+        hit_planet_reference = PosVelObj(hit_planet, Vec2(), Vec2())
         hit_planets.append((hit_planet, hit_planet_reference))
 
     # Run the universe for 1 second

@@ -6,22 +6,22 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Disk, MovingObject, PhysicalObject
+from physics import Disk, PosVelObj, PhysicalObject
 
-ORIGIN = MovingObject._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
+ORIGIN = PosVelObj._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 @pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
-    obj = MovingObject(ORIGIN, relative_pos, relative_vel)
+    obj = PosVelObj(ORIGIN, relative_pos, relative_vel)
     assert obj.pos_relative_to(ORIGIN) == relative_pos
     assert obj.vel_relative_to(ORIGIN) == relative_vel
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 def test_step(relative_pos: Vec2) -> None:
-    obj = MovingObject(ORIGIN, relative_pos, Vec2(1, -1))
+    obj = PosVelObj(ORIGIN, relative_pos, Vec2(1, -1))
     obj.step(0.25)
     assert obj.pos_relative_to(ORIGIN) - relative_pos == Vec2(0.25, -0.25)
 

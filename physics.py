@@ -52,25 +52,25 @@ class PosObj:
         return self.pos_relative_to(other).length()
 
 
-class MovingObject(PosObj):
+class PosVelObj(PosObj):
     """An object with dynamic position and dynamic velocity."""
 
-    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2) -> None:
-        """Create a new MovingObject relative to another MovingObject."""
+    def __init__(self, relative_to: PosVelObj, relative_pos: Vec2, relative_vel: Vec2) -> None:
+        """Create a new PosVelObj relative to another PosVelObj."""
         super().__init__(relative_to, relative_pos)
         self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
 
     @staticmethod
-    def _new_origin_and_only_use_this_if_you_really_know_what_you_are_doing() -> MovingObject:
-        """Create a new MovingObject that can act as an origin to bootstrap other MovingObjects.
+    def _new_origin_and_only_use_this_if_you_really_know_what_you_are_doing() -> PosVelObj:
+        """Create a new PosVelObj that can act as an origin to bootstrap other PosVelObjs.
 
         You probably want to create a universe instead.
 
-        MovingObjects need to be created relative to other MovingObjects, so this MovingObject
+        PosVelObjs need to be created relative to other PosVelObjs, so this PosVelObj
         acts as an ur-object.
         """
         # This is messed up. Think thrice before copying this code.
-        origin = object.__new__(MovingObject)
+        origin = object.__new__(PosVelObj)
         origin._StaticObject__pos = Vec2(0, 0)  # noqa: SLF001
         origin.__vel = Vec2(0, 0)  # noqa: SLF001
         return origin
@@ -83,16 +83,16 @@ class MovingObject(PosObj):
         """Add `vel` to  `self`'s velocity. Be careful with relativity."""
         self.__vel += vel
 
-    def vel_relative_to(self, other: MovingObject) -> Vec2:
+    def vel_relative_to(self, other: PosVelObj) -> Vec2:
         """Return `self`'s velocity relative to `other`."""
         return self.__vel - other.__vel  # noqa: SLF001
 
 
-class Particle(MovingObject):
+class Particle(PosVelObj):
     """A single-pixel particle with a color, velocity, and limited lifetime."""
 
     def __init__(
-        self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, color: Color, lifetime: float
+        self, relative_to: PosVelObj, relative_pos: Vec2, relative_vel: Vec2, color: Color, lifetime: float
     ) -> None:
         """Create a new Particle."""
         super().__init__(relative_to, relative_pos, relative_vel)
@@ -112,10 +112,10 @@ class Particle(MovingObject):
         camera.draw_pixel(color, self._pos)
 
 
-class PhysicalObject(MovingObject):
+class PhysicalObject(PosVelObj):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
-    def __init__(self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
+    def __init__(self, relative_to: PosVelObj, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
         """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive."""
         super().__init__(relative_to, relative_pos, relative_vel)
         if not mass > 0:
@@ -148,7 +148,7 @@ class Disk(PhysicalObject):
     """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
 
     def __init__(
-        self, relative_to: MovingObject, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
+        self, relative_to: PosVelObj, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
     ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though."""
         mass = radius**3 * math.pi * 4 / 3
@@ -161,7 +161,7 @@ class Disk(PhysicalObject):
         """Draw `self` on `camera`."""
         camera.draw_circle(self.color, self._pos, self.radius)
 
-    def contains_center_of(self, mobj: MovingObject) -> bool:
+    def contains_center_of(self, mobj: PosVelObj) -> bool:
         """Determine whether the center of `mobj` is in `self`."""
         return self.distance_squared_to(mobj) < self.__radius_squared
 
