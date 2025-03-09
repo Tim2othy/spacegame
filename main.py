@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color, Surface
-from pygame.font import Font
 
 from camera import Camera
 from constants import (
@@ -20,6 +19,7 @@ from constants import (
 )
 from profiler import global_profiler
 from universe import Universe, UniverseOptions
+from pygame.font import Font
 
 if TYPE_CHECKING:
     from ship import PlayerShip
@@ -30,7 +30,7 @@ async def main() -> None:
     screen_surface = None
     pygame.display.init()
     pygame.font.init()
-    font = pygame.font.Font(None, 36)
+    font = Font(None, 36)
     options = UniverseOptions()
 
     pygame.display.set_caption("Space Game")
@@ -73,7 +73,7 @@ async def main() -> None:
             for player, camera in players_and_cameras:
                 camera.start_drawing_new_frame()
                 if player.health <= 0:
-                    gameover_font = pygame.font.Font(None, int(64 / player_count))
+                    gameover_font = Font(None, int(64 / player_count))
                     camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                     pygame.display.flip()
                     await asyncio.sleep(2)
