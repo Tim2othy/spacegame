@@ -289,11 +289,6 @@ class Universe:
         for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 
-    def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
-        """Focus the camera on `self.player_ships[player_ix]`."""
-        ship = self._player_ships[player_ix]
-        camera.smoothly_focus_points([ship._pos, ship._pos + 1.0 * ship._vel], 500, dt)
-
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains."""

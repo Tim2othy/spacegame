@@ -118,7 +118,7 @@ async def main() -> None:
                         await asyncio.sleep(2)
                         running = False
                         break
-                    universe.move_camera(player_camera, player_ix, dt)
+                    camera.step()
                     universe.draw_background(player_camera)
                     universe.draw_grid(player_camera)
                     universe.draw(player_camera)
