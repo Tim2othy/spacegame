@@ -36,9 +36,9 @@ class Camera(Pos):
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def _world_to_screen(self, obj: Pos) -> Vec2:
-        """Transform an object's position to screenspace."""
-        return obj.pos_relative_to(self) * self.zoom
+    def _world_to_screen(self, pos: Pos) -> Vec2:
+        """Transform a Pos to screenspace."""
+        return pos.pos_relative_to(self) * self.zoom
 
     @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
