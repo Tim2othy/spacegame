@@ -11,7 +11,7 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
 def test_homing(bullet_type: type[Missile | Rocket]) -> None:
-    ship = Ship(ORIGIN, Vec2(), Vec2(), 10)
+    ship = Ship(ORIGIN, Vec2(0, 0), Vec2(0, 0), 10)
     projectile = bullet_type(ship, Vec2(-500, -500), Vec2(100, 0), Color(0, 0, 0), ship)
 
     for _ in range(2000):

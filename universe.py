@@ -101,7 +101,7 @@ class Universe:
         if star_size is not None:
             if not star_size > 0:
                 raise ValueError
-            self.__star = Star(self.__star, Vec2(), star_size)
+            self.__star = Star(self.__star, Vec2(0, 0), star_size)
 
         self._player_ships: list[PlayerShip] = []
         self._enemy_ships: list[BulletEnemy] = []
@@ -239,7 +239,7 @@ class Universe:
         """
         for _ in range(n):
             random_lifetime = random.uniform(1.0, 2.0)
-            random_vel = Vec2()
+            random_vel = Vec2(0, 0)
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
             self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 

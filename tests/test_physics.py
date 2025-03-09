@@ -27,10 +27,10 @@ def test_step(relative_pos: Vec2) -> None:
 
 
 def test_gravitational_force() -> None:
-    obj = Body(ORIGIN, Vec2(), Vec2(), 1)
-    small_force = obj.gravitational_force(Body(obj, Vec2(1, 2), Vec2(), 1))
-    large_force = obj.gravitational_force(Body(obj, Vec2(-1, 2), Vec2(), 2))
-    double_distance_force = obj.gravitational_force(Body(obj, 2 * Vec2(1, 2), Vec2(), 1))
+    obj = Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    small_force = obj.gravitational_force(Body(obj, Vec2(1, 2), Vec2(0, 0), 1))
+    large_force = obj.gravitational_force(Body(obj, Vec2(-1, 2), Vec2(0, 0), 2))
+    double_distance_force = obj.gravitational_force(Body(obj, 2 * Vec2(1, 2), Vec2(0, 0), 1))
     assert small_force.x > 0
     assert small_force.y > 0
     assert large_force.x < 0
@@ -43,8 +43,8 @@ def test_gravitational_force() -> None:
 
 def test_threedimensional_disk_mass_scaling() -> None:
     radius = 1.23
-    disk = Disk(ORIGIN, Vec2(), Vec2(), radius)
-    double_size_disk = Disk(disk, Vec2(), Vec2(), radius * 2)
+    disk = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius)
+    double_size_disk = Disk(disk, Vec2(0, 0), Vec2(0, 0), radius * 2)
 
     assert isclose(2**3, double_size_disk.mass / disk.mass), (
         "Scaling the radius by `t` should scale the mass by a factor `t**3`"
@@ -97,7 +97,7 @@ def test_disk_drawing() -> None:
 
 
 def test_simple_disk_bounce() -> None:
-    disk_a = Disk(ORIGIN, Vec2(), Vec2(), 1)
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
     disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
 
     disk_a.bounce_off_of_disk(disk_b)
@@ -113,8 +113,8 @@ def test_simple_disk_bounce() -> None:
 
 
 def test_disk_bounce() -> None:
-    disk_a = Disk(ORIGIN, Vec2(), Vec2(), radius=1, color=Color(0, 0, 0))
-    disk_b = Disk(disk_a, Vec2(4, 0), Vec2(), radius=2, color=Color(0, 0, 0))
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
+    disk_b = Disk(disk_a, Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
 
     assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 

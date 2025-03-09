@@ -19,8 +19,8 @@ def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
     universe = Universe(None, 2)
     planet_a = universe.add_planet(PlanetConfig(relative_pos=Vec2(-5, 0), relative_vel=Vec2(5, 0), radius=0.5))
     planet_b = universe.add_planet(PlanetConfig(relative_pos=Vec2(5, 0), relative_vel=Vec2(-5, 0), radius=1.0))
-    original_a_state = PosVel(planet_a, Vec2(), Vec2())
-    original_b_state = PosVel(planet_b, Vec2(), Vec2())
+    original_a_state = PosVel(planet_a, Vec2(0, 0), Vec2(0, 0))
+    original_b_state = PosVel(planet_b, Vec2(0, 0), Vec2(0, 0))
 
     for _ in range(150):
         universe.step(0.01)
@@ -48,15 +48,15 @@ def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float)
     radius = 50
     universe = Universe(None, radius * 2)
 
-    direction = Vec2()
+    direction = Vec2(0, 0)
     direction.from_polar((radius, direction_angle))
 
-    first_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(), relative_vel=direction, radius=radius))
-    first_planet_reference = PosVel(first_planet, Vec2(), Vec2())
+    first_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), relative_vel=direction, radius=radius))
+    first_planet_reference = PosVel(first_planet, Vec2(0, 0), Vec2(0, 0))
     other_planets = [
         universe.add_planet(PlanetConfig(relative_pos=2.1 * i * direction, radius=radius)) for i in range(1, 6)
     ]
-    last_planet_reference = PosVel(other_planets[-1], Vec2(), Vec2())
+    last_planet_reference = PosVel(other_planets[-1], Vec2(0, 0), Vec2(0, 0))
 
     # Run for 2 seconds
     for _ in range(200):
@@ -83,7 +83,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
     hit_planets: list[tuple[Planet, PosVel]] = []
 
     for i in range(num_directions):
-        direction = Vec2()
+        direction = Vec2(0, 0)
         direction.from_polar((1, i * 360 / num_directions))
         direction_rotated = direction.rotate(90)
 
@@ -99,7 +99,7 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
                 radius=radius,
             )
         )
-        hit_planet_reference = PosVel(hit_planet, Vec2(), Vec2())
+        hit_planet_reference = PosVel(hit_planet, Vec2(0, 0), Vec2(0, 0))
         hit_planets.append((hit_planet, hit_planet_reference))
 
     # Run the universe for 1 second
@@ -129,7 +129,7 @@ def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
         random_relative_pos = Vec2(random.random() * 200, random.random() * 200)
         planet_a = universe.add_planet(PlanetConfig(relative_pos=random_relative_pos, radius=100))
 
-        delta = Vec2()
+        delta = Vec2(0, 0)
         delta.from_polar((199, random.random() * 360))
 
         # Now delta has distance 199 from planet_a, so if we put a planet of
@@ -148,11 +148,11 @@ def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_gravitational_well() -> None:
     universe = Universe(None, 5000 * 2)
-    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(), radius=5000))
+    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), radius=5000))
 
     num_disks = 23
     for i in range(num_disks):
-        pos = Vec2()
+        pos = Vec2(0, 0)
         pos.from_polar((7500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
             universe.add_player(PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet)

@@ -111,7 +111,7 @@ class Ship(Disk):
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
-        direction = Vec2()
+        direction = Vec2(0, 0)
         direction.from_polar((1, self.angle))
         return direction
 
@@ -443,7 +443,7 @@ class BulletEnemy(Ship):
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.projectiles: list[Bullet] = []
-        self.seek_towards: Pos = Pos(self, Vec2())
+        self.seek_towards: Pos = Pos(self, Vec2(0, 0))
 
     def step_ai(self, dt: float) -> None:
         self.action_timer -= dt
