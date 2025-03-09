@@ -23,9 +23,11 @@ class Camera(Pos):
         self._buff: float = buff
         self._tracking = tracking
         self._surface: pygame.Surface = surface
+        self._zoom = 2
 
-    def step(self, dt: float) -> None:
+    def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
+        self._shift(self._tracking.pos_relative_to(self))
 
     def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_speed: float = 0.25) -> None:
         """Smoothly transition the camera to a new location.
