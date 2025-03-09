@@ -113,7 +113,6 @@ async def main() -> None:
                     if player_ship.health <= 0 and not options["invincible"]:
                         gameover_font = pygame.font.Font(None, int(64 / player_count))
                         player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
-                        topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
                         pygame.display.flip()
                         await asyncio.sleep(2)
                         running = False
@@ -123,7 +122,6 @@ async def main() -> None:
                     universe.draw_grid(player_camera)
                     universe.draw(player_camera)
                     universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
-                    topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
 
                 pygame.display.flip()
                 await asyncio.sleep(0)
