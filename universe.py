@@ -589,11 +589,11 @@ class Universe:
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
 
-        star_size = 100 if options.small else 2000
+        star_size = 100 if options.small else 500
         num_enemies = 2 if options.small else 20
         num_planets = 5 if options.small else 10
 
-        universe = Universe(2000, 1000)
+        universe = Universe(star_size, 1000)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
 
         if options.splitscreen:
@@ -607,7 +607,7 @@ class Universe:
 
         for _ in range(num_enemies):
             random_radius = random.uniform(star_size, star_size * 2)
-            random_angle = random.uniform(0, math.tau)
+            random_angle = random.uniform(0, 360)
             vec = Vec2(0, 0)
             vec.from_polar((random_radius, random_angle))
 

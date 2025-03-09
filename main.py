@@ -47,7 +47,7 @@ async def main() -> None:
             topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
             size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
             subsurface = screen_surface.subsurface((topleft, size))
-            camera = Camera(subsurface, player, 1.0 / 4.0)
+            camera = Camera(subsurface, player, 1.0 / 2.0)
             players_and_cameras.append((player, camera))
 
         clock = pygame.time.Clock()
