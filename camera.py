@@ -19,7 +19,7 @@ class Camera(Pos):
 
     def __init__(self, surface: pygame.Surface, tracking: PosVel, buff: float) -> None:
         """Construct a new camera, tracking a fixed object."""
-        super().__init__()
+        super().__init__(tracking, Vec2(0, 0))
         self._buff: float = buff
         self._tracking = tracking
         self._surface: pygame.Surface = surface
