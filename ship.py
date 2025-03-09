@@ -55,51 +55,54 @@ NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
 
+@dataclass
+class ShipConfig:
+    """Configuration for a spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the player-spaceship
+        relative_vel (Vec2): Relative velocity of the player-spaceship
+        size (float): Size of the ship
+        color (Color): Color of the player-spaceship
+        gun_cooldown (float): Minimum time between shots
+        projectile_speed (float): Speed at which projectiles are fired
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    size: float = 10.0
+    color: Color = field(default_factory=lambda: Color("gray"))
+    gun_cooldown: float = BULLET_RATE_OF_FIRE
+    projectile_speed: float = BULLET_RELEASE_SPEED
+
+
 class Ship(Disk):
     """A basic spaceship."""
 
-    def __init__(
-        self,
-        relative_to: PosVel,
-        relative_pos: Vec2,
-        relative_vel: Vec2,
-        size: float = SHIP_SIZE,
-        color: Color = GRAY,
-        gun_cooldown: float = BULLET_RATE_OF_FIRE,
-        projectile_speed: float = BULLET_RELEASE_SPEED,
-    ) -> None:
+    def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship.
 
-        Raises a ValueError if `gun_cooldown` is not strictly positive.
-
-        Args:
-            relative_to (PosVel): Object to spawn relative to
-            relative_pos (Vec2): Initial position
-            relative_vel (Vec2): Initial velocity
-            size (float): Radius of disk-body
-            color (Color): Material and bullet color
-            gun_cooldown (float): Minimum time between shots
-            projectile_speed (float): Speed at which projectiles are fired
-
+        Raises a ValueError if `config.gun_cooldown` is not strictly positive.
         """
-        super().__init__(relative_to, relative_pos, relative_vel, size, color)
-        self.size: float = size
+        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, config.color)
+        self.size: float = config.size
 
         self.health: float = HEALTH
         self.damage_indicator_timer: float = 0
 
         self.projectiles: list[Bullet] = []
-        if not gun_cooldown > 0:
+        if not config.gun_cooldown > 0:
             raise ValueError
-        self._gun_cooldown: float = gun_cooldown
+        self._gun_cooldown: float = config.gun_cooldown
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
         self.releasing_flares: bool = False
-        self.projectile_speed: float = projectile_speed
+        self.projectile_speed: float = config.projectile_speed
 
-        self.projectile_color = generate_complementary_color(color)
+        self.projectile_color = generate_complementary_color(config.color)
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
