@@ -84,7 +84,7 @@ async def main() -> None:
                 topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
                 size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
                 subsurface = screen_surface.subsurface((topleft, size))
-                camera = Camera(player._pos, 1.0, subsurface)
+                camera = Camera(subsurface, player, 1.0 / 4.0)
                 cameras.append(camera)
 
             clock = pygame.time.Clock()
@@ -110,10 +110,7 @@ async def main() -> None:
                 for player_ix, player_ship in enumerate(player_ships):
                     player_camera = cameras[player_ix]
                     player_camera.start_drawing_new_frame()
-                    gameover = (
-                        not universe.cointains_center_of(player_ship) or player_ship.health <= 0
-                    ) and not options["invincible"]
-                    if gameover:
+                    if player_ship.health <= 0 and not options["invincible"]:
                         gameover_font = pygame.font.Font(None, int(64 / player_count))
                         player_camera.draw_text("GAME OVER", None, gameover_font, Color("red"))
                         topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
