@@ -496,7 +496,8 @@ class Universe:
         for obj in chain(*self._planet_chunks.values(), self._enemy_ships, self._player_ships):
             obj.draw(camera)
 
-        self.__star.draw(camera)
+        if isinstance(self.__star, Star):
+            self.__star.draw(camera)
 
     @global_profiler.profile_method
     def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
