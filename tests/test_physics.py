@@ -56,7 +56,7 @@ def test_disk_drawing() -> None:
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
 
-    camera_center = Pos(ORIGIN, Vec2(-3, 4))
+    camera_center = PosVel(ORIGIN, Vec2(-3, 4), Vec2(0, 0))
     camera = Camera(Surface((width, height)), camera_center, zoom=1.0)
     camera.step()
 
