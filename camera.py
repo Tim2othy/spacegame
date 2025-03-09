@@ -22,10 +22,9 @@ if TYPE_CHECKING:
 class Camera(Pos):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, surface: pygame.Surface, tracking: PosVel, buff: float) -> None:
+    def __init__(self, surface: pygame.Surface, tracking: PosVel) -> None:
         """Construct a new camera, tracking a fixed object."""
         super().__init__(tracking, Vec2(0, 0))
-        self._buff: float = buff
         self._tracking: PosVel = tracking
         self._zoom: float = 2.0
 
