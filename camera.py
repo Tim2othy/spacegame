@@ -85,15 +85,7 @@ class Camera(Pos):
             pygame.draw.polygon(self._surface, color, surfacespace_points)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
-        """Draw a worldspace-line with a given thickness.
-
-        Args:
-            color (Color): Border- and fill-color
-            start (Vec2): Line's start-worldspace-point
-            end (Vec2): Line's end-worldspace-point
-            thickness (float): Line's worldspace-thickness
-
-        """
+        """Draw a worldspace-line with a given thickness."""
         delta = end - start
         if delta == Vec2(0, 0):
             return
