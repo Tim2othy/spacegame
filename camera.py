@@ -107,8 +107,8 @@ class Camera(Pos):
         screenspace_end = self._world_to_surface(end)
         clipped_line = self._surface_rect.clipline(screenspace_start, screenspace_end)
         if clipped_line:
-            start, end = clipped_line
-            pygame.draw.line(self._surface, color, start, end, 1)
+            clipped_start, clipped_end = clipped_line
+            pygame.draw.line(self._surface, color, clipped_start, clipped_end, 1)
 
     def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text at a surfacespace-position, or centered on the surface if not provided."""
