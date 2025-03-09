@@ -5,7 +5,8 @@ surfacespace == Coordinates on the screen
 """
 
 from __future__ import annotations
-from typing import Iterable
+
+from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color, Rect
@@ -13,6 +14,9 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Pos, PosVel
 from profiler import global_profiler
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class Camera(Pos):
@@ -74,11 +78,11 @@ class Camera(Pos):
 
     def draw_polygon(self, color: Color, points: Iterable[Pos]) -> None:
         """Draw a filled worldspace-polygon."""
-        cpoints = [self._world_to_surface(p) for p in points]
+        surfacespace_points = list(map(self._world_to_surface, points))
         # Soft check for point-surface-intersection:
-        enclosing_rect = _get_enclosing_rect(cpoints)
+        enclosing_rect = _get_enclosing_rect(surfacespace_points)
         if self._rectangle_intersects_surface(enclosing_rect):
-            pygame.draw.polygon(self._surface, color, cpoints)
+            pygame.draw.polygon(self._surface, color, surfacespace_points)
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw a worldspace-line with a given thickness.
@@ -163,7 +167,7 @@ class Camera(Pos):
         self._surface.blit(rendered, pos)
 
 
-def _get_enclosing_rect(points: list[Vec2]) -> Rect:
+def _get_enclosing_rect(points: Iterable[Vec2]) -> Rect:
     """Get the smallest rectangle enclosing all points."""
     minx = miny = float("inf")
     maxx = maxy = float("-inf")
