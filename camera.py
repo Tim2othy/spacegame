@@ -94,21 +94,13 @@ class Camera(Pos):
             pygame.draw.line(self._surface, color, screenspace_start, screenspace_end, int(surfacespace_thickness))
 
     def draw_vertical_hairline(self, color: Color, x: float, starty: float, endy: float) -> None:
-        """Draw a vertical worldspace-line of single-pixel-thickness.
-
-        Args:
-            color (Color): Line's Color
-            x (float): Line's horizontal position
-            starty (float): Line's starting point
-            endy (float): Line's ending point
-
-        """
-        tstart, tend = (self._world_to_surface(Vec2(x, starty)), self._world_to_surface(Vec2(x, endy)))
-        surface_rect = Rect((0, 0), self._surface.get_size())
-        clipped_line = surface_rect.clipline(tstart, tend)
+        """Draw a vertical worldspace-line of single-pixel-thickness."""
+        screenspace_start = self._world_to_surface(Vec2(x, starty))
+        screenspace_end = self._world_to_surface(Vec2(x, endy))
+        clipped_line = self._surface_rect.clipline(screenspace_start, screenspace_end)
         if clipped_line:
-            ((x, y1), (_, y2)) = clipped_line
-            pygame.draw.line(self._surface, color, (x, y1), (x, y2))
+            start, end = clipped_line
+            pygame.draw.line(self._surface, color, start, end, 1)
 
     def draw_horizontal_hairline(self, color: Color, startx: float, endx: float, y: float) -> None:
         """Draw a horizontal worldspace-line of single-pixel-thickness.
