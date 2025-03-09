@@ -206,7 +206,7 @@ class Universe:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
             if isinstance(self.__star, Star) and ship.intersects_disk(self.__star):
-                ship.suffer_damage(float("inf"))  # 💀
+                ship.suffer_damage(1e100)  # 💀
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
@@ -598,6 +598,10 @@ class Universe:
             )
             second_player = universe.add_player(second_config, relative_to=player_ships[0])
             player_ships.append(second_player)
+
+        if options.invincible:
+            for player in player_ships:
+                player.health = float("inf")
 
         for _ in range(num_enemies):
             random_radius = random.uniform(star_size, star_size * 2)
