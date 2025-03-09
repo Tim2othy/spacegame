@@ -124,15 +124,7 @@ class MarkovAI:
         self.current_state = random.choices(states, probabilities)[0]
 
     def _execute_search_behavior(self) -> Vec2:
-        """Execute searching behavior.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
+        """Return force required for the search-behavior."""
         delta_target_ship = self.target.pos_relative_to(self.ship)
         relative_velocity = self.ship.vel_relative_to(self.target)
 
@@ -144,27 +136,11 @@ class MarkovAI:
         return desired_relative_vel - relative_velocity
 
     def _execute_attack_behavior(self) -> Vec2:
-        """Execute attack behavior.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
+        """Return force required for the attack-behavior."""
         return self.target.pos_relative_to(self.ship)
 
     def _execute_aim_behavior(self) -> Vec2:
-        """Execute behavior with predictive aiming to hit moving targets.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction/aim direction
-
-        """
+        """Return force required for the aim-behavior."""
         # Relative position and velocity
         relative_pos = self.target.pos_relative_to(self.ship)
         relative_vel = self.target.vel_relative_to(self.ship)
@@ -225,33 +201,18 @@ class MarkovAI:
         return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
 
     def _execute_retreat_behavior(self) -> Vec2:
-        """Execute retreat behavior - move away from player.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
+        """Return force required for the retreat-behavior."""
         delta = self.ship.pos_relative_to(self.target)
         if delta.length_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
             return Vec2(0, 0)
         return delta
 
     def update(self, dt: float) -> None:
-        """Update AI state and execute appropriate behavior.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Update AI state and execute appropriate behavior."""
         self.action_timer -= dt
 
         if self.action_timer <= 0:
             self._transition_state()
-            # health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
-            # print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
