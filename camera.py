@@ -36,7 +36,7 @@ class Camera(Pos):
 
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
-        self._shift(self._tracking.pos_relative_to(self))
+        self._shift(self._tracking.pos_relative_to(self) - self._surface_size / self._zoom)
 
     def _rectangle_intersects_surface(self, rect: Rect) -> bool:
         """Return whether a surfacespace-rectangle intersects the camera's surface."""
