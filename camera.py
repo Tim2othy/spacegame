@@ -5,35 +5,25 @@ screenspace == Coordinates on the screen
 """
 
 from __future__ import annotations
+from typing import Callable
 
 import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
+from physics import StaticObject
 from profiler import global_profiler
 
 
-class Camera:
+class Camera(StaticObject):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, center: Vec2, zoom: float, surface: pygame.Surface) -> None:
-        """Construct a new camera.
-
-        Raises ValueError if zoom is not strictly positive.
-
-        Args:
-            center (Vec2): Worldspace-coordinate at the center of the screen
-            zoom (float): Higher = Fewer objects fit on screen,
-                zoom==1 corresponds to 1 pixel per unit
-            surface (pygame.Surface): Surface to draw on
-
-        """
-        if not zoom > 0:
-            raise ValueError
-        self.zoom: float = zoom
+    def __init__(self, surface: pygame.Surface, step: Callable[..., StaticObject]) -> None:
+        """Construct a new camera."""
+        super().__init__()
+        self.zoom: float = 1
         self.surface: pygame.Surface = surface
-        # Convert `center` to topleft corner
-        self.pos: Vec2 = Vec2(center) - Vec2(surface.get_size()) / (2 * zoom)
+        self._step: Callable[..., StaticObject] = step
 
     def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly transition the camera to a new location.
@@ -112,17 +102,9 @@ class Camera:
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def world_to_screen(self, vec: Vec2) -> Vec2:
-        """Transform a worldspace-vector to screenspace.
-
-        Args:
-            vec (Vec2): Worldspace-vector
-
-        Returns:
-            Vec2: Screenspace-vector
-
-        """
-        return (vec - self.pos) * self.zoom
+    def _world_to_screen(self, obj: StaticObject) -> Vec2:
+        """Transform an object's position to screenspace."""
+        return obj.pos_relative_to(self) * self.zoom
 
     @global_profiler.profile_method
     def start_drawing_new_frame(self) -> None:
@@ -131,7 +113,7 @@ class Camera:
 
     def draw_pixel(self, color: Color, point: Vec2) -> None:
         """Draw a  worldspace-pixel on screen."""
-        screenpoint = self.world_to_screen(point)
+        screenpoint = self._world_to_screen(point)
 
         # TODO: Should we check if screenpoint is on screen?
         self.surface.set_at((int(screenpoint.x), int(screenpoint.y)), color)
@@ -145,7 +127,7 @@ class Camera:
             radius (float): Worldspace-radius of the circle
 
         """
-        ccenter, cradius = self.world_to_screen(center), radius * self.zoom
+        ccenter, cradius = self._world_to_screen(center), radius * self.zoom
         x, y, r = ccenter.x, ccenter.y, cradius
 
         # soft check for circle-screen-intersection:
@@ -161,7 +143,7 @@ class Camera:
             points (list[Vec2]): Worldspace-points
 
         """
-        cpoints = [self.world_to_screen(p) for p in points]
+        cpoints = [self._world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
         enclosing_rect = _get_enclosing_rect(cpoints)
         if self._rectangle_intersects_screen(enclosing_rect):
@@ -200,7 +182,7 @@ class Camera:
             end (Vec2): Line's end-worldspace-point
 
         """
-        tstart, tend = self.world_to_screen(start), self.world_to_screen(end)
+        tstart, tend = self._world_to_screen(start), self._world_to_screen(end)
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
@@ -217,7 +199,7 @@ class Camera:
             endy (float): Line's ending point
 
         """
-        tstart, tend = (self.world_to_screen(Vec2(x, starty)), self.world_to_screen(Vec2(x, endy)))
+        tstart, tend = (self._world_to_screen(Vec2(x, starty)), self._world_to_screen(Vec2(x, endy)))
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
@@ -234,7 +216,7 @@ class Camera:
             y (float): Line's vertical position
 
         """
-        tstart, tend = (self.world_to_screen(Vec2(startx, y)), self.world_to_screen(Vec2(endx, y)))
+        tstart, tend = (self._world_to_screen(Vec2(startx, y)), self._world_to_screen(Vec2(endx, y)))
         screen_rect = Rect((0, 0), self.surface.get_size())
         clipped_line = screen_rect.clipline(tstart, tend)
         if clipped_line:
@@ -269,7 +251,7 @@ class Camera:
         zoomed_image = pygame.transform.scale(
             image, (int(image.get_width() * self.zoom), int(image.get_height() * self.zoom))
         )
-        self.surface.blit(zoomed_image, self.world_to_screen(pos))
+        self.surface.blit(zoomed_image, self._world_to_screen(pos))
 
 
 def _get_enclosing_rect(points: list[Vec2]) -> Rect:
