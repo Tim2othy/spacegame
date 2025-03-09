@@ -30,8 +30,6 @@ from projectiles import Bullet, Flare, Missile, Rocket
 if TYPE_CHECKING:
     from camera import Camera
 
-SHIP_SIZE = 10.0
-
 # Rate of fire
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
@@ -367,14 +365,14 @@ class PlayerShip(Ship):
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
+        # TODO: Are nested dataclasses possible so that we don't have to copy everything over again?
         super().__init__(
             relative_to,
-            config.relative_pos,
-            config.relative_vel,
-            SHIP_SIZE,
-            config.color,
-            BULLET_RATE_OF_FIRE,
-            BULLET_RELEASE_SPEED,
+            ShipConfig(
+                relative_pos=config.relative_pos,
+                relative_vel=config.relative_vel,
+                color=config.color,
+            ),
         )
         self.spaceship_input = config.ship_input
 
@@ -413,7 +411,6 @@ class BulletEnemy(Ship):
     SHIP_COLOR = BULLET_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-    SHIP_SIZE = SHIP_SIZE
 
     class Action(Enum):
         """Actions the BulletEnemy might take."""
@@ -425,12 +422,13 @@ class BulletEnemy(Ship):
         """Create a new enemy ship."""
         super().__init__(
             relative_to,
-            config.relative_pos,
-            config.relative_vel,
-            self.SHIP_SIZE,
-            self.SHIP_COLOR,
-            self.SHIP_GUN_COOLDOWN,
-            self.SHIP_PROJECTILE_SPEED,
+            ShipConfig(
+                relative_pos=config.relative_pos,
+                relative_vel=config.relative_vel,
+                color=self.SHIP_COLOR,
+                gun_cooldown=self.SHIP_GUN_COOLDOWN,
+                projectile_speed=self.SHIP_PROJECTILE_SPEED,
+            ),
         )
 
         self.target: Ship = config.target_ship
