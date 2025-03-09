@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk, PosVelObj, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
-from ship import BulletEnemy, EnemyShipConfig, PlayerShip, PlayerConfig
+from ship import BulletEnemy, EnemyConfig, PlayerShip, PlayerConfig
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -125,7 +125,7 @@ class Universe:
         return ship
 
     def add_enemy(
-        self, ship_config: EnemyShipConfig, ship_type: type[BulletEnemy], *, relative_to: None | PosVelObj = None
+        self, ship_config: EnemyConfig, ship_type: type[BulletEnemy], *, relative_to: None | PosVelObj = None
     ) -> BulletEnemy:
         """Add an enemy-ship from its config and return (a reference to) the created ship.
 

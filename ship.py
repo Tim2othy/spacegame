@@ -397,7 +397,7 @@ class PlayerShip(Ship):
 
 
 @dataclass(kw_only=True)
-class EnemyShipConfig:
+class EnemyConfig:
     """Configuration for an enemy-spaceship.
 
     Attributes:
@@ -426,7 +426,7 @@ class BulletEnemy(Ship):
         accelerate_to_player = auto()
         accelerate_randomly = auto()
 
-    def __init__(self, relative_to: PosVelObj, config: EnemyShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
         super().__init__(
             relative_to,
@@ -524,7 +524,7 @@ class MarkovEnemy(BulletEnemy):
     # Override class configuration for MarkovEnemy
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def __init__(self, relative_to: PosVelObj, config: EnemyShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: EnemyConfig) -> None:
         """Create a new Markov-based enemy ship."""
         super().__init__(relative_to, config)
         self.ai = MarkovAI(self, config.target_ship)
