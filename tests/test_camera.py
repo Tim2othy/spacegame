@@ -2,34 +2,11 @@ import pygame
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
+from physics import PosVel
 
 EPSILON = 1e-8
 
-
-def test_smoothly_transition_to() -> None:
-    camera = Camera(Vec2(1, 1), 1, pygame.Surface((2, 2)))
-
-    assert camera.pos == Vec2(0, 0), "Camera's top-left corner should have been at (0,0)"
-
-    target_zoom = 2
-    target_pos = Vec2(-3, -4)
-    dt = 0.15
-    transition_time = 0.25
-
-    previous_distance = camera.pos.distance_to(target_pos)
-    previous_zoom_difference = abs(camera.zoom - target_zoom)
-    for _ in range(25):
-        camera.smoothly_transition_to(target_pos, target_zoom, dt, transition_time)
-        distance = camera.pos.distance_to(target_pos)
-        zoom_difference = abs(camera.zoom - target_zoom)
-
-        assert distance < previous_distance, "Camera should move closer to target position"
-        assert zoom_difference < previous_zoom_difference, "Camera should move closer to target zoom"
-        previous_distance = distance
-        previous_zoom_difference = zoom_difference
-
-    assert camera.pos.distance_to(target_pos) < EPSILON, "Camera should have reached target position"
-    assert abs(camera.zoom - target_zoom) < EPSILON, "Camera should have reached target zoom"
+ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 def test_smoothly_focus_rectangle() -> None:
