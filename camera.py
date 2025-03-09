@@ -31,15 +31,7 @@ class Camera(Pos):
         self._shift(self._tracking.pos_relative_to(self))
 
     def _rectangle_intersects_screen(self, rect: Rect) -> bool:
-        """Determine whether a screenspace-rectangle intersects the camera's screen.
-
-        Args:
-            rect (Rect): Screenspace-rectangle
-
-        Returns:
-            bool: True iff screenspace-rectangle intersects the screen
-
-        """
+        """Return whether a screenspace-rectangle intersects the camera's screen."""
         own_rect = Rect((0, 0), self._surface.get_size())
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
