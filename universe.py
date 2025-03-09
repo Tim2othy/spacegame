@@ -82,9 +82,9 @@ class UniverseOptions:
 
     """
 
-    small: bool
-    splitscreen: bool
-    invincible: bool
+    small: bool = False
+    splitscreen: bool = False
+    invincible: bool = False
 
 
 class Universe:

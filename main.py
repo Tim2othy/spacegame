@@ -4,29 +4,24 @@ from __future__ import annotations
 
 import asyncio
 import platform
-import random
 import sys
 from collections import deque
+from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color, Surface
 from pygame.font import Font
-from pygame.math import Vector2 as Vec2
+from universe import Universe, UniverseOptions
 
 from camera import Camera
 from constants import (
-    ENEMY_SPAWN_WEIGHTS,
     FPS_HISTORY_LENGTH,
-    MINIMAP_BORDER_COLOR,
-    MINIMAP_SIZE,
-    PLAYER_2_COLOR,
     SCREEN_SIZE,
 )
 from profiler import global_profiler
-from ship import BulletEnemy, MarkovEnemy, MissileEnemy, PlayerShip, RocketEnemy, ShipInput
-from universe import Star, Universe
 
-type Options = dict[str, bool]
+if TYPE_CHECKING:
+    from ship import PlayerShip
 
 
 async def main() -> None:
@@ -35,7 +30,7 @@ async def main() -> None:
     pygame.display.init()
     pygame.font.init()
     font = pygame.font.Font(None, 36)
-    options: Options = {"small": False, "splitscreen": False, "invincible": False}
+    options = UniverseOptions()
 
     pygame.display.set_caption("Space Game")
     screen_surface = pygame.display.set_mode(SCREEN_SIZE)
