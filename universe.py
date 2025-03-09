@@ -556,9 +556,11 @@ class Universe:
         - planet_angle  - does it go clockwise or anticlockwise
 
         """
-        # TODO: This method will crash if the universe doesn't have a star.
 
         if disk is None:
+            if not isinstance(self.__star, Star):
+                # TODO: Offer some other method if self.__star is not a Star.
+                return
             disk = self.__star
 
         # random variables
