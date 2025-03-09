@@ -328,6 +328,7 @@ class Universe:
         self.apply_gravity(dt)
         self.apply_bounce()
         self.collide_bullets()
+        self._enemy_ships = [ship for ship in self._enemy_ships if ship.health > 0]
 
     @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
