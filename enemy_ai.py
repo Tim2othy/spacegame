@@ -81,13 +81,7 @@ class MarkovAI:
     """Markov chain-based AI for enemy ships."""
 
     def __init__(self, ship: Ship, target_ship: Ship) -> None:
-        """Create a new AI controller.
-
-        Args:
-            ship (Ship): The ship to control
-            target_ship (Ship): The ship to target (usually player)
-
-        """
+        """Create a new AI controller for the ship `ship`, targeting `target_ship`."""
         self.ship = ship
         self.target = target_ship
         self.current_state = AIState.SEARCH
