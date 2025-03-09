@@ -86,19 +86,12 @@ class Camera(Pos):
 
     def draw_line(self, color: Color, start: Vec2, end: Vec2, thickness: float) -> None:
         """Draw a worldspace-line with a given thickness."""
-        delta = end - start
-        if delta == Vec2(0, 0):
-            return
-        orthogonal = Vec2(-delta.y, delta.x).normalize() * thickness / 2
-        points = [
-            start + orthogonal,
-            end + orthogonal,
-            end - orthogonal,
-            start - orthogonal,
-        ]
-        # Need not check whether this is on-surface, as
-        # draw_polygon does it for us
-        self.draw_polygon(color, points)
+        screenspace_start, screenspace_end = self._world_to_surface(start), self._world_to_surface(end)
+        enclosing_rect = _get_enclosing_rect((screenspace_start, screenspace_end))
+        surfacespace_thickness = thickness * self._zoom
+        enclosing_rect.inflate_ip(surfacespace_thickness, surfacespace_thickness)
+        if self._rectangle_intersects_surface(enclosing_rect):
+            pygame.draw.line(self._surface, color, screenspace_start, screenspace_end, int(surfacespace_thickness))
 
     def draw_hairline(self, color: Color, start: Vec2, end: Vec2) -> None:
         """Draw a worldspace-line of single-pixel-thickness.
