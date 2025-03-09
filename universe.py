@@ -191,7 +191,7 @@ class Universe:
     @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        ships: list[Ship] = self._player_ships + self._enemy_ships
+        ships: Sequence[Ship] = [*self._player_ships, *self._enemy_ships]
 
         for ix, ship in enumerate(ships):
             # Bounce ships off of each other
