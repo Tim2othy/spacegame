@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color, Surface
+from pygame.font import Font
 
 from camera import Camera
 from constants import (
@@ -19,7 +20,6 @@ from constants import (
 )
 from profiler import global_profiler
 from universe import Universe, UniverseOptions
-from pygame.font import Font
 
 if TYPE_CHECKING:
     from ship import PlayerShip
