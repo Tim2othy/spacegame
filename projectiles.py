@@ -6,7 +6,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import PosVel, Body
+from physics import Body, PosVel
 
 if TYPE_CHECKING:
     from ship import Ship

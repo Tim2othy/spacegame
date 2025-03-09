@@ -6,7 +6,7 @@ import pytest
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
-from ship import PlayerShip, PlayerConfig
+from ship import PlayerConfig, PlayerShip
 from universe import Planet, PlanetConfig, Universe
 
 
