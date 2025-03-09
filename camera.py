@@ -93,31 +93,14 @@ class Camera(Pos):
         if self._rectangle_intersects_surface(enclosing_rect):
             pygame.draw.line(self._surface, color, screenspace_start, screenspace_end, int(surfacespace_thickness))
 
-    def draw_vertical_hairline(self, color: Color, x: float, starty: float, endy: float) -> None:
-        """Draw a vertical worldspace-line of single-pixel-thickness."""
-        screenspace_start = self._world_to_surface(Vec2(x, starty))
-        screenspace_end = self._world_to_surface(Vec2(x, endy))
+    def draw_hairline(self, color: Color, start: Pos, end: Pos) -> None:
+        """Draw a worldspace-line of single-pixel-thickness."""
+        screenspace_start = self._world_to_surface(start)
+        screenspace_end = self._world_to_surface(end)
         clipped_line = self._surface_rect.clipline(screenspace_start, screenspace_end)
         if clipped_line:
             start, end = clipped_line
             pygame.draw.line(self._surface, color, start, end, 1)
-
-    def draw_horizontal_hairline(self, color: Color, startx: float, endx: float, y: float) -> None:
-        """Draw a horizontal worldspace-line of single-pixel-thickness.
-
-        Args:
-            color (Color): Line's Color
-            startx (float): Line's starting point
-            endx (float): Line's ending point
-            y (float): Line's vertical position
-
-        """
-        tstart, tend = (self._world_to_surface(Vec2(startx, y)), self._world_to_surface(Vec2(endx, y)))
-        surface_rect = Rect((0, 0), self._surface.get_size())
-        clipped_line = surface_rect.clipline(tstart, tend)
-        if clipped_line:
-            ((x1, y), (x2, _)) = clipped_line
-            pygame.draw.line(self._surface, color, (x1, y), (x2, y))
 
     def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text at a surfacespace-position, or centered on the surface if not provided."""
