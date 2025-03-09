@@ -87,9 +87,6 @@ async def main() -> None:
                 camera = Camera(player._pos, 1.0, subsurface)
                 cameras.append(camera)
 
-            minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
-            minimap_camera = Camera(universe.size / 2, MINIMAP_SIZE.x / universe.size.x, minimap_surface)
-
             clock = pygame.time.Clock()
 
             fps: deque[float] = deque()
@@ -130,13 +127,6 @@ async def main() -> None:
                     universe.draw(player_camera)
                     universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
                     topleft = (int(player_ix * SCREEN_SIZE[0] / player_count), 0)
-
-                minimap_camera.start_drawing_new_frame()
-                universe.draw(minimap_camera)
-
-                # Draw minimap borders directly on SCREEN_SURFACE if needed
-                minimap_camera.draw_vertical_hairline(MINIMAP_BORDER_COLOR, 0, 0, universe.size.y)
-                minimap_camera.draw_horizontal_hairline(MINIMAP_BORDER_COLOR, 0, universe.size.x, universe.size.y - 1)
 
                 pygame.display.flip()
                 await asyncio.sleep(0)
