@@ -504,7 +504,7 @@ class Universe:
 
         Args:
             camera (Camera): Camera to draw on
-            player_ix (int): Player to display information about
+            player (PlayerShip): Player to display information about
             fps (float): Current fps
 
         """

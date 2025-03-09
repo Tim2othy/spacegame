@@ -446,6 +446,7 @@ class BulletEnemy(Ship):
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
 
     def step_ai(self, dt: float) -> None:
+        """Execute `self`'s ai."""
         self.action_timer -= dt
         can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
 
