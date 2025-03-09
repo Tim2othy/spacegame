@@ -64,13 +64,12 @@ class Camera(Pos):
         """
         surfacespace_center = self._world_to_surface(center)
         surfacespace_radius = radius * self._zoom
-        x, y, r = surfacespace_center.x, surfacespace_center.y, surfacespace_radius
         surfacespace_radius_vec = Vec2(surfacespace_radius, surfacespace_radius)
 
         # soft check for circle-surface-intersection:
         enclosing_rect = Rect(surfacespace_center - surfacespace_radius_vec, 2 * surfacespace_radius_vec)
         if self._rectangle_intersects_surface(enclosing_rect):
-            pygame.draw.circle(self._surface, color, (x, y), r)
+            pygame.draw.circle(self._surface, color, surfacespace_center, surfacespace_radius)
 
     def draw_polygon(self, color: Color, points: list[Pos]) -> None:
         """Draw a filled polygon."""
