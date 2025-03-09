@@ -24,7 +24,7 @@ from constants import (
     generate_complementary_color,
 )
 from enemy_ai import MarkovAI
-from physics import Disk, PosVel
+from physics import Disk, Pos, PosVel
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -443,7 +443,7 @@ class BulletEnemy(Ship):
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.projectiles: list[Bullet] = []
-        self.seek_towards: PosVel = PosVel(self, Vec2(), Vec2())
+        self.seek_towards: Pos = Pos(self, Vec2())
 
     def step_ai(self, dt: float) -> None:
         self.action_timer -= dt
@@ -469,7 +469,7 @@ class BulletEnemy(Ship):
                     # to the distance to the player, we should eventually find a non-accelerating player.
                     random_x = random.gauss(sigma=distance_to_target)
                     random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = PosVel(self.target, Vec2(random_x, random_y), Vec2())
+                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
             self.action_timer = ENEMY_ACTION_TIMER
 
