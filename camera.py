@@ -53,25 +53,27 @@ class Camera(Pos):
         if self._surface_rect.collidepoint(surfacepoint):
             self._surface.set_at((int(surfacepoint.x), int(surfacepoint.y)), color)
 
-    def draw_circle(self, color: Color, center: Vec2, radius: float) -> None:
+    def draw_circle(self, color: Color, center: Pos, radius: float) -> None:
         """Draw a worldspace-circle.
 
         Args:
             color (Color): Border- and fill-color
-            center (Vec2): Worldspace-center of the circle
+            center (Pos): Worldspace-center of the circle
             radius (float): Worldspace-radius of the circle
 
         """
-        ccenter, cradius = self._world_to_surface(center), radius * self.zoom
-        x, y, r = ccenter.x, ccenter.y, cradius
+        surfacespace_center = self._world_to_surface(center)
+        surfacespace_radius = radius * self._zoom
+        x, y, r = surfacespace_center.x, surfacespace_center.y, surfacespace_radius
+        surfacespace_radius_vec = Vec2(surfacespace_radius, surfacespace_radius)
 
         # soft check for circle-surface-intersection:
-        enclosing_rect = Rect((x - r, y - r), (2 * r, 2 * r))
+        enclosing_rect = Rect(surfacespace_center - surfacespace_radius_vec, 2 * surfacespace_radius_vec)
         if self._rectangle_intersects_surface(enclosing_rect):
             pygame.draw.circle(self._surface, color, (x, y), r)
 
     def draw_polygon(self, color: Color, points: list[Pos]) -> None:
-        """Draw a polygon."""
+        """Draw a filled polygon."""
         cpoints = [self._world_to_surface(p) for p in points]
         # Soft check for point-surface-intersection:
         enclosing_rect = _get_enclosing_rect(cpoints)
