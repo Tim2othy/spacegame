@@ -364,7 +364,7 @@ class PlayerConfig:
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     color: Color = field(default_factory=lambda: Color("darkslategray"))
-    input: ShipInput = field(default_factory=ShipInput.arrows)
+    ship_input: ShipInput = field(default_factory=ShipInput.arrows)
 
 
 class PlayerShip(Ship):
@@ -381,7 +381,7 @@ class PlayerShip(Ship):
             BULLET_RATE_OF_FIRE,
             BULLET_RELEASE_SPEED,
         )
-        self.spaceship_input = config.input
+        self.spaceship_input = config.ship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
