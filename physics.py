@@ -28,10 +28,10 @@ BOUNCE_DAMAGE_SCALAR = 1e-4
 """Bounce-damage is scaled by this amount."""
 
 
-class PosObj:
+class Pos:
     """An object with a dynamic position, but no velocity."""
 
-    def __init__(self, relative_to: PosObj, relative_pos: Vec2) -> None:
+    def __init__(self, relative_to: Pos, relative_pos: Vec2) -> None:
         """Create a new PosObj relative to another PosObj."""
         self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
 
@@ -39,20 +39,20 @@ class PosObj:
         """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing."""
         self.__pos += delta
 
-    def pos_relative_to(self, other: PosObj) -> Vec2:
+    def pos_relative_to(self, other: Pos) -> Vec2:
         """Return `self`'s position relative to `other`."""
         return self.__pos - other.__pos  # noqa: SLF001
 
-    def distance_squared_to(self, other: PosObj) -> float:
+    def distance_squared_to(self, other: Pos) -> float:
         """Return the squared distance between `self` and `other`."""
         return self.pos_relative_to(other).length_squared()
 
-    def distance_to(self, other: PosObj) -> float:
+    def distance_to(self, other: Pos) -> float:
         """Return the distance between `self` and `other`."""
         return self.pos_relative_to(other).length()
 
 
-class PosVelObj(PosObj):
+class PosVelObj(Pos):
     """An object with dynamic position and dynamic velocity."""
 
     def __init__(self, relative_to: PosVelObj, relative_pos: Vec2, relative_vel: Vec2) -> None:

@@ -11,11 +11,11 @@ import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
-from physics import PosObj, PosVelObj
+from physics import Pos, PosVelObj
 from profiler import global_profiler
 
 
-class Camera(PosObj):
+class Camera(Pos):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
     def __init__(self, surface: pygame.Surface, tracking: PosVelObj, buff: float) -> None:
@@ -102,7 +102,7 @@ class Camera(PosObj):
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def _world_to_screen(self, obj: PosObj) -> Vec2:
+    def _world_to_screen(self, obj: Pos) -> Vec2:
         """Transform an object's position to screenspace."""
         return obj.pos_relative_to(self) * self.zoom
 
@@ -135,7 +135,7 @@ class Camera(PosObj):
         if self._rectangle_intersects_screen(enclosing_rect):
             pygame.draw.circle(self._surface, color, (x, y), r)
 
-    def draw_polygon(self, color: Color, points: list[PosObj]) -> None:
+    def draw_polygon(self, color: Color, points: list[Pos]) -> None:
         """Draw a polygon on screen."""
         cpoints = [self._world_to_screen(p) for p in points]
         # Soft check for points-screen-intersection:
