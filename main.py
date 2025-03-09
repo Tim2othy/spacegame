@@ -118,10 +118,8 @@ async def main() -> None:
                         running = False
                         break
                     camera.step()
-                    universe.draw_background(player_camera)
-                    universe.draw_grid(player_camera)
                     universe.draw(player_camera)
-                    universe.draw_text(player_camera, player_ix, sum(fps) / len(fps))
+                    universe.draw_text(player_camera, player, sum(fps) / len(fps))
 
                 pygame.display.flip()
                 await asyncio.sleep(0)

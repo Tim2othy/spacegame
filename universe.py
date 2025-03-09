@@ -465,18 +465,21 @@ class Universe:
         random.setstate(random_state)
 
     @global_profiler.profile_method
-    def draw(self, camera: Camera) -> None:
+    def draw(self, camera: Camera, *, minimap: bool = False) -> None:
         """Draw all of `self` on `camera`."""
-        for pobj in chain(
-            *self._planet_chunks.values(), *self._star_chunks.values(), self._enemy_ships, self._player_ships
-        ):
-            pobj.draw(camera)
+        if not minimap:
+            for particle in self._particles:
+                particle.draw(camera)
+            self.draw_background(camera)
+            self.draw_grid(camera)
 
-        for particle in self._particles:
-            particle.draw(camera)
+        for obj in chain(*self._planet_chunks.values(), self._enemy_ships, self._player_ships):
+            obj.draw(camera)
+
+        self.__star.draw(camera)
 
     @global_profiler.profile_method
-    def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
+    def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
         """Draw "debugging" text on `camera`.
 
         Args:
@@ -494,9 +497,8 @@ class Universe:
             return vertical_offset + font_size
 
         text_v = 10
-        player_ship = self._player_ships[player_ix]
         text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
-        text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
+        text_v = texty(text_v, f"Health: {player.health:.0f}")
 
         enemy_count = len(self._enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
