@@ -159,7 +159,7 @@ class Disk(Body):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        camera.draw_circle(self.color, self._pos, self.radius)
+        camera.draw_circle(self.color, self, self.radius)
 
     def contains_center_of(self, pos: Pos) -> bool:
         """Determine whether the center of `pos` is in `self`."""
