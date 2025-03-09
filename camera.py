@@ -11,19 +11,19 @@ import pygame
 from pygame import Color, Rect
 from pygame.math import Vector2 as Vec2
 
-from physics import StaticObject
+from physics import PosObj
 from profiler import global_profiler
 
 
-class Camera(StaticObject):
+class Camera(PosObj):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
-    def __init__(self, surface: pygame.Surface, step: Callable[..., StaticObject]) -> None:
+    def __init__(self, surface: pygame.Surface, step: Callable[..., PosObj]) -> None:
         """Construct a new camera."""
         super().__init__()
         self.zoom: float = 1
         self.surface: pygame.Surface = surface
-        self._step: Callable[..., StaticObject] = step
+        self._step: Callable[..., PosObj] = step
 
     def smoothly_transition_to(self, new_pos: Vec2, new_zoom: float, dt: float, transition_time: float = 0.25) -> None:
         """Smoothly transition the camera to a new location.
@@ -102,7 +102,7 @@ class Camera(StaticObject):
         # Inflate rect, to take care of edge-cases like zero width or height
         return own_rect.colliderect(rect.inflate(1, 1))
 
-    def _world_to_screen(self, obj: StaticObject) -> Vec2:
+    def _world_to_screen(self, obj: PosObj) -> Vec2:
         """Transform an object's position to screenspace."""
         return obj.pos_relative_to(self) * self.zoom
 
