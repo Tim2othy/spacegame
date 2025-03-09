@@ -39,10 +39,12 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     universe = Universe(1, 100)
     player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(-500, 0)))
-    enemy_up = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(-500, 500), target_ship=player), enemy_type)
-    enemy_right = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(500, 0), target_ship=player), enemy_type)
-    enemy_down = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(-500, -500), target_ship=player), enemy_type)
-    _planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(-500, 250), radius=1))
+    (enemy_up, enemy_right, enemy_down) = (
+        universe.add_enemy(EnemyShipConfig(relative_pos=vec, target_ship=player), enemy_type, relative_to=player)
+        for vec in (Vec2(0, 500), Vec2(1000, 0), Vec2(0, -500))
+    )
+
+    _planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 250), radius=1), relative_to=player)
 
     bullet_up = player.new_bullet(Vec2(), Vec2(0, 100))
     bullet_right = player.new_bullet(Vec2(), Vec2(100, 0))
