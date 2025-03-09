@@ -71,7 +71,7 @@ class PosVel(Pos):
         """
         # This is messed up. Think thrice before copying this code.
         origin = object.__new__(PosVel)
-        origin._StaticObject__pos = Vec2(0, 0)  # noqa: SLF001
+        origin._Pos__pos = Vec2(0, 0)  # noqa: SLF001
         origin.__vel = Vec2(0, 0)  # noqa: SLF001
         return origin
 
