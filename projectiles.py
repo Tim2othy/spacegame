@@ -36,25 +36,13 @@ class Bullet(Body):
     """A triangular bullet."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
-        """Create a new basic Bullet.
-
-        Args:
-            pos (Vec2): Start position
-            vel (Vec2): Velocity
-            color (Color): Border- and fill-color
-
-        """
+        """Create a new basic Bullet."""
         super().__init__(relative_to, relative_pos, relative_vel, 1.0)
         self.color = Color(color)
         self.damage = BULLET_DAMAGE
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera`."""
         forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         camera.draw_polygon(
             self.color,
@@ -68,15 +56,7 @@ class Rocket(Bullet):
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: "Ship"
     ) -> None:
-        """Create a new rocket targeting `target_ship`.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            color (Color): Border- and fill-color
-            target_ship (Ship): Ship to home in on
-
-        """
+        """Create a new rocket targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color)
         self.target_ship = target_ship
         self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
@@ -88,12 +68,7 @@ class Rocket(Bullet):
         self.damage = ROCKET_DAMAGE
 
     def step(self, dt: float) -> None:
-        """Apply homing and physics-logics.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply homing and physics-logics."""
         self.homing_timer += dt
         delta_target_ship = self.target_ship.pos_relative_to(self)
 
@@ -114,12 +89,7 @@ class Rocket(Bullet):
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` to `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` to `camera`."""
         forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         left = Vec2(-forward.y, forward.x)
         right = -left
@@ -160,15 +130,7 @@ class Missile(Rocket):
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: "Ship"
     ) -> None:
-        """Create a new Missile targeting `target_ship`.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            color (Color): Border- and fill-color
-            target_ship (Ship): Ship to home in on
-
-        """
+        """Create a new Missile targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
         self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
         self.homing_timer = 0.0
@@ -176,12 +138,7 @@ class Missile(Rocket):
         self.damage = MISSILE_DAMAGE
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera`."""
         forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
         left = Vec2(-forward.y, forward.x)
         right = -left
@@ -200,16 +157,10 @@ class Missile(Rocket):
 
 
 class Flare(Bullet):
-    """A round bullet, bobbing about."""
+    """A round bullet, designed to distract other bullets, but also capable of harming enemies."""
 
     def __init__(self, pos: Vec2, vel: Vec2) -> None:
-        """Create a new flare.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Velocity
-
-        """
+        """Create a new flare."""
         super().__init__(pos, vel, FLARE_COLOR)
         self.damage = FLARE_DAMAGE
 
