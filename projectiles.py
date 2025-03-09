@@ -6,7 +6,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Body, PosVel
+from physics import Body, Pos, PosVel
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -58,11 +58,7 @@ class Bullet(Body):
         forward = self._vel.normalize() if self._vel != Vec2(0, 0) else Vec2(1, 0)
         camera.draw_polygon(
             self.color,
-            [
-                self._pos + 4 * forward,
-                self._pos + 4 * forward.rotate(150),
-                self._pos + 4 * forward.rotate(-150),
-            ],
+            [Pos(self, 4 * forward), Pos(self, 4 * forward.rotate(150)), Pos(self, 4 * forward.rotate(-150))],
         )
 
 
@@ -138,10 +134,10 @@ class Rocket(Bullet):
             camera.draw_polygon(
                 self.color.lerp(THRUST_COLOR, 0.5),
                 [
-                    self._pos + 3 * (left + backward),
-                    self._pos + 4 * (left + 2 * backward),
-                    self._pos + 4 * (right + 2 * backward),
-                    self._pos + 3 * (right + backward),
+                    Pos(self, 3 * (left + backward)),
+                    Pos(self, 4 * (left + 2 * backward)),
+                    Pos(self, 4 * (right + 2 * backward)),
+                    Pos(self, 3 * (right + backward)),
                 ],
             )
 
@@ -149,11 +145,11 @@ class Rocket(Bullet):
         camera.draw_polygon(
             self.color,
             [
-                self._pos + 3 * (left + forward),
-                self._pos + 3 * (left + backward),
-                self._pos + 3 * (right + backward),
-                self._pos + 3 * (right + forward),
-                self._pos + 2 * (3 * forward),
+                Pos(self, 3 * (left + forward)),
+                Pos(self, 3 * (left + backward)),
+                Pos(self, 3 * (right + backward)),
+                Pos(self, 3 * (right + forward)),
+                Pos(self, 2 * (3 * forward)),
             ],
         )
 
@@ -194,11 +190,11 @@ class Missile(Rocket):
         camera.draw_polygon(
             self.color,
             [
-                self._pos + 3 * (left + forward),
-                self._pos + 5 * (left + 5 * backward),
-                self._pos + 5 * (right + 5 * backward),
-                self._pos + 3 * (right + forward),
-                self._pos + 2 * (8 * forward),
+                Pos(self, 3 * (left + forward)),
+                Pos(self, 5 * (left + 5 * backward)),
+                Pos(self, 5 * (right + 5 * backward)),
+                Pos(self, 3 * (right + forward)),
+                Pos(self, 2 * (8 * forward)),
             ],
         )
 
