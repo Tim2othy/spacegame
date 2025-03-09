@@ -203,9 +203,7 @@ class Universe:
             if isinstance(self.__star, Star):
                 planet.bounce_off_of_disk(self.__star)
 
-    def create_particles_on_disk(
-        self, disk: Disk, projected_pobj: Body, n: int, color: Color, blast_vel: float
-    ) -> None:
+    def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles on the disk's surface.
 
         `projected_pobj._pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
@@ -217,7 +215,7 @@ class Universe:
 
         If pos is exactly on disk's center, nothing happens.
         """
-        delta = projected_pobj.pos_relative_to(disk)
+        delta = projected_from.pos_relative_to(disk)
         if delta == Vec2(0, 0):
             return
         delta_normalized = delta.normalize()
@@ -231,7 +229,7 @@ class Universe:
                 Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
             )
 
-    def create_particle_cloud(self, source: Body, n: int, color: Color, blast_vel: float) -> None:
+    def create_particle_cloud(self, source: PosVel, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
         Particles' velocity are spherically sampled with length between 0 and blast_vel, added
