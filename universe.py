@@ -332,6 +332,8 @@ class Universe:
     @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
         """Draw `self`'s parallaxing background on `camera`."""
+        # TODO: Update this with respect to relativity.
+        return
         # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
         random_state = random.getstate()
         # TODO: Try caching star-chunks to their final on-screen locations.
