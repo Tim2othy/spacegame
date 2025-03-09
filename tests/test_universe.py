@@ -6,7 +6,7 @@ import pytest
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVelObj
-from ship import PlayerShip, PlayerShipConfig
+from ship import PlayerShip, PlayerConfig
 from universe import Planet, PlanetConfig, Universe
 
 
@@ -155,9 +155,7 @@ def test_gravitational_well() -> None:
         pos = Vec2()
         pos.from_polar((7500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
-            universe.add_player(
-                PlayerShipConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet
-            )
+            universe.add_player(PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet)
         else:
             universe.add_planet(
                 PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29),

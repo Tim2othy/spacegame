@@ -350,7 +350,7 @@ class ShipInput:
 
 
 @dataclass(kw_only=True)
-class PlayerShipConfig:
+class PlayerConfig:
     """Configuration for a player-spaceship.
 
     Attributes:
@@ -370,7 +370,7 @@ class PlayerShipConfig:
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    def __init__(self, relative_to: PosVelObj, config: PlayerShipConfig) -> None:
+    def __init__(self, relative_to: PosVelObj, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
         super().__init__(
             relative_to,

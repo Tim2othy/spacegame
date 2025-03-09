@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import Disk, PosVelObj, Particle, PhysicalObject
 from profiler import global_profiler
 from projectiles import Missile
-from ship import BulletEnemy, EnemyShipConfig, PlayerShip, PlayerShipConfig
+from ship import BulletEnemy, EnemyShipConfig, PlayerShip, PlayerConfig
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -115,7 +115,7 @@ class Universe:
 
         self._particles: list[Particle] = []
 
-    def add_player(self, ship_config: PlayerShipConfig, *, relative_to: None | PosVelObj = None) -> PlayerShip:
+    def add_player(self, ship_config: PlayerConfig, *, relative_to: None | PosVelObj = None) -> PlayerShip:
         """Add a player-ship from its config and return (a reference to) the created ship.
 
         If relative_to is None, the planet is created relative to the universe's star.

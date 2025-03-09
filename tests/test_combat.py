@@ -8,7 +8,7 @@ from enemy_ai import (
     _STANDARD_MATRIX,
     AIState,
 )
-from ship import HEALTH, BulletEnemy, EnemyShipConfig, MarkovEnemy, MissileEnemy, PlayerShipConfig, RocketEnemy
+from ship import HEALTH, BulletEnemy, EnemyShipConfig, MarkovEnemy, MissileEnemy, PlayerConfig, RocketEnemy
 from universe import PlanetConfig, Universe
 
 
@@ -17,7 +17,7 @@ from universe import PlanetConfig, Universe
 def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
     """Verify that any enemy will eventually find and hit the player."""
     universe = Universe(None, 100)
-    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     _enemy = universe.add_enemy(EnemyShipConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
 
     starting_health = player.health
@@ -38,7 +38,7 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
     monkeypatch.setattr(BulletEnemy, "step_ai", lambda _self, _dt: None)
 
     universe = Universe(1, 100)
-    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(-500, 0)))
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(-500, 0)))
     (enemy_up, enemy_right, enemy_down) = (
         universe.add_enemy(EnemyShipConfig(relative_pos=vec, target_ship=player), enemy_type, relative_to=player)
         for vec in (Vec2(0, 500), Vec2(1000, 0), Vec2(0, -500))
@@ -91,7 +91,7 @@ def test_transition_matrix_sums(matrix: dict) -> None:
 def test_markov_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
     universe = Universe(None, 100)
-    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
 
     # Run simulation for a few seconds
@@ -109,7 +109,7 @@ def test_markov_enemy_retreat_behavior() -> None:
 def test_markov_enemy_aim() -> None:
     """Test that a MarkovEnemy will hit a moving player."""
     universe = Universe(None, 100)
-    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
 
     # Run simulation for a few seconds
@@ -123,7 +123,7 @@ def test_markov_enemy_aim() -> None:
 def test_markov_low_health_search() -> None:
     """Test whether a low health MarkovEnemy eventually finds a distant player."""
     universe = Universe(None, 100)
-    player = universe.add_player(PlayerShipConfig(relative_pos=Vec2(0, 0)))
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: MarkovEnemy = universe.add_enemy(EnemyShipConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
     enemy.health = 1
     enemy.ai.current_state = AIState.RETREAT
