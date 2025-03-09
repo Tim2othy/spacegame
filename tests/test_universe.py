@@ -135,7 +135,7 @@ def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
         # Now delta has distance 199 from planet_a, so if we put a planet of
         # radius 100 at (pos+delta), then that planet would definitely intersect planet_a,
         # and hence querying planets near (pos+delta) should return planet_a
-        planet_b = universe.add_planet(PlanetConfig(relative_pos=random_relative_pos + delta, radius=100))
+        planet_b = universe.add_planet(PlanetConfig(relative_pos=delta, radius=100), relative_to=planet_a)
         if planet_a not in universe._nearby_planets(planet_b):
             # We failed successfully.
             return
@@ -155,9 +155,14 @@ def test_gravitational_well() -> None:
         pos = Vec2()
         pos.from_polar((7500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
-            universe.add_player(PlayerShipConfig(relative_pos=pos, relative_vel=Vec2(100, -200)))
+            universe.add_player(
+                PlayerShipConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet
+            )
         else:
-            universe.add_planet(PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29))
+            universe.add_planet(
+                PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29),
+                relative_to=big_planet,
+            )
 
     for _ in range(25 * 100):
         universe.step(0.01)
