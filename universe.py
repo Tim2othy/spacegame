@@ -263,8 +263,8 @@ class Universe:
                     self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
                     return False
-                # TODO: Should we just change `class Bullet(PhysicalObject)` to `class Bullet(Disk)`,
-                # i.e. have Bullet inherit from Disk instead of just PhysicalObject? That'd make this whole
+                # TODO: Should we just change `class Bullet(Body)` to `class Bullet(Disk)`,
+                # i.e. have Bullet inherit from Disk instead of just Body? That'd make this whole
                 # collision-detection more idiomatic. If we do, we can also change the above calls
                 # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
                 # We should then also change the same call in test_projectiles.py.

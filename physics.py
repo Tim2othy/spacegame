@@ -116,7 +116,7 @@ class Body(PosVel):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
-        """Create a new PhysicalObject. Raises a ValueError if the mass is not strictly positive."""
+        """Create a new Body. Raises a ValueError if the mass is not strictly positive."""
         super().__init__(relative_to, relative_pos, relative_vel)
         if not mass > 0:
             raise ValueError
@@ -145,7 +145,7 @@ class Body(PosVel):
 
 
 class Disk(Body):
-    """A disk-shaped PhysicalObject, with constant radius and dynamic color."""
+    """A disk with constant radius and dynamic color."""
 
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
