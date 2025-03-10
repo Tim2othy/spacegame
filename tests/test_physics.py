@@ -31,6 +31,8 @@ def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
     obj = PosVel(ORIGIN, relative_pos, relative_vel)
     assert obj.pos_relative_to(ORIGIN) == relative_pos
     assert obj.vel_relative_to(ORIGIN) == relative_vel
+    assert ORIGIN.pos_relative_to(obj) == -relative_pos
+    assert ORIGIN.vel_relative_to(obj) == -relative_vel
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
