@@ -1,6 +1,7 @@
 from math import tau
 
 from pygame.math import Vector2 as Vec2
+import pytest
 
 from physics import PosVel
 from ship import Ship, ShipConfig
@@ -8,6 +9,12 @@ from ship import Ship, ShipConfig
 EPSILON = 1e-8
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
+
+
+def test_cooldown() -> None:
+    Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=1))
+    with pytest.raises(ValueError):
+        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=-1))
 
 
 def test_shooting() -> None:
