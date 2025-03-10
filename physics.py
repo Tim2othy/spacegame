@@ -116,9 +116,9 @@ class Body(PosVel):
     """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
-        """Create a new Body. Raises a ValueError if the mass is not strictly positive."""
+        """Create a new Body. Raises a ValueError if the mass is not finite and strictly positive."""
         super().__init__(relative_to, relative_pos, relative_vel)
-        if not mass > 0:
+        if not (math.isfinite(mass) and mass > 0):
             raise ValueError
         self.mass: float = mass
 

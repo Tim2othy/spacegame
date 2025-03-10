@@ -11,6 +11,18 @@ from physics import Body, Disk, Pos, PosVel
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
+def test_mass_positive() -> None:
+    Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
+
+
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 @pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
