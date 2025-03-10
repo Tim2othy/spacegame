@@ -6,6 +6,7 @@ surfacespace == Coordinates on the screen
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING
 
 import pygame
@@ -25,7 +26,7 @@ class Camera(Pos):
     def __init__(self, surface: pygame.Surface, tracking: PosVel, zoom: float) -> None:
         """Construct a new camera, tracking a fixed object.
 
-        Raises a ValueError if `zoom` is not strictly positive.
+        Raises a ValueError if `zoom` is not finite and strictly positive.
         Higher `zoom` = Fewer objects fit on screen,
         `zoom`==1 corresponds to 1 pixel per unit.
 
@@ -33,7 +34,7 @@ class Camera(Pos):
         """
         super().__init__(tracking, Vec2(0, 0))
         self._tracking: PosVel = tracking
-        if not zoom > 0:
+        if not (math.isfinite(zoom) and zoom > 0):
             raise ValueError
         self._zoom: float = zoom
 
