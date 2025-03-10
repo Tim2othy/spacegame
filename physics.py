@@ -180,17 +180,13 @@ class Disk(Body):
         they're exactly flush. This shift respects the difference between
         the two disks' mass.
 
-        Returns the damage the two disks take from the collision.
+        Returns the damage the two disks take from the collision, or None if no bounce occured.
         The damage is identical for both disks, i.e. it assumes a heavier disk
         can take more damage.
 
         If the two disks have exactly the same center, they are treated as if they
         were slightly offset from each other, with no guarantee about this behavior's
         stability.
-
-        Returns:
-            float | None: If float, impact velocity of bounce. None if no bounce occurred.
-
         """
         delta = other.pos_relative_to(self)
         radii_sum = self.radius + other.radius
@@ -237,15 +233,11 @@ class Disk(Body):
         If a bounce occurs, this shifts self's positions so that
         they're exactly flush.
 
-        Returns the damage self takes from the collision.
+        Returns the damage the two disks take from the collision, or None if no bounce occured.
 
         If the two disks have exactly the same center, they are treated as if they
         were slightly offset from each other, with no guarantee about this behavior's
         stability.
-
-        Returns:
-            float | None: If float, impact velocity of bounce. None if no bounce occurred.
-
         """
         # HACK: Treat the static disk as if it had infinite mass
         old_mass, other.mass = other.mass, float("inf")
