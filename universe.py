@@ -105,12 +105,12 @@ class Universe:
         A smaller max_nonstar_size speeds up collision-detection, so choose the smallest value
         possible.
 
-        Raises a ValueError if star_size is a float and not strictly positive.
+        If star_size is not None, raises a ValueError if it isn't finite and strictly positive.
         """
         self.max_nonstar_size = max_nonstar_size
         self.__star: PosVel | Star = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
         if star_size is not None:
-            if not star_size > 0:
+            if not (math.isfinite(star_size) and star_size > 0):
                 raise ValueError
             self.__star = Star(self.__star, Vec2(0, 0), star_size)
 
