@@ -169,3 +169,17 @@ def test_disk_bounce() -> None:
         assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1
+
+
+def test_disk_intersection() -> None:
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(), radius=2, color=Color(0, 0, 0))
+    disk_b = Disk(disk_a, Vec2(2, 1), Vec2(), radius=1, color=Color(0, 0, 0))
+    assert disk_a.intersects_disk(disk_b)
+    assert disk_b.intersects_disk(disk_a)
+
+    disk_c = Disk(disk_a, Vec2(3, 1), Vec2(), radius=0.5, color=Color(0, 0, 0))
+    assert not disk_a.intersects_disk(disk_c)
+    assert not disk_c.intersects_disk(disk_a)
+
+    assert disk_b.intersects_disk(disk_c)
+    assert disk_c.intersects_disk(disk_b)
