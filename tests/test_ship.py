@@ -15,6 +15,14 @@ def test_cooldown() -> None:
     Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=1))
     with pytest.raises(ValueError):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=-1))
+    with pytest.raises(ValueError):
+        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=0))
+    with pytest.raises(ValueError):
+        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("inf")))
+    with pytest.raises(ValueError):
+        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("-inf")))
+    with pytest.raises(ValueError):
+        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("nan")))
 
 
 def test_shooting() -> None:

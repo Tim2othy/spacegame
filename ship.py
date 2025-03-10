@@ -80,7 +80,7 @@ class Ship(Disk):
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship.
 
-        Raises a ValueError if `config.gun_cooldown` is not strictly positive.
+        Raises a ValueError if `config.gun_cooldown` is not finite and strictly positive.
         """
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, config.color)
         self.size: float = config.size
@@ -89,7 +89,7 @@ class Ship(Disk):
         self.damage_indicator_timer: float = 0
 
         self.projectiles: list[Bullet] = []
-        if not config.gun_cooldown > 0:
+        if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
             raise ValueError
         self._gun_cooldown: float = config.gun_cooldown
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE

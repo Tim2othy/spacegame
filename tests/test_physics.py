@@ -14,6 +14,8 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 def test_mass_positive() -> None:
     Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
     with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
+    with pytest.raises(ValueError):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
     with pytest.raises(ValueError):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
