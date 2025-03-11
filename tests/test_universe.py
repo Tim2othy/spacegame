@@ -7,7 +7,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
 from ship import PlayerConfig, PlayerShip
-from universe import Planet, PlanetConfig, Universe
+from universe import Planet, PlanetConfig, Star, Universe, UniverseOptions
 
 
 def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -178,6 +178,18 @@ def test_gravitational_well() -> None:
                 "Gravity should have pulled the object to the planet's surface within 25 seconds."
                 " This test might fail because player-ships or planets are destroyed when crashing into the planet."
             )
+
+
+@pytest.mark.parametrize("small_universe", [True, False])
+def test_star_has_majority_of_mass_in_universe(*, small_universe: bool) -> None:
+    universe, _ = Universe.from_options(UniverseOptions(small=small_universe, splitscreen=True, invincible=False))
+    star: Star = getattr(universe, "_Universe__star")  # Promise me to NEVER do this outside of tests  # noqa: B009
+    star_mass = star.mass
+    other_mass = sum(
+        body.mass for body in chain(universe._player_ships, universe._enemy_ships, *universe._planet_chunks.values())
+    )
+    total_mass = star_mass + other_mass
+    assert star.mass / total_mass > 0.99, "Universe's star should contain most of the mass"
 
 
 def test_planet_generation() -> None:
