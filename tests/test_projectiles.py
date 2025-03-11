@@ -2,18 +2,21 @@ import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from projectiles import Bullet, Missile, Rocket
-from ship import Ship
+from physics import PosVel
+from projectiles import Missile, Rocket
+from ship import Ship, ShipConfig
+
+ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
 @pytest.mark.parametrize("bullet_type", [Missile, Rocket])
-def test_homing(bullet_type: type[Bullet]):
-    ship = Ship(Vec2(512, -1024), Vec2(4, 8), 10)
-    projectile = bullet_type(Vec2(10, -15), Vec2(8, 29), Color(0, 0, 0), ship)
+def test_homing(bullet_type: type[Missile | Rocket]) -> None:
+    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
+    projectile = bullet_type(ship, Vec2(-500, -500), Vec2(100, 0), Color(0, 0, 0), ship)
 
     for _ in range(2000):
         projectile.step(0.01)
         ship.step(0.01)
-        if ship.intersects_point(projectile.pos):
+        if ship.contains_center_of(projectile):
             return
     pytest.fail("The projectile should have hit the ship.")

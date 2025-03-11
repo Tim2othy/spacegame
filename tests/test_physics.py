@@ -6,82 +6,87 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Disk, PhysicalObject
+from physics import Body, Disk, Pos, PosVel
+
+ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
-def test_step():
-    obj = PhysicalObject(Vec2(0, 0), Vec2(1, -1), 1)
+def test_mass_positive() -> None:
+    Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
+    with pytest.raises(ValueError):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
+
+
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+def test_relativity(relative_pos: Vec2) -> None:
+    obj = Pos(ORIGIN, relative_pos)
+    assert obj.pos_relative_to(ORIGIN) == relative_pos
+    assert ORIGIN.pos_relative_to(obj) == -relative_pos
+
+
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+@pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
+    obj = PosVel(ORIGIN, relative_pos, relative_vel)
+    assert obj.pos_relative_to(ORIGIN) == relative_pos
+    assert obj.vel_relative_to(ORIGIN) == relative_vel
+    assert ORIGIN.pos_relative_to(obj) == -relative_pos
+    assert ORIGIN.vel_relative_to(obj) == -relative_vel
+
+
+@pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
+def test_step(relative_pos: Vec2) -> None:
+    obj = PosVel(ORIGIN, relative_pos, Vec2(1, -1))
     obj.step(0.25)
-    assert obj.pos == Vec2(0.25, -0.25)
+    assert obj.pos_relative_to(ORIGIN) - relative_pos == Vec2(0.25, -0.25)
 
 
-def test_gravitational_force():
-    obj = PhysicalObject(Vec2(), Vec2(), 1)
-    small_force = obj.gravitational_force(PhysicalObject(Vec2(1, 2), Vec2(), 1))
-    large_force = obj.gravitational_force(PhysicalObject(Vec2(-1, 2), Vec2(), 2))
-    double_distance_force = obj.gravitational_force(PhysicalObject(Vec2(2, 4), Vec2(), 1))
+def test_gravitational_force() -> None:
+    obj = Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    small_force = obj.gravitational_force(Body(obj, Vec2(1, 2), Vec2(0, 0), 1))
+    large_force = obj.gravitational_force(Body(obj, Vec2(-1, 2), Vec2(0, 0), 2))
+    double_distance_force = obj.gravitational_force(Body(obj, 2 * Vec2(1, 2), Vec2(0, 0), 1))
     assert small_force.x > 0
     assert small_force.y > 0
     assert large_force.x < 0
     assert large_force.y > 0
     assert double_distance_force.x > 0
     assert double_distance_force.y > 0
-    assert isclose(2, large_force.magnitude() / small_force.magnitude())
-    assert isclose(4, small_force.magnitude() / double_distance_force.magnitude())
+    assert isclose(2, large_force.length() / small_force.length())
+    assert isclose(4, small_force.length() / double_distance_force.length())
 
 
-def test_threedimensional_disk_mass_scaling():
+def test_threedimensional_disk_mass_scaling() -> None:
     radius = 1.23
-    disk = Disk(Vec2(), Vec2(), radius)
-    double_size_disk = Disk(Vec2(), Vec2(), radius * 2)
+    disk = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius)
+    double_size_disk = Disk(disk, Vec2(0, 0), Vec2(0, 0), radius * 2)
 
-    assert isclose(
-        2**3, double_size_disk.mass / disk.mass
-    ), "Scaling the radius by `t` should scale the mass by a factor `t**3`"
-
-
-@pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(10, 0), Vec2(10, -20)])
-def test_relative_bounce(relative_vel: Vec2):
-    # Bounces should work the same if the disks have the same velocity relative
-    # to each other. So if we add an absolute_vel to their velocities, the
-    # result shouldn't change.
-    bounces: list[tuple[Disk, Disk]] = []
-
-    for absolute_vel in [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)]:
-        disk_a = Disk(Vec2(0, 0), absolute_vel + relative_vel, 1)
-        disk_b = Disk(Vec2(1, 0), absolute_vel, 1)
-
-        relative_vel, disk_a.vel - disk_b.vel
-        disk_a.bounce_off_of_disk(disk_b)
-        relative_vel, disk_a.vel - disk_b.vel
-
-        assert disk_a.vel.y == (absolute_vel + relative_vel).y, "Disk's vertical velocity should be unchanged"
-        assert disk_a.vel.x < (absolute_vel + relative_vel).x - 0.1, "Disk's horizontal velocity should be reduced"
-        assert disk_b.vel.y == absolute_vel.y, "Disk's vertical velocity should be unchanged"
-        assert disk_b.vel.x == absolute_vel.x, "Disk's horizontal velocity should be unchanged"
-
-        bounces.append((disk_a, disk_b))
-
-    # All the bounces should turn out the same, so compare them to the first bounces
-    comparison_a, comparison_b = bounces[0]
-    for disk_a, disk_b in bounces[1:]:
-        assert isclose(
-            0, (disk_a.pos - disk_b.pos - comparison_a.pos + comparison_b.pos).magnitude()
-        ), "Bounce positions should agree relatively"
-        assert isclose(
-            0, (disk_a.vel - disk_b.vel - comparison_a.vel + comparison_b.vel).magnitude()
-        ), "Bounce velocities should agree relatively"
+    assert isclose(2**3, double_size_disk.mass / disk.mass), (
+        "Scaling the radius by `t` should scale the mass by a factor `t**3`"
+    )
 
 
-def test_disk_drawing():
+def test_disk_drawing() -> None:
     width, height = 50, 50
     color = Color(255, 0, 0)
     black = Color(0, 0, 0)
-    camera_center = Vec2(-3, 4)
-    camera = Camera(camera_center, 1, Surface((width, height)))
-    disk = Disk(Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
+
+    camera_center = PosVel(ORIGIN, Vec2(-3, 4), Vec2(0, 0))
+    camera = Camera(Surface((width, height)), camera_center, zoom=1.0)
+    camera.step()
+
+    disk = Disk(ORIGIN, Vec2(1, 0), Vec2(0, 0), radius=10, color=color)
     disk.draw(camera)
-    camera.surface.lock()
+
+    camera._surface.lock()
 
     good = 0
     bad = 0
@@ -89,12 +94,12 @@ def test_disk_drawing():
 
     for y in range(height):
         for x in range(width):
-            pixel = camera.surface.get_at((x, y))
+            pixel = camera._surface.get_at((x, y))
             # Ignore anti-aliasing
             if pixel in (color, black):
                 pixel_circle = pixel == color
-                worldcoor = Vec2(x, y) + camera_center - Vec2(width, height) / 2
-                coordinate_circle = disk.pos.distance_to(worldcoor) < disk.radius
+                worldcoor = Pos(camera_center, Vec2(x, y) - Vec2(width, height) / 2)
+                coordinate_circle = disk.distance_to(worldcoor) < disk.radius
 
                 if pixel_circle:
                     drawn += 1
@@ -105,26 +110,42 @@ def test_disk_drawing():
                     bad += 1
 
     threshold = 0.02
-    assert isclose(
-        good, (good + bad), rel_tol=threshold
-    ), "The drawn circle should mostly agree with the idealised circle"
+    assert isclose(good, (good + bad), rel_tol=threshold), (
+        "The drawn circle should mostly agree with the idealised circle"
+    )
 
     rect_area = width * height
     circle_area = disk.radius**2 * math.pi
-    assert isclose(
-        drawn, circle_area, abs_tol=rect_area * threshold
-    ), "The area we drew should be close in size to the circle's idealised area"
+    assert isclose(drawn, circle_area, abs_tol=rect_area * threshold), (
+        "The area we drew should be close in size to the circle's idealised area"
+    )
 
-    camera.surface.unlock()
+    camera._surface.unlock()
 
 
-def test_disk_bounce():
-    disk_a = Disk(Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
-    disk_b = Disk(Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
+def test_simple_disk_bounce() -> None:
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
+
+    disk_a.bounce_off_of_disk(disk_b)
+
+    assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_a.vel_relative_to(ORIGIN).x > 0.05, (
+        "Disk's horizontal velocity should be increased due to non-elastic bounce"
+    )
+    assert disk_b.vel_relative_to(disk_a).y == 0, "Disk's vertical velocity should be unchanged"
+    assert disk_b.vel_relative_to(disk_a).x < 1 - 0.05, (
+        "Disk's horizontal velocity should be reduced due to non-elastic bounce"
+    )
+
+
+def test_disk_bounce() -> None:
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
+    disk_b = Disk(disk_a, Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
 
     assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 
-    disk_c = Disk(Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
+    disk_c = Disk(disk_a, Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
 
     bounce_count = 0
     for _ in range(200):
@@ -135,18 +156,30 @@ def test_disk_bounce():
             bounce_count += 1
             assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
 
-            assert isclose(disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)), "Disks should be flush"
+            assert isclose(disk_c.radius + disk_b.radius, disk_c.distance_to(disk_b)), "Disks should be flush"
         else:
-            assert not isclose(
-                disk_c.radius + disk_b.radius, disk_c.pos.distance_to(disk_b.pos)
-            ), "Disks should not be flush"
+            assert not isclose(disk_c.radius + disk_b.radius, disk_c.distance_to(disk_b)), "Disks should not be flush"
         if bounce_count <= 0:
-            assert disk_c.vel == Vec2(1, 0)
-            assert disk_b.vel == Vec2(0, 0)
+            assert disk_c.vel_relative_to(ORIGIN) == Vec2(1, 0)
+            assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0)
         if bounce_count >= 1:
-            assert disk_c.vel.x < 0, "Disk should be moving to the left"
-            assert disk_c.vel.y > 0, "Disk should be moving up"
+            assert disk_c.vel_relative_to(ORIGIN).x < 0, "Disk should be moving to the left"
+            assert disk_c.vel_relative_to(ORIGIN).y > 0, "Disk should be moving up"
 
-        assert disk_b.vel == Vec2(0, 0), "Disk_b should be unaffected"
+        assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1
+
+
+def test_disk_intersection() -> None:
+    disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(), radius=2, color=Color(0, 0, 0))
+    disk_b = Disk(disk_a, Vec2(2, 1), Vec2(), radius=1, color=Color(0, 0, 0))
+    assert disk_a.intersects_disk(disk_b)
+    assert disk_b.intersects_disk(disk_a)
+
+    disk_c = Disk(disk_a, Vec2(3, 1), Vec2(), radius=0.5, color=Color(0, 0, 0))
+    assert not disk_a.intersects_disk(disk_c)
+    assert not disk_c.intersects_disk(disk_a)
+
+    assert disk_b.intersects_disk(disk_c)
+    assert disk_c.intersects_disk(disk_b)

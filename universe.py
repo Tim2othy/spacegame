@@ -4,29 +4,27 @@ from __future__ import annotations
 
 import math
 import random
+from dataclasses import dataclass, field
 from itertools import chain
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, Particle, PhysicalObject
+from physics import Body, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
-from ship import MissileEnemy
+from projectiles import Missile
+from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator, Sequence
 
     from camera import Camera
     from projectiles import Bullet
-    from ship import BulletEnemy, PlayerShip
+    from ship import Ship
 
-from constants import (
-    FPS_HISTORY_LENGTH,
-    GRAVITATIONAL_CONSTANT,
-    GRID_COLOR,
-)
+from constants import ENEMY_SPAWN_WEIGHTS, FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
 
 PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
@@ -36,36 +34,57 @@ ORBIT_CORRELATION_FACTOR = 0.05
 class Star(Disk):
     """A stationary disk."""
 
-    def __init__(self, pos: Vec2, radius: float) -> None:
-        """Create a new star.
+    def __init__(self, relative_to: PosVel, relative_pos: Vec2, radius: float) -> None:
+        """Create a new star."""
+        star_color = Color(random.randint(200, 255), random.randint(150, 255), random.randint(0, 150))
+        super().__init__(relative_to, relative_pos, Vec2(0, 0), radius, star_color)
 
-        Args:
-            pos (Vec2): Fixed position
-            radius (float): Radius
 
-        """
-        color = Color(random.randint(200, 255), random.randint(150, 255), random.randint(0, 150))
-        super().__init__(pos, Vec2(0, 0), radius, color)
+@dataclass(kw_only=True)
+class PlanetConfig:
+    """Configuration for a planet.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the planet
+        relative_vel (Vec2): Relative velocity of the planet
+        radius (float): Radius of the planet
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    radius: float
 
 
 class Planet(Disk):
     """A disk that doesn't exert gravitational force, and isn't stationary."""
 
-    def __init__(self, pos: Vec2, vel: Vec2, radius: float) -> None:
-        """Create a new Planet.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            radius (float): Radius
-
-        """
+    def __init__(self, relative_to: PosVel, config: PlanetConfig) -> None:
+        """Create a new Planet."""
         color = Color(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
-        super().__init__(pos, vel, radius, color)
+        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.radius, color)
 
 
 type PlanetChunk = tuple[int, int]
-type StarChunk = tuple[int, int]
+
+
+@dataclass
+class UniverseOptions:
+    """Options for creating pre-made universes.
+
+    Attributes:
+        small (bool): Whether the universe should be small
+        splitscreen (bool): Whether there should be one or two players
+        invincible (bool): Whether players should be invincible
+
+    """
+
+    small: bool = False
+    splitscreen: bool = False
+    invincible: bool = False
+
+
+T = TypeVar("T", bound=BulletEnemy)
 
 
 class Universe:
@@ -75,17 +94,10 @@ class Universe:
     Coordinates are implicitly zero-based.
     """
 
-    def __init__(
-        self,
-        size: Vec2,
-        stars: list[Star],
-        player_ships: list[PlayerShip],
-        enemy_ships: list[BulletEnemy],
-        max_nonstar_size: float,
-    ) -> None:
-        """Create a new universe.
+    def __init__(self, star_size: float | None, max_nonstar_size: float) -> None:
+        """Create a new universe that can have one star at the center.
 
-        Assumes stars are immutable.
+        If star_size is None, the universe will have no star, otherwise it will have a star of size star_size.
 
         Assumes every planet and ship has an axis-aligned-bounding-box
         of size at most max_nonstar_size. For disks, that means their diameter must not
@@ -93,264 +105,203 @@ class Universe:
         A smaller max_nonstar_size speeds up collision-detection, so choose the smallest value
         possible.
 
-        Raises a ValueError if any player-ship or enemy-ship is larger than max_nonstar_size.
-
-        Args:
-            size (Vec2): Width and height
-            stars (list[Star]): Stars
-            player_ships (list[Ship]): List of player-ships
-            enemy_ships (list[BulletEnemy]): Enemy fleet
-            max_nonstar_size: float
-
+        If star_size is not None, raises a ValueError if it isn't finite and strictly positive.
         """
-        self.size = Vec2(size)
         self.max_nonstar_size = max_nonstar_size
+        self.__star: PosVel | Star = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
+        if star_size is not None:
+            if not (math.isfinite(star_size) and star_size > 0):
+                raise ValueError
+            self.__star = Star(self.__star, Vec2(0, 0), star_size)
 
-        if any(2 * ship.radius > max_nonstar_size for ship in player_ships) or any(
-            2 * ship.radius > max_nonstar_size for ship in enemy_ships
-        ):
-            raise ValueError
+        self._player_ships: list[PlayerShip] = []
+        self._enemy_ships: list[BulletEnemy] = []
 
-        self._player_ships = player_ships
-        self._enemy_ships = enemy_ships
+        def pobj_to_planet_chunk(pos: Pos) -> PlanetChunk:
+            pos_in_universe = pos.pos_relative_to(self.__star) / max_nonstar_size
+            return (math.floor(pos_in_universe.x), math.floor(pos_in_universe.y))
 
-        self._vec_to_planet_chunk = lambda vec: (
-            math.floor(vec.x / max_nonstar_size),
-            math.floor(vec.y / max_nonstar_size),
-        )
+        self._pobj_to_planet_chunk: Callable[[Pos], PlanetChunk] = pobj_to_planet_chunk
         self._planet_chunks: dict[PlanetChunk, list[Planet]] = {}
-
-        star_chunk_size = max(500, 2 * max([p.radius for p in stars], default=0))
-        self._vec_to_star_chunk = lambda vec: (
-            math.floor(vec.x / star_chunk_size),
-            math.floor(vec.y / star_chunk_size),
-        )
-        self._star_chunks: dict[StarChunk, list[Star]] = {}
-        for star in stars:
-            chunk = self._vec_to_star_chunk(star.pos)
-            self._star_chunks.setdefault(chunk, []).append(star)
-        self.stars = stars
 
         self._particles: list[Particle] = []
 
-    def add_planet(self, *args: Planet) -> None:
-        """Add planets to the universe.
+    def add_player(self, ship_config: PlayerConfig, *, relative_to: None | PosVel = None) -> PlayerShip:
+        """Add a player-ship from its config and return (a reference to) the created ship.
 
-        Raises a ValueError if the planet's size exceeds the universe's max_nonstar_size.
-
-        TODO: We could also check if the planet's size exceeds max_nonstar_size, and if it does,
-        update max_nonstar_size and rebuild the chunks. Would be slow, but should hopefully happen
-        rarely, would provide a better API (callers need not settle on a size limit upfront), and
-        wouldn't cause runtime-exceptions.
+        If relative_to is None, the planet is created relative to the universe's star.
         """
-        for planet in args:
-            if planet.radius * 2 > self.max_nonstar_size:
-                raise ValueError
-            chunk = self._vec_to_planet_chunk(planet.pos)
-            self._planet_chunks.setdefault(chunk, []).append(planet)
+        ship = PlayerShip(relative_to or self.__star, ship_config)
+        self._player_ships.append(ship)
+        return ship
 
-    def _nearby_stars(self, vec: Vec2) -> Iterator[Star]:
-        (x, y) = self._vec_to_star_chunk(vec)
-        for i in range(-1, 2):
-            for j in range(-1, 2):
-                chunk = (x + i, y + j)
-                yield from self._star_chunks.get(chunk, [])
+    def add_enemy(self, ship_config: EnemyConfig, ship_type: type[T], *, relative_to: None | PosVel = None) -> T:
+        """Add an enemy-ship from its config and return (a reference to) the created ship.
 
-    def _nearby_planets(self, vec: Vec2) -> Iterator[Planet]:
-        (x, y) = self._vec_to_planet_chunk(vec)
+        If relative_to is None, the planet is created relative to the universe's star.
+        """
+        ship = ship_type(relative_to or self.__star, ship_config)
+        self._enemy_ships.append(ship)
+        return ship
+
+    def add_planet(self, planet_config: PlanetConfig, *, relative_to: None | PosVel = None) -> Planet:
+        """Add a planet from its config. Returns (a reference to) the created planet.
+
+        If relative_to is None, the planet is created relative to the universe's star.
+        Raises a ValueError if the planet's radius exceeds the max_nonstar_size.
+        """
+        if planet_config.radius * 2 > self.max_nonstar_size:
+            raise ValueError
+        planet = Planet(relative_to or self.__star, planet_config)
+        chunk = self._pobj_to_planet_chunk(planet)
+        self._planet_chunks.setdefault(chunk, []).append(planet)
+        return planet
+
+    def _nearby_planets(self, pos: Pos) -> Iterator[Planet]:
+        (x, y) = self._pobj_to_planet_chunk(pos)
         for i in range(-1, 2):
             for j in range(-1, 2):
                 chunk = (x + i, y + j)
                 yield from self._planet_chunks.get(chunk, [])
 
-    def apply_gravity_to_obj(self, dt: float, pobj: PhysicalObject) -> None:
-        """Affect pobj by `self`'s entire gravity.
-
-        Args:
-            dt (float): Passed time
-            pobj (PhysicalObject): Object to affect
-
-        """
+    def apply_gravity_to(self, pobj: Body, dt: float) -> None:
+        """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
-        # We can assume only one Star exists
-        for body in self.stars:
+
+        if isinstance(self.__star, Star):
+            force_sum += pobj.gravitational_force(self.__star)
+        for body in self._nearby_planets(pobj):
             force_sum += pobj.gravitational_force(body)
 
-        for body in self._nearby_planets(pobj.pos):
-            force_sum += pobj.gravitational_force(body)
         pobj.apply_force(force_sum, dt)
 
     @global_profiler.profile_method
     def apply_gravity(self, dt: float) -> None:
-        """Apply gravity to all of `self`'s objects.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply gravity to all of `self`'s objects."""
         for pobj in chain(self._player_ships, self._enemy_ships, *self._planet_chunks.values()):
-            self.apply_gravity_to_obj(dt, pobj)
+            self.apply_gravity_to(pobj, dt)
 
     @global_profiler.profile_method
     def apply_bounce(self) -> None:
         """Run all bounce-interactions within `self`."""
-        # Bounce-Hierarchy:
-        # player_ships > enemy_ships > planets
-        # Stars are separate.
+        ships: Sequence[Ship] = [*self._player_ships, *self._enemy_ships]
 
-        # Bounce player_ships
-        for player in self._player_ships:
-            # For now, don't bounce player-ships off of other player-ships
-            for body in chain(self._enemy_ships, self._nearby_planets(player.pos)):
-                if damage := player.bounce_disks(body) is not None:
-                    player.suffer_damage(damage)
-                    self.create_particles_on_disk(body, player.pos, 25, player.color, 100)
-            for star in self._nearby_stars(player.pos):
-                if damage := player.bounce_off_of_disk(star) is not None:
-                    player.suffer_damage(damage)
-                    self.create_particles_on_disk(star, player.pos, 25, player.color, 100)
-
-        # Bounce enemy_ships
-        for ix, enemy_ship in enumerate(self._enemy_ships):
-            # But it *is* fun to bounce enemies off of each other
-            for body in chain(self._enemy_ships[ix + 1 :], self._nearby_planets(enemy_ship.pos)):
-                if damage := enemy_ship.bounce_disks(body) is not None:
-                    enemy_ship.suffer_damage(damage)
-                enemy_ship.bounce_disks(body)
-            for star in self._nearby_stars(enemy_ship.pos):
-                if damage := enemy_ship.bounce_off_of_disk(star) is not None:
-                    enemy_ship.suffer_damage(damage)
-                enemy_ship.bounce_off_of_disk(star)
+        for ix, ship in enumerate(ships):
+            # Bounce ships off of each other
+            for other_ship in ships[ix + 1 :]:
+                if damage := ship.bounce_disks(other_ship) is not None:
+                    ship.suffer_damage(damage)
+                    other_ship.suffer_damage(damage)
+                    self.create_particles_on_disk(ship, other_ship, 25, other_ship.color, 100)
+                    self.create_particles_on_disk(other_ship, ship, 25, ship.color, 100)
+            for planet in self._nearby_planets(ship):
+                if damage := ship.bounce_disks(planet) is not None:
+                    ship.suffer_damage(damage)
+                    self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
+            if isinstance(self.__star, Star) and ship.intersects_disk(self.__star):
+                ship.suffer_damage(1e100)  # 💀
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
-            for body in self._nearby_planets(planet.pos):
+            # TODO: Could this be optimised by not checking all pairs of planets?
+            for body in self._nearby_planets(planet):
                 planet.bounce_disks(body)
-            for star in self._nearby_stars(planet.pos):
-                planet.bounce_off_of_disk(star)
+            # TODO: This is unrealistic and dumb, but destroying planets that fall into the star
+            # isn't fun, either? At any rate, if nobody bounces off of stars anymore, we can probably
+            # finally deprecate Disk.bounce_off_of_disk (I hate that method)
+            if isinstance(self.__star, Star):
+                planet.bounce_off_of_disk(self.__star)
 
-    def create_particles_on_disk(
-        self, disk: Disk, pos: Vec2, n: int, color: Color, blast_vel: float, lifetime: float = 1.0
-    ) -> None:
+    def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles on the disk's surface.
 
-        `pos` is projected onto `disk`'s surface, with velocity randomly sampled to face
-        away from `disk` with max-magnitude `blast_vel` in addition to `disk`'s current velocity.
+        `projected_from` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        away from `disk` with max-length `blast_vel` in addition to `disk`'s current velocity.
         Colors are randomly sampled from interpolation
         between `disk.color` and `color`.
 
-        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        The particles' lifetime is randomly sampled from (0.5, 1.0).
 
         If pos is exactly on disk's center, nothing happens.
         """
-        delta = pos - disk.pos
+        delta = projected_from.pos_relative_to(disk)
         if delta == Vec2(0, 0):
             return
         delta_normalized = delta.normalize()
-        projected = disk.pos + delta_normalized * disk.radius
+        projected_relative_to_center = delta_normalized * disk.radius
         for _ in range(n):
+            random_lifetime = random.uniform(0.5, 1.0)
             random_angle = random.uniform(-90.0, 90.0)
-            random_vel = disk.vel + delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_vel = delta_normalized.rotate(random_angle) * blast_vel * random.random()
             random_color = disk.color.lerp(color, random.random())
-            random_lifetime = random.uniform(lifetime / 2.0, lifetime)
-            self._particles.append(Particle(projected, random_vel, random_color, random_lifetime))
+            self._particles.append(
+                Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
+            )
 
-    def create_particle_cloud(
-        self, pos: Vec2, n: int, color: Color, initial_vel: Vec2, blast_vel: float, lifetime: float = 1.0
-    ) -> None:
+    def create_particle_cloud(self, source: PosVel, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles forming a blast-cloud around pos.
 
         Particles' velocity are spherically sampled with length between 0 and blast_vel, added
         to `initial_vel`.
 
-        The particles' lifetime is randomly sampled from (lifetime/2, lifetime).
+        The particles' lifetime is randomly sampled from (1.0, 2.0).
         """
         for _ in range(n):
-            random_vel = Vec2()
+            random_lifetime = random.uniform(1.0, 2.0)
+            random_vel = Vec2(0, 0)
             random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
-            vel = initial_vel + random_vel
-            random_lifetime = random.uniform(lifetime / 2, lifetime)
-            self._particles.append(Particle(pos, vel, color, random_lifetime))
+            self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet, target_ships: list, is_player_projectile: bool) -> bool:
-            """Check for collision and return whether the projectile should stay alive.
+        def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
+            """Check for collision and return whether the projectile should stay alive."""
+            # TODO: Add lifetime to bullets. The universe being unbounded now, they life forever and
+            # will cause eventual lag.
 
-            Args:
-                projectile (Bullet): The projectile to check
-                target_ships (list): Ships that can be hit by this projectile
-                is_player_projectile (bool): Whether this is a player's projectile
-
-            Returns:
-                bool: True if the projectile should stay alive, False otherwise
-
-            """
-            if not self.contains_point(projectile.pos):
+            if isinstance(self.__star, Star) and self.__star.contains_center_of(projectile):
                 return False
-            for body in chain(self._nearby_planets(projectile.pos), self._nearby_stars(projectile.pos)):
-                if body.intersects_point(projectile.pos):
-                    self.create_particles_on_disk(body, projectile.pos, 5, projectile.color, 250)
+            # TODO: Projectiles aren't destroyed by the star, are they?
+            for planet in self._nearby_planets(projectile):
+                if planet.contains_center_of(projectile):
+                    self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
                     return False
-            for ship in target_ships:
-                if ship.intersects_point(projectile.pos):
-                    self.create_particle_cloud(ship.pos, 100, ship.color, ship.vel, 150, 2)
+            for ship in ships_it_can_hit:
+                if ship.contains_center_of(projectile):
+                    self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
-                    if ship.health <= 0:
-                        self.create_particle_cloud(ship.pos, 300, ship.color, ship.vel, 200, 8)
-                        if is_player_projectile:
-                            self._enemy_ships.remove(
-                                ship
-                            )  # TODO: We should probably do _enemy_ships.remove(ship) somewhere else, not
-                            # sure where though. Then we could also remove the boolean positional argument.
                     return False
-                if isinstance(ship, MissileEnemy):
-                    for enemy_projectile in ship.projectiles[:]:
-                        collision_distance = 10
-                        if (projectile.pos - enemy_projectile.pos).length() < collision_distance:
-                            ship.projectiles.remove(enemy_projectile)
-                            return False
+                # TODO: Should we just change `class Bullet(Body)` to `class Bullet(Disk)`,
+                # i.e. have Bullet inherit from Disk instead of just Body? That'd make this whole
+                # collision-detection more idiomatic. If we do, we can also change the above calls
+                # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
+                # We should then also change the same call in test_projectiles.py.
+                if isinstance(projectile, Missile) and any(
+                    other_projectile.distance_squared_to(projectile) < 10**2 for other_projectile in ship.projectiles
+                ):
+                    return False
 
             return True
 
         for player in self._player_ships:
-            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships, True)]
+            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships)]
 
         for enemy in self._enemy_ships:
-            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships, False)]
+            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
 
-        Args:
-            keys (pygame.key.ScancodeWrapper): Pressed keys
-
+        `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
         for player_ship in self._player_ships:
             player_ship.handle_input(keys)
 
-    def move_camera(self, camera: Camera, player_ix: int, dt: float) -> None:
-        """Move the camera to `self.player_ships[player_ix]`.
-
-        Args:
-            camera (Camera): Camera to move
-            player_ix (int): Player to focus on
-            dt (float): Passed time
-
-        """
-        ship = self._player_ships[player_ix]
-        camera.smoothly_focus_points([ship.pos, ship.pos + 1.0 * ship.vel], 500, dt)
-
     @global_profiler.profile_method
     def step(self, dt: float) -> None:
-        """Run the universe-logic, also for the object `self` contains.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Run the universe-logic, also for the object `self` contains."""
         # Ship
         for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
@@ -360,31 +311,29 @@ class Universe:
         for planets in self._planet_chunks.values():
             for planet in planets:
                 planet.step(dt)
-                new_chunk = self._vec_to_planet_chunk(planet.pos)
+                new_chunk = self._pobj_to_planet_chunk(planet)
                 new_planet_chunks.setdefault(new_chunk, []).append(planet)
         self._planet_chunks = new_planet_chunks
 
-        self._particles = [p for p in self._particles if p.step(dt)]
+        self._particles = [p for p in self._particles if p.step_and_survives(dt)]
 
         # Physics
         self.apply_gravity(dt)
         self.apply_bounce()
         self.collide_bullets()
+        self._enemy_ships = [ship for ship in self._enemy_ships if ship.health > 0]
 
     @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
-        """Draw `self`'s parallaxing background on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self`'s parallaxing background on `camera`."""
+        # TODO: Update this with respect to relativity.
+        return
         # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
         random_state = random.getstate()
         # TODO: Try caching star-chunks to their final on-screen locations.
         # If doing that, also optimise x_chunk_size for performance (via profiling) again.
-        camera.surface.lock()
-        camera_size = Vec2(camera.surface.get_size())
+        camera._surface.lock()
+        camera_size = Vec2(camera._surface.get_size())
         x_chunk_size = 3500  # This value is profiling-optimised for non-cached star-chunks.
         y_chunk_size = x_chunk_size * camera_size.y / camera_size.x
         z_chunk_size = 1000
@@ -415,8 +364,8 @@ class Universe:
         it's helpful to imagine it)
 
         - p is the player-ship
-        - The ━heavy━line━ (at z = 1 * z_chunk_size) is the plane containing the player-ship,
-          stars and planets
+        - The ━heavy━line━ (at worldspace_z = 1 * z_chunk_size) is the plane containing
+          the player-ship, stars and planets
         - Here, z_chunk_min=2 and z_chunk_max=4.
         - The rectangular grid comprises the chunks. Each rectangle thus has height z_chunk_size,
           and width x_chunk_size.
@@ -525,38 +474,27 @@ class Universe:
 
                         camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
 
-        camera.surface.unlock()
+        camera._surface.unlock()
         random.setstate(random_state)
 
     @global_profiler.profile_method
-    def draw(self, camera: Camera) -> None:
-        """Draw all of `self` on `camera`.
+    def draw(self, camera: Camera, *, minimap: bool = False) -> None:
+        """Draw all of `self` on `camera`."""
+        if not minimap:
+            for particle in self._particles:
+                particle.draw(camera)
+            self.draw_background(camera)
+            self.draw_grid(camera)
 
-        Args:
-            camera (Camera): Camera to draw on
+        for obj in chain(*self._planet_chunks.values(), self._enemy_ships, self._player_ships):
+            obj.draw(camera)
 
-        """
-        for pobj in chain(
-            *self._planet_chunks.values(),
-            *self._star_chunks.values(),
-            self._enemy_ships,
-            self._player_ships,
-        ):
-            pobj.draw(camera)
-
-        for particle in self._particles:
-            particle.draw(camera)
+        if isinstance(self.__star, Star):
+            self.__star.draw(camera)
 
     @global_profiler.profile_method
-    def draw_text(self, camera: Camera, player_ix: int, fps: float) -> None:
-        """Draw "debugging" text on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-            player_ix (int): Player to display information about
-            fps (float): Current fps
-
-        """
+    def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
+        """Draw "debugging" text on `camera`."""
         font_size = 32
         font = pygame.font.Font(None, font_size)
 
@@ -566,24 +504,25 @@ class Universe:
             return vertical_offset + font_size
 
         text_v = 10
-        player_ship = self._player_ships[player_ix]
         text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
-        text_v = texty(text_v, f"Health: {player_ship.health:.0f}")
+        text_v = texty(text_v, f"Health: {player.health:.0f}")
 
         enemy_count = len(self._enemy_ships)
         texty(text_v, f"Enemies left: {enemy_count}")
 
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
-        """Draw grid on `camera`.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw gridlines on `camera`."""
+        # TODO: Choose one of these options:
+        # 1. Use a grid clamped to the camera's position (universe is unbounded now)
+        # 2. Use a polar grid centered on self.star, clamped to the camera's position
+        # 3. Don't use any grid at all (the background-stars will guide your way)
+        #
+        # I like option 2.    ~lumi-a
+        return
         gridline_spacing = 500
-        width = self.size.x
-        height = self.size.y
+        width = 3000
+        height = 3000
 
         for x in range(0, int(width + 1), gridline_spacing):
             camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)
@@ -591,25 +530,9 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
-    def contains_point(self, vec: Vec2) -> bool:
-        """Test whether `vec` is contained in `self`'s boundaries.
-
-        Args:
-            vec (Vec2): Vec to test for containment
-
-        Returns:
-            bool: True iff `self` contains `vec`
-
+    def generate_planet(self, disk: Disk | None = None) -> Planet:
+        """Create a planet orbiting a Disk, defaulting to the universe's star."""
         """
-        return 0 <= vec.x <= self.size.x and 0 <= vec.y <= self.size.y
-
-    def generate_planet(self, star: Star, num_planets: int) -> None:
-        """Create a num_planets orbiting a star, with orbits that won't intersect.
-
-        Args:
-            star (Star): The star to orbit
-            num_planets (int): Number of planets to generate
-
         What the random variables do:
         - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
         - radius_planet   - follows a lognormal distribution.
@@ -629,33 +552,76 @@ class Universe:
         6. Updates the minimum allowed semi-major axis for the next planet.
 
         """
-        # Start just outside the star's radius
-        current_min_a = star.radius * 2
+
+        if disk is None:
+            if not isinstance(self.__star, Star):
+                # TODO: Offer some other method if self.__star is not a Star.
+                return
+            disk = self.__star
+
+        current_min_a = disk.radius * 2
+
+        # random variables
+        semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
+        mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+        radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+        eccentricity = random.betavariate(1, 15)
+        true_anomaly = random.uniform(0, 2 * math.pi)
+        orbit_direction = random.uniform(0, 2 * math.pi)
+        planet_angle = random.choice([90, 270])
+
+        # pos_planet
+        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
+        radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
+        pos_planet = radial_vector * r_initial
+
+        # velocity_planet
+        total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
+        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
+        tangential_vector = radial_vector.rotate(planet_angle)
+        vel_planet = tangential_vector * orbital_velocity
+
+        return self.add_planet(
+            PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet), relative_to=disk
+        )
+
+        # TODO: This update is useless. These changes are still here from when I merged branches.
+        #       We should probably rename generate_planet to generate_planets.            ~lumi-a
+        r_a = semi_major_axis * (1 + eccentricity)
+        # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+        current_min_a = r_a + radius_planet
+
+    @staticmethod
+    def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
+        """Create a universe from `options`."""
+        star_size = 100 if options.small else 500
+        num_enemies = 2 if options.small else 20
+        num_planets = 5 if options.small else 10
+
+        universe = Universe(star_size, 1000)
+        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
+
+        if options.splitscreen:
+            second_config = PlayerConfig(relative_pos=Vec2(100, 0), color=Color("darkred"), ship_input=ShipInput.wasd())
+            second_player = universe.add_player(second_config, relative_to=player_ships[0])
+            player_ships.append(second_player)
+
+        if options.invincible:
+            for player in player_ships:
+                player.health = float("inf")
+
+        for _ in range(num_enemies):
+            random_radius = random.uniform(star_size, star_size * 5)
+            random_angle = random.uniform(0, 360)
+            vec = Vec2(0, 0)
+            vec.from_polar((random_radius, random_angle))
+
+            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], ENEMY_SPAWN_WEIGHTS)[0]
+            targeting = random.choice(player_ships)
+
+            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
         for _ in range(num_planets):
+            universe.generate_planet()
 
-            # random variables
-            semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-            mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
-            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
-            eccentricity = random.betavariate(1, 15)
-            true_anomaly = random.uniform(0, 2 * math.pi)
-            orbit_direction = random.uniform(0, 2 * math.pi)
-            planet_angle = random.choice([90, 270])
-
-            # pos_planet
-            r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
-            radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-            pos_planet = star.pos + radial_vector * r_initial
-
-            # velocity_planet
-            total_specific_energy = -GRAVITATIONAL_CONSTANT * star.mass / (2 * semi_major_axis)
-            orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * star.mass / r_initial + total_specific_energy)) ** 0.5
-            tangential_vector = radial_vector.rotate(planet_angle)
-            vel_planet = tangential_vector * orbital_velocity
-
-            self.add_planet(Planet(pos_planet, vel_planet, radius_planet))
-
-            r_a = semi_major_axis * (1 + eccentricity)
-            # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
-            current_min_a = r_a + radius_planet
+        return universe, player_ships

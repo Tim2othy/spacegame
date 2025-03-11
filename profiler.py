@@ -4,6 +4,7 @@ import functools
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 
 # As importing `statistics` breaks pygbag for some
@@ -62,7 +63,7 @@ class Profiler:
         """Profiles the execution time of a method."""
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+        def wrapper(*args: Any, **kwargs: Any) -> Callable:  # noqa: ANN401
             start_time = time.perf_counter_ns()
             result = func(*args, **kwargs)
             end_time = time.perf_counter_ns()

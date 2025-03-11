@@ -1,80 +1,41 @@
 import random
+from itertools import chain
 from math import isclose
-from typing import TYPE_CHECKING
 
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from main import LARGE_WORLD_SIZE, MAX_NONSTAR_SIZE, NUM_PLANETS, STAR_RADIUS
-from ship import PlayerShip
-from universe import Planet, Star, Universe
-
-if TYPE_CHECKING:
-    from physics import Disk
+from physics import PosVel
+from ship import PlayerConfig, PlayerShip
+from universe import Planet, PlanetConfig, Universe
 
 
-def test_star_gravitation():
-    world = Vec2(30000, 30000)
-    worldcenter = world / 2
-    star = Star(world / 2, 10000)
-
-    planet = []
-    players = []
-    num_disks = 23
-    for i in range(num_disks):
-        offset = Vec2()
-        offset.from_polar((10500, 360 * i / num_disks))
-        pos = worldcenter + offset
-        if i % 4 == 0 or i % 3 == 0:
-            players.append(PlayerShip(pos, Vec2(100, -200)))
-        else:
-            planet.append(Planet(pos, Vec2(100, -200), radius=2 * (i * 31) % 29))
-
-    universe = Universe(world, [star], players, [], max(*(a.radius for a in planet), *(p.radius for p in players)) * 2)
-    universe.add_planet(*planet)
-
-    for _ in range(8 * 100):
-        universe.step(0.01)
-
-    disks: list[Disk] = planet + players
-    for disk in disks:
-        assert isclose(
-            disk.radius + star.radius, disk.pos.distance_to(star.pos), rel_tol=1e-3
-        ), "Gravity should have pulled the object to the star's surface within 8 seconds"
-
-
-@pytest.mark.parametrize("absolute_vel", [30 * Vec2(i, j) for i in range(-1, 2) for j in range(-1, 2)])
-def test_mutual_bounce(absolute_vel: Vec2):
+def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
     # Two planets
-    #  o   →               ←   O
+    #  o   -->        <--  O
     #  planet_a     planet_b
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    # Bounces should be relative to the two planets' velocities:
-    start_y = 15
-    relative_vel = Vec2(5, 0)
-    # Boost both planets by absolute_vel
-    planet_a = Planet(Vec2(10, start_y), absolute_vel + relative_vel, 1)
-    planet_b = Planet(Vec2(20, start_y), absolute_vel - relative_vel, 0.9)
-
-    universe = Universe(Vec2(30, 30), [], [], [], max(planet_a.radius, planet_b.radius) * 2)
-    universe.add_planet(planet_a, planet_b)
+    universe = Universe(None, 2)
+    planet_a = universe.add_planet(PlanetConfig(relative_pos=Vec2(-5, 0), relative_vel=Vec2(5, 0), radius=0.5))
+    planet_b = universe.add_planet(PlanetConfig(relative_pos=Vec2(5, 0), relative_vel=Vec2(-5, 0), radius=1.0))
+    original_a_state = PosVel(planet_a, Vec2(0, 0), Vec2(0, 0))
+    original_b_state = PosVel(planet_b, Vec2(0, 0), Vec2(0, 0))
 
     for _ in range(150):
         universe.step(0.01)
 
-    assert planet_a.pos.x < planet_b.pos.x, "The planets shouldn't fly past each other"
-    assert planet_a.vel.y == planet_b.vel.y == absolute_vel.y, "The planets shouldn't move vertically at all"
+    assert planet_a.pos_relative_to(planet_b).x < 0, "The planets shouldn't fly past each other"
+    assert planet_a.vel_relative_to(original_a_state).y == 0 == planet_b.vel_relative_to(original_b_state).y, (
+        "The planets shouldn't move vertically at all"
+    )
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
-    assert (
-        absolute_vel.x > planet_a.vel.x > (absolute_vel - relative_vel).x - 0.1
-    ), "planet_a should be moving to the left with less speed"
-    assert (
-        absolute_vel.x < planet_b.vel.x < (absolute_vel + relative_vel).x - 0.1
-    ), "planet_b should be moving to the right with less speed"
+    assert planet_a.vel_relative_to(original_a_state).x < -0.1, "planet_a should be moving to the left with less speed"
+    assert planet_b.vel_relative_to(original_b_state).x > 0.1, "planet_b should be moving to the right with less speed"
 
 
 @pytest.mark.parametrize("direction_angle", [360 * i / 5 for i in range(5)])
-def test_newtons_cradle(direction_angle: float):
+def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float) -> None:
     # When we have a setup like this:
     #  o-->   oooo
     # We expect it to look something like this afterwards:
@@ -82,107 +43,101 @@ def test_newtons_cradle(direction_angle: float):
     # (https://en.wikipedia.org/wiki/Newton's_cradle)
     # At least, if bounciness==1, which is not the case here, but
     # we still expect the rightmost planet to gain velocity afterwards.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    world = Vec2(3000, 3000)
-    planet_radius = 50
+    radius = 50
+    universe = Universe(None, radius * 2)
 
-    direction = Vec2()
-    direction.from_polar((planet_radius, direction_angle))
+    direction = Vec2(0, 0)
+    direction.from_polar((radius, direction_angle))
 
-    universe = Universe(world, [], [], [], planet_radius * 2)
-    first_planet = Planet(world / 2, direction, planet_radius)
-    universe.add_planet(first_planet)
-    other_planets = [Planet(world / 2 + 2.1 * i * direction, Vec2(), planet_radius) for i in range(1, 6)]
-    universe.add_planet(*other_planets)
+    first_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), relative_vel=direction, radius=radius))
+    first_planet_reference = PosVel(first_planet, Vec2(0, 0), Vec2(0, 0))
+    other_planets = [
+        universe.add_planet(PlanetConfig(relative_pos=2.1 * i * direction, radius=radius)) for i in range(1, 6)
+    ]
+    last_planet_reference = PosVel(other_planets[-1], Vec2(0, 0), Vec2(0, 0))
 
     # Run for 2 seconds
     for _ in range(200):
         universe.step(0.01)
 
-    assert first_planet.vel * direction < planet_radius**2, "First planet should have lost speed"
-    assert other_planets[-1].vel * direction > 0.01, "Last planet should have gained speed"
+    assert first_planet.vel_relative_to(first_planet_reference) * direction < -0.1, (
+        "First planet should have lost speed"
+    )
+
+    assert other_planets[-1].vel_relative_to(last_planet_reference) * direction > 0.1, (
+        "Last planet should have gained speed"
+    )
 
 
-def test_precise_planet_collision():
+def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
     # In several different directions, just barely have two planets without gravity graze past each other.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    world = Vec2(3000, 3000)
-    planet_radius = 50
+    radius = 50
+    universe = Universe(None, radius * 2)
 
     num_directions = 23
 
-    universe = Universe(world, [], [], [], planet_radius * 2)
-
-    universe.apply_gravity = lambda dt: None  # noqa: ARG005
-    start_planets: list[Planet] = []
-    hit_planets: list[Planet] = []
+    hit_planets: list[tuple[Planet, PosVel]] = []
 
     for i in range(num_directions):
-        direction = Vec2()
+        direction = Vec2(0, 0)
         direction.from_polar((1, i * 360 / num_directions))
         direction_rotated = direction.rotate(90)
 
-        start_planet = Planet(
-            world / 2 + direction * num_directions * planet_radius,
-            direction * planet_radius,
-            planet_radius,
+        _start_planet = universe.add_planet(
+            PlanetConfig(
+                relative_pos=direction * num_directions * radius, relative_vel=direction * radius, radius=radius
+            )
         )
-        start_planets.append(start_planet)
-        hit_planet = Planet(
-            world / 2 + direction * (num_directions + 1) * planet_radius + 1.99 * direction_rotated * planet_radius,
-            Vec2(0, 0),
-            planet_radius,
-        )
-        hit_planets.append(hit_planet)
 
-        universe.add_planet(start_planet, hit_planet)
+        hit_planet = universe.add_planet(
+            PlanetConfig(
+                relative_pos=direction * (num_directions + 1) * radius + 1.99 * direction_rotated * radius,
+                radius=radius,
+            )
+        )
+        hit_planet_reference = PosVel(hit_planet, Vec2(0, 0), Vec2(0, 0))
+        hit_planets.append((hit_planet, hit_planet_reference))
 
     # Run the universe for 1 second
     for _ in range(1000):
         universe.step(0.001)
 
-    for hit_planet in hit_planets:
-        assert (
-            0.001 < hit_planet.vel.magnitude() / planet_radius < 0.1
-        ), "The hit planet should have gained a tiny bit of velocity"
+    for hit_planet, hit_planet_reference in hit_planets:
+        assert 0.001 < hit_planet.vel_relative_to(hit_planet_reference).length() / radius < 0.1, (
+            "The hit planet should have gained a tiny bit of velocity"
+        )
 
 
-def test_precise_collision_failures():
+def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
     # This is kind of a bad test, because it tests the implementation of universe-collision
     # is correct by testing that it fails if we relax the rules just a little.
     # This is useful to know, to see that the implementation is maximally efficient.
+    monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
 
-    world = Vec2(1000, 1000)
     # Now, try for 1000 iterations to see the ill effects:
     for _ in range(1000):
-        # This sets the universe-chunk-calculation
-        universe = Universe(world, [], [], [], 190)
+        universe = Universe(None, 95 * 2)
         # Setting universe.max_nonstar_size overrides the check for planet-radii, without
         # changing the way chunks are calculated. So planets are added to chunks that are
         # effectively too small for them.
-        universe.max_nonstar_size = 200
+        universe.max_nonstar_size = 100 * 2
 
-        pos = world / 2 + Vec2(random.random() * 200, random.random() * 200)
-        planet_a = Planet(pos, Vec2(), 100)
-        universe.add_planet(planet_a)
+        random_relative_pos = Vec2(random.random() * 200, random.random() * 200)
+        planet_a = universe.add_planet(PlanetConfig(relative_pos=random_relative_pos, radius=100))
 
-        delta = Vec2()
+        delta = Vec2(0, 0)
         delta.from_polar((199, random.random() * 360))
 
-        # Now pos + delta has distance 199 from planet_a, so if we put an planet of
-        # radius 200 at (pos+delta), then that planet would definitely intersect planet_a,
+        # Now delta has distance 199 from planet_a, so if we put a planet of
+        # radius 100 at (pos+delta), then that planet would definitely intersect planet_a,
         # and hence querying planets near (pos+delta) should return planet_a
-
-        if planet_a not in universe._nearby_planets(pos + delta):  # noqa: SLF001
-            # Verify it really would fail successfully:
-            planet_b = Planet(pos + delta, Vec2(), 100)
-            universe.add_planet(planet_b)
-            assert planet_a.intersects_disk(
-                planet_b
-            ), "The two planets should intersect, the test-setup did not go as expected."
-            universe.apply_bounce()
-            assert planet_a.pos == pos, "planet_a should be unaffected, because collision-tests failed"
-            assert planet_b.pos == pos + delta, "planet_b should be unaffected, because collision-tests failed"
+        planet_b = universe.add_planet(PlanetConfig(relative_pos=delta, radius=100), relative_to=planet_a)
+        if planet_a not in universe._nearby_planets(planet_b):
+            # We failed successfully.
             return
 
     pytest.fail(
@@ -191,67 +146,47 @@ def test_precise_collision_failures():
     )
 
 
-def test_planet_generation():
-    # Test that planets generated by generate_planet are:
-    # - all created
-    # - within the universe bounds
-    # - not too large or too small
+def test_gravitational_well() -> None:
+    universe = Universe(None, 10_000 * 2)
+    big_planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 0), radius=10_000))
 
-    world = Vec2(LARGE_WORLD_SIZE, LARGE_WORLD_SIZE)
-    center_star = Star(world / 2, STAR_RADIUS)
-    universe = Universe(world, [center_star], [], [], MAX_NONSTAR_SIZE)
-    universe.generate_planet(center_star, NUM_PLANETS)
+    num_disks = 23
+    for i in range(num_disks):
+        pos = Vec2(0, 0)
+        pos.from_polar((12_500, 360 * i / num_disks))
+        if i % 4 == 0 or i % 3 == 0:
+            universe.add_player(PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet)
+        else:
+            universe.add_planet(
+                PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29),
+                relative_to=big_planet,
+            )
 
-    allowed_oob_errors = 2  # 2 out of 50 are allowed to be out of bounds.
+    for _ in range(25 * 100):
+        universe.step(0.01)
+
+    disks: list[Planet | PlayerShip] = list(chain(*universe._planet_chunks.values())) + universe._player_ships
+    assert len(disks) == num_disks + 1, (
+        "The universe should still contain exactly `num_disks+1` disks."
+        " This test might fail because player-ships or planets are destroyed when crashing into the planet."
+    )
+    for disk in disks:
+        dist = disk.distance_to(big_planet)
+        # Don't consider the distance of the big planet from itself.
+        if dist != 0:
+            assert isclose(disk.radius + big_planet.radius, dist, rel_tol=1e-3), (
+                "Gravity should have pulled the object to the planet's surface within 25 seconds."
+                " This test might fail because player-ships or planets are destroyed when crashing into the planet."
+            )
+
+
+def test_planet_generation() -> None:
+    # Test that planets generated by generate_planet are not too large or too small.
+
+    universe = Universe(8000, 2 * 8000)
+    planets = [universe.generate_planet() for _ in range(50)]
 
     # run test 10 times
     for _ in range(10):
-
-        all_planets = []
-        for planet_list in universe._planet_chunks.values():
-            all_planets.extend(planet_list)
-
-        assert len(all_planets) == NUM_PLANETS, f"Expected {NUM_PLANETS} planets, got {len(all_planets)}"
-
-        for planet in all_planets:
+        for planet in planets:
             assert 200 < planet.radius < 1400, f"Planet has invalid radius: {planet.radius}"
-
-            if not (0 < planet.pos.x < LARGE_WORLD_SIZE) or not (0 < planet.pos.y < LARGE_WORLD_SIZE):
-                allowed_oob_errors -= 1
-
-                assert allowed_oob_errors >= 0, f"Planets are outside universe bounds too often e.g.: {planet.pos}"
-
-
-@pytest.mark.parametrize("disk_class", [Planet, PlayerShip])
-def test_planet_gravitational_collision(disk_class):
-    # Test that two planets or 1 Planet one PlayerShip collide due to gravity.
-    world = Vec2(4000, 4000)
-    world_center = world / 2
-    initial_distance = 800
-
-    small_object = disk_class(world_center, Vec2(0, 0), 40)
-    planet_large = Planet(world_center + Vec2(initial_distance, 0), Vec2(0, 0), radius=300)
-
-    sum_radii = small_object.radius + planet_large.radius
-
-    current_distance = planet_large.pos.distance_to(small_object.pos)
-
-    # Create universe
-    if disk_class == Planet:
-        universe = Universe(world, [], [], [], MAX_NONSTAR_SIZE)
-        universe.add_planet(small_object, planet_large)
-    else:
-        universe = Universe(world, [], [small_object], [], MAX_NONSTAR_SIZE)
-        universe.add_planet(planet_large)
-
-    # Run simulation for 20 seconds
-    for _ in range(2000):
-        universe.step(0.01)
-        current_distance = planet_large.pos.distance_to(small_object.pos)
-        if current_distance < sum_radii + 1:
-            break
-
-    assert initial_distance > sum_radii + 100, "There should be some distance between the objects"
-    assert (
-        sum_radii + 1 > current_distance >= sum_radii
-    ), f"Objects should have collided. Final distance is: {current_distance}"

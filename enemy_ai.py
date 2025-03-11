@@ -68,7 +68,7 @@ for matrix_name in [
     "_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX",
 ]:
     source_matrix = globals()[matrix_name]
-    complete_matrix = {from_state: {to_state: 0.0 for to_state in AIState} for from_state in AIState}
+    complete_matrix = {from_state: dict.fromkeys(AIState, 0.0) for from_state in AIState}
 
     for from_state, transitions in source_matrix.items():
         for to_state, prob in transitions.items():
@@ -81,15 +81,9 @@ class MarkovAI:
     """Markov chain-based AI for enemy ships."""
 
     def __init__(self, ship: Ship, target_ship: Ship) -> None:
-        """Create a new AI controller.
-
-        Args:
-            ship (Ship): The ship to control
-            target_ship (Ship): The ship to target (usually player)
-
-        """
+        """Create a new AI controller for the ship `ship`, targeting `target_ship`."""
         self.ship = ship
-        self.target_ship = target_ship
+        self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
 
@@ -102,10 +96,7 @@ class MarkovAI:
 
         """
         # Get context information
-        delta = self.target_ship.pos - self.ship.pos
-        distance_squared = delta.magnitude_squared()
-
-        can_see_player = distance_squared < ENEMY_VISUAL_RANGE_SQUARED
+        can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH
 
         # Simply select the appropriate pre-computed matrix based on context
@@ -127,17 +118,9 @@ class MarkovAI:
         self.current_state = random.choices(states, probabilities)[0]
 
     def _execute_search_behavior(self) -> Vec2:
-        """Execute searching behavior.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
-        delta_target_ship = self.target_ship.pos - self.ship.pos
-        relative_velocity = self.ship.vel - self.target_ship.vel
+        """Return force required for the search-behavior."""
+        delta_target_ship = self.target.pos_relative_to(self.ship)
+        relative_velocity = self.ship.vel_relative_to(self.target)
 
         if delta_target_ship == Vec2(0, 0):
             return Vec2(0, 0)
@@ -147,35 +130,14 @@ class MarkovAI:
         return desired_relative_vel - relative_velocity
 
     def _execute_attack_behavior(self) -> Vec2:
-        """Execute attack behavior.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
-        return self.target_ship.pos - self.ship.pos
+        """Return force required for the attack-behavior."""
+        return self.target.pos_relative_to(self.ship)
 
     def _execute_aim_behavior(self) -> Vec2:
-        """Execute behavior with predictive aiming to hit moving targets.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction/aim direction
-
-        """
-        # Current positions and velocities
-        ship_pos = self.ship.pos
-        ship_vel = self.ship.vel
-        target_pos = self.target_ship.pos
-        target_vel = self.target_ship.vel
+        """Return force required for the aim-behavior."""
         # Relative position and velocity
-        relative_pos = target_pos - ship_pos
-        relative_vel = target_vel - ship_vel
+        relative_pos = self.target.pos_relative_to(self.ship)
+        relative_vel = self.target.vel_relative_to(self.ship)
 
         if relative_pos == Vec2(0, 0):
             return Vec2(0, 0)
@@ -194,9 +156,9 @@ class MarkovAI:
         """
 
         # Quadratic equation coefficients:
-        a = relative_vel.magnitude_squared() - BULLET_RELEASE_SPEED**2
+        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
         b = 2 * relative_pos.dot(relative_vel)
-        c = relative_pos.magnitude_squared()
+        c = relative_pos.length_squared()
 
         # Standard quadratic formula
         discriminant = b**2 - 4 * a * c
@@ -204,7 +166,7 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.magnitude() / BULLET_RELEASE_SPEED)
+            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
             return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
@@ -221,56 +183,35 @@ class MarkovAI:
         else:
             # No positive solution, target moving too fast or in wrong direction
             # Fall back to simple leading shot
-            intercept_time = relative_pos.magnitude() / BULLET_RELEASE_SPEED
+            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED
 
         # Calculate predicted position
         if intercept_time <= 0:
             # Fallback if no solution found
             return relative_pos.normalize()
 
-        # Calculate where to aim to hit the target
-        target_future_pos = target_pos + target_vel * intercept_time
-
         # Now calculate what direction the bullet must be fired in
-        aim_direction = (target_future_pos - ship_pos - ship_vel * intercept_time) / (
-            BULLET_RELEASE_SPEED * intercept_time
-        )
-        # Normalize to get pure direction
-        return aim_direction.normalize() if aim_direction != Vec2(0, 0) else relative_pos.normalize()
+        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
 
     def _execute_retreat_behavior(self) -> Vec2:
-        """Execute retreat behavior - move away from player.
-
-        Args:
-            dt (float): Passed time
-
-        Returns:
-            Vec2: Force direction
-
-        """
-        if (self.ship.pos - self.target_ship.pos).magnitude_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        """Return force required for the retreat-behavior."""
+        delta = self.ship.pos_relative_to(self.target)
+        if delta.length_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
             return Vec2(0, 0)
-        return self.ship.pos - self.target_ship.pos
+        return delta
 
     def update(self, dt: float) -> None:
-        """Update AI state and execute appropriate behavior.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Update AI state and execute appropriate behavior."""
         self.action_timer -= dt
 
         if self.action_timer <= 0:
             self._transition_state()
-            # health_status = "LOW HEALTH" if self.ship.health < RETREAT_HEALTH else "HEALTHY"
-            # print(f"State={self.current_state.name}, Health={self.ship.health} ({health_status})")
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
-        self.ship.shooting = (
-            self.current_state in {AIState.ATTACK, AIState.AIM}
-        ) and self.ship.pos.distance_squared_to(self.target_ship.pos) < ENEMY_FIRE_RANGE_SQUARED
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.distance_squared_to(
+            self.target
+        ) < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:

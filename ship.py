@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import math
 import random
-from enum import Enum
+from dataclasses import dataclass, field
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import pygame
@@ -15,30 +16,25 @@ from constants import (
     BULLET_RELEASE_SPEED,
     ENEMY_ACTION_TIMER,
     ENEMY_ACTION_WEIGHTS,
-    ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
-    EPSILON,
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_SD_RELEASE_SPEED,
-    PLAYER_COLOR,
     ROCKET_RELEASE_SPEED,
     THRUST_COLOR,
     generate_complementary_color,
 )
 from enemy_ai import MarkovAI
-from physics import Disk
+from physics import Disk, Pos, PosVel
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
 
-SHIP_SIZE = 10.0
-
 # Rate of fire
-BULLET_ROF = 0.08
-ROCKET_ROF = 0.5
-MISSILE_ROF = 3.0
-FLARE_ROF = 5.0
+BULLET_RATE_OF_FIRE = 0.08
+ROCKET_RATE_OF_FIRE = 0.5
+MISSILE_RATE_OF_FIRE = 3.0
+FLARE_RATE_OF_FIRE = 5.0
 
 GRAY = Color("gray")
 BULLET_ENEMY_COLOR = Color("lightblue")
@@ -56,56 +52,54 @@ NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
 
+@dataclass
+class ShipConfig:
+    """Configuration for a spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the player-spaceship
+        relative_vel (Vec2): Relative velocity of the player-spaceship
+        size (float): Size of the ship
+        color (Color): Color of the player-spaceship
+        gun_cooldown (float): Minimum time between shots
+        projectile_speed (float): Speed at which projectiles are fired
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    size: float = 10.0
+    color: Color = field(default_factory=lambda: Color("gray"))
+    gun_cooldown: float = BULLET_RATE_OF_FIRE
+    projectile_speed: float = BULLET_RELEASE_SPEED
+
+
 class Ship(Disk):
     """A basic spaceship."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        size: float = SHIP_SIZE,
-        color: Color = GRAY,
-        gun_cooldown: float = BULLET_ROF,
-        projectile_speed: float = BULLET_RELEASE_SPEED,
-    ) -> None:
+    def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship.
 
-        Raises a ValueError if `gun_cooldown` is not strictly positive.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            size (float): Radius of disk-body
-            color (Color): Material and bullet color
-            gun_cooldown (float): Minimum time between shots
-            projectile_speed (float): Speed at which projectiles are fired
-
-        >>> Ship(Vec2(), Vec2(), gun_cooldown=1)
-        <ship.Ship object at ...>
-        >>> Ship(Vec2(), Vec2(), gun_cooldown=-1)
-        Traceback (most recent call last):
-            ...
-        ValueError
-
+        Raises a ValueError if `config.gun_cooldown` is not finite and strictly positive.
         """
-        super().__init__(pos, vel, size, color)
-        self.size: float = size
+        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, config.color)
+        self.size: float = config.size
 
         self.health: float = HEALTH
         self.damage_indicator_timer: float = 0
 
         self.projectiles: list[Bullet] = []
-        if not gun_cooldown > 0:
+        if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
             raise ValueError
-        self._gun_cooldown: float = gun_cooldown
-        self._flare_cooldown: float = FLARE_ROF
+        self._gun_cooldown: float = config.gun_cooldown
+        self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
         self.releasing_flares: bool = False
-        self.projectile_speed: float = projectile_speed
+        self.projectile_speed: float = config.projectile_speed
 
-        self.projectile_color = generate_complementary_color(color)
+        self.projectile_color = generate_complementary_color(config.color)
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -116,26 +110,20 @@ class Ship(Disk):
         self.thruster_forward: bool = False
 
     def get_faced_direction(self) -> Vec2:
-        """Get `self`'s faced direction from its `angle`.
-
-        Returns:
-            Vec2: Faced direction, normalized
-
-        """
-        # For unknown reasons, `Vec2.from_polar((self.angle, 1))` won't work.
-        direction = Vec2()
+        """Get `self`'s (normalized) faced direction from its `angle`."""
+        direction = Vec2(0, 0)
         direction.from_polar((1, self.angle))
         return direction
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new bullet at `pos` with velocity `vel`."""
-        return Bullet(pos, vel, self.projectile_color)
+        """Create a new bullet at `pos` with velocity `vel`, relative to self."""
+        return Bullet(self, pos, vel, self.projectile_color)
 
     def new_flare(self, pos: Vec2, vel: Vec2) -> Flare:
-        """Create a new Flare at `pos` with velocity `vel`."""
-        return Flare(pos, vel)
+        """Create a new Flare at `pos` with velocity `vel`, relative to self."""
+        return Flare(self, pos, vel)
 
-    def shoot(self, dt: float) -> None:
+    def handle_shooting(self, dt: float) -> None:
         """Handle bullet-shooting."""
         if not self.shooting:
             # The ship doesn't want to shoot at the moment,
@@ -150,7 +138,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = self.vel + forward * self.projectile_speed
+                bullet_vel = forward * self.projectile_speed
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -160,12 +148,12 @@ class Ship(Disk):
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
                 gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = self.pos + gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
+                bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._gun_cooldown
 
-    def release_flares(self, dt: float) -> None:
+    def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
         if not self.releasing_flares:
             # The ship doesn't want to release flares at the moment,
@@ -183,32 +171,23 @@ class Ship(Disk):
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = forward.rotate(random_rotation)
-                    flare_vel = self.vel - flare_direction * random.normalvariate(
+                    flare_vel = -flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    self.projectiles.append(self.new_flare(self.pos, flare_vel))
+                    self.projectiles.append(self.new_flare(Vec2(0, 0), flare_vel))
                 self.flare_cooldown_timer += self._flare_cooldown
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
 
         Does nothing if damage is <= 0.
-
-        Args:
-            damage (float): Amount of damage to deal.
-
         """
         if damage > 0:
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def step(self, dt: float) -> None:
-        """Physics, control, and bullet-stepping for `self`.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Step physics, control, and `self`'s bullets."""
         if self.thruster_rot_left:
             self.angle += self.rotation_thrust * dt
         if self.thruster_rot_right:
@@ -227,16 +206,11 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.step(dt)
 
-        self.shoot(dt)
-        self.release_flares(dt)
+        self.handle_shooting(dt)
+        self.handle_flares(dt)
 
     def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera.
-
-        Args:
-            camera (Camera): Camera to draw on
-
-        """
+        """Draw `self` on `camera."""
         forward = self.get_faced_direction()
         right = Vec2(-forward.y, forward.x)
         left = -right
@@ -247,7 +221,7 @@ class Ship(Disk):
 
         # Helper function for drawing polygons relative to the ship-position
         def drawy(color: Color, points: list[Vec2]) -> None:
-            camera.draw_polygon(color, [self.pos + self.radius * p for p in points])
+            camera.draw_polygon(color, [Pos(self, self.radius * p) for p in points])
 
         # thruster_backward
         if self.thruster_backward:
@@ -255,10 +229,7 @@ class Ship(Disk):
 
         # "For his neutral special, he wields a gun"
         camera.draw_line(
-            darker_color,
-            self.pos,
-            self.pos + forward * self.radius * GUNBARREL_LENGTH,
-            GUNBARREL_WIDTH * self.radius,
+            darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
 
         # thruster_rot_left, material
@@ -335,37 +306,29 @@ class Ship(Disk):
             projectile.draw(camera)
 
 
+type PygameKey = int
+
+
+@dataclass
 class ShipInput:
-    """Specification for which keys trigger what spaceship-action."""
+    """Specification for which keys trigger what spaceship-action.
 
-    type PygameKey = int
+    Attributes:
+        thruster_rot_left (pygame_key): Left rotation thruster's key
+        thruster_rot_right (pygame_key): Right rotation thruster's key
+        thruster_forward (pygame_key): Forward thruster's key
+        thruster_backward (pygame_key): Backward thruster's key
+        shoot (pygame_key): Pew pew key
+        release_flares (pygame_key): Flare-release key
 
-    def __init__(
-        self,
-        thruster_rot_left: PygameKey,
-        thruster_rot_right: PygameKey,
-        thruster_forward: PygameKey,
-        thruster_backward: PygameKey,
-        shoot: PygameKey,
-        release_flares: PygameKey,
-    ) -> None:
-        """Create a new map from keys to spaceship-actions.
+    """
 
-        Args:
-            thruster_rot_left (pygame_key): Left rotation thruster's key
-            thruster_rot_right (pygame_key): Right rotation thruster's key
-            thruster_forward (pygame_key): Forward thruster's key
-            thruster_backward (pygame_key): Backward thruster's key
-            shoot (pygame_key): Pew pew key
-            release_flares (pygame_key): Flare-release key
-
-        """
-        self.thruster_rot_left = thruster_rot_left
-        self.thruster_rot_right = thruster_rot_right
-        self.thruster_forward = thruster_forward
-        self.thruster_backward = thruster_backward
-        self.shoot = shoot
-        self.release_flares = release_flares
+    thruster_rot_left: PygameKey
+    thruster_rot_right: PygameKey
+    thruster_forward: PygameKey
+    thruster_backward: PygameKey
+    shoot: PygameKey
+    release_flares: PygameKey
 
     @classmethod
     def arrows(cls) -> ShipInput:
@@ -378,41 +341,40 @@ class ShipInput:
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
 
 
-PLAYER_DEFAULT_CONTROLS = ShipInput.arrows()
+@dataclass(kw_only=True)
+class PlayerConfig:
+    """Configuration for a player-spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the player-spaceship
+        relative_vel (Vec2): Relative velocity of the player-spaceship
+        color (Color): Color of the player-spaceship
+        spaceship_input (ShipInput): Controls for the player-spaceship
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    color: Color = field(default_factory=lambda: Color("darkslategray"))
+    ship_input: ShipInput = field(default_factory=ShipInput.arrows)
 
 
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        size: float = SHIP_SIZE,
-        color: Color = PLAYER_COLOR,
-        spaceship_input: ShipInput = PLAYER_DEFAULT_CONTROLS,
-    ) -> None:
-        """Create a new player-spaceship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            size (float): Radius of disk-body
-            color (Color): Material color
-            spaceship_input (SpaceshipInput): Map from keys to actions
-
-        """
-        super().__init__(pos, vel, size, color, BULLET_ROF, BULLET_RELEASE_SPEED)
-        self.spaceship_input = spaceship_input
+    def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
+        """Create a new player-spaceship."""
+        # TODO: Are nested dataclasses possible so that we don't have to copy everything over again?
+        super().__init__(
+            relative_to,
+            ShipConfig(relative_pos=config.relative_pos, relative_vel=config.relative_vel, color=config.color),
+        )
+        self.spaceship_input = config.ship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
 
-        `keys` is typically retreived using `pygame.key.get_pressed()`
-
-        Args:
-            keys (pygame.key.ScancodeWrapper): Pressed keys
-
+        `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
         self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
         self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
@@ -422,103 +384,100 @@ class PlayerShip(Ship):
         self.releasing_flares = keys[self.spaceship_input.release_flares]
 
 
+@dataclass(kw_only=True)
+class EnemyConfig:
+    """Configuration for an enemy-spaceship.
+
+    Attributes:
+        relative_pos (Vec2): Relative position of the enemy-spaceship
+        relative_vel (Vec2): Relative velocity of the enemy-spaceship
+        target_ship (Ship): Ship to target
+
+    """
+
+    relative_pos: Vec2
+    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
+    target_ship: Ship
+
+
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
     SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_ROF
+    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-    SHIP_SIZE = SHIP_SIZE
 
-    Action = Enum(
-        "Action",
-        [
-            "accelerate_to_player",
-            "accelerate_randomly",
-            "decelerate",
-        ],
-    )
+    class Action(Enum):
+        """Actions the BulletEnemy might take."""
 
-    def __init__(
-        self,
-        pos: Vec2,
-        vel: Vec2,
-        target_ship: Ship,
-    ) -> None:
-        """Create a new enemy ship.
+        accelerate_to_player = auto()
+        accelerate_randomly = auto()
 
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
+    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
+        """Create a new enemy ship."""
+        super().__init__(
+            relative_to,
+            ShipConfig(
+                relative_pos=config.relative_pos,
+                relative_vel=config.relative_vel,
+                color=self.SHIP_COLOR,
+                gun_cooldown=self.SHIP_GUN_COOLDOWN,
+                projectile_speed=self.SHIP_PROJECTILE_SPEED,
+            ),
+        )
 
-        """
-        super().__init__(pos, vel, self.SHIP_SIZE, self.SHIP_COLOR, self.SHIP_GUN_COOLDOWN, self.SHIP_PROJECTILE_SPEED)
+        self.target: Ship = config.target_ship
 
         self.action_timer: float = 0.0
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
-        self.target_ship: Ship = target_ship
         self.projectiles: list[Bullet] = []
-        self.random_point: Vec2 = Vec2(0.0, 0.0)
+        self.seek_towards: Pos = Pos(self, Vec2(0, 0))
 
-    def step(self, dt: float) -> None:
-        """Apply physics and "AI" to `self`.
-
-        Args:
-            dt (float): Passed time
-
-        """
+    def step_ai(self, dt: float) -> None:
+        """Execute `self`'s ai."""
         self.action_timer -= dt
-        delta_target_ship = self.target_ship.pos - self.pos
+        can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
 
         if self.action_timer <= 0:
-            if delta_target_ship == Vec2(0, 0):
-                delta_target_ship = Vec2(EPSILON, EPSILON)
-            distance_target_ship = delta_target_ship.magnitude()
-
-            self.random_point = (
-                self.pos
-                + (
-                    delta_target_ship
-                    + Vec2(
-                        random.uniform(-distance_target_ship, distance_target_ship),
-                        random.uniform(-distance_target_ship, distance_target_ship),
-                    )
-                )
-                / 2
-            )
-
-            if delta_target_ship.magnitude_squared() < ENEMY_VISUAL_RANGE_SQUARED:
+            if can_see_target:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
                 [self.current_action] = random.choices(
                     population=[
                         BulletEnemy.Action.accelerate_randomly,
-                        BulletEnemy.Action.decelerate,
                     ],
                     weights=ENEMY_ACTION_WEIGHTS,
                 )
+
+                if self.current_action == BulletEnemy.Action.accelerate_randomly:
+                    # Accelerate towards a random point near the player.
+                    # TODO: Due to this action, the enemy still implicitly sees the
+                    # player from far away. Decide whether this is desirable, and rewrite otherwise.
+                    distance_to_target = self.target.distance_to(self)
+                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
+                    # to the distance to the player, we should eventually find a non-accelerating player.
+                    random_x = random.gauss(sigma=distance_to_target)
+                    random_y = random.gauss(sigma=distance_to_target)
+                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
             self.action_timer = ENEMY_ACTION_TIMER
 
         match self.current_action:
             case BulletEnemy.Action.accelerate_to_player:
-                force_direction = delta_target_ship
-            case BulletEnemy.Action.decelerate:
-                force_direction = -self.vel
+                force_direction = self.target.pos_relative_to(self)
             case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.random_point - self.pos
+                force_direction = self.seek_towards.pos_relative_to(self)
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.thrust
             self.apply_force(force, dt)
 
-        self.shooting = (
-            self.current_action == BulletEnemy.Action.accelerate_to_player
-            and delta_target_ship.magnitude_squared() < ENEMY_FIRE_RANGE_SQUARED
-        )
+        self.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
         self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
+    def step(self, dt: float) -> None:
+        """Apply physics and "AI" to `self`."""
+        self.step_ai(dt)
         super().step(dt)
 
 
@@ -527,12 +486,12 @@ class RocketEnemy(BulletEnemy):
 
     # Override class configuration for RocketEnemy
     SHIP_COLOR = ROCKET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = ROCKET_ROF
+    SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new rocket targeting `self.target_ship`."""
-        return Rocket(pos, vel, self.projectile_color, self.target_ship)
+        """Create a new rocket relative to `self` targeting `self.target`."""
+        return Rocket(self, pos, vel, self.projectile_color, self.target)
 
 
 class MissileEnemy(BulletEnemy):
@@ -540,12 +499,12 @@ class MissileEnemy(BulletEnemy):
 
     # Override class configuration for MissileEnemy
     SHIP_COLOR = MISSILE_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = MISSILE_ROF
+    SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new missile targeting `self.target_ship`."""
-        return Missile(pos, vel, self.projectile_color, self.target_ship)
+        """Create a new missile relative to `self` targeting `self.target`."""
+        return Missile(self, pos, vel, self.projectile_color, self.target)
 
 
 class MarkovEnemy(BulletEnemy):
@@ -554,24 +513,12 @@ class MarkovEnemy(BulletEnemy):
     # Override class configuration for MarkovEnemy
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def __init__(self, pos: Vec2, vel: Vec2, target_ship: Ship) -> None:
-        """Create a new Markov-based enemy ship.
-
-        Args:
-            pos (Vec2): Initial position
-            vel (Vec2): Initial velocity
-            target_ship (Ship): Ship to target
-
-        """
-        super().__init__(pos, vel, target_ship)
-        self.ai = MarkovAI(self, target_ship)
+    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
+        """Create a new Markov-based enemy ship."""
+        super().__init__(relative_to, config)
+        self.ai = MarkovAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
-        """Apply physics and AI to this ship.
-
-        Args:
-            dt (float): Passed time
-
-        """
+        """Apply physics and AI to this ship."""
         self.ai.update(dt)
         Ship.step(self, dt)
