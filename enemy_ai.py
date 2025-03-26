@@ -11,12 +11,13 @@ from pygame.math import Vector2 as Vec2
 
 from constants import (
     BULLET_RELEASE_SPEED,
-    DESIRED_APPROACH_SPEED,
     ENEMY_ACTION_TIMER,
     ENEMY_FIRE_RANGE_SQUARED,
     ENEMY_VISUAL_RANGE_SQUARED,
-    RETREAT_HEALTH,
 )
+
+RETREAT_HEALTH_THRESHOLD = 30.0
+DESIRED_APPROACH_SPEED = 500
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -97,7 +98,7 @@ class MarkovAI:
         """
         # Get context information
         can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
-        low_health = self.ship.health < RETREAT_HEALTH
+        low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
 
         # Simply select the appropriate pre-computed matrix based on context
         if can_see_player and low_health:

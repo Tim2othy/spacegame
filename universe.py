@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-from constants import ENEMY_SPAWN_WEIGHTS, FPS_HISTORY_LENGTH, GRAVITATIONAL_CONSTANT, GRID_COLOR
+from constants import GRAVITATIONAL_CONSTANT
 
 PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
@@ -504,7 +504,7 @@ class Universe:
             return vertical_offset + font_size
 
         text_v = 10
-        text_v = texty(text_v, f"{fps:.0f} fps (average over past {FPS_HISTORY_LENGTH} frames)")
+        text_v = texty(text_v, f"{fps:.0f} fps")
         text_v = texty(text_v, f"Health: {player.health:.0f}")
 
         enemy_count = len(self._enemy_ships)
@@ -523,6 +523,7 @@ class Universe:
         gridline_spacing = 500
         width = 3000
         height = 3000
+        GRID_COLOR = Color("darkgreen")
 
         for x in range(0, int(width + 1), gridline_spacing):
             camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)
@@ -616,7 +617,8 @@ class Universe:
             vec = Vec2(0, 0)
             vec.from_polar((random_radius, random_angle))
 
-            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], ENEMY_SPAWN_WEIGHTS)[0]
+            enemy_spawn_weights = [0.3, 0.3, 0.2, 0.2]
+            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], enemy_spawn_weights)[0]
             targeting = random.choice(player_ships)
 
             universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)

@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import platform
 import sys
-from collections import deque
 from dataclasses import fields
 from typing import TYPE_CHECKING
 
@@ -14,12 +13,13 @@ from pygame import Color, Surface
 from pygame.font import Font
 
 from camera import Camera
-from constants import FPS_HISTORY_LENGTH, SCREEN_SIZE
 from profiler import global_profiler
 from universe import Universe, UniverseOptions
 
 if TYPE_CHECKING:
     from ship import PlayerShip
+
+SCREEN_SIZE = pygame.math.Vector2(1700, 900)
 
 
 async def main() -> None:
@@ -49,7 +49,6 @@ async def main() -> None:
 
         clock = pygame.time.Clock()
 
-        fps: deque[float] = deque()
         running = True
 
         while running:
@@ -59,9 +58,6 @@ async def main() -> None:
                 break
 
             dt = clock.tick() / 1_000
-            fps.append(clock.get_fps())
-            if len(fps) > FPS_HISTORY_LENGTH:
-                fps.popleft()
 
             universe.handle_input(pygame.key.get_pressed())
             universe.step(dt)
@@ -78,7 +74,7 @@ async def main() -> None:
                     break
                 camera.step()
                 universe.draw(camera)
-                universe.draw_text(camera, player, sum(fps) / len(fps))
+                universe.draw_text(camera, player, clock.get_fps())
 
             pygame.display.flip()
             await asyncio.sleep(0)
