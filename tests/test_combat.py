@@ -5,8 +5,9 @@ from enemy_ai import (
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
-    _STANDARD_MATRIX,
+    _DEFAULT_MATRIX,
     AIState,
+    Matrix,
 )
 from ship import HEALTH, BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, RocketEnemy
 from universe import PlanetConfig, Universe
@@ -75,13 +76,13 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 @pytest.mark.parametrize(
     "matrix",
     [
-        _STANDARD_MATRIX,
+        _DEFAULT_MATRIX,
         _LOW_HEALTH_MATRIX,
         _PLAYER_VISIBLE_MATRIX,
         _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     ],
 )
-def test_transition_matrix_sums(matrix: dict) -> None:
+def test_transition_matrix_sums(matrix: Matrix) -> None:
     """Verify that each row in the transition matrices sums to 1."""
     for from_state, transitions in matrix.items():
         total = sum(transitions.values())
