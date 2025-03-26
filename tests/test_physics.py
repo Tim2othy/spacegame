@@ -26,7 +26,7 @@ def test_mass_positive() -> None:
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
-def test_relativity(relative_pos: Vec2) -> None:
+def test_pos_relativity(relative_pos: Vec2) -> None:
     obj = Pos(ORIGIN, relative_pos)
     assert obj.pos_relative_to(ORIGIN) == relative_pos
     assert ORIGIN.pos_relative_to(obj) == -relative_pos
@@ -34,7 +34,7 @@ def test_relativity(relative_pos: Vec2) -> None:
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
 @pytest.mark.parametrize("relative_vel", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
-def test_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
+def test_posvel_relativity(relative_pos: Vec2, relative_vel: Vec2) -> None:
     obj = PosVel(ORIGIN, relative_pos, relative_vel)
     assert obj.pos_relative_to(ORIGIN) == relative_pos
     assert obj.vel_relative_to(ORIGIN) == relative_vel
