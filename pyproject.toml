@@ -33,8 +33,6 @@ ignore = [
 [dependency-groups]
 dev = [
   "pygbag",
-  "pillow",
-  "numpy",
   "pytest>=8.3.4",
   "mypy>=1.15.0",
 ]
