@@ -11,14 +11,13 @@ from physics import Body, Pos, PosVel
 if TYPE_CHECKING:
     from ship import Ship
 
-from constants import THRUST_COLOR
-
 # Damage
 BULLET_DAMAGE = 16
 ROCKET_DAMAGE = 26
 MISSILE_DAMAGE = 60
 FLARE_DAMAGE = 10
 # Thrust
+ROCKET_THRUST_COLOR = Color("orange")
 ROCKET_HOMING_THRUST = 300.0
 MISSILE_HOMING_THRUST = 600.0
 # Homing
@@ -102,7 +101,7 @@ class Rocket(Bullet):
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
             # Thrust flame
             camera.draw_polygon(
-                self.color.lerp(THRUST_COLOR, 0.5),
+                self.color.lerp(ROCKET_THRUST_COLOR, 0.5),
                 [
                     Pos(self, 3 * (left + backward)),
                     Pos(self, 4 * (left + 2 * backward)),

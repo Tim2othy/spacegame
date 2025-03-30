@@ -15,13 +15,10 @@ from pygame.math import Vector2 as Vec2
 from constants import (
     BULLET_RELEASE_SPEED,
     ENEMY_ACTION_TIMER,
-    ENEMY_ACTION_WEIGHTS,
     ENEMY_VISUAL_RANGE_SQUARED,
     FLARE_MEAN_RELEASE_SPEED,
     FLARE_SD_RELEASE_SPEED,
     ROCKET_RELEASE_SPEED,
-    THRUST_COLOR,
-    generate_complementary_color,
 )
 from enemy_ai import MarkovAI
 from physics import Disk, Pos, PosVel
@@ -37,6 +34,7 @@ MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
 
 GRAY = Color("gray")
+THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
@@ -50,6 +48,25 @@ DAMAGE_INDICATOR_TIME = 1
 """Time (in seconds) a ship should flash red after taking damage"""
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
+
+
+def generate_complementary_color(base_color: Color) -> Color:
+    """Generate a complementary bullet color based on a color.
+
+    >>> generate_complementary_color(Color("red"))  # should return cyan
+    Color(0, 255, 255, 255)
+    >>> generate_complementary_color(Color("white"))  # should return white
+    Color(255, 255, 255, 255)
+    >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
+    Color(166, 0, 166, 255)
+    """
+    h, s, v, a = base_color.hsva
+
+    new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
+    new_s = min(100.0, s * 1.2)  # Slightly more saturated
+    new_v = min(100.0, v * 1.3)  # Slightly brighter
+
+    return Color.from_hsva(new_h, new_s, new_v, a)
 
 
 @dataclass
@@ -442,12 +459,7 @@ class BulletEnemy(Ship):
             if can_see_target:
                 self.current_action = BulletEnemy.Action.accelerate_to_player
             else:
-                [self.current_action] = random.choices(
-                    population=[
-                        BulletEnemy.Action.accelerate_randomly,
-                    ],
-                    weights=ENEMY_ACTION_WEIGHTS,
-                )
+                self.current_action = BulletEnemy.Action.accelerate_randomly
 
                 if self.current_action == BulletEnemy.Action.accelerate_randomly:
                     # Accelerate towards a random point near the player.
