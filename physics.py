@@ -13,7 +13,6 @@ if TYPE_CHECKING:
 
 from constants import GRAVITATIONAL_CONSTANT
 
-BLACK = Color("black")
 GRAY = Color("gray")
 
 
@@ -108,8 +107,7 @@ class Particle(PosVel):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        color = BLACK.lerp(self._base_color, max(0, min(1, self._lifetime / self._max_lifetime)))
-        camera.draw_pixel(color, self)
+        camera.draw_pixel(self._base_color, max(0, min(1, self._lifetime / self._max_lifetime)), self)
 
 
 class Body(PosVel):

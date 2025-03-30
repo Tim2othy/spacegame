@@ -61,11 +61,14 @@ class Camera(Pos):
         """Fill the camera's surface black to prepare for drawing a new frame."""
         self._surface.fill(Color("black"))
 
-    def draw_pixel(self, color: Color, pos: Pos) -> None:
+    def draw_pixel(self, color: Color, transparency: float, pos: Pos) -> None:
         """Draw a worldspace-pixel at position `pos`."""
         surfacepoint = self._world_to_surface(pos)
         if self._surface_rect.collidepoint(surfacepoint):
-            self._surface.set_at((int(surfacepoint.x), int(surfacepoint.y)), color)
+            position = (int(surfacepoint.x), int(surfacepoint.y))
+            old_color = self._surface.get_at(position)
+            new_color = old_color.lerp(color, transparency)
+            self._surface.set_at(position, new_color)
 
     def draw_circle(self, color: Color, center: Pos, radius: float) -> None:
         """Draw a worldspace-circle."""

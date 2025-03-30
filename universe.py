@@ -483,8 +483,6 @@ class Universe:
     def draw(self, camera: Camera, *, minimap: bool = False) -> None:
         """Draw all of `self` on `camera`."""
         if not minimap:
-            for particle in self._particles:
-                particle.draw(camera)
             self.draw_background(camera)
             self.draw_grid(camera)
 
@@ -493,6 +491,10 @@ class Universe:
 
         if isinstance(self.__star, Star):
             self.__star.draw(camera)
+
+        if not minimap:
+            for particle in self._particles:
+                particle.draw(camera)
 
     @global_profiler.profile_method
     def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
