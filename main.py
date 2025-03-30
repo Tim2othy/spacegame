@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from ship import PlayerShip
 
 SCREEN_SIZE = pygame.math.Vector2(1700, 900)
+MINIMAP_SIZE = pygame.math.Vector2(200, 200)
 
 
 async def main() -> None:
@@ -46,6 +47,9 @@ async def main() -> None:
             subsurface = screen_surface.subsurface((topleft, size))
             camera = Camera(subsurface, player, 1.0 / 2.0)
             players_and_cameras.append((player, camera))
+
+        minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
+        minimap_camera = Camera(minimap_surface, player_ships[0], 0.01)
 
         clock = pygame.time.Clock()
 
@@ -76,6 +80,8 @@ async def main() -> None:
                 universe.draw(camera)
                 universe.draw_text(camera, player, clock.get_fps())
 
+            minimap_camera.start_drawing_new_frame()
+            universe.draw(minimap_camera)
             pygame.display.flip()
             await asyncio.sleep(0)
 
