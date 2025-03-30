@@ -59,6 +59,8 @@ class PlanetConfig:
 class Planet(Disk):
     """A disk that doesn't exert gravitational force, and isn't stationary."""
 
+    # TODO: they do exert gravitational force right?
+
     def __init__(self, relative_to: PosVel, config: PlanetConfig) -> None:
         """Create a new Planet."""
         color = Color(random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
@@ -108,7 +110,7 @@ class Universe:
         If star_size is not None, raises a ValueError if it isn't finite and strictly positive.
         """
         self.max_nonstar_size = max_nonstar_size
-        self.__star: PosVel | Star = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()  # noqa: SLF001
+        self.__star: PosVel | Star = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
         if star_size is not None:
             if not (math.isfinite(star_size) and star_size > 0):
                 raise ValueError
@@ -557,7 +559,7 @@ class Universe:
         if disk is None:
             if not isinstance(self.__star, Star):
                 # TODO: Offer some other method if self.__star is not a Star.
-                return
+                return None
             disk = self.__star
 
         current_min_a = disk.radius * 2
