@@ -562,7 +562,7 @@ class Universe:
                 return None
             disk = self.__star
 
-        current_min_a = disk.radius * 2
+        current_min_a = random.uniform(0, 30000) + disk.radius * 2
 
         # random variables
         semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
