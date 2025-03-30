@@ -31,50 +31,36 @@ class AIState(Enum):
     RETREAT = auto()
 
 
-_STANDARD_MATRIX = {
+type MatrixRow = dict[AIState, float]
+type Matrix = dict[AIState, MatrixRow]
+
+_DEFAULT_MATRIX: Matrix = {
     AIState.SEARCH: {AIState.SEARCH: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
     AIState.ATTACK: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.8},
     AIState.AIM: {AIState.SEARCH: 1.0},
     AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
 }
 
-_LOW_HEALTH_MATRIX = {
+_LOW_HEALTH_MATRIX: Matrix = {
     AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
     AIState.ATTACK: {AIState.SEARCH: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
     AIState.AIM: {AIState.RETREAT: 1.0},
     AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.1, AIState.RETREAT: 0.7},
 }
 
-_PLAYER_VISIBLE_MATRIX = {
+_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
     AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
     AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
 }
 
-_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX = {
+_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.SEARCH: {AIState.SEARCH: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.0, AIState.AIM: 0.1, AIState.RETREAT: 0.9},
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
-
-# Pre-compute complete transition matrices
-_COMPLETE_MATRICES = {}
-for matrix_name in [
-    "_STANDARD_MATRIX",
-    "_LOW_HEALTH_MATRIX",
-    "_PLAYER_VISIBLE_MATRIX",
-    "_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX",
-]:
-    source_matrix = globals()[matrix_name]
-    complete_matrix = {from_state: dict.fromkeys(AIState, 0.0) for from_state in AIState}
-
-    for from_state, transitions in source_matrix.items():
-        for to_state, prob in transitions.items():
-            complete_matrix[from_state][to_state] = prob
-
-    _COMPLETE_MATRICES[matrix_name] = complete_matrix
 
 
 class MarkovAI:
@@ -87,34 +73,25 @@ class MarkovAI:
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
 
-    def _calculate_transition_matrix(self) -> dict[AIState, dict[AIState, float]]:
-        """Calculate state transition probabilities based on current context.
-
-        Returns:
-            Dict[AIState, Dict[AIState, float]]: Nested dictionary mapping states to possible
-                transitions and their probabilities.
-
-        """
+    def _transition_state(self) -> None:
+        """Transition to a new state based on the Markov transition matrix."""
         # Get context information
         can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH
 
-        # Simply select the appropriate pre-computed matrix based on context
-        if can_see_player and low_health:
-            return _COMPLETE_MATRICES["_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX"]
-        if low_health:
-            return _COMPLETE_MATRICES["_LOW_HEALTH_MATRIX"]
-        if can_see_player:
-            return _COMPLETE_MATRICES["_PLAYER_VISIBLE_MATRIX"]
-        return _COMPLETE_MATRICES["_STANDARD_MATRIX"]
-
-    def _transition_state(self) -> None:
-        """Transition to a new state based on the Markov transition matrix."""
-        matrix = self._calculate_transition_matrix()
+        match (can_see_player, low_health):
+            case (True, True):
+                matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
+            case (False, True):
+                matrix = _LOW_HEALTH_MATRIX
+            case (True, False):
+                matrix = _PLAYER_VISIBLE_MATRIX
+            case (False, False):
+                matrix = _DEFAULT_MATRIX
 
         # Extract probabilities for current state
-        probabilities = list(matrix[self.current_state].values())
-        states = list(AIState)
+        current_row: MatrixRow = matrix[self.current_state]
+        states, probabilities = list(current_row.keys()), list(current_row.values())
         self.current_state = random.choices(states, probabilities)[0]
 
     def _execute_search_behavior(self) -> Vec2:
