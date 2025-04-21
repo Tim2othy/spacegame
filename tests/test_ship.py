@@ -1,7 +1,7 @@
 from math import tau
 
-from pygame.math import Vector2 as Vec2
 import pytest
+from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
 from ship import Ship, ShipConfig

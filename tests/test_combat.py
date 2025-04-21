@@ -2,10 +2,10 @@ import pytest
 from pygame.math import Vector2 as Vec2
 
 from enemy_ai import (
+    _DEFAULT_MATRIX,
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
-    _DEFAULT_MATRIX,
     AIState,
     Matrix,
 )
