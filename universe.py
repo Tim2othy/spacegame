@@ -12,11 +12,10 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from enemy_ai import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, RocketEnemy
 from physics import Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile
-from ship import PlayerConfig, PlayerShip, ShipInput
+from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
