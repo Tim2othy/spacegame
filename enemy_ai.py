@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, auto
 
 from pygame import Color
@@ -12,7 +12,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import Pos, PosVel
 from projectiles import Bullet, Missile, Rocket
-from ship import BULLET_RATE_OF_FIRE, BULLET_RELEASE_SPEED, Ship, ShipConfig
+from ship import Ship, ShipConfig
 
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_VISUAL_RANGE_SQUARED = 2000**2
@@ -80,6 +80,8 @@ class MarkovAI:
         self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
+        self.projectile_speed = ship.projectile_speed
+        self.gun_cooldown = ship.gun_cooldown
 
     def _transition_state(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -141,7 +143,7 @@ class MarkovAI:
         """
 
         # Quadratic equation coefficients:
-        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
+        a = relative_vel.length_squared() - self.projectile_speed**2
         b = 2 * relative_pos.dot(relative_vel)
         c = relative_pos.length_squared()
 
@@ -151,7 +153,7 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
+            force = relative_pos + relative_vel * (relative_pos.length() / self.projectile_speed)
             return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
@@ -168,7 +170,7 @@ class MarkovAI:
         else:
             # No positive solution, target moving too fast or in wrong direction
             # Fall back to simple leading shot
-            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED
+            intercept_time = relative_pos.length() / self.projectile_speed
 
         # Calculate predicted position
         if intercept_time <= 0:
@@ -176,7 +178,7 @@ class MarkovAI:
             return relative_pos.normalize()
 
         # Now calculate what direction the bullet must be fired in
-        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
+        return (relative_pos + relative_vel * intercept_time) / (self.projectile_speed * intercept_time)
 
     def _execute_retreat_behavior(self) -> Vec2:
         """Return force required for the retreat-behavior."""
@@ -217,18 +219,19 @@ class MarkovAI:
 
 
 @dataclass(kw_only=True)
-class EnemyConfig:
+class EnemyConfig(ShipConfig):
     """Configuration for an enemy-spaceship.
 
     Attributes:
         relative_pos (Vec2): Relative position of the enemy-spaceship
         relative_vel (Vec2): Relative velocity of the enemy-spaceship
+        color (Color): Color of the player-spaceship
+        gun_cooldown (float): Minimum time between shots
+        projectile_speed (float): Speed at which projectiles are fired
         target_ship (Ship): Ship to target
 
     """
 
-    relative_pos: Vec2
-    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     target_ship: Ship
 
 
@@ -236,9 +239,6 @@ class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
     SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
-
-    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
 
     class Action(Enum):
         """Actions the BulletEnemy might take."""
@@ -254,8 +254,6 @@ class BulletEnemy(Ship):
                 relative_pos=config.relative_pos,
                 relative_vel=config.relative_vel,
                 color=self.SHIP_COLOR,
-                gun_cooldown=self.SHIP_GUN_COOLDOWN,
-                projectile_speed=self.SHIP_PROJECTILE_SPEED,
             ),
         )
 
@@ -265,6 +263,7 @@ class BulletEnemy(Ship):
         self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
         self.projectiles: list[Bullet] = []
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
+        self.projectile_speed: float = config.projectile_speed
 
     def step_ai(self, dt: float) -> None:
         """Execute `self`'s ai."""

@@ -99,7 +99,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
             raise ValueError
-        self._gun_cooldown: float = config.gun_cooldown
+        self.gun_cooldown: float = config.gun_cooldown
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
@@ -159,7 +159,7 @@ class Ship(Disk):
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self._gun_cooldown
+                self.gun_cooldown_timer += self.gun_cooldown
 
     def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
