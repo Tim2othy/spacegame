@@ -23,16 +23,21 @@ SCREEN_SIZE = pygame.math.Vector2(1700, 900)
 MINIMAP_SIZE = pygame.math.Vector2(200, 200)
 
 
-async def main() -> None:
-    """Run the game."""
+async def initialize_game() -> tuple[Surface, Font, UniverseOptions]:
+    """Initialize pygame and create basic game objects."""
     screen_surface = None
     pygame.display.init()
     pygame.font.init()
     font = Font(None, 36)
-    options = UniverseOptions()
-
     pygame.display.set_caption("Space Game")
     screen_surface = pygame.display.set_mode(SCREEN_SIZE)
+    return screen_surface, font, UniverseOptions()
+
+
+async def main() -> None:
+    """Run the game."""
+    screen_surface, font, options = await initialize_game()
+
     keep_playing = True
 
     while keep_playing:
