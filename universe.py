@@ -29,6 +29,7 @@ from constants import GRAVITATIONAL_CONSTANT
 PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
 ORBIT_CORRELATION_FACTOR = 0.05
+GRID_COLOR = Color("darkgreen")
 
 
 class Star(Disk):
@@ -528,7 +529,6 @@ class Universe:
         gridline_spacing = 500
         width = 3000
         height = 3000
-        GRID_COLOR = Color("darkgreen")
 
         for x in range(0, int(width + 1), gridline_spacing):
             camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)

@@ -66,7 +66,9 @@ def generate_complementary_color(base_color: Color) -> Color:
     new_s = min(100.0, s * 1.2)  # Slightly more saturated
     new_v = min(100.0, v * 1.3)  # Slightly brighter
 
-    return Color.from_hsva(new_h, new_s, new_v, a)
+    complementary_color = Color(0, 0, 0, 0)
+    complementary_color.hsva = (new_h, new_s, new_v, a)
+    return complementary_color
 
 
 @dataclass
@@ -313,7 +315,7 @@ class Ship(Disk):
             ],
         )
 
-        # HACK: UGLY
+        # TODO: this is ugly
         backup_self_color = Color(self.color)
         self.color = base_color
         super().draw(camera)  # Draw circular body ("hitbox")

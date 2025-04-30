@@ -32,7 +32,7 @@ class Pos:
 
     def __init__(self, relative_to: Pos, relative_pos: Vec2) -> None:
         """Create a new Pos relative to another Pos."""
-        self.__pos: Vec2 = relative_to.__pos + relative_pos  # noqa: SLF001
+        self.__pos: Vec2 = relative_to.__pos + relative_pos
 
     def _shift(self, delta: Vec2) -> None:
         """Shift `self`'s position by `delta`. Don't use this unless you know what you're doing."""
@@ -40,7 +40,7 @@ class Pos:
 
     def pos_relative_to(self, other: Pos) -> Vec2:
         """Return `self`'s position relative to `other`."""
-        return self.__pos - other.__pos  # noqa: SLF001
+        return self.__pos - other.__pos
 
     def distance_squared_to(self, other: Pos) -> float:
         """Return the squared distance between `self` and `other`."""
@@ -57,7 +57,7 @@ class PosVel(Pos):
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new PosVel relative to another PosVel."""
         super().__init__(relative_to, relative_pos)
-        self.__vel: Vec2 = relative_to.__vel + relative_vel  # noqa: SLF001
+        self.__vel: Vec2 = relative_to.__vel + relative_vel
 
     @staticmethod
     def _new_origin_and_only_use_this_if_you_really_know_what_you_are_doing() -> PosVel:
@@ -84,7 +84,7 @@ class PosVel(Pos):
 
     def vel_relative_to(self, other: PosVel) -> Vec2:
         """Return `self`'s velocity relative to `other`."""
-        return self.__vel - other.__vel  # noqa: SLF001
+        return self.__vel - other.__vel
 
 
 class Particle(PosVel):
@@ -220,7 +220,7 @@ class Disk(Body):
         if math.isfinite(self.mass):
             self._shift(-correction * (1 - self.mass / (self.mass + other.mass)))
         if math.isfinite(other.mass):
-            other._shift(correction * (1 - other.mass / (self.mass + other.mass)))  # noqa: SLF001
+            other._shift(correction * (1 - other.mass / (self.mass + other.mass)))
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
