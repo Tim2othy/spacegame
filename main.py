@@ -89,6 +89,7 @@ async def main() -> None:
                     running = False
                     break
                 camera.step()
+                minimap_camera.step()
                 universe.draw(camera)
                 universe.draw_text(camera, player, clock.get_fps())
 
