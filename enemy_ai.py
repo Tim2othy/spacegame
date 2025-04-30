@@ -71,55 +71,7 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
 }
 
 
-class SimpleAI:
-    """Simple AI for enemy ships."""
-
-    def __init__(self, ship: Ship, target_ship: Ship) -> None:
-        """Create a new AI controller for the ship `ship`, targeting `target_ship`."""
-        self.ship = ship
-        self.target = target_ship
-        self.current_state = AIState.SEARCH
-        self.action_timer = 0.0
-        self.projectile_speed = ship.projectile_speed
-        self.gun_cooldown = ship.gun_cooldown
-
-    def update(self, dt: float) -> None:
-        """Execute `self`'s ai."""
-        self.action_timer -= dt
-        can_see_target = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
-
-        if self.action_timer <= 0:
-            if can_see_target:
-                self.current_action = BulletEnemy.Action.accelerate_to_player
-            else:
-                self.current_action = BulletEnemy.Action.accelerate_randomly
-
-                if self.current_action == BulletEnemy.Action.accelerate_randomly:
-                    # Accelerate towards a random point near the player.
-                    distance_to_target = self.target.distance_to(self.ship)
-                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
-                    # to the distance to the player, we should eventually find a non-accelerating player.
-                    random_x = random.gauss(sigma=distance_to_target)
-                    random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
-
-            self.action_timer = ENEMY_ACTION_TIMER
-
-        match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player:
-                force_direction = self.target.pos_relative_to(self.ship)
-            case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.seek_towards.pos_relative_to(self.ship)
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.ship.thrust
-            self.ship.apply_force(force, dt)
-
-        self.ship.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
-        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
-
-
-class MarkovAI:
+class EnemyAI:
     """Markov chain-based AI for enemy ships."""
 
     def __init__(self, ship: Ship, target_ship: Ship) -> None:
@@ -265,6 +217,41 @@ class MarkovAI:
 
         self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
+    def update_simple(self, dt: float) -> None:
+        """Execute `self`'s ai."""
+        self.action_timer -= dt
+        can_see_target = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
+
+        if self.action_timer <= 0:
+            if can_see_target:
+                self.current_action = BulletEnemy.Action.accelerate_to_player
+            else:
+                self.current_action = BulletEnemy.Action.accelerate_randomly
+
+                if self.current_action == BulletEnemy.Action.accelerate_randomly:
+                    # Accelerate towards a random point near the player.
+                    distance_to_target = self.target.distance_to(self.ship)
+                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
+                    # to the distance to the player, we should eventually find a non-accelerating player.
+                    random_x = random.gauss(sigma=distance_to_target)
+                    random_y = random.gauss(sigma=distance_to_target)
+                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
+
+            self.action_timer = ENEMY_ACTION_TIMER
+
+        match self.current_action:
+            case BulletEnemy.Action.accelerate_to_player:
+                force_direction = self.target.pos_relative_to(self.ship)
+            case BulletEnemy.Action.accelerate_randomly:
+                force_direction = self.seek_towards.pos_relative_to(self.ship)
+
+        if force_direction != Vec2(0, 0):
+            force = force_direction.normalize() * self.ship.thrust
+            self.ship.apply_force(force, dt)
+
+        self.ship.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
+        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+
 
 @dataclass(kw_only=True)
 class EnemyConfig(ShipConfig):
@@ -312,11 +299,11 @@ class BulletEnemy(Ship):
         self.projectiles: list[Bullet] = []
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
         self.projectile_speed: float = config.projectile_speed
-        self.ai = SimpleAI(self, config.target_ship)
+        self.ai = EnemyAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
-        self.ai.update(dt)
+        self.ai.update_simple(dt)
         super().step(dt)
 
 
@@ -329,7 +316,7 @@ class MarkovEnemy(BulletEnemy):
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new Markov-based enemy ship."""
         super().__init__(relative_to, config)
-        self.ai = MarkovAI(self, config.target_ship)
+        self.ai = EnemyAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
         """Apply physics and AI to this ship."""
