@@ -38,7 +38,6 @@ ROCKET_RELEASE_SPEED = 300.0
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
-
 HEALTH = 100
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
@@ -50,7 +49,7 @@ ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
 
 class AIState(Enum):
-    """Possible AI states in the Markov chain."""
+    """Possible AI states for enemies chain."""
 
     SEARCH = auto()
     ATTACK = auto()
@@ -88,27 +87,6 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
-
-def generate_complementary_color(base_color: Color) -> Color:
-    """Generate a complementary bullet color based on a color.
-
-    >>> generate_complementary_color(Color("red"))  # should return cyan
-    Color(0, 255, 255, 255)
-    >>> generate_complementary_color(Color("white"))  # should return white
-    Color(255, 255, 255, 255)
-    >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
-    Color(166, 0, 166, 255)
-    """
-    h, s, v, a = base_color.hsva
-
-    new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
-    new_s = min(100.0, s * 1.2)  # Slightly more saturated
-    new_v = min(100.0, v * 1.3)  # Slightly brighter
-
-    complementary_color = Color(0, 0, 0, 0)
-    complementary_color.hsva = (new_h, new_s, new_v, a)
-    return complementary_color
-
 
 @dataclass
 class ShipConfig:
@@ -156,8 +134,7 @@ class Ship(Disk):
         self.shooting: bool = False
         self.releasing_flares: bool = False
         self.projectile_speed: float = config.projectile_speed
-
-        self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
+        self.projectile_color = self.generate_complementary_color()
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -363,6 +340,25 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
+    def generate_complementary_color(self) -> Color:
+        """Generate a complementary bullet color based on a color.
+
+        >>> generate_complementary_color(Color("red"))  # should return cyan
+        Color(0, 255, 255, 255)
+        >>> generate_complementary_color(Color("white"))  # should return white
+        Color(255, 255, 255, 255)
+        >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
+        Color(166, 0, 166, 255)
+        """
+        h, s, v, a = self.SHIP_COLOR.hsva
+
+        new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
+        new_s = min(100.0, s * 1.2)  # Slightly more saturated
+        new_v = min(100.0, v * 1.3)  # Slightly brighter
+
+        complementary_color = Color(0, 0, 0, 0)
+        complementary_color.hsva = (new_h, new_s, new_v, a)
+        return complementary_color
 
 type PygameKey = int
 
@@ -444,7 +440,6 @@ class EnemyConfig(ShipConfig):
     Attributes:
         relative_pos (Vec2): Relative position of the enemy-spaceship
         relative_vel (Vec2): Relative velocity of the enemy-spaceship
-        color (Color): Color of the player-spaceship
         gun_cooldown (float): Minimum time between shots
         projectile_speed (float): Speed at which projectiles are fired
         target_ship (Ship): Ship to target
@@ -542,14 +537,14 @@ class EnemyAI:
         if self.action_timer <= 0:
             self._transition_markov()
             self.action_timer = ENEMY_ACTION_TIMER
-        self.update(dt)
+        self._update(dt)
 
     def update_simple(self, dt: float) -> None:
         """Update Simple AI state and execute appropriate behavior."""
         if self.action_timer <= 0:
             self._transition_simple()
             self.action_timer = ENEMY_ACTION_TIMER
-        self.update(dt)
+        self._update(dt)
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -585,9 +580,9 @@ class EnemyAI:
             random_y = random.gauss(sigma=distance_to_target)
             self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
-    def update(self, dt: float) -> None:
+    def _update(self, dt: float) -> None:
         """Update what the AIs do."""
-        force_direction = self.match()
+        force_direction = self._match()
         self.action_timer -= dt
         self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
 
@@ -597,8 +592,9 @@ class EnemyAI:
 
         self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
 
-    def match(self) -> Vec2:
+    def _match(self) -> Vec2:
         """Match and then, execute behavior based on current state."""
+        force_direction = Vec2(0,0)
         match self.current_state:
             case AIState.SEARCH:
                 force_direction = self._execute_search()
