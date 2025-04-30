@@ -18,37 +18,38 @@ from projectiles import Bullet, Flare, Missile, Rocket
 if TYPE_CHECKING:
     from camera import Camera
 
-RETREAT_HEALTH_THRESHOLD = 30.0
-DESIRED_APPROACH_SPEED = 500
 # Rate of fire
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
 MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
 
+# Release speeds
+FLARE_MEAN_RELEASE_SPEED = 140
+FLARE_SD_RELEASE_SPEED = 28
+BULLET_RELEASE_SPEED = 700.0
+ROCKET_RELEASE_SPEED = 300.0
+
+NUM_FLARES = 40
+SD_FLARE_ANGLE = 25
+
+# colors
 GRAY = Color("gray")
 THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
+
 HEALTH = 100
-# ship constants
+DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 
-DAMAGE_INDICATOR_TIME = 1
-"""Time (in seconds) a ship should flash red after taking damage"""
-NUM_FLARES = 40
-SD_FLARE_ANGLE = 25
-
-FLARE_MEAN_RELEASE_SPEED = 140
-FLARE_SD_RELEASE_SPEED = 28
+RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
-ROCKET_RELEASE_SPEED = 300.0
-BULLET_RELEASE_SPEED = 700.0
-
+DESIRED_APPROACH_SPEED = 500
 
 class AIState(Enum):
     """Possible AI states in the Markov chain."""
@@ -58,7 +59,6 @@ class AIState(Enum):
     AIM = auto()
     RETREAT = auto()
     RANDOM = auto()
-
 
 type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
@@ -90,8 +90,6 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
-
-
 
 def generate_complementary_color(base_color: Color) -> Color:
     """Generate a complementary bullet color based on a color.
@@ -534,9 +532,6 @@ class MarkovEnemy(BulletEnemy):
         """Apply physics and AI to this ship."""
         self.ai.update(dt)
         Ship.step(self, dt)
-
-
-
 
 
 class EnemyAI:
