@@ -459,8 +459,6 @@ class BulletEnemy(Ship):
 
                 if self.current_action == BulletEnemy.Action.accelerate_randomly:
                     # Accelerate towards a random point near the player.
-                    # TODO: Due to this action, the enemy still implicitly sees the
-                    # player from far away. Decide whether this is desirable, and rewrite otherwise.
                     distance_to_target = self.target.distance_to(self)
                     # I think (but haven't proved) that, by choosing the standard-deviation proportional
                     # to the distance to the player, we should eventually find a non-accelerating player.
