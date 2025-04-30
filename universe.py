@@ -563,7 +563,7 @@ class Universe:
         if disk is None:
             if not isinstance(self.__star, Star):
                 # TODO: Offer some other method if self.__star is not a Star.
-                return None
+                return []
             disk = self.__star
 
         # Start just outside the star's radius
