@@ -13,16 +13,16 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 
 def test_mass_positive() -> None:
     Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
-    with pytest.raises(ValueError, match="mass cannot be zero"):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
     with pytest.raises(ValueError, match="mass cannot be negative"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
-    with pytest.raises(ValueError, match="mass cannot be NaN"):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
-    with pytest.raises(ValueError, match="mass cannot be negative infinity"):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
+    with pytest.raises(ValueError, match="mass cannot be zero"):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
     with pytest.raises(ValueError, match="mass cannot be infinite"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
+    with pytest.raises(ValueError, match="mass cannot be negative infinity"):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
+    with pytest.raises(ValueError, match="mass cannot be nan"):
+        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
