@@ -190,3 +190,9 @@ def test_planet_generation() -> None:
     for _ in range(10):
         for planet in planets:
             assert 200 < planet.radius < 1400, f"Planet has invalid radius: {planet.radius}"
+
+
+def test_empty_universe() -> None:
+    universe = Universe(None, 10000)
+    planets = universe.generate_planets(5)
+    assert len(planets) == 0, "Universe should have generated 0 planets"
