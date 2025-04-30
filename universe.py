@@ -24,9 +24,6 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-from physics import GRAVITATIONAL_CONSTANT
-
-
 PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
 ORBIT_CORRELATION_FACTOR = 0.05
