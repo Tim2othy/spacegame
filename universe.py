@@ -567,8 +567,8 @@ class Universe:
             disk = self.__star
 
         # Start just outside the star's radius
+        current_min_a = disk.radius * 2
         for _ in range(num_planets):
-            current_min_a = disk.radius * 2
 
             # random variables
             semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
