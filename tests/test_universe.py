@@ -26,9 +26,9 @@ def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
         universe.step(0.01)
 
     assert planet_a.pos_relative_to(planet_b).x < 0, "The planets shouldn't fly past each other"
-    assert planet_a.vel_relative_to(original_a_state).y == 0 == planet_b.vel_relative_to(original_b_state).y, (
-        "The planets shouldn't move vertically at all"
-    )
+    assert (
+        planet_a.vel_relative_to(original_a_state).y == 0 == planet_b.vel_relative_to(original_b_state).y
+    ), "The planets shouldn't move vertically at all"
     # Test related to https://github.com/Tim2othy/spacegame/issues/9
     assert planet_a.vel_relative_to(original_a_state).x < -0.1, "planet_a should be moving to the left with less speed"
     assert planet_b.vel_relative_to(original_b_state).x > 0.1, "planet_b should be moving to the right with less speed"
@@ -62,13 +62,13 @@ def test_newtons_cradle(monkeypatch: pytest.MonkeyPatch, direction_angle: float)
     for _ in range(200):
         universe.step(0.01)
 
-    assert first_planet.vel_relative_to(first_planet_reference) * direction < -0.1, (
-        "First planet should have lost speed"
-    )
+    assert (
+        first_planet.vel_relative_to(first_planet_reference) * direction < -0.1
+    ), "First planet should have lost speed"
 
-    assert other_planets[-1].vel_relative_to(last_planet_reference) * direction > 0.1, (
-        "Last planet should have gained speed"
-    )
+    assert (
+        other_planets[-1].vel_relative_to(last_planet_reference) * direction > 0.1
+    ), "Last planet should have gained speed"
 
 
 def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -107,9 +107,9 @@ def test_precise_planet_collision(monkeypatch: pytest.MonkeyPatch) -> None:
         universe.step(0.001)
 
     for hit_planet, hit_planet_reference in hit_planets:
-        assert 0.001 < hit_planet.vel_relative_to(hit_planet_reference).length() / radius < 0.1, (
-            "The hit planet should have gained a tiny bit of velocity"
-        )
+        assert (
+            0.001 < hit_planet.vel_relative_to(hit_planet_reference).length() / radius < 0.1
+        ), "The hit planet should have gained a tiny bit of velocity"
 
 
 def test_precise_collision_failures(monkeypatch: pytest.MonkeyPatch) -> None:
