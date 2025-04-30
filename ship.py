@@ -625,7 +625,7 @@ class EnemyAI:
         """
 
         # Quadratic equation coefficients:
-        a = relative_vel.length_squared() - self.projectile_speed**2
+        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
         b = 2 * relative_pos.dot(relative_vel)
         c = relative_pos.length_squared()
 
@@ -635,7 +635,7 @@ class EnemyAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.length() / self.projectile_speed)
+            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
             return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
