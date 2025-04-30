@@ -13,15 +13,15 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 
 def test_mass_positive() -> None:
     Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mass cannot be zero"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mass cannot be negative"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mass cannot be NaN"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mass cannot be negative infinity"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="mass cannot be infinite"):
         Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
 
 
@@ -69,9 +69,9 @@ def test_threedimensional_disk_mass_scaling() -> None:
     disk = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius)
     double_size_disk = Disk(disk, Vec2(0, 0), Vec2(0, 0), radius * 2)
 
-    assert isclose(2**3, double_size_disk.mass / disk.mass), (
-        "Scaling the radius by `t` should scale the mass by a factor `t**3`"
-    )
+    assert isclose(
+        2**3, double_size_disk.mass / disk.mass
+    ), "Scaling the radius by `t` should scale the mass by a factor `t**3`"
 
 
 def test_disk_drawing() -> None:
@@ -110,15 +110,15 @@ def test_disk_drawing() -> None:
                     bad += 1
 
     threshold = 0.02
-    assert isclose(good, (good + bad), rel_tol=threshold), (
-        "The drawn circle should mostly agree with the idealised circle"
-    )
+    assert isclose(
+        good, (good + bad), rel_tol=threshold
+    ), "The drawn circle should mostly agree with the idealised circle"
 
     rect_area = width * height
     circle_area = disk.radius**2 * math.pi
-    assert isclose(drawn, circle_area, abs_tol=rect_area * threshold), (
-        "The area we drew should be close in size to the circle's idealised area"
-    )
+    assert isclose(
+        drawn, circle_area, abs_tol=rect_area * threshold
+    ), "The area we drew should be close in size to the circle's idealised area"
 
     camera._surface.unlock()
 
@@ -130,13 +130,13 @@ def test_simple_disk_bounce() -> None:
     disk_a.bounce_off_of_disk(disk_b)
 
     assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
-    assert disk_a.vel_relative_to(ORIGIN).x > 0.05, (
-        "Disk's horizontal velocity should be increased due to non-elastic bounce"
-    )
+    assert (
+        disk_a.vel_relative_to(ORIGIN).x > 0.05
+    ), "Disk's horizontal velocity should be increased due to non-elastic bounce"
     assert disk_b.vel_relative_to(disk_a).y == 0, "Disk's vertical velocity should be unchanged"
-    assert disk_b.vel_relative_to(disk_a).x < 1 - 0.05, (
-        "Disk's horizontal velocity should be reduced due to non-elastic bounce"
-    )
+    assert (
+        disk_b.vel_relative_to(disk_a).x < 1 - 0.05
+    ), "Disk's horizontal velocity should be reduced due to non-elastic bounce"
 
 
 def test_disk_bounce() -> None:

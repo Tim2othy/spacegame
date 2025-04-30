@@ -13,15 +13,15 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 
 def test_cooldown() -> None:
     Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=1))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gun_cooldown cannot be negative"):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=-1))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gun_cooldown cannot be zero"):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=0))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gun_cooldown cannot be infinite"):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("inf")))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gun_cooldown cannot be negative infinity"):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("-inf")))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="gun_cooldown cannot be nan"):
         Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("nan")))
 
 
@@ -36,9 +36,9 @@ def test_shooting() -> None:
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
-    assert all(abs(p.pos_relative_to(ship).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles), (
-        "Bullets should be shot in the direction of the ship"
-    )
+    assert all(
+        abs(p.pos_relative_to(ship).angle_to(ship.get_faced_direction())) < EPSILON for p in ship.projectiles
+    ), "Bullets should be shot in the direction of the ship"
 
     reference_delta = ship.projectiles[1].pos_relative_to(ship.projectiles[0])
     for i in range(2, len(ship.projectiles)):
