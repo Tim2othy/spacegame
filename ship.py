@@ -361,19 +361,17 @@ class ShipInput:
 
 
 @dataclass(kw_only=True)
-class PlayerConfig:
+class PlayerConfig(ShipConfig):
     """Configuration for a player-spaceship.
 
     Attributes:
         relative_pos (Vec2): Relative position of the player-spaceship
         relative_vel (Vec2): Relative velocity of the player-spaceship
         color (Color): Color of the player-spaceship
-        spaceship_input (ShipInput): Controls for the player-spaceship
+        ship_input (ShipInput): Controls for the player-spaceship
 
     """
 
-    relative_pos: Vec2
-    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     color: Color = field(default_factory=lambda: Color("darkslategray"))
     ship_input: ShipInput = field(default_factory=ShipInput.arrows)
 
@@ -383,11 +381,7 @@ class PlayerShip(Ship):
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
-        # TODO: Are nested dataclasses possible so that we don't have to copy everything over again?
-        super().__init__(
-            relative_to,
-            ShipConfig(relative_pos=config.relative_pos, relative_vel=config.relative_vel, color=config.color),
-        )
+        super().__init__(relative_to, config)
         self.spaceship_input = config.ship_input
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
