@@ -5,40 +5,29 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from constants import (
-    BULLET_RELEASE_SPEED,
-    ENEMY_ACTION_TIMER,
-    ENEMY_VISUAL_RANGE_SQUARED,
-    FLARE_MEAN_RELEASE_SPEED,
-    FLARE_SD_RELEASE_SPEED,
-    ROCKET_RELEASE_SPEED,
-)
-from enemy_ai import MarkovAI
 from physics import Disk, Pos, PosVel
-from projectiles import Bullet, Flare, Missile, Rocket
+from projectiles import Bullet, Flare
 
 if TYPE_CHECKING:
     from camera import Camera
 
 # Rate of fire
 BULLET_RATE_OF_FIRE = 0.08
-ROCKET_RATE_OF_FIRE = 0.5
-MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
+BULLET_RELEASE_SPEED = 700.0
+
+# Flare constants
+FLARE_MEAN_RELEASE_SPEED = 140
+FLARE_SD_RELEASE_SPEED = 28
 
 GRAY = Color("gray")
 THRUST_COLOR = Color("orange")
-BULLET_ENEMY_COLOR = Color("lightblue")
-ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("lime")
-MARKOV_ENEMY_COLOR = Color("red")
 HEALTH = 100
 # ship constants
 GUNBARREL_LENGTH = 3  # relative to radius
@@ -395,136 +384,3 @@ class PlayerShip(Ship):
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
-
-
-@dataclass(kw_only=True)
-class EnemyConfig:
-    """Configuration for an enemy-spaceship.
-
-    Attributes:
-        relative_pos (Vec2): Relative position of the enemy-spaceship
-        relative_vel (Vec2): Relative velocity of the enemy-spaceship
-        target_ship (Ship): Ship to target
-
-    """
-
-    relative_pos: Vec2
-    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
-    target_ship: Ship
-
-
-class BulletEnemy(Ship):
-    """An enemy ship, targeting a specific other ship."""
-
-    SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-
-    class Action(Enum):
-        """Actions the BulletEnemy might take."""
-
-        accelerate_to_player = auto()
-        accelerate_randomly = auto()
-
-    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
-        """Create a new enemy ship."""
-        super().__init__(
-            relative_to,
-            ShipConfig(
-                relative_pos=config.relative_pos,
-                relative_vel=config.relative_vel,
-                color=self.SHIP_COLOR,
-                gun_cooldown=self.SHIP_GUN_COOLDOWN,
-                projectile_speed=self.SHIP_PROJECTILE_SPEED,
-            ),
-        )
-
-        self.target: Ship = config.target_ship
-
-        self.action_timer: float = 0.0
-        self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
-        self.projectiles: list[Bullet] = []
-        self.seek_towards: Pos = Pos(self, Vec2(0, 0))
-
-    def step_ai(self, dt: float) -> None:
-        """Execute `self`'s ai."""
-        self.action_timer -= dt
-        can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
-
-        if self.action_timer <= 0:
-            if can_see_target:
-                self.current_action = BulletEnemy.Action.accelerate_to_player
-            else:
-                self.current_action = BulletEnemy.Action.accelerate_randomly
-
-                if self.current_action == BulletEnemy.Action.accelerate_randomly:
-                    # Accelerate towards a random point near the player.
-                    distance_to_target = self.target.distance_to(self)
-                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
-                    # to the distance to the player, we should eventually find a non-accelerating player.
-                    random_x = random.gauss(sigma=distance_to_target)
-                    random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
-
-            self.action_timer = ENEMY_ACTION_TIMER
-
-        match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player:
-                force_direction = self.target.pos_relative_to(self)
-            case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.seek_towards.pos_relative_to(self)
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.thrust
-            self.apply_force(force, dt)
-
-        self.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
-        self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
-
-    def step(self, dt: float) -> None:
-        """Apply physics and "AI" to `self`."""
-        self.step_ai(dt)
-        super().step(dt)
-
-
-class RocketEnemy(BulletEnemy):
-    """An enemy ship shooting rockets, targeting a specific other ship."""
-
-    # Override class configuration for RocketEnemy
-    SHIP_COLOR = ROCKET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
-
-    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new rocket relative to `self` targeting `self.target`."""
-        return Rocket(self, pos, vel, self.projectile_color, self.target)
-
-
-class MissileEnemy(BulletEnemy):
-    """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
-
-    # Override class configuration for MissileEnemy
-    SHIP_COLOR = MISSILE_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
-
-    def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new missile relative to `self` targeting `self.target`."""
-        return Missile(self, pos, vel, self.projectile_color, self.target)
-
-
-class MarkovEnemy(BulletEnemy):
-    """An enemy ship using Markov chain AI for more sophisticated behavior."""
-
-    # Override class configuration for MarkovEnemy
-    SHIP_COLOR = MARKOV_ENEMY_COLOR
-
-    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
-        """Create a new Markov-based enemy ship."""
-        super().__init__(relative_to, config)
-        self.ai = MarkovAI(self, config.target_ship)
-
-    def step(self, dt: float) -> None:
-        """Apply physics and AI to this ship."""
-        self.ai.update(dt)
-        Ship.step(self, dt)

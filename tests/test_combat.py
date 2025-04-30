@@ -7,9 +7,14 @@ from enemy_ai import (
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
     AIState,
+    BulletEnemy,
+    EnemyConfig,
+    MarkovEnemy,
     Matrix,
+    MissileEnemy,
+    RocketEnemy,
 )
-from ship import HEALTH, BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, RocketEnemy
+from ship import HEALTH, PlayerConfig
 from universe import PlanetConfig, Universe
 
 

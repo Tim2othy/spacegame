@@ -11,7 +11,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-from constants import GRAVITATIONAL_CONSTANT
+GRAVITATIONAL_CONSTANT = 0.02
 
 GRAY = Color("gray")
 
