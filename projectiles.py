@@ -6,7 +6,7 @@ from pygame import Color
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Body, Pos, PosVel
+from physics import Disk, Pos, PosVel
 
 if TYPE_CHECKING:
     from ship import Ship
@@ -31,7 +31,7 @@ ROCKET_MIN_SPEED = 500.0
 FLARE_COLOR = Color("yellow")
 
 
-class Bullet(Body):
+class Bullet(Disk):
     """A triangular bullet."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
@@ -169,5 +169,6 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        # TODO: This is no longer necessary if bullets finally become subclasses of Disk
+        # TODO: This is still necessary, even though bullets are now subclasses of Disk
+        # the flare would inherit from Bullet and then be triangular instead of round
         camera.draw_circle(self.color, self, 3)
