@@ -1,20 +1,21 @@
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from enemy_ai import (
+from ship import (
     _DEFAULT_MATRIX,
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
+    HEALTH,
     AIState,
     BulletEnemy,
     EnemyConfig,
     MarkovEnemy,
     Matrix,
     MissileEnemy,
+    PlayerConfig,
     RocketEnemy,
 )
-from ship import HEALTH, PlayerConfig
 from universe import PlanetConfig, Universe
 
 

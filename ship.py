@@ -463,11 +463,7 @@ class BulletEnemy(Ship):
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
-        super().__init__(
-            relative_to,
-            config
-        )
-
+        super().__init__(relative_to,config)
         self.target: Ship = config.target_ship
 
         self.action_timer: float = 0.0
@@ -664,12 +660,33 @@ class EnemyAI:
         return self.seek_towards.pos_relative_to(self.ship)
 
     def update_markov(self, dt: float) -> None:
-        """Update AI state and execute appropriate behavior."""
+        """Update Markov AI state and execute appropriate behavior."""
         if self.action_timer <= 0:
             self._transition_state()
             self.action_timer = ENEMY_ACTION_TIMER
+        self.update(dt)
 
-        # Execute behavior based on current state
+    def update_simple(self, dt: float) -> None:
+        """Update Simple AI state and execute appropriate behavior."""
+        if self.action_timer <= 0:
+            self._transition_simple()
+            self.action_timer = ENEMY_ACTION_TIMER
+        self.update(dt)
+
+    def update(self, dt: float) -> None:
+        """Update what the AIs do."""
+        force_direction = self.match()
+        self.action_timer -= dt
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
+
+        if force_direction != Vec2(0, 0):
+            force = force_direction.normalize() * self.ship.thrust
+            self.ship.apply_force(force, dt)
+
+        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+
+    def match(self) -> Vec2:
+        """Match and then, execute behavior based on current state."""
         match self.current_state:
             case AIState.SEARCH:
                 force_direction = self._execute_search_behavior()
@@ -679,28 +696,6 @@ class EnemyAI:
                 force_direction = self._execute_aim_behavior()
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
-        self.update(dt, force_direction)
-
-    def update_simple(self, dt: float) -> None:
-        """Execute `self`'s ai."""
-        if self.action_timer <= 0:
-            self._transition_simple()
-            self.action_timer = ENEMY_ACTION_TIMER
-
-        match self.current_state:
-            case AIState.ATTACK:
-                force_direction = self._execute_attack_behavior()
             case AIState.RANDOM:
                 force_direction = self._accelerate_randomly()
-        self.update(dt, force_direction)
-
-    def update(self, dt: float, force_direction: Vec2) -> None:
-        """Update all ais use."""
-        self.action_timer -= dt
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.ship.thrust
-            self.ship.apply_force(force, dt)
-
-        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+        return force_direction

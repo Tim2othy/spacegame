@@ -593,7 +593,8 @@ class Universe:
         player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
 
         if options.splitscreen:
-            second_config = PlayerConfig(relative_pos=Vec2(100, 0), color=Color("darkred"), ship_input=ShipInput.wasd())
+            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
+            # TODO: fix color for second player color=Color("darkred")
             second_player = universe.add_player(second_config, relative_to=player_ships[0])
             player_ships.append(second_player)
 
