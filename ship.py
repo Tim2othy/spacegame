@@ -88,6 +88,27 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
 
+def generate_complementary_color(base_color: Color) -> Color:
+    """Generate a complementary bullet color based on a color.
+
+    >>> generate_complementary_color(Color("red"))  # should return cyan
+    Color(0, 255, 255, 255)
+    >>> generate_complementary_color(Color("white"))  # should return white
+    Color(255, 255, 255, 255)
+    >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
+    Color(166, 0, 166, 255)
+    """
+    h, s, v, a = base_color.hsva
+
+    new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
+    new_s = min(100.0, s * 1.2)  # Slightly more saturated
+    new_v = min(100.0, v * 1.3)  # Slightly brighter
+
+    complementary_color = Color(0, 0, 0, 0)
+    complementary_color.hsva = (new_h, new_s, new_v, a)
+    return complementary_color
+
+
 @dataclass
 class ShipConfig:
     """Configuration for a spaceship.
@@ -134,7 +155,7 @@ class Ship(Disk):
         self.shooting: bool = False
         self.releasing_flares: bool = False
         self.projectile_speed: float = config.projectile_speed
-        self.projectile_color = self.generate_complementary_color()
+        self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -340,25 +361,6 @@ class Ship(Disk):
         for projectile in self.projectiles:
             projectile.draw(camera)
 
-    def generate_complementary_color(self) -> Color:
-        """Generate a complementary bullet color based on a color.
-
-        >>> generate_complementary_color(Color("red"))  # should return cyan
-        Color(0, 255, 255, 255)
-        >>> generate_complementary_color(Color("white"))  # should return white
-        Color(255, 255, 255, 255)
-        >>> generate_complementary_color(Color(0, 128, 0))  # dark green, should return violet
-        Color(166, 0, 166, 255)
-        """
-        h, s, v, a = self.SHIP_COLOR.hsva
-
-        new_h = (h + 180.0) % 360.0  # Shift hue by 180° for complementary color
-        new_s = min(100.0, s * 1.2)  # Slightly more saturated
-        new_v = min(100.0, v * 1.3)  # Slightly brighter
-
-        complementary_color = Color(0, 0, 0, 0)
-        complementary_color.hsva = (new_h, new_s, new_v, a)
-        return complementary_color
 
 type PygameKey = int
 
