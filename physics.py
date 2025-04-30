@@ -220,21 +220,3 @@ class Disk(Body):
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
-
-    def bounce_off_of_disk(self, other: Disk) -> float | None:
-        """Bounce self disks off of `disk` if they are overlapping.
-
-        If a bounce occurs, this shifts self's positions so that
-        they're exactly flush.
-
-        Returns the damage the two disks take from the collision, or None if no bounce occured.
-
-        If the two disks have exactly the same center, they are treated as if they
-        were slightly offset from each other, with no guarantee about this behavior's
-        stability.
-        """
-        # HACK: Treat the static disk as if it had infinite mass
-        old_mass, other.mass = other.mass, float("inf")
-        bounce = self.bounce_disks(other)
-        other.mass = old_mass
-        return bounce

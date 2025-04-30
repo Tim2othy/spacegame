@@ -210,11 +210,8 @@ class Universe:
             # TODO: Could this be optimised by not checking all pairs of planets?
             for body in self._nearby_planets(planet):
                 planet.bounce_disks(body)
-            # TODO: This is unrealistic and dumb, but destroying planets that fall into the star
-            # isn't fun, either? At any rate, if nobody bounces off of stars anymore, we can probably
-            # finally deprecate Disk.bounce_off_of_disk (I hate that method)
             if isinstance(self.__star, Star):
-                planet.bounce_off_of_disk(self.__star)
+                planet.bounce_disks(self.__star)
 
     def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
         """Create `n` particles on the disk's surface.
