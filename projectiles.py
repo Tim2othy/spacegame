@@ -39,10 +39,12 @@ class Bullet(Body):
         super().__init__(relative_to, relative_pos, relative_vel, 1.0)
         self.color = Color(color)
         self.damage = BULLET_DAMAGE
+        self.relative_vel = relative_vel
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
+        # QUESTION: You wrote that we violate relativity if we don't use forward = Vec2(1,0), why?
+        forward = Vec2(1, 0) if self.relative_vel.length_squared() == 0 else self.relative_vel.normalize()
         camera.draw_polygon(
             self.color,
             [Pos(self, 4 * forward), Pos(self, 4 * forward.rotate(150)), Pos(self, 4 * forward.rotate(-150))],
@@ -65,6 +67,7 @@ class Rocket(Bullet):
         self._cycle_duration = self.homing_duration + self.nonhoming_duration
         self.color = Color(color)
         self.damage = ROCKET_DAMAGE
+        self.current_heading = Vec2(0, 0)
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics."""
@@ -84,12 +87,13 @@ class Rocket(Bullet):
 
             if force_direction != Vec2(0, 0):
                 force = force_direction.normalize() * self.homing_thrust
+                self.current_heading = force_direction.normalize()
                 self.apply_force(force, dt)
         super().step(dt)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
+        forward = self.current_heading
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -138,7 +142,7 @@ class Missile(Rocket):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""
-        forward = Vec2(1, 0)  # TODO: This looks horrible, but we violate relativity otherwise.
+        forward = self.current_heading
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
