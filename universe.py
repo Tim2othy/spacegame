@@ -60,6 +60,7 @@ class Planet(Disk):
     """A disk that doesn't exert gravitational force, and isn't stationary."""
 
     # TODO: they do exert gravitational force right?
+    # Answer YES
 
     def __init__(self, relative_to: PosVel, config: PlanetConfig) -> None:
         """Create a new Planet."""
