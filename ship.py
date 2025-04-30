@@ -24,11 +24,33 @@ from constants import (
 from physics import Disk, Pos, PosVel
 from projectiles import Bullet, Flare, Missile, Rocket
 
+if TYPE_CHECKING:
+    from camera import Camera
+
 RETREAT_HEALTH_THRESHOLD = 30.0
 DESIRED_APPROACH_SPEED = 500
+# Rate of fire
+BULLET_RATE_OF_FIRE = 0.08
+ROCKET_RATE_OF_FIRE = 0.5
+MISSILE_RATE_OF_FIRE = 3.0
+FLARE_RATE_OF_FIRE = 5.0
 
-if TYPE_CHECKING:
-    from ship import Ship
+GRAY = Color("gray")
+THRUST_COLOR = Color("orange")
+BULLET_ENEMY_COLOR = Color("lightblue")
+ROCKET_ENEMY_COLOR = Color("purple")
+MISSILE_ENEMY_COLOR = Color("lime")
+MARKOV_ENEMY_COLOR = Color("red")
+HEALTH = 100
+# ship constants
+GUNBARREL_LENGTH = 3  # relative to radius
+GUNBARREL_WIDTH = 0.5  # relative to radius
+
+DAMAGE_INDICATOR_TIME = 1
+"""Time (in seconds) a ship should flash red after taking damage"""
+NUM_FLARES = 40
+SD_FLARE_ANGLE = 25
+
 
 
 class AIState(Enum):
@@ -71,31 +93,6 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
 
-
-if TYPE_CHECKING:
-    from camera import Camera
-
-# Rate of fire
-BULLET_RATE_OF_FIRE = 0.08
-ROCKET_RATE_OF_FIRE = 0.5
-MISSILE_RATE_OF_FIRE = 3.0
-FLARE_RATE_OF_FIRE = 5.0
-
-GRAY = Color("gray")
-THRUST_COLOR = Color("orange")
-BULLET_ENEMY_COLOR = Color("lightblue")
-ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("lime")
-MARKOV_ENEMY_COLOR = Color("red")
-HEALTH = 100
-# ship constants
-GUNBARREL_LENGTH = 3  # relative to radius
-GUNBARREL_WIDTH = 0.5  # relative to radius
-
-DAMAGE_INDICATOR_TIME = 1
-"""Time (in seconds) a ship should flash red after taking damage"""
-NUM_FLARES = 40
-SD_FLARE_ANGLE = 25
 
 
 def generate_complementary_color(base_color: Color) -> Color:
