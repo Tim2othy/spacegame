@@ -536,8 +536,8 @@ class Universe:
         for y in range(0, int(height + 1), gridline_spacing):
             camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
 
-    def generate_planet(self, disk: Disk | None = None) -> Planet:
-        """Create a planet orbiting a Disk, defaulting to the universe's star."""
+    def generate_planets(self, num_planets: int, disk: Disk | None = None) -> list[Planet]:
+        """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
         """
         What the random variables do:
         - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
@@ -558,6 +558,7 @@ class Universe:
         6. Updates the minimum allowed semi-major axis for the next planet.
 
         """
+        planets = []
 
         if disk is None:
             if not isinstance(self.__star, Star):
@@ -565,37 +566,40 @@ class Universe:
                 return None
             disk = self.__star
 
-        current_min_a = random.uniform(0, 30000) + disk.radius * 2
+        # Start just outside the star's radius
+        for _ in range(num_planets):
+            current_min_a = disk.radius * 2
 
-        # random variables
-        semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-        mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
-        radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
-        eccentricity = random.betavariate(1, 15)
-        true_anomaly = random.uniform(0, 2 * math.pi)
-        orbit_direction = random.uniform(0, 2 * math.pi)
-        planet_angle = random.choice([90, 270])
+            # random variables
+            semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
+            mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+            eccentricity = random.betavariate(1, 15)
+            true_anomaly = random.uniform(0, 2 * math.pi)
+            orbit_direction = random.uniform(0, 2 * math.pi)
+            planet_angle = random.choice([90, 270])
 
-        # pos_planet
-        r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
-        radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-        pos_planet = radial_vector * r_initial
+            # pos_planet
+            r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
+            radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
+            pos_planet = radial_vector * r_initial
 
-        # velocity_planet
-        total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
-        orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
-        tangential_vector = radial_vector.rotate(planet_angle)
-        vel_planet = tangential_vector * orbital_velocity
+            # velocity_planet
+            total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
+            orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
+            tangential_vector = radial_vector.rotate(planet_angle)
+            vel_planet = tangential_vector * orbital_velocity
 
-        return self.add_planet(
-            PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet), relative_to=disk
-        )
-
-        # TODO: This update is useless. These changes are still here from when I merged branches.
-        #       We should probably rename generate_planet to generate_planets.            ~lumi-a
-        r_a = semi_major_axis * (1 + eccentricity)
-        # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
-        current_min_a = r_a + radius_planet
+            planets.append(
+                self.add_planet(
+                    PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet),
+                    relative_to=disk,
+                )
+            )
+            r_a = semi_major_axis * (1 + eccentricity)
+            # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+            current_min_a = r_a + radius_planet
+        return planets
 
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
@@ -628,7 +632,6 @@ class Universe:
 
             universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
-        for _ in range(num_planets):
-            universe.generate_planet()
+        universe.generate_planets(num_planets)
 
         return universe, player_ships
