@@ -23,7 +23,7 @@ SCREEN_SIZE = pygame.math.Vector2(1700, 900)
 MINIMAP_SIZE = pygame.math.Vector2(200, 200)
 
 
-async def initialize_game() -> tuple[Surface, Font, UniverseOptions]:
+async def get_font_screen_surface() -> tuple[Surface, Font]:
     """Initialize pygame and create basic game objects."""
     screen_surface = None
     pygame.display.init()
@@ -31,33 +31,40 @@ async def initialize_game() -> tuple[Surface, Font, UniverseOptions]:
     font = Font(None, 36)
     pygame.display.set_caption("Space Game")
     screen_surface = pygame.display.set_mode(SCREEN_SIZE)
-    return screen_surface, font, UniverseOptions()
+    return screen_surface, font
+
+
+async def init_game() -> tuple[Universe, list[tuple[PlayerShip, Camera]], Camera, int]:
+    """Return values needed to start the game."""
+    options = UniverseOptions()
+    screen_surface, font = await get_font_screen_surface()
+
+    options = await show_menu(screen_surface, options, font)
+    universe, player_ships = Universe.from_options(options)
+
+    players_and_cameras: list[tuple[PlayerShip, Camera]] = []
+    player_count = len(player_ships)
+    for player_ix, player in enumerate(player_ships):
+        topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
+        size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
+        subsurface = screen_surface.subsurface((topleft, size))
+        camera = Camera(subsurface, player, 1.0 / 2.0)
+        players_and_cameras.append((player, camera))
+
+    minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
+    minimap_camera = Camera(minimap_surface, player_ships[0], 0.01)
+
+    return universe, players_and_cameras, minimap_camera, player_count
 
 
 async def main() -> None:
     """Run the game."""
-    screen_surface, font, options = await initialize_game()
-
     keep_playing = True
 
     while keep_playing:
-        options = await show_menu(screen_surface, options, font)
-        universe, player_ships = Universe.from_options(options)
-
-        players_and_cameras: list[tuple[PlayerShip, Camera]] = []
-        player_count = len(player_ships)
-        for player_ix, player in enumerate(player_ships):
-            topleft = (player_ix * SCREEN_SIZE.x / player_count, 0)
-            size = (SCREEN_SIZE.x / player_count, SCREEN_SIZE.y)
-            subsurface = screen_surface.subsurface((topleft, size))
-            camera = Camera(subsurface, player, 1.0 / 2.0)
-            players_and_cameras.append((player, camera))
-
-        minimap_surface = screen_surface.subsurface(((SCREEN_SIZE.x - MINIMAP_SIZE.x, 0), MINIMAP_SIZE))
-        minimap_camera = Camera(minimap_surface, player_ships[0], 0.01)
-
         clock = pygame.time.Clock()
 
+        universe, players_and_cameras, minimap_camera, player_count = await init_game()
         running = True
 
         while running:
