@@ -271,14 +271,7 @@ class BulletEnemy(Ship):
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
-        super().__init__(
-            relative_to,
-            ShipConfig(
-                relative_pos=config.relative_pos,
-                relative_vel=config.relative_vel,
-                color=self.SHIP_COLOR,
-            ),
-        )
+        super().__init__(relative_to, config)
 
         self.target: Ship = config.target_ship
 
@@ -288,6 +281,7 @@ class BulletEnemy(Ship):
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
         self.projectile_speed: float = config.projectile_speed
         self.ai = EnemyAI(self, config.target_ship)
+        self.color = self.SHIP_COLOR
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
