@@ -15,7 +15,6 @@ from projectiles import Bullet, Missile, Rocket
 from ship import Ship, ShipConfig
 
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
-ENEMY_VISUAL_RANGE_SQUARED = 2000**2
 ENEMY_ACTION_TIMER = 6
 ROCKET_RELEASE_SPEED = 300.0
 RETREAT_HEALTH_THRESHOLD = 30.0
@@ -82,14 +81,14 @@ class EnemyAI:
         self.action_timer = 0.0
         self.projectile_speed = ship.projectile_speed
         self.gun_cooldown = ship.gun_cooldown
+        self.can_see_target = self.ship.distance_squared_to(self.target) < ENEMY_FIRE_RANGE_SQUARED
 
     def _transition_state(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         # Get context information
-        can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
 
-        match (can_see_player, low_health):
+        match (self.can_see_target, low_health):
             case (True, True):
                 matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
             case (False, True):
@@ -183,22 +182,23 @@ class EnemyAI:
     def _execute_retreat_behavior(self) -> Vec2:
         """Return force required for the retreat-behavior."""
         delta = self.ship.pos_relative_to(self.target)
-        if delta.length_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        if not self.can_see_target:
             return Vec2(0, 0)
         return delta
 
+    def _accelerate_randomly(self) -> Vec2:
+        return self.seek_towards.pos_relative_to(self.ship)
+
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior."""
-        self.action_timer -= dt
+        self.update_all(dt)
 
         if self.action_timer <= 0:
             self._transition_state()
             self.action_timer = ENEMY_ACTION_TIMER
 
         # Only shoot when in attack or aim states and within range
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.distance_squared_to(
-            self.target
-        ) < ENEMY_FIRE_RANGE_SQUARED
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
 
         # Execute behavior based on current state
         match self.current_state:
@@ -219,12 +219,11 @@ class EnemyAI:
 
     def update_simple(self, dt: float) -> None:
         """Execute `self`'s ai."""
-        self.action_timer -= dt
-        can_see_target = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
+        self.update_all(dt)
 
         if self.action_timer <= 0:
-            if can_see_target:
-                self.current_action = BulletEnemy.Action.accelerate_to_player
+            if self.can_see_target:
+                self.current_action = BulletEnemy.Action.ATTACK
             else:
                 self.current_action = BulletEnemy.Action.accelerate_randomly
 
@@ -240,17 +239,21 @@ class EnemyAI:
             self.action_timer = ENEMY_ACTION_TIMER
 
         match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player:
-                force_direction = self.target.pos_relative_to(self.ship)
+            case BulletEnemy.Action.ATTACK:
+                force_direction = self._execute_attack_behavior()
             case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.seek_towards.pos_relative_to(self.ship)
+                force_direction = self._accelerate_randomly()
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.ship.thrust
             self.ship.apply_force(force, dt)
 
-        self.ship.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
+        self.ship.shooting = self.current_action == BulletEnemy.Action.ATTACK and self.can_see_target
         self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+
+    def update_all(self, dt: float) -> None:
+        """Update all ais use."""
+        self.action_timer -= dt
 
 
 @dataclass(kw_only=True)
@@ -278,7 +281,7 @@ class BulletEnemy(Ship):
     class Action(Enum):
         """Actions the BulletEnemy might take."""
 
-        accelerate_to_player = auto()
+        ATTACK = auto()
         accelerate_randomly = auto()
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
