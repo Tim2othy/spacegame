@@ -267,7 +267,6 @@ class Universe:
 
             if isinstance(self.__star, Star) and self.__star.intersects_disk(projectile):
                 return False
-            # TODO: Projectiles aren't destroyed by the star, are they?
             for planet in self._nearby_planets(projectile):
                 if planet.intersects_disk(projectile):
                     self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
