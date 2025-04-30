@@ -249,20 +249,19 @@ Module implementing the core physics engine and base classes for physical object
     - **Camera**: Manages viewport and rendering
     - **PosVel**: Extends Pos with velocity
         - **Particle**: Extends PosVel for visual effects
-        - **Body**: Extends PosVel with mass and forces
+        - **Disk**: Extends Body with circular shape and radius
             - **Bullet**: What Ships shoot
                 - **Flare**: Slow moving Bullet with specific behavior
                 - **Rocket**: Type of Bullet with specific behavior
                     - **Missile**: Another type of Bullet with different behavior
-            - **Disk**: Extends Body with circular shape and radius
-                - **Star**: Stationary celestial body
-                - **Planet**: Movable celestial body
-                - **Ship**: Base class for ships
-                    - **PlayerShip**: Player-controlled ship
-                    - **BulletEnemy**: AI-controlled ship
-                        - **RocketEnemy**: Enemy ship that fires rockets
-                        - **MissileEnemy**: Enemy ship that fires missiles
-                        - **MarkovEnemy**: Advanced enemy AI using Markov chains
+            - **Star**: Stationary celestial body
+            - **Planet**: Movable celestial body
+            - **Ship**: Base class for ships
+                - **PlayerShip**: Player-controlled ship
+                - **BulletEnemy**: AI-controlled ship
+                    - **RocketEnemy**: Enemy ship that fires rockets
+                    - **MissileEnemy**: Enemy ship that fires missiles
+                    - **MarkovEnemy**: Advanced enemy AI using Markov chains
 
 
 

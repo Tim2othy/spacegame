@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Body, Disk, Particle, Pos, PosVel
+from physics import Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile
 from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
@@ -171,14 +171,14 @@ class Universe:
                 chunk = (x + i, y + j)
                 yield from self._planet_chunks.get(chunk, [])
 
-    def apply_gravity_to(self, pobj: Body, dt: float) -> None:
+    def apply_gravity_to(self, pobj: Disk, dt: float) -> None:
         """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)
 
         if isinstance(self.__star, Star):
             force_sum += pobj.gravitational_force(self.__star)
-        for body in self._nearby_planets(pobj):
-            force_sum += pobj.gravitational_force(body)
+        for disk in self._nearby_planets(pobj):
+            force_sum += pobj.gravitational_force(disk)
 
         pobj.apply_force(force_sum, dt)
 
@@ -211,8 +211,8 @@ class Universe:
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
             # TODO: Could this be optimised by not checking all pairs of planets?
-            for body in self._nearby_planets(planet):
-                planet.bounce_disks(body)
+            for disk in self._nearby_planets(planet):
+                planet.bounce_disks(disk)
             if isinstance(self.__star, Star):
                 planet.bounce_disks(self.__star)
 

@@ -110,15 +110,18 @@ class Particle(PosVel):
         camera.draw_pixel(self._base_color, max(0, min(1, self._lifetime / self._max_lifetime)), self)
 
 
-class Body(PosVel):
-    """A physical object with dynamic position, dynamic velocity, and dynamic strictly positive mass."""
+class Disk(PosVel):
+    """A disk with dynamic position, dynamic velocity, constant radius and dynamic color."""
 
-    def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, mass: float) -> None:
-        """Create a new Body. Raises a ValueError if the mass is not finite and strictly positive."""
+    def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY):
+        """Create a new Disk. Mass will be calculated as if it were a sphere, though."""
         super().__init__(relative_to, relative_pos, relative_vel)
-        if not (math.isfinite(mass) and mass > 0):
+        if not (math.isfinite(radius) and radius > 0):
             raise ValueError
-        self.mass: float = mass
+        self.radius: float = radius
+        self.__radius_squared: float = radius**2
+        self.color: Color = Color(color)
+        self.mass = radius**3 * math.pi * 4 / 3
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`."""
@@ -128,7 +131,7 @@ class Body(PosVel):
         """Apply a force to `self`."""
         self.add_impulse(force * dt)
 
-    def gravitational_force(self, pobj: Body) -> Vec2:
+    def gravitational_force(self, pobj: Disk) -> Vec2:
         """Calculate gravitational force between `pobj` and `self` affecting `self`."""
         delta = pobj.pos_relative_to(self)
         if delta == Vec2(0, 0):
@@ -137,23 +140,6 @@ class Body(PosVel):
         force_length = GRAVITATIONAL_CONSTANT * self.mass * pobj.mass / dist_squared
         normalised_delta = delta / math.sqrt(dist_squared)
         return normalised_delta * force_length
-
-    def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`. Implemented by subclasses."""
-
-
-class Disk(Body):
-    """A disk with constant radius and dynamic color."""
-
-    def __init__(
-        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
-    ) -> None:
-        """Create a new Disk. Mass will be calculated as if it were a sphere, though."""
-        mass = radius**3 * math.pi * 4 / 3
-        super().__init__(relative_to, relative_pos, relative_vel, mass)
-        self.radius: float = radius
-        self.__radius_squared: float = radius**2
-        self.color: Color = Color(color)
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` on `camera`."""

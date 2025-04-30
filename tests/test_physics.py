@@ -7,23 +7,23 @@ from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
 from camera import Camera
-from physics import Body, Disk, Pos, PosVel
+from physics import Disk, Pos, PosVel
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
-def test_mass_positive() -> None:
-    Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+def test_radius_positive() -> None:
+    Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
     with pytest.raises(ValueError):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
+        Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), -1)
     with pytest.raises(ValueError):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
+        Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 0)
     with pytest.raises(ValueError):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
+        Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("inf"))
     with pytest.raises(ValueError):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
+        Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("-inf"))
     with pytest.raises(ValueError):
-        Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
+        Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), float("nan"))
 
 
 @pytest.mark.parametrize("relative_pos", [Vec2(10, 5), Vec2(-10, 0), Vec2(10, -20), Vec2(0, 0)])
@@ -51,10 +51,10 @@ def test_step(relative_pos: Vec2) -> None:
 
 
 def test_gravitational_force() -> None:
-    obj = Body(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
-    small_force = obj.gravitational_force(Body(obj, Vec2(1, 2), Vec2(0, 0), 1))
-    large_force = obj.gravitational_force(Body(obj, Vec2(-1, 2), Vec2(0, 0), 2))
-    double_distance_force = obj.gravitational_force(Body(obj, 2 * Vec2(1, 2), Vec2(0, 0), 1))
+    obj = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
+    small_force = obj.gravitational_force(Disk(obj, Vec2(1, 2), Vec2(0, 0), 1))
+    large_force = obj.gravitational_force(Disk(obj, Vec2(-1, 2), Vec2(0, 0), 2 ** (1 / 3)))
+    double_distance_force = obj.gravitational_force(Disk(obj, 2 * Vec2(1, 2), Vec2(0, 0), 1))
     assert small_force.x > 0
     assert small_force.y > 0
     assert large_force.x < 0
