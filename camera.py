@@ -70,8 +70,8 @@ class Camera(Pos):
             new_color = old_color.lerp(color, transparency)
             self._surface.set_at(position, new_color)
 
-    def draw_circle(self, color: Color, center: Pos, radius: float) -> None:
-        """Draw a worldspace-circle."""
+    def draw_circle(self, color: Color, center: Pos, radius: float, width: int = 0) -> None:
+        """Draw a worldspace-circle. Optional `width` arg makes a ring."""
         surfacespace_center = self._world_to_surface(center)
         surfacespace_radius = radius * self._zoom
         surfacespace_radius_vec = Vec2(surfacespace_radius, surfacespace_radius)
@@ -79,7 +79,7 @@ class Camera(Pos):
         # soft check for circle-surface-intersection:
         enclosing_rect = Rect(surfacespace_center - surfacespace_radius_vec, 2 * surfacespace_radius_vec)
         if self._rectangle_intersects_surface(enclosing_rect):
-            pygame.draw.circle(self._surface, color, surfacespace_center, surfacespace_radius)
+            pygame.draw.circle(self._surface, color, surfacespace_center, surfacespace_radius, width=width)
 
     def draw_polygon(self, color: Color, points: Iterable[Pos]) -> None:
         """Draw a filled worldspace-polygon."""

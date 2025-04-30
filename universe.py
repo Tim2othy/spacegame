@@ -30,6 +30,9 @@ PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
+RADIAL_SPACING = 1000
+ANGULAR_SPACING = 4
+MAX_RADIUS = 20000
 
 
 class Star(Disk):
@@ -509,23 +512,16 @@ class Universe:
 
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
-        """Draw gridlines on `camera`."""
-        # TODO: Choose one of these options:
-        # 1. Use a grid clamped to the camera's position (universe is unbounded now)
-        # 2. Use a polar grid centered on self.star, clamped to the camera's position
-        # 3. Don't use any grid at all (the background-stars will guide your way)
-        #
-        # I like option 2.    ~lumi-a
-        return
-        gridline_spacing = 500
-        width = 3000
-        height = 3000
+        """Draw a polar grid centered on the star."""
+        # TODO: This is quite laggy, probably can be fixed somehow.
+        center = self.__star
 
-        for x in range(0, int(width + 1), gridline_spacing):
-            camera.draw_vertical_hairline(GRID_COLOR, x, 0, height)
+        for r in range(RADIAL_SPACING, MAX_RADIUS + 1, RADIAL_SPACING):
+            camera.draw_circle(GRID_COLOR, center, r, 2)
 
-        for y in range(0, int(height + 1), gridline_spacing):
-            camera.draw_horizontal_hairline(GRID_COLOR, 0, width, y)
+        for angle in range(0, 360, ANGULAR_SPACING * 2):
+            end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
+            camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
 
     def generate_planets(self, num_planets: int, disk: Disk | None = None) -> list[Planet]:
         """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
