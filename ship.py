@@ -466,13 +466,7 @@ class BulletEnemy(Ship):
         """Create a new enemy ship."""
         super().__init__(
             relative_to,
-            ShipConfig(
-                relative_pos=config.relative_pos,
-                relative_vel=config.relative_vel,
-                color=self.SHIP_COLOR,
-                gun_cooldown=self.SHIP_GUN_COOLDOWN,
-                projectile_speed=self.SHIP_PROJECTILE_SPEED,
-            ),
+            config
         )
 
         self.target: Ship = config.target_ship
@@ -484,6 +478,10 @@ class BulletEnemy(Ship):
         self.projectile_speed: float = config.projectile_speed
         self.ai = EnemyAI(self, config.target_ship)
         self.color = self.SHIP_COLOR
+        self.gun_cooldown=self.SHIP_GUN_COOLDOWN
+        self.projectile_speed=self.SHIP_PROJECTILE_SPEED
+        self.projectile_color = generate_complementary_color(self.color)
+
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
@@ -530,7 +528,7 @@ class MarkovEnemy(BulletEnemy):
 
     def step(self, dt: float) -> None:
         """Apply physics and AI to this ship."""
-        self.ai.update(dt)
+        self.ai.update_markov(dt)
         Ship.step(self, dt)
 
 
@@ -667,7 +665,7 @@ class EnemyAI:
     def _accelerate_randomly(self) -> Vec2:
         return self.seek_towards.pos_relative_to(self.ship)
 
-    def update(self, dt: float) -> None:
+    def update_markov(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior."""
         if self.action_timer <= 0:
             self._transition_state()
@@ -683,7 +681,7 @@ class EnemyAI:
                 force_direction = self._execute_aim_behavior()
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
-        self.update_all(dt, force_direction)
+        self.update(dt, force_direction)
 
     def update_simple(self, dt: float) -> None:
         """Execute `self`'s ai."""
@@ -696,9 +694,9 @@ class EnemyAI:
                 force_direction = self._execute_attack_behavior()
             case AIState.RANDOM:
                 force_direction = self._accelerate_randomly()
-        self.update_all(dt, force_direction)
+        self.update(dt, force_direction)
 
-    def update_all(self, dt: float, force_direction: Vec2) -> None:
+    def update(self, dt: float, force_direction: Vec2) -> None:
         """Update all ais use."""
         self.action_timer -= dt
         self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
