@@ -138,10 +138,9 @@ async def show_menu(screen: Surface, options: UniverseOptions, font: Font) -> Un
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     return options
-                if event.key == pygame.K_UP:
-                    option_selection_ix = (option_selection_ix - 1) % len(option_fields)
-                elif event.key == pygame.K_DOWN:
-                    option_selection_ix = (option_selection_ix + 1) % len(option_fields)
+                if event.key in (pygame.K_UP, pygame.K_DOWN):
+                    direction = -1 if event.key == pygame.K_UP else 1
+                    option_selection_ix = (option_selection_ix + direction) % len(option_fields)
                 elif event.key in {pygame.K_LEFT, pygame.K_RIGHT}:
                     field = option_fields[option_selection_ix]
                     # TODO: Since we already have a `field: Field`, is there something more
