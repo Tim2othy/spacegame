@@ -128,7 +128,7 @@ def test_simple_disk_bounce() -> None:
     disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), 1)
     disk_b = Disk(disk_a, Vec2(-1, 0), Vec2(1, 0), 1)
 
-    disk_a.bounce_off_of_disk(disk_b)
+    disk_a.bounce_disks(disk_b)
 
     assert disk_a.vel_relative_to(ORIGIN).y == 0, "Disk's vertical velocity should be unchanged"
     assert (
@@ -144,7 +144,7 @@ def test_disk_bounce() -> None:
     disk_a = Disk(ORIGIN, Vec2(0, 0), Vec2(0, 0), radius=1, color=Color(0, 0, 0))
     disk_b = Disk(disk_a, Vec2(4, 0), Vec2(0, 0), radius=2, color=Color(0, 0, 0))
 
-    assert disk_a.bounce_off_of_disk(disk_b) is None, "Non-intersecting disks shouldn't bounce"
+    assert disk_a.bounce_disks(disk_b) is None, "Non-intersecting disks shouldn't bounce"
 
     disk_c = Disk(disk_a, Vec2(0, 1), Vec2(1, 0), radius=1, color=Color(0, 0, 0))
 
@@ -152,7 +152,7 @@ def test_disk_bounce() -> None:
     for _ in range(200):
         disk_c.step(0.01)
         disk_b.step(0.01)
-        bounce = disk_c.bounce_off_of_disk(disk_b)
+        bounce = disk_c.bounce_disks(disk_b)
         if bounce is not None:
             bounce_count += 1
             assert bounce == 0.0, "Bounce should be clamped to 0 for small-mass disks"
@@ -166,8 +166,6 @@ def test_disk_bounce() -> None:
         if bounce_count >= 1:
             assert disk_c.vel_relative_to(ORIGIN).x < 0, "Disk should be moving to the left"
             assert disk_c.vel_relative_to(ORIGIN).y > 0, "Disk should be moving up"
-
-        assert disk_b.vel_relative_to(ORIGIN) == Vec2(0, 0), "Disk_b should be unaffected"
 
     assert bounce_count == 1
 
