@@ -535,11 +535,23 @@ class EnemyAI:
         self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
-        self.projectile_speed = ship.projectile_speed
-        self.gun_cooldown = ship.gun_cooldown
         self.can_see_target = self.ship.distance_squared_to(self.target) < ENEMY_FIRE_RANGE_SQUARED
 
-    def _transition_state(self) -> None:
+    def update_markov(self, dt: float) -> None:
+        """Update Markov AI state and execute appropriate behavior."""
+        if self.action_timer <= 0:
+            self._transition_markov()
+            self.action_timer = ENEMY_ACTION_TIMER
+        self.update(dt)
+
+    def update_simple(self, dt: float) -> None:
+        """Update Simple AI state and execute appropriate behavior."""
+        if self.action_timer <= 0:
+            self._transition_simple()
+            self.action_timer = ENEMY_ACTION_TIMER
+        self.update(dt)
+
+    def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         # Get context information
         low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
@@ -573,7 +585,34 @@ class EnemyAI:
             random_y = random.gauss(sigma=distance_to_target)
             self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
-    def _execute_search_behavior(self) -> Vec2:
+    def update(self, dt: float) -> None:
+        """Update what the AIs do."""
+        force_direction = self.match()
+        self.action_timer -= dt
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
+
+        if force_direction != Vec2(0, 0):
+            force = force_direction.normalize() * self.ship.thrust
+            self.ship.apply_force(force, dt)
+
+        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+
+    def match(self) -> Vec2:
+        """Match and then, execute behavior based on current state."""
+        match self.current_state:
+            case AIState.SEARCH:
+                force_direction = self._execute_search()
+            case AIState.ATTACK:
+                force_direction = self._execute_attack()
+            case AIState.AIM:
+                force_direction = self._execute_aim()
+            case AIState.RETREAT:
+                force_direction = self._execute_retreat()
+            case AIState.RANDOM:
+                force_direction = self._execute_randomly()
+        return force_direction
+
+    def _execute_search(self) -> Vec2:
         """Return force required for the search-behavior."""
         delta_target_ship = self.target.pos_relative_to(self.ship)
         relative_velocity = self.ship.vel_relative_to(self.target)
@@ -585,11 +624,11 @@ class EnemyAI:
         # Force required to change from current relative velocity to desired relative velocity
         return desired_relative_vel - relative_velocity
 
-    def _execute_attack_behavior(self) -> Vec2:
+    def _execute_attack(self) -> Vec2:
         """Return force required for the attack-behavior."""
         return self.target.pos_relative_to(self.ship)
 
-    def _execute_aim_behavior(self) -> Vec2:
+    def _execute_aim(self) -> Vec2:
         """Return force required for the aim-behavior."""
         # Relative position and velocity
         relative_pos = self.target.pos_relative_to(self.ship)
@@ -649,53 +688,12 @@ class EnemyAI:
         # Now calculate what direction the bullet must be fired in
         return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
 
-    def _execute_retreat_behavior(self) -> Vec2:
+    def _execute_retreat(self) -> Vec2:
         """Return force required for the retreat-behavior."""
         delta = self.ship.pos_relative_to(self.target)
         if not self.can_see_target:
             return Vec2(0, 0)
         return delta
 
-    def _accelerate_randomly(self) -> Vec2:
+    def _execute_randomly(self) -> Vec2:
         return self.seek_towards.pos_relative_to(self.ship)
-
-    def update_markov(self, dt: float) -> None:
-        """Update Markov AI state and execute appropriate behavior."""
-        if self.action_timer <= 0:
-            self._transition_state()
-            self.action_timer = ENEMY_ACTION_TIMER
-        self.update(dt)
-
-    def update_simple(self, dt: float) -> None:
-        """Update Simple AI state and execute appropriate behavior."""
-        if self.action_timer <= 0:
-            self._transition_simple()
-            self.action_timer = ENEMY_ACTION_TIMER
-        self.update(dt)
-
-    def update(self, dt: float) -> None:
-        """Update what the AIs do."""
-        force_direction = self.match()
-        self.action_timer -= dt
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.ship.thrust
-            self.ship.apply_force(force, dt)
-
-        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
-
-    def match(self) -> Vec2:
-        """Match and then, execute behavior based on current state."""
-        match self.current_state:
-            case AIState.SEARCH:
-                force_direction = self._execute_search_behavior()
-            case AIState.ATTACK:
-                force_direction = self._execute_attack_behavior()
-            case AIState.AIM:
-                force_direction = self._execute_aim_behavior()
-            case AIState.RETREAT:
-                force_direction = self._execute_retreat_behavior()
-            case AIState.RANDOM:
-                force_direction = self._accelerate_randomly()
-        return force_direction
