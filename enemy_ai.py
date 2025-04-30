@@ -36,7 +36,7 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
-    accelerate_randomly = auto()
+    RANDOM = auto()
 
 
 type MatrixRow = dict[AIState, float]
@@ -108,16 +108,15 @@ class EnemyAI:
         if self.can_see_target:
             self.current_state = AIState.ATTACK
         else:
-            self.current_state = AIState.accelerate_randomly
+            self.current_state = AIState.RANDOM
 
-            if self.current_state == AIState.accelerate_randomly:
-                # Accelerate towards a random point near the player.
-                distance_to_target = self.target.distance_to(self.ship)
-                # I think (but haven't proved) that, by choosing the standard-deviation proportional
-                # to the distance to the player, we should eventually find a non-accelerating player.
-                random_x = random.gauss(sigma=distance_to_target)
-                random_y = random.gauss(sigma=distance_to_target)
-                self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
+            # Accelerate towards a random point near the player.
+            distance_to_target = self.target.distance_to(self.ship)
+            # I think (but haven't proved) that, by choosing the standard-deviation proportional
+            # to the distance to the player, we should eventually find a non-accelerating player.
+            random_x = random.gauss(sigma=distance_to_target)
+            random_y = random.gauss(sigma=distance_to_target)
+            self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
     def _execute_search_behavior(self) -> Vec2:
         """Return force required for the search-behavior."""
@@ -232,7 +231,7 @@ class EnemyAI:
         match self.current_state:
             case AIState.ATTACK:
                 force_direction = self._execute_attack_behavior()
-            case AIState.accelerate_randomly:
+            case AIState.RANDOM:
                 force_direction = self._accelerate_randomly()
         self.update_all(dt, force_direction)
 
@@ -284,7 +283,7 @@ class BulletEnemy(Ship):
         self.target: Ship = config.target_ship
 
         self.action_timer: float = 0.0
-        self.current_action: AIState = AIState.accelerate_randomly
+        self.current_action: AIState = AIState.RANDOM
         self.projectiles: list[Bullet] = []
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
         self.projectile_speed: float = config.projectile_speed
