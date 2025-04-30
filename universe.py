@@ -523,7 +523,7 @@ class Universe:
             end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
             camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
 
-    def generate_planets(self, num_planets: int, disk: Disk | None = None) -> list[Planet]:
+    def generate_planets(self, num_planets: int) -> list[Planet]:
         """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
         """
         What the random variables do:
@@ -543,18 +543,14 @@ class Universe:
             shifted with the orbit distance.
         5. Calculates the orbit geometry and initial position/velocity.
         6. Updates the minimum allowed semi-major axis for the next planet.
-
         """
+
+        if not isinstance(self.__star, Star):
+            return []
+        disk = self.__star
         planets = []
-
-        if disk is None:
-            if not isinstance(self.__star, Star):
-                # TODO: Offer some other method if self.__star is not a Star.
-                return []
-            disk = self.__star
-
-        # Start just outside the star's radius
         current_min_a = disk.radius * 2
+
         for _ in range(num_planets):
 
             # random variables
