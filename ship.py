@@ -12,15 +12,6 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from constants import (
-    BULLET_RELEASE_SPEED,
-    ENEMY_ACTION_TIMER,
-    ENEMY_FIRE_RANGE_SQUARED,
-    ENEMY_VISUAL_RANGE_SQUARED,
-    FLARE_MEAN_RELEASE_SPEED,
-    FLARE_SD_RELEASE_SPEED,
-    ROCKET_RELEASE_SPEED,
-)
 from physics import Disk, Pos, PosVel
 from projectiles import Bullet, Flare, Missile, Rocket
 
@@ -51,6 +42,12 @@ DAMAGE_INDICATOR_TIME = 1
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
+FLARE_MEAN_RELEASE_SPEED = 140
+FLARE_SD_RELEASE_SPEED = 28
+ENEMY_FIRE_RANGE_SQUARED = 1700**2
+ENEMY_ACTION_TIMER = 6
+ROCKET_RELEASE_SPEED = 300.0
+BULLET_RELEASE_SPEED = 700.0
 
 
 class AIState(Enum):
@@ -60,6 +57,7 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
+    RANDOM = auto()
 
 
 type MatrixRow = dict[AIState, float]
@@ -155,7 +153,7 @@ class Ship(Disk):
         self.projectiles: list[Bullet] = []
         if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
             raise ValueError
-        self._gun_cooldown: float = config.gun_cooldown
+        self.gun_cooldown: float = config.gun_cooldown
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
@@ -215,7 +213,7 @@ class Ship(Disk):
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self._gun_cooldown
+                self.gun_cooldown_timer += self.gun_cooldown
 
     def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
@@ -443,18 +441,19 @@ class PlayerShip(Ship):
 
 
 @dataclass(kw_only=True)
-class EnemyConfig:
+class EnemyConfig(ShipConfig):
     """Configuration for an enemy-spaceship.
 
     Attributes:
         relative_pos (Vec2): Relative position of the enemy-spaceship
         relative_vel (Vec2): Relative velocity of the enemy-spaceship
+        color (Color): Color of the player-spaceship
+        gun_cooldown (float): Minimum time between shots
+        projectile_speed (float): Speed at which projectiles are fired
         target_ship (Ship): Ship to target
 
     """
 
-    relative_pos: Vec2
-    relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     target_ship: Ship
 
 
@@ -464,12 +463,6 @@ class BulletEnemy(Ship):
     SHIP_COLOR = BULLET_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-
-    class Action(Enum):
-        """Actions the BulletEnemy might take."""
-
-        accelerate_to_player = auto()
-        accelerate_randomly = auto()
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
@@ -487,48 +480,16 @@ class BulletEnemy(Ship):
         self.target: Ship = config.target_ship
 
         self.action_timer: float = 0.0
-        self.current_action: BulletEnemy.Action = BulletEnemy.Action.accelerate_randomly
+        self.current_action: AIState = AIState.RANDOM
         self.projectiles: list[Bullet] = []
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
-
-    def step_ai(self, dt: float) -> None:
-        """Execute `self`'s ai."""
-        self.action_timer -= dt
-        can_see_target = self.target.distance_squared_to(self) < ENEMY_VISUAL_RANGE_SQUARED
-
-        if self.action_timer <= 0:
-            if can_see_target:
-                self.current_action = BulletEnemy.Action.accelerate_to_player
-            else:
-                self.current_action = BulletEnemy.Action.accelerate_randomly
-
-                if self.current_action == BulletEnemy.Action.accelerate_randomly:
-                    # Accelerate towards a random point near the player.
-                    distance_to_target = self.target.distance_to(self)
-                    # I think (but haven't proved) that, by choosing the standard-deviation proportional
-                    # to the distance to the player, we should eventually find a non-accelerating player.
-                    random_x = random.gauss(sigma=distance_to_target)
-                    random_y = random.gauss(sigma=distance_to_target)
-                    self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
-
-            self.action_timer = ENEMY_ACTION_TIMER
-
-        match self.current_action:
-            case BulletEnemy.Action.accelerate_to_player:
-                force_direction = self.target.pos_relative_to(self)
-            case BulletEnemy.Action.accelerate_randomly:
-                force_direction = self.seek_towards.pos_relative_to(self)
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.thrust
-            self.apply_force(force, dt)
-
-        self.shooting = self.current_action == BulletEnemy.Action.accelerate_to_player and can_see_target
-        self.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+        self.projectile_speed: float = config.projectile_speed
+        self.ai = EnemyAI(self, config.target_ship)
+        self.color = self.SHIP_COLOR
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
-        self.step_ai(dt)
+        self.ai.update_simple(dt)
         super().step(dt)
 
 
@@ -567,7 +528,7 @@ class MarkovEnemy(BulletEnemy):
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new Markov-based enemy ship."""
         super().__init__(relative_to, config)
-        self.ai = MarkovAI(self, config.target_ship)
+        self.ai = EnemyAI(self, config.target_ship)
 
     def step(self, dt: float) -> None:
         """Apply physics and AI to this ship."""
@@ -578,7 +539,7 @@ class MarkovEnemy(BulletEnemy):
 
 
 
-class MarkovAI:
+class EnemyAI:
     """Markov chain-based AI for enemy ships."""
 
     def __init__(self, ship: Ship, target_ship: Ship) -> None:
@@ -587,14 +548,16 @@ class MarkovAI:
         self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
+        self.projectile_speed = ship.projectile_speed
+        self.gun_cooldown = ship.gun_cooldown
+        self.can_see_target = self.ship.distance_squared_to(self.target) < ENEMY_FIRE_RANGE_SQUARED
 
     def _transition_state(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         # Get context information
-        can_see_player = self.target.distance_squared_to(self.ship) < ENEMY_VISUAL_RANGE_SQUARED
         low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
 
-        match (can_see_player, low_health):
+        match (self.can_see_target, low_health):
             case (True, True):
                 matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
             case (False, True):
@@ -608,6 +571,20 @@ class MarkovAI:
         current_row: MatrixRow = matrix[self.current_state]
         states, probabilities = list(current_row.keys()), list(current_row.values())
         self.current_state = random.choices(states, probabilities)[0]
+
+    def _transition_simple(self) -> None:
+        if self.can_see_target:
+            self.current_state = AIState.ATTACK
+        else:
+            self.current_state = AIState.RANDOM
+
+            # Accelerate towards a random point near the player.
+            distance_to_target = self.target.distance_to(self.ship)
+            # I think (but haven't proved) that, by choosing the standard-deviation proportional
+            # to the distance to the player, we should eventually find a non-accelerating player.
+            random_x = random.gauss(sigma=distance_to_target)
+            random_y = random.gauss(sigma=distance_to_target)
+            self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
 
     def _execute_search_behavior(self) -> Vec2:
         """Return force required for the search-behavior."""
@@ -648,7 +625,7 @@ class MarkovAI:
         """
 
         # Quadratic equation coefficients:
-        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
+        a = relative_vel.length_squared() - self.projectile_speed**2
         b = 2 * relative_pos.dot(relative_vel)
         c = relative_pos.length_squared()
 
@@ -658,7 +635,7 @@ class MarkovAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
+            force = relative_pos + relative_vel * (relative_pos.length() / self.projectile_speed)
             return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
 
         # Calculate both solutions
@@ -688,22 +665,18 @@ class MarkovAI:
     def _execute_retreat_behavior(self) -> Vec2:
         """Return force required for the retreat-behavior."""
         delta = self.ship.pos_relative_to(self.target)
-        if delta.length_squared() > ENEMY_VISUAL_RANGE_SQUARED * 2:
+        if not self.can_see_target:
             return Vec2(0, 0)
         return delta
 
+    def _accelerate_randomly(self) -> Vec2:
+        return self.seek_towards.pos_relative_to(self.ship)
+
     def update(self, dt: float) -> None:
         """Update AI state and execute appropriate behavior."""
-        self.action_timer -= dt
-
         if self.action_timer <= 0:
             self._transition_state()
             self.action_timer = ENEMY_ACTION_TIMER
-
-        # Only shoot when in attack or aim states and within range
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.ship.distance_squared_to(
-            self.target
-        ) < ENEMY_FIRE_RANGE_SQUARED
 
         # Execute behavior based on current state
         match self.current_state:
@@ -715,6 +688,25 @@ class MarkovAI:
                 force_direction = self._execute_aim_behavior()
             case AIState.RETREAT:
                 force_direction = self._execute_retreat_behavior()
+        self.update_all(dt, force_direction)
+
+    def update_simple(self, dt: float) -> None:
+        """Execute `self`'s ai."""
+        if self.action_timer <= 0:
+            self._transition_simple()
+            self.action_timer = ENEMY_ACTION_TIMER
+
+        match self.current_state:
+            case AIState.ATTACK:
+                force_direction = self._execute_attack_behavior()
+            case AIState.RANDOM:
+                force_direction = self._accelerate_randomly()
+        self.update_all(dt, force_direction)
+
+    def update_all(self, dt: float, force_direction: Vec2) -> None:
+        """Update all ais use."""
+        self.action_timer -= dt
+        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
 
         if force_direction != Vec2(0, 0):
             force = force_direction.normalize() * self.ship.thrust
