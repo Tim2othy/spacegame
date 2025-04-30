@@ -235,7 +235,6 @@ Module implementing the core physics engine and base classes for physical object
   - `color`: Display color
 - **Key Methods**:
   - `draw(camera)`: Render disk as circle
-  - `contains_center_of(pos)`: Check if another object's center is inside
   - `intersects_disk(other)`: Detect collision with another disk
   - `bounce_disks(other)`: Handle collision physics between two disks
   - `bounce_off_of_disk(other)`: Specialized collision for static objects

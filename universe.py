@@ -265,23 +265,18 @@ class Universe:
             # TODO: Add lifetime to bullets. The universe being unbounded now, they life forever and
             # will cause eventual lag.
 
-            if isinstance(self.__star, Star) and self.__star.contains_center_of(projectile):
+            if isinstance(self.__star, Star) and self.__star.intersects_disk(projectile):
                 return False
             # TODO: Projectiles aren't destroyed by the star, are they?
             for planet in self._nearby_planets(projectile):
-                if planet.contains_center_of(projectile):
+                if planet.intersects_disk(projectile):
                     self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
                     return False
             for ship in ships_it_can_hit:
-                if ship.contains_center_of(projectile):
+                if ship.intersects_disk(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
                     return False
-                # TODO: Should we just change `class Bullet(Body)` to `class Bullet(Disk)`,
-                # i.e. have Bullet inherit from Disk instead of just Body? That'd make this whole
-                # collision-detection more idiomatic. If we do, we can also change the above calls
-                # `Disk.contains_center_of(bullet)` to `Disk.intersects_disk(bullet)`.
-                # We should then also change the same call in test_projectiles.py.
                 if isinstance(projectile, Missile) and any(
                     other_projectile.distance_squared_to(projectile) < 10**2 for other_projectile in ship.projectiles
                 ):
