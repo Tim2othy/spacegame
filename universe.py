@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
+from physics import GRAVITATIONAL_CONSTANT
 
 
 PLANET_SIZE_PARAMETER = 5.9
