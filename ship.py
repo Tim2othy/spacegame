@@ -120,7 +120,6 @@ class ShipConfig:
         relative_pos (Vec2): Relative position of the player-spaceship
         relative_vel (Vec2): Relative velocity of the player-spaceship
         size (float): Size of the ship
-        color (Color): Color of the player-spaceship
         gun_cooldown (float): Minimum time between shots
         projectile_speed (float): Speed at which projectiles are fired
 
@@ -129,7 +128,6 @@ class ShipConfig:
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     size: float = 10.0
-    color: Color = field(default_factory=lambda: Color("gray"))
     gun_cooldown: float = BULLET_RATE_OF_FIRE
     projectile_speed: float = BULLET_RELEASE_SPEED
 
@@ -137,12 +135,14 @@ class ShipConfig:
 class Ship(Disk):
     """A basic spaceship."""
 
+    SHIP_COLOR = GRAY
+
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship.
 
         Raises a ValueError if `config.gun_cooldown` is not finite and strictly positive.
         """
-        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, config.color)
+        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self.SHIP_COLOR)
         self.size: float = config.size
 
         self.health: float = HEALTH
@@ -159,7 +159,7 @@ class Ship(Disk):
         self.releasing_flares: bool = False
         self.projectile_speed: float = config.projectile_speed
 
-        self.projectile_color = generate_complementary_color(config.color)
+        self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
 
         self.angle: float = 0
         self.thrust: float = 250 * self.mass
@@ -413,12 +413,13 @@ class PlayerConfig(ShipConfig):
 
     """
 
-    color: Color = field(default_factory=lambda: Color("darkslategray"))
     ship_input: ShipInput = field(default_factory=ShipInput.arrows)
 
 
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
+
+    SHIP_COLOR= Color("darkslategray")
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
@@ -480,7 +481,6 @@ class BulletEnemy(Ship):
         self.color = self.SHIP_COLOR
         self.gun_cooldown=self.SHIP_GUN_COOLDOWN
         self.projectile_speed=self.SHIP_PROJECTILE_SPEED
-        self.projectile_color = generate_complementary_color(self.color)
 
 
     def step(self, dt: float) -> None:
