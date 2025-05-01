@@ -48,6 +48,7 @@ RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
+SMALL_ANGLE = 5
 
 
 class AIState(Enum):
@@ -455,7 +456,7 @@ class BulletEnemy(Ship):
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
-        self.ai.start_update(dt)
+        self.ai.step(dt)
         super().step(dt)
 
 
@@ -502,8 +503,9 @@ class EnemyAI:
         self.action_timer = 0.0
         self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
-    def start_update(self, dt: float) -> None:
-        """Update state and execute appropriate behavior for different enemy types."""
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer -= dt
         if self.action_timer <= 0:
             self.action_timer = ENEMY_ACTION_TIMER
 
@@ -511,7 +513,23 @@ class EnemyAI:
                 self._transition_markov()
             else:
                 self._transition_simple()
-        self._update(dt)
+
+        desired_direction = self._match()
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+
+        if desired_direction != Vec2(0, 0):
+            current_angle = self.ship.angle
+            target_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
+            angle_diff = (target_angle - current_angle + 180) % 360 - 180
+
+            # Determine which way to turn (left or right)
+            self.ship.thruster_rot_left = angle_diff > SMALL_ANGLE
+            self.ship.thruster_rot_right = angle_diff < -SMALL_ANGLE
+
+            self.ship.thruster_forward = True
+
+        else:
+            self.ship.thruster_forward = False
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -547,43 +565,21 @@ class EnemyAI:
             random_y = random.gauss(sigma=distance_to_target)
             self.seek_towards = Pos(self.ship.target, Vec2(random_x, random_y))
 
-    def _update(self, dt: float) -> None:
-        """Update what the AIs do."""
-        small_angle = 5
-
-        force_direction = self._match()
-        self.action_timer -= dt
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
-
-        if force_direction != Vec2(0, 0):
-            current_angle = self.ship.angle
-            target_angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
-            angle_diff = (target_angle - current_angle + 180) % 360 - 180
-
-            # Determine which way to turn (left or right)
-            self.ship.thruster_rot_left = angle_diff > small_angle
-            self.ship.thruster_rot_right = angle_diff < -small_angle
-
-            self.ship.thruster_forward = True
-
-        else:
-            self.ship.thruster_forward = False
-
     def _match(self) -> Vec2:
         """Match and then, execute behavior based on current state."""
-        force_direction = Vec2(0, 0)
+        desired_direction = Vec2(0, 0)
         match self.current_state:
             case AIState.SEARCH:
-                force_direction = self._execute_search()
+                desired_direction = self._execute_search()
             case AIState.ATTACK:
-                force_direction = self._execute_attack()
+                desired_direction = self._execute_attack()
             case AIState.AIM:
-                force_direction = self._execute_aim()
+                desired_direction = self._execute_aim()
             case AIState.RETREAT:
-                force_direction = self._execute_retreat()
+                desired_direction = self._execute_retreat()
             case AIState.RANDOM:
-                force_direction = self._execute_randomly()
-        return force_direction
+                desired_direction = self._execute_randomly()
+        return desired_direction
 
     def _execute_search(self) -> Vec2:
         """Return force required for the search-behavior."""
@@ -663,10 +659,9 @@ class EnemyAI:
 
     def _execute_retreat(self) -> Vec2:
         """Return force required for the retreat-behavior."""
-        delta = self.ship.pos_relative_to(self.ship.target)
         if not self.can_see_target:
             return Vec2(0, 0)
-        return delta
+        return self.ship.pos_relative_to(self.ship.target)
 
     def _execute_randomly(self) -> Vec2:
         return self.seek_towards.pos_relative_to(self.ship)
