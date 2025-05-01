@@ -23,6 +23,7 @@ BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
+PLAYER_COLOR = Color("darkslategray")
 
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
@@ -120,28 +121,24 @@ class ShipConfig:
         relative_pos (Vec2): Relative position of the player-spaceship
         relative_vel (Vec2): Relative velocity of the player-spaceship
         size (float): Size of the ship
-        gun_cooldown (float): Minimum time between shots
-        projectile_speed (float): Speed at which projectiles are fired
 
     """
 
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     size: float = 10.0
-    gun_cooldown: float = BULLET_RATE_OF_FIRE
-    projectile_speed: float = BULLET_RELEASE_SPEED
 
 
 class Ship(Disk):
     """A basic spaceship."""
 
-    SHIP_COLOR = GRAY
+    # Class configuration
+    SHIP_COLOR = BULLET_ENEMY_COLOR
+    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
+    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
 
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
-        """Create a new spaceship.
-
-        Raises a ValueError if `config.gun_cooldown` is not finite and strictly positive.
-        """
+        """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self.SHIP_COLOR)
         self.size: float = config.size
 
@@ -149,15 +146,11 @@ class Ship(Disk):
         self.damage_indicator_timer: float = 0
 
         self.projectiles: list[Bullet] = []
-        if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
-            raise ValueError
-        self.gun_cooldown: float = config.gun_cooldown
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
         self.shooting: bool = False
         self.releasing_flares: bool = False
-        self.projectile_speed: float = config.projectile_speed
         self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
 
         self.angle: float = 0
@@ -197,7 +190,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = forward * self.projectile_speed
+                bullet_vel = forward * self.SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -210,7 +203,7 @@ class Ship(Disk):
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self.gun_cooldown
+                self.gun_cooldown_timer += self.SHIP_GUN_COOLDOWN
 
     def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
@@ -419,7 +412,8 @@ class PlayerConfig(ShipConfig):
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    SHIP_COLOR = Color("darkslategray")
+    # Class configuration
+    SHIP_COLOR = PLAYER_COLOR
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
@@ -446,8 +440,6 @@ class EnemyConfig(ShipConfig):
     Attributes:
         relative_pos (Vec2): Relative position of the enemy-spaceship
         relative_vel (Vec2): Relative velocity of the enemy-spaceship
-        gun_cooldown (float): Minimum time between shots
-        projectile_speed (float): Speed at which projectiles are fired
         target_ship (Ship): Ship to target
 
     """
@@ -458,10 +450,6 @@ class EnemyConfig(ShipConfig):
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
-    SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
         super().__init__(relative_to, config)
@@ -469,13 +457,9 @@ class BulletEnemy(Ship):
 
         self.action_timer: float = 0.0
         self.current_action: AIState = AIState.RANDOM
-        self.projectiles: list[Bullet] = []
         self.seek_towards: Pos = Pos(self, Vec2(0, 0))
-        self.projectile_speed: float = config.projectile_speed
         self.ai = EnemyAI(self, config.target_ship)
         self.color = self.SHIP_COLOR
-        self.gun_cooldown = self.SHIP_GUN_COOLDOWN
-        self.projectile_speed = self.SHIP_PROJECTILE_SPEED
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
@@ -486,7 +470,7 @@ class BulletEnemy(Ship):
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
-    # Override class configuration for RocketEnemy
+    # Class configuration
     SHIP_COLOR = ROCKET_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
@@ -499,10 +483,10 @@ class RocketEnemy(BulletEnemy):
 class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
-    # Override class configuration for MissileEnemy
+    # Class configuration
     SHIP_COLOR = MISSILE_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
+    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile relative to `self` targeting `self.target`."""
@@ -512,7 +496,7 @@ class MissileEnemy(BulletEnemy):
 class MarkovEnemy(BulletEnemy):
     """An enemy ship using Markov chain AI for more sophisticated behavior."""
 
-    # Override class configuration for MarkovEnemy
+    # Class configuration
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
