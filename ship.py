@@ -404,7 +404,6 @@ class PlayerConfig(ShipConfig):
     Attributes:
         relative_pos (Vec2): Relative position of the player-spaceship
         relative_vel (Vec2): Relative velocity of the player-spaceship
-        color (Color): Color of the player-spaceship
         ship_input (ShipInput): Controls for the player-spaceship
 
     """
