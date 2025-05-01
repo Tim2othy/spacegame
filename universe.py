@@ -257,10 +257,7 @@ class Universe:
 
         def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
             """Check for collision and return whether the projectile should stay alive."""
-            if projectile.is_expired():
-                return False
-
-            if isinstance(self.__star, Star) and self.__star.intersects_disk(projectile):
+            if projectile.is_expired() or (isinstance(self.__star, Star) and self.__star.intersects_disk(projectile)):
                 return False
             for planet in self._nearby_planets(projectile):
                 if planet.intersects_disk(projectile):
@@ -275,7 +272,6 @@ class Universe:
                     other_projectile.distance_squared_to(projectile) < 10**2 for other_projectile in ship.projectiles
                 ):
                     self.create_particle_cloud(projectile, 50, projectile.color, 200)
-
                     return False
 
             return True
