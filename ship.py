@@ -140,22 +140,23 @@ class Ship(Disk):
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self.SHIP_COLOR)
-        self.size: float = config.size
 
-        self.health: float = HEALTH
-        self.damage_indicator_timer: float = 0
-
-        self.projectiles: list[Bullet] = []
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
-        self.gun_cooldown_timer: float = 0
-        self.flare_cooldown_timer: float = 0
-        self.shooting: bool = False
-        self.releasing_flares: bool = False
-        self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
-
-        self.angle: float = 0
+        self.projectile_color: Color = generate_complementary_color(self.SHIP_COLOR)
         self.thrust: float = 250 * self.mass
         self.rotation_thrust: float = 0.15 * self.mass
+
+        self.projectiles: list[Bullet] = []
+        self.health: float = HEALTH
+        self.angle: float = 0
+
+        self.damage_indicator_timer: float = 0
+        self.gun_cooldown_timer: float = 0
+        self.flare_cooldown_timer: float = 0
+
+        self.releasing_flares: bool = False
+        self.shooting: bool = False
+
         self.thruster_rot_left: bool = False
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
@@ -454,12 +455,7 @@ class BulletEnemy(Ship):
         """Create a new enemy ship."""
         super().__init__(relative_to, config)
         self.target: Ship = config.target_ship
-
-        self.action_timer: float = 0.0
-        self.current_action: AIState = AIState.RANDOM
-        self.seek_towards: Pos = Pos(self, Vec2(0, 0))
-        self.ai = EnemyAI(self, config.target_ship)
-        self.color = self.SHIP_COLOR
+        self.ai = EnemyAI(self)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
@@ -476,7 +472,7 @@ class RocketEnemy(BulletEnemy):
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new rocket relative to `self` targeting `self.target`."""
+        """Create a new missile relative to `self` targeting `self.target`."""
         return Rocket(self, pos, vel, self.projectile_color, self.target)
 
 
@@ -499,13 +495,8 @@ class MarkovEnemy(BulletEnemy):
     # Class configuration
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
-        """Create a new Markov-based enemy ship."""
-        super().__init__(relative_to, config)
-        self.ai = EnemyAI(self, config.target_ship)
-
     def step(self, dt: float) -> None:
-        """Apply physics and AI to this ship."""
+        """Apply physics and "AI" to `self`."""
         self.ai.update_markov(dt)
         Ship.step(self, dt)
 
@@ -513,13 +504,12 @@ class MarkovEnemy(BulletEnemy):
 class EnemyAI:
     """Markov chain-based AI for enemy ships."""
 
-    def __init__(self, ship: Ship, target_ship: Ship) -> None:
-        """Create a new AI controller for the ship `ship`, targeting `target_ship`."""
+    def __init__(self, ship: BulletEnemy) -> None:
+        """Create a new AI controller."""
         self.ship = ship
-        self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
-        self.can_see_target = self.ship.distance_squared_to(self.target) < ENEMY_FIRE_RANGE_SQUARED
+        self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
     def update_markov(self, dt: float) -> None:
         """Update Markov AI state and execute appropriate behavior."""
@@ -562,12 +552,12 @@ class EnemyAI:
             self.current_state = AIState.RANDOM
 
             # Accelerate towards a random point near the player.
-            distance_to_target = self.target.distance_to(self.ship)
+            distance_to_target = self.ship.target.distance_to(self.ship)
             # I think (but haven't proved) that, by choosing the standard-deviation proportional
             # to the distance to the player, we should eventually find a non-accelerating player.
             random_x = random.gauss(sigma=distance_to_target)
             random_y = random.gauss(sigma=distance_to_target)
-            self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
+            self.seek_towards = Pos(self.ship.target, Vec2(random_x, random_y))
 
     def _update(self, dt: float) -> None:
         """Update what the AIs do."""
@@ -610,8 +600,8 @@ class EnemyAI:
 
     def _execute_search(self) -> Vec2:
         """Return force required for the search-behavior."""
-        delta_target_ship = self.target.pos_relative_to(self.ship)
-        relative_velocity = self.ship.vel_relative_to(self.target)
+        delta_target_ship = self.ship.target.pos_relative_to(self.ship)
+        relative_velocity = self.ship.vel_relative_to(self.ship.target)
 
         if delta_target_ship == Vec2(0, 0):
             return Vec2(0, 0)
@@ -622,13 +612,13 @@ class EnemyAI:
 
     def _execute_attack(self) -> Vec2:
         """Return force required for the attack-behavior."""
-        return self.target.pos_relative_to(self.ship)
+        return self.ship.target.pos_relative_to(self.ship)
 
     def _execute_aim(self) -> Vec2:
         """Return force required for the aim-behavior."""
         # Relative position and velocity
-        relative_pos = self.target.pos_relative_to(self.ship)
-        relative_vel = self.target.vel_relative_to(self.ship)
+        relative_pos = self.ship.target.pos_relative_to(self.ship)
+        relative_vel = self.ship.target.vel_relative_to(self.ship)
 
         if relative_pos == Vec2(0, 0):
             return Vec2(0, 0)
@@ -686,7 +676,7 @@ class EnemyAI:
 
     def _execute_retreat(self) -> Vec2:
         """Return force required for the retreat-behavior."""
-        delta = self.ship.pos_relative_to(self.target)
+        delta = self.ship.pos_relative_to(self.ship.target)
         if not self.can_see_target:
             return Vec2(0, 0)
         return delta
