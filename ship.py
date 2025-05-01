@@ -48,6 +48,7 @@ ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
 
+
 class AIState(Enum):
     """Possible AI states for enemies chain."""
 
@@ -56,6 +57,7 @@ class AIState(Enum):
     AIM = auto()
     RETREAT = auto()
     RANDOM = auto()
+
 
 type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
@@ -87,6 +89,7 @@ _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
 }
+
 
 def generate_complementary_color(base_color: Color) -> Color:
     """Generate a complementary bullet color based on a color.
@@ -412,7 +415,7 @@ class PlayerConfig(ShipConfig):
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    SHIP_COLOR= Color("darkslategray")
+    SHIP_COLOR = Color("darkslategray")
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
@@ -457,7 +460,7 @@ class BulletEnemy(Ship):
 
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
-        super().__init__(relative_to,config)
+        super().__init__(relative_to, config)
         self.target: Ship = config.target_ship
 
         self.action_timer: float = 0.0
@@ -467,9 +470,8 @@ class BulletEnemy(Ship):
         self.projectile_speed: float = config.projectile_speed
         self.ai = EnemyAI(self, config.target_ship)
         self.color = self.SHIP_COLOR
-        self.gun_cooldown=self.SHIP_GUN_COOLDOWN
-        self.projectile_speed=self.SHIP_PROJECTILE_SPEED
-
+        self.gun_cooldown = self.SHIP_GUN_COOLDOWN
+        self.projectile_speed = self.SHIP_PROJECTILE_SPEED
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
@@ -593,7 +595,7 @@ class EnemyAI:
 
     def _match(self) -> Vec2:
         """Match and then, execute behavior based on current state."""
-        force_direction = Vec2(0,0)
+        force_direction = Vec2(0, 0)
         match self.current_state:
             case AIState.SEARCH:
                 force_direction = self._execute_search()

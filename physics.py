@@ -113,7 +113,9 @@ class Particle(PosVel):
 class Disk(PosVel):
     """A disk with dynamic position, dynamic velocity, constant radius and dynamic color."""
 
-    def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY):
+    def __init__(
+        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
+    ) -> None:
         """Create a new Disk. Mass will be calculated as if it were a sphere, though."""
         super().__init__(relative_to, relative_pos, relative_vel)
         if not (math.isfinite(radius) and radius > 0):
