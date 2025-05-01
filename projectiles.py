@@ -169,6 +169,4 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera) -> None:
         """Draw `self` to `camera`."""
-        # TODO: This is still necessary, even though bullets are now subclasses of Disk
-        # the flare would inherit from Bullet and then be triangular instead of round
         camera.draw_circle(self.color, self, 3)
