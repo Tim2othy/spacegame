@@ -455,7 +455,7 @@ class BulletEnemy(Ship):
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
-        self.ai.update_simple(dt)
+        self.ai.start_update(dt)
         super().step(dt)
 
 
@@ -491,11 +491,6 @@ class MarkovEnemy(BulletEnemy):
     # Class configuration
     SHIP_COLOR = MARKOV_ENEMY_COLOR
 
-    def step(self, dt: float) -> None:
-        """Apply physics and "AI" to `self`."""
-        self.ai.update_markov(dt)
-        Ship.step(self, dt)
-
 
 class EnemyAI:
     """Markov chain-based AI for enemy ships."""
@@ -507,18 +502,15 @@ class EnemyAI:
         self.action_timer = 0.0
         self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
-    def update_markov(self, dt: float) -> None:
-        """Update Markov AI state and execute appropriate behavior."""
+    def start_update(self, dt: float) -> None:
+        """Update state and execute appropriate behavior for different enemy types."""
         if self.action_timer <= 0:
-            self._transition_markov()
             self.action_timer = ENEMY_ACTION_TIMER
-        self._update(dt)
 
-    def update_simple(self, dt: float) -> None:
-        """Update Simple AI state and execute appropriate behavior."""
-        if self.action_timer <= 0:
-            self._transition_simple()
-            self.action_timer = ENEMY_ACTION_TIMER
+            if isinstance(self.ship, MarkovEnemy):
+                self._transition_markov()
+            else:
+                self._transition_simple()
         self._update(dt)
 
     def _transition_markov(self) -> None:
