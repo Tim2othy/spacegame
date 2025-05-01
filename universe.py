@@ -274,6 +274,8 @@ class Universe:
                 if isinstance(projectile, Missile) and any(
                     other_projectile.distance_squared_to(projectile) < 10**2 for other_projectile in ship.projectiles
                 ):
+                    self.create_particle_cloud(projectile, 50, projectile.color, 200)
+
                     return False
 
             return True
