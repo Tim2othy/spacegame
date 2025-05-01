@@ -578,7 +578,6 @@ class EnemyAI:
 
             self.ship.thruster_forward = True
 
-            self.ship.step_physics(dt)
         else:
             self.ship.thruster_forward = False
 
