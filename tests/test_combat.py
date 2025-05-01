@@ -1,20 +1,21 @@
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from enemy_ai import (
+from ship import (
     _DEFAULT_MATRIX,
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
+    HEALTH,
     AIState,
     BulletEnemy,
     EnemyConfig,
     MarkovEnemy,
     Matrix,
     MissileEnemy,
+    PlayerConfig,
     RocketEnemy,
 )
-from ship import HEALTH, PlayerConfig
 from universe import PlanetConfig, Universe
 
 
@@ -41,7 +42,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
     monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
-    monkeypatch.setattr(BulletEnemy, "step_ai", lambda _self, _dt: None)
+    monkeypatch.setattr(BulletEnemy, "step", lambda _self, _dt: None)
 
     universe = Universe(1, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(-500, 0)))

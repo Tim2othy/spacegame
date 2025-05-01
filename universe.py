@@ -12,11 +12,10 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from enemy_ai import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, RocketEnemy
-from physics import Disk, Particle, Pos, PosVel
+from physics import GRAVITATIONAL_CONSTANT, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile
-from ship import PlayerConfig, PlayerShip, ShipInput
+from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -24,8 +23,6 @@ if TYPE_CHECKING:
     from camera import Camera
     from projectiles import Bullet
     from ship import Ship
-
-from physics import GRAVITATIONAL_CONSTANT
 
 PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
@@ -596,7 +593,8 @@ class Universe:
         player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
 
         if options.splitscreen:
-            second_config = PlayerConfig(relative_pos=Vec2(100, 0), color=Color("darkred"), ship_input=ShipInput.wasd())
+            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
+            # TODO: fix color for second player color=Color("darkred")
             second_player = universe.add_player(second_config, relative_to=player_ships[0])
             player_ships.append(second_player)
 
