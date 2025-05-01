@@ -141,9 +141,10 @@ class Disk(PosVel):
         normalised_delta = delta / math.sqrt(dist_squared)
         return normalised_delta * force_length
 
-    def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera`."""
-        camera.draw_circle(self.color, self, self.radius)
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
+        """Draw `self` on `camera` with optional color argument."""
+        draw_color = color or self.color
+        camera.draw_circle(draw_color, self, self.radius)
 
     def intersects_disk(self, other: Disk) -> bool:
         """Determine whether `self` intersects `other`.

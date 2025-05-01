@@ -41,12 +41,12 @@ class Bullet(Disk):
         self.damage = BULLET_DAMAGE
         self.relative_vel = relative_vel
 
-    def draw(self, camera: Camera) -> None:
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
         # QUESTION: You wrote that we violate relativity if we don't use forward = Vec2(1,0), why?
         forward = Vec2(1, 0) if self.relative_vel.length_squared() == 0 else self.relative_vel.normalize()
         camera.draw_polygon(
-            self.color,
+            color or self.color,
             [Pos(self, 4 * forward), Pos(self, 4 * forward.rotate(150)), Pos(self, 4 * forward.rotate(-150))],
         )
 
@@ -91,8 +91,9 @@ class Rocket(Bullet):
                 self.apply_force(force, dt)
         super().step(dt)
 
-    def draw(self, camera: Camera) -> None:
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
+        draw_color = color or self.color
         forward = self.current_heading
         left = Vec2(-forward.y, forward.x)
         right = -left
@@ -105,7 +106,7 @@ class Rocket(Bullet):
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
             # Thrust flame
             camera.draw_polygon(
-                self.color.lerp(ROCKET_THRUST_COLOR, 0.5),
+                draw_color.lerp(ROCKET_THRUST_COLOR, 0.5),
                 [
                     Pos(self, 3 * (left + backward)),
                     Pos(self, 4 * (left + 2 * backward)),
@@ -116,7 +117,7 @@ class Rocket(Bullet):
 
         # Missile body
         camera.draw_polygon(
-            self.color,
+            draw_color,
             [
                 Pos(self, 3 * (left + forward)),
                 Pos(self, 3 * (left + backward)),
@@ -140,7 +141,7 @@ class Missile(Rocket):
         self.homing_duration = MISSILE_HOMING_DURATION
         self.damage = MISSILE_DAMAGE
 
-    def draw(self, camera: Camera) -> None:
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
         forward = self.current_heading
         left = Vec2(-forward.y, forward.x)
@@ -148,7 +149,7 @@ class Missile(Rocket):
         backward = -forward
 
         camera.draw_polygon(
-            self.color,
+            color or self.color,
             [
                 Pos(self, 3 * (left + forward)),
                 Pos(self, 5 * (left + 5 * backward)),
@@ -167,6 +168,6 @@ class Flare(Bullet):
         super().__init__(relative_to, relative_pos, relative_vel, FLARE_COLOR)
         self.damage = FLARE_DAMAGE
 
-    def draw(self, camera: Camera) -> None:
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
-        camera.draw_circle(self.color, self, 3)
+        camera.draw_circle(color or self.color, self, 3)

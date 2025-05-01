@@ -265,14 +265,14 @@ class Ship(Disk):
         self.handle_shooting(dt)
         self.handle_flares(dt)
 
-    def draw(self, camera: Camera) -> None:
-        """Draw `self` on `camera."""
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
+        """Draw `self` on `camera`."""
         forward = self.get_faced_direction()
         right = Vec2(-forward.y, forward.x)
         left = -right
         backward = -forward
 
-        base_color: Color = self.color.lerp(Color("red"), self.damage_indicator_timer)
+        base_color = (color or self.color).lerp(Color("red"), self.damage_indicator_timer)
         darker_color: Color = base_color.lerp(Color("black"), 0.5)
 
         # Helper function for drawing polygons relative to the ship-position
@@ -352,11 +352,8 @@ class Ship(Disk):
             ],
         )
 
-        # TODO: this is ugly
-        backup_self_color = Color(self.color)
-        self.color = base_color
-        super().draw(camera)  # Draw circular body ("hitbox")
-        self.color = backup_self_color
+        # Draw the circular body ("hitbox") with the base color
+        super().draw(camera, color=base_color)
 
         for projectile in self.projectiles:
             projectile.draw(camera)
