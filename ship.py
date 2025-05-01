@@ -247,16 +247,7 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        if self.thruster_rot_left:
-            self.angle += self.rotation_thrust * dt
-        if self.thruster_rot_right:
-            self.angle -= self.rotation_thrust * dt
-
-        forward = self.get_faced_direction()
-        if self.thruster_forward:
-            self.apply_force(forward * self.thrust, dt)
-        if self.thruster_backward:
-            self.apply_force(-forward * self.thrust, dt)
+        self.step_physics(dt)
 
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
 
@@ -267,6 +258,20 @@ class Ship(Disk):
 
         self.handle_shooting(dt)
         self.handle_flares(dt)
+
+    def step_physics(self, dt: float) -> None:
+        """Step the general physics that all subclasses have in common."""
+        if self.thruster_rot_left:
+            self.angle += self.rotation_thrust * dt
+        if self.thruster_rot_right:
+            self.angle -= self.rotation_thrust * dt
+
+        forward = self.get_faced_direction()
+        force = forward * self.thrust
+        if self.thruster_forward:
+            self.apply_force(force, dt)
+        if self.thruster_backward:
+            self.apply_force(-force, dt)
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
@@ -583,10 +588,6 @@ class EnemyAI:
     def _update(self, dt: float) -> None:
         """Update what the AIs do."""
         small_angle = 5
-        if self.ship.thruster_rot_left:
-            self.ship.angle += self.ship.rotation_thrust * dt
-        if self.ship.thruster_rot_right:
-            self.ship.angle -= self.ship.rotation_thrust * dt
 
         force_direction = self._match()
         self.action_timer -= dt
@@ -601,9 +602,11 @@ class EnemyAI:
             self.ship.thruster_rot_left = angle_diff > small_angle
             self.ship.thruster_rot_right = angle_diff < -small_angle
 
-            forward = self.ship.get_faced_direction()
-            force = forward * self.ship.thrust
-            self.ship.apply_force(force, dt)
+            self.ship.thruster_forward = True
+
+            self.ship.step_physics(dt)
+        else:
+            self.ship.thruster_forward = False
 
     def _match(self) -> Vec2:
         """Match and then, execute behavior based on current state."""
