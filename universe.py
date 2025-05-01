@@ -323,10 +323,10 @@ class Universe:
         return
         # Store random_state. we're about to use random.seed() and want to use "normal" rng later.
         random_state = random.getstate()
-        # TODO: Try caching star-chunks to their final on-screen locations.
+        # TODO: Try caching star-chunks to their final on-screen locations.  # noqa: FIX002
         # If doing that, also optimise x_chunk_size for performance (via profiling) again.
-        camera._surface.lock()
-        camera_size = Vec2(camera._surface.get_size())
+        camera._surface.lock()  # noqa: SLF001
+        camera_size = Vec2(camera._surface.get_size())  # noqa: SLF001
         x_chunk_size = 3500  # This value is profiling-optimised for non-cached star-chunks.
         y_chunk_size = x_chunk_size * camera_size.y / camera_size.x
         z_chunk_size = 1000
@@ -467,7 +467,7 @@ class Universe:
 
                         camera.draw_pixel(Color(color, color, color), star_worldspace_xy)
 
-        camera._surface.unlock()
+        camera._surface.unlock()  # noqa: SLF001
         random.setstate(random_state)
 
     @global_profiler.profile_method
