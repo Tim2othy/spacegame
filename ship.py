@@ -241,20 +241,6 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        self.step_physics(dt)
-
-        self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
-
-        super().step(dt)
-
-        for projectile in self.projectiles:
-            projectile.step(dt)
-
-        self.handle_shooting(dt)
-        self.handle_flares(dt)
-
-    def step_physics(self, dt: float) -> None:
-        """Step the general physics that all subclasses have in common."""
         if self.thruster_rot_left:
             self.angle += self.rotation_thrust * dt
         if self.thruster_rot_right:
@@ -266,6 +252,16 @@ class Ship(Disk):
             self.apply_force(force, dt)
         if self.thruster_backward:
             self.apply_force(-force, dt)
+
+        self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
+
+        super().step(dt)
+
+        for projectile in self.projectiles:
+            projectile.step(dt)
+
+        self.handle_shooting(dt)
+        self.handle_flares(dt)
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
