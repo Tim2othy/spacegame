@@ -257,8 +257,8 @@ class Universe:
 
         def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
             """Check for collision and return whether the projectile should stay alive."""
-            # TODO: Add lifetime to bullets. The universe being unbounded now, they life forever and
-            # will cause eventual lag.
+            if projectile.is_expired():
+                return False
 
             if isinstance(self.__star, Star) and self.__star.intersects_disk(projectile):
                 return False

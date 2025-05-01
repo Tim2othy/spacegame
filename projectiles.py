@@ -30,6 +30,8 @@ ROCKET_MIN_SPEED = 500.0
 
 FLARE_COLOR = Color("yellow")
 
+PROJECTILE_LIFETIME = 50.0  # Lifetime in seconds
+
 
 class Bullet(Disk):
     """A triangular bullet."""
@@ -40,6 +42,16 @@ class Bullet(Disk):
         self.color = Color(color)
         self.damage = BULLET_DAMAGE
         self.relative_vel = relative_vel
+        self.lifetime = PROJECTILE_LIFETIME
+
+    def step(self, dt: float) -> None:
+        """Update the bullet's position and decrease its lifetime."""
+        super().step(dt)
+        self.lifetime -= dt
+
+    def is_expired(self) -> bool:
+        """Check if the bullet's lifetime has expired."""
+        return self.lifetime <= 0
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
