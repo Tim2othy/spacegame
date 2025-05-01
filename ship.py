@@ -243,9 +243,11 @@ class Ship(Disk):
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         if self.thruster_rot_left:
-            self.angle += self.rotation_thrust * dt
+            self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_right:
-            self.angle -= self.rotation_thrust * dt
+            self.apply_angular_force(-self.rotation_thrust, dt)
+
+        self.angle += self.angular_velocity * dt
 
         forward = self.get_faced_direction()
         force = forward * self.thrust

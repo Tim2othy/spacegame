@@ -124,6 +124,7 @@ class Disk(PosVel):
         self.__radius_squared: float = radius**2
         self.color: Color = Color(color)
         self.mass = radius**3 * math.pi * 4 / 3
+        self.angular_velocity: float = 0.0
 
     def add_impulse(self, impulse: Vec2) -> None:
         """Add an impulse to `self`."""
@@ -132,6 +133,10 @@ class Disk(PosVel):
     def apply_force(self, force: Vec2, dt: float) -> None:
         """Apply a force to `self`."""
         self.add_impulse(force * dt)
+
+    def apply_angular_force(self, force: float, dt: float) -> None:
+        """Apply a force to `self`."""
+        self.angular_velocity += force * dt
 
     def gravitational_force(self, pobj: Disk) -> Vec2:
         """Calculate gravitational force between `pobj` and `self` affecting `self`."""
