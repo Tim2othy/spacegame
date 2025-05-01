@@ -582,15 +582,28 @@ class EnemyAI:
 
     def _update(self, dt: float) -> None:
         """Update what the AIs do."""
+        small_angle = 5
+        if self.ship.thruster_rot_left:
+            self.ship.angle += self.ship.rotation_thrust * dt
+        if self.ship.thruster_rot_right:
+            self.ship.angle -= self.ship.rotation_thrust * dt
+
         force_direction = self._match()
         self.action_timer -= dt
         self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
 
         if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.ship.thrust
-            self.ship.apply_force(force, dt)
+            current_angle = self.ship.angle
+            target_angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+            angle_diff = (target_angle - current_angle + 180) % 360 - 180
 
-        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
+            # Determine which way to turn (left or right)
+            self.ship.thruster_rot_left = angle_diff > small_angle
+            self.ship.thruster_rot_right = angle_diff < -small_angle
+
+            forward = self.ship.get_faced_direction()
+            force = forward * self.ship.thrust
+            self.ship.apply_force(force, dt)
 
     def _match(self) -> Vec2:
         """Match and then, execute behavior based on current state."""
