@@ -508,7 +508,6 @@ class Universe:
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
         """Draw a polar grid centered on the star."""
-        # TODO: This is quite laggy, probably can be fixed somehow.
         center = self.__star
 
         for r in range(RADIAL_SPACING, MAX_RADIUS + 1, RADIAL_SPACING):
