@@ -1,7 +1,5 @@
-# ruff: noqa: PT011
 from math import tau
 
-import pytest
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
@@ -12,28 +10,13 @@ EPSILON = 1e-8
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
 
-def test_cooldown() -> None:
-    Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=1))
-    with pytest.raises(ValueError):
-        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=-1))
-    with pytest.raises(ValueError):
-        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=0))
-    with pytest.raises(ValueError):
-        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("inf")))
-    with pytest.raises(ValueError):
-        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("-inf")))
-    with pytest.raises(ValueError):
-        Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=float("nan")))
-
-
 def test_shooting() -> None:
-    gun_cooldown = 0.123
     bullet_count = 10
-    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0), gun_cooldown=gun_cooldown))
-
+    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
+    ship.SHIP_GUN_COOLDOWN = 0.123
     ship.angle = tau / 8
     ship.shooting = True
-    ship.handle_shooting(bullet_count * gun_cooldown)
+    ship.handle_shooting(bullet_count * ship.SHIP_GUN_COOLDOWN)
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 
