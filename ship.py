@@ -296,6 +296,15 @@ class Ship(Disk):
         self.handle_shooting(dt)
         self.handle_flares(dt)
 
+    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
+        """Increment rotation counters."""
+        if left:
+            self.turn_left += ONE
+            self.auto_turn_right += ONE
+        if right:
+            self.turn_right += ONE
+            self.auto_turn_left += ONE
+
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
         forward = self.get_faced_direction()
@@ -455,12 +464,7 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        if keys[self.spaceship_input.thruster_rot_left]:
-            self.turn_left += ONE
-            self.auto_turn_right += ONE
-        if keys[self.spaceship_input.thruster_rot_right]:
-            self.turn_right += ONE
-            self.auto_turn_left += ONE
+        self.rotating(keys[self.spaceship_input.thruster_rot_left], keys[self.spaceship_input.thruster_rot_right])
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
@@ -558,8 +562,9 @@ class EnemyAI:
         target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
         angle_diff = (target_angle - current_angle + 180) % 360 - 180
 
-        self.ship.thruster_rot_left = angle_diff > SMALL_ANGLE
-        self.ship.thruster_rot_right = angle_diff < -SMALL_ANGLE
+        left = angle_diff > SMALL_ANGLE
+        right = angle_diff < -SMALL_ANGLE
+        self.ship.rotating(left, right)
         self.ship.thruster_forward = thruster
 
     def _transition_markov(self) -> None:
