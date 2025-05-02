@@ -17,19 +17,20 @@ from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
+
 GRAY = Color("gray")
 THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
+PLAYER_COLOR = Color("blue")
 
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
 MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
 
-# Release speeds
 FLARE_MEAN_RELEASE_SPEED = 140
 FLARE_SD_RELEASE_SPEED = 28
 BULLET_RELEASE_SPEED = 700.0
@@ -38,15 +39,19 @@ ROCKET_RELEASE_SPEED = 300.0
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
-HEALTH = 100
+HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
+ONE = 1.0
+SMALL_ALGULAR_VEL = 5.0
+EXTRA = 1 / math.sqrt(2)
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
+SMALL_ANGLE = 5
 
 
 class AIState(Enum):
@@ -120,53 +125,52 @@ class ShipConfig:
         relative_pos (Vec2): Relative position of the player-spaceship
         relative_vel (Vec2): Relative velocity of the player-spaceship
         size (float): Size of the ship
-        gun_cooldown (float): Minimum time between shots
-        projectile_speed (float): Speed at which projectiles are fired
 
     """
 
     relative_pos: Vec2
     relative_vel: Vec2 = field(default_factory=lambda: Vec2(0, 0))
     size: float = 10.0
-    gun_cooldown: float = BULLET_RATE_OF_FIRE
-    projectile_speed: float = BULLET_RELEASE_SPEED
 
 
 class Ship(Disk):
     """A basic spaceship."""
 
-    SHIP_COLOR = GRAY
+    # Class configuration
+    SHIP_COLOR = BULLET_ENEMY_COLOR
+    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
+    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
 
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
-        """Create a new spaceship.
-
-        Raises a ValueError if `config.gun_cooldown` is not finite and strictly positive.
-        """
+        """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self.SHIP_COLOR)
-        self.size: float = config.size
 
-        self.health: float = HEALTH
-        self.damage_indicator_timer: float = 0
+        self._flare_cooldown: float = FLARE_RATE_OF_FIRE
+        self.projectile_color: Color = generate_complementary_color(self.SHIP_COLOR)
+        self.thrust: float = 1050000
+        self.rotation_thrust: float = 628
 
         self.projectiles: list[Bullet] = []
-        if not (math.isfinite(config.gun_cooldown) and config.gun_cooldown > 0):
-            raise ValueError
-        self.gun_cooldown: float = config.gun_cooldown
-        self._flare_cooldown: float = FLARE_RATE_OF_FIRE
+        self.health: float = HEALTH
+        self.angle: float = 0
+
+        self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
-        self.shooting: bool = False
-        self.releasing_flares: bool = False
-        self.projectile_speed: float = config.projectile_speed
-        self.projectile_color = generate_complementary_color(self.SHIP_COLOR)
 
-        self.angle: float = 0
-        self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 0.15 * self.mass
-        self.thruster_rot_left: bool = False
-        self.thruster_rot_right: bool = False
+        self.releasing_flares: bool = False
+        self.shooting: bool = False
+
+        self.thruster_rot_L: bool = False
+        self.thruster_rot_R: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
+        self.turn_L: float = 0.0
+        self.turn_R: float = 0.0
+        self.turn_back_L: float = 0.0
+        self.turn_back_R: float = 0.0
+        self.turn_final_L: float = 0.0
+        self.turn_final_R: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -197,7 +201,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = forward * self.projectile_speed
+                bullet_vel = forward * self.SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -210,7 +214,7 @@ class Ship(Disk):
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self.gun_cooldown
+                self.gun_cooldown_timer += self.SHIP_GUN_COOLDOWN
 
     def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
@@ -245,18 +249,51 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
+    def smart_rotation(self) -> None:
+        """Rotate `self` smartly, based on `self.turn_left` and `self.turn_right`."""
+        self.thruster_rot_R = False
+        self.thruster_rot_L = False
+
+        if self.turn_L > 0:
+            self.turn_L -= ONE
+            self.thruster_rot_L = True
+        elif self.turn_back_R > 0:
+            self.turn_back_R -= ONE
+            self.thruster_rot_R = True
+        elif self.turn_final_L > 0:
+            self.turn_final_L -= ONE
+            self.thruster_rot_L = True
+
+        if self.turn_R > 0:
+            self.turn_R -= ONE
+            self.thruster_rot_R = True
+        elif self.turn_back_L > 0:
+            self.turn_back_L -= ONE
+            self.thruster_rot_L = True
+        elif self.turn_final_R > 0:
+            self.turn_final_R -= ONE
+            self.thruster_rot_R = True
+
+        if not (self.thruster_rot_R or self.thruster_rot_L):
+            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
+
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        if self.thruster_rot_left:
-            self.angle += self.rotation_thrust * dt
-        if self.thruster_rot_right:
-            self.angle -= self.rotation_thrust * dt
+        self.smart_rotation()
+        if self.thruster_rot_L:
+            self.apply_angular_force(self.rotation_thrust, dt)
+        if self.thruster_rot_R:
+            self.apply_angular_force(-self.rotation_thrust, dt)
+
+        self.angle += self.angular_velocity * dt
 
         forward = self.get_faced_direction()
+        force = forward * self.thrust
         if self.thruster_forward:
-            self.apply_force(forward * self.thrust, dt)
+            self.apply_force(force, dt)
         if self.thruster_backward:
-            self.apply_force(-forward * self.thrust, dt)
+            self.apply_force(-force, dt)
 
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
 
@@ -267,6 +304,17 @@ class Ship(Disk):
 
         self.handle_shooting(dt)
         self.handle_flares(dt)
+
+    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
+        """Increment rotation counters."""
+        if left:
+            self.turn_L += ONE
+            self.turn_back_R += ONE + EXTRA
+            self.turn_final_L += EXTRA
+        if right:
+            self.turn_R += ONE
+            self.turn_back_L += ONE + EXTRA
+            self.turn_final_R += EXTRA
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
@@ -291,7 +339,7 @@ class Ship(Disk):
             darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
 
-        # thruster_rot_left, material
+        # thruster_rot_L, material
         drawy(
             darker_color,
             [
@@ -300,8 +348,8 @@ class Ship(Disk):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_left:
-            # thruster_rot_left, active
+        if self.thruster_rot_L:
+            # thruster_rot_L, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -311,7 +359,7 @@ class Ship(Disk):
                 ],
             )
 
-        # thruster_rot_right, material
+        # thruster_rot_R, material
         drawy(
             darker_color,
             [
@@ -320,8 +368,8 @@ class Ship(Disk):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_right:
-            # thruster_rot_right, active
+        if self.thruster_rot_R:
+            # thruster_rot_R, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -370,8 +418,8 @@ class ShipInput:
     """Specification for which keys trigger what spaceship-action.
 
     Attributes:
-        thruster_rot_left (pygame_key): Left rotation thruster's key
-        thruster_rot_right (pygame_key): Right rotation thruster's key
+        thruster_rot_L (pygame_key): Left rotation thruster's key
+        thruster_rot_R (pygame_key): Right rotation thruster's key
         thruster_forward (pygame_key): Forward thruster's key
         thruster_backward (pygame_key): Backward thruster's key
         shoot (pygame_key): Pew pew key
@@ -379,8 +427,8 @@ class ShipInput:
 
     """
 
-    thruster_rot_left: PygameKey
-    thruster_rot_right: PygameKey
+    thruster_rot_L: PygameKey  # noqa: N815
+    thruster_rot_R: PygameKey  # noqa: N815
     thruster_forward: PygameKey
     thruster_backward: PygameKey
     shoot: PygameKey
@@ -414,7 +462,8 @@ class PlayerConfig(ShipConfig):
 class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
-    SHIP_COLOR = Color("darkslategray")
+    # Class configuration
+    SHIP_COLOR = PLAYER_COLOR
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
@@ -426,8 +475,7 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
-        self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
+        self.rotating(keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R])
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
@@ -441,8 +489,6 @@ class EnemyConfig(ShipConfig):
     Attributes:
         relative_pos (Vec2): Relative position of the enemy-spaceship
         relative_vel (Vec2): Relative velocity of the enemy-spaceship
-        gun_cooldown (float): Minimum time between shots
-        projectile_speed (float): Speed at which projectiles are fired
         target_ship (Ship): Ship to target
 
     """
@@ -453,35 +499,22 @@ class EnemyConfig(ShipConfig):
 class BulletEnemy(Ship):
     """An enemy ship, targeting a specific other ship."""
 
-    SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
-
     def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
         """Create a new enemy ship."""
         super().__init__(relative_to, config)
         self.target: Ship = config.target_ship
-
-        self.action_timer: float = 0.0
-        self.current_action: AIState = AIState.RANDOM
-        self.projectiles: list[Bullet] = []
-        self.seek_towards: Pos = Pos(self, Vec2(0, 0))
-        self.projectile_speed: float = config.projectile_speed
-        self.ai = EnemyAI(self, config.target_ship)
-        self.color = self.SHIP_COLOR
-        self.gun_cooldown = self.SHIP_GUN_COOLDOWN
-        self.projectile_speed = self.SHIP_PROJECTILE_SPEED
+        self.ai = EnemyAI(self)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
-        self.ai.update_simple(dt)
+        self.ai.step(dt)
         super().step(dt)
 
 
 class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
-    # Override class configuration for RocketEnemy
+    # Class configuration
     SHIP_COLOR = ROCKET_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
@@ -494,10 +527,10 @@ class RocketEnemy(BulletEnemy):
 class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
-    # Override class configuration for MissileEnemy
+    # Class configuration
     SHIP_COLOR = MISSILE_ENEMY_COLOR
     SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED  # Using rocket speed for missiles
+    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile relative to `self` targeting `self.target`."""
@@ -507,44 +540,43 @@ class MissileEnemy(BulletEnemy):
 class MarkovEnemy(BulletEnemy):
     """An enemy ship using Markov chain AI for more sophisticated behavior."""
 
-    # Override class configuration for MarkovEnemy
+    # Class configuration
     SHIP_COLOR = MARKOV_ENEMY_COLOR
-
-    def __init__(self, relative_to: PosVel, config: EnemyConfig) -> None:
-        """Create a new Markov-based enemy ship."""
-        super().__init__(relative_to, config)
-        self.ai = EnemyAI(self, config.target_ship)
-
-    def step(self, dt: float) -> None:
-        """Apply physics and AI to this ship."""
-        self.ai.update_markov(dt)
-        Ship.step(self, dt)
 
 
 class EnemyAI:
     """Markov chain-based AI for enemy ships."""
 
-    def __init__(self, ship: Ship, target_ship: Ship) -> None:
-        """Create a new AI controller for the ship `ship`, targeting `target_ship`."""
+    def __init__(self, ship: BulletEnemy) -> None:
+        """Create a new AI controller."""
         self.ship = ship
-        self.target = target_ship
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
-        self.can_see_target = self.ship.distance_squared_to(self.target) < ENEMY_FIRE_RANGE_SQUARED
+        self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
-    def update_markov(self, dt: float) -> None:
-        """Update Markov AI state and execute appropriate behavior."""
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer -= dt
         if self.action_timer <= 0:
-            self._transition_markov()
             self.action_timer = ENEMY_ACTION_TIMER
-        self._update(dt)
 
-    def update_simple(self, dt: float) -> None:
-        """Update Simple AI state and execute appropriate behavior."""
-        if self.action_timer <= 0:
-            self._transition_simple()
-            self.action_timer = ENEMY_ACTION_TIMER
-        self._update(dt)
+            if isinstance(self.ship, MarkovEnemy):
+                self._transition_markov()
+            else:
+                self._transition_simple()
+
+        goal_direction, thruster = self._match()
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+
+        # Determine which way to turn (left or right)
+        current_angle = self.ship.angle
+        target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
+        angle_diff = (target_angle - current_angle + 180) % 360 - 180
+
+        left = angle_diff > SMALL_ANGLE
+        right = angle_diff < -SMALL_ANGLE
+        self.ship.rotating(left, right)
+        self.ship.thruster_forward = thruster
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -570,68 +602,51 @@ class EnemyAI:
         if self.can_see_target:
             self.current_state = AIState.ATTACK
         else:
+            # Accelerate towards a random point near the player.
+            distance_to_target = self.ship.target.distance_to(self.ship)
+            x, y = random.gauss(sigma=distance_to_target), random.gauss(sigma=distance_to_target)
+            self.seek_towards = Pos(self.ship.target, Vec2(x, y))
             self.current_state = AIState.RANDOM
 
-            # Accelerate towards a random point near the player.
-            distance_to_target = self.target.distance_to(self.ship)
-            # I think (but haven't proved) that, by choosing the standard-deviation proportional
-            # to the distance to the player, we should eventually find a non-accelerating player.
-            random_x = random.gauss(sigma=distance_to_target)
-            random_y = random.gauss(sigma=distance_to_target)
-            self.seek_towards = Pos(self.target, Vec2(random_x, random_y))
-
-    def _update(self, dt: float) -> None:
-        """Update what the AIs do."""
-        force_direction = self._match()
-        self.action_timer -= dt
-        self.ship.shooting = (self.current_state in {AIState.ATTACK, AIState.AIM}) and self.can_see_target
-
-        if force_direction != Vec2(0, 0):
-            force = force_direction.normalize() * self.ship.thrust
-            self.ship.apply_force(force, dt)
-
-        self.ship.angle = math.degrees(math.atan2(force_direction.y, force_direction.x))
-
-    def _match(self) -> Vec2:
+    def _match(self) -> tuple[Vec2, bool]:
         """Match and then, execute behavior based on current state."""
-        force_direction = Vec2(0, 0)
+        desired_direction: Vec2 = Vec2(0, 0)
+        thruster: bool = False
         match self.current_state:
             case AIState.SEARCH:
-                force_direction = self._execute_search()
+                desired_direction, thruster = self._execute_search()
             case AIState.ATTACK:
-                force_direction = self._execute_attack()
+                desired_direction, thruster = self._execute_attack()
             case AIState.AIM:
-                force_direction = self._execute_aim()
+                desired_direction, thruster = self._execute_aim()
             case AIState.RETREAT:
-                force_direction = self._execute_retreat()
+                desired_direction, thruster = self._execute_retreat()
             case AIState.RANDOM:
-                force_direction = self._execute_randomly()
-        return force_direction
+                desired_direction, thruster = self._execute_randomly()
+        return desired_direction, thruster
 
-    def _execute_search(self) -> Vec2:
+    def _execute_search(self) -> tuple[Vec2, bool]:
         """Return force required for the search-behavior."""
-        delta_target_ship = self.target.pos_relative_to(self.ship)
-        relative_velocity = self.ship.vel_relative_to(self.target)
+        delta = self.ship.target.pos_relative_to(self.ship)
+        relative_velocity = self.ship.vel_relative_to(self.ship.target)
 
-        if delta_target_ship == Vec2(0, 0):
-            return Vec2(0, 0)
-        approach_direction = delta_target_ship.normalize()
-        desired_relative_vel = approach_direction * DESIRED_APPROACH_SPEED
-        # Force required to change from current relative velocity to desired relative velocity
-        return desired_relative_vel - relative_velocity
+        desired_relative_vel = delta.normalize() * DESIRED_APPROACH_SPEED
+        desired_direction = desired_relative_vel - relative_velocity
 
-    def _execute_attack(self) -> Vec2:
+        thruster = relative_velocity.length() < DESIRED_APPROACH_SPEED
+        return desired_direction, thruster
+
+    def _execute_attack(self) -> tuple[Vec2, bool]:
         """Return force required for the attack-behavior."""
-        return self.target.pos_relative_to(self.ship)
+        desired_direction = self.ship.target.pos_relative_to(self.ship)
+        thruster = not self.can_see_target
+        return desired_direction, thruster
 
-    def _execute_aim(self) -> Vec2:
+    def _execute_aim(self) -> tuple[Vec2, bool]:
         """Return force required for the aim-behavior."""
         # Relative position and velocity
-        relative_pos = self.target.pos_relative_to(self.ship)
-        relative_vel = self.target.vel_relative_to(self.ship)
-
-        if relative_pos == Vec2(0, 0):
-            return Vec2(0, 0)
+        relative_pos = self.ship.target.pos_relative_to(self.ship)
+        relative_vel = self.ship.target.vel_relative_to(self.ship)
 
         """
         We need to find the direction where:
@@ -658,7 +673,7 @@ class EnemyAI:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
             force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0)
+            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0), True
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -679,17 +694,16 @@ class EnemyAI:
         # Calculate predicted position
         if intercept_time <= 0:
             # Fallback if no solution found
-            return relative_pos.normalize()
-
+            return relative_pos.normalize(), True
+        thruster = not self.can_see_target
         # Now calculate what direction the bullet must be fired in
-        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time)
+        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thruster
 
-    def _execute_retreat(self) -> Vec2:
+    def _execute_retreat(self) -> tuple[Vec2, bool]:
         """Return force required for the retreat-behavior."""
-        delta = self.ship.pos_relative_to(self.target)
         if not self.can_see_target:
-            return Vec2(0, 0)
-        return delta
+            return Vec2(0, 0), False
+        return self.ship.pos_relative_to(self.ship.target), True
 
-    def _execute_randomly(self) -> Vec2:
-        return self.seek_towards.pos_relative_to(self.ship)
+    def _execute_randomly(self) -> tuple[Vec2, bool]:
+        return self.seek_towards.pos_relative_to(self.ship), True
