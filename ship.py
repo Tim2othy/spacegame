@@ -24,7 +24,7 @@ BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
-PLAYER_COLOR = Color("darkslategray")
+PLAYER_COLOR = Color("blue")
 
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
@@ -146,8 +146,8 @@ class Ship(Disk):
 
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.projectile_color: Color = generate_complementary_color(self.SHIP_COLOR)
-        self.thrust: float = 250 * self.mass
-        self.rotation_thrust: float = 0.15 * self.mass
+        self.thrust: float = 1050000
+        self.rotation_thrust: float = 628
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
