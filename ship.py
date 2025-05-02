@@ -45,6 +45,7 @@ GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ONE = 1.0
 SMALL_ALGULAR_VEL = 5.0
+EXTRA = 1 / math.sqrt(2)
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -160,16 +161,16 @@ class Ship(Disk):
         self.releasing_flares: bool = False
         self.shooting: bool = False
 
-        self.thruster_rot_left: bool = False
-        self.thruster_rot_right: bool = False
+        self.thruster_rot_L: bool = False
+        self.thruster_rot_R: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.turn_left: float = 0.0
-        self.turn_right: float = 0.0
-        self.auto_turn_left: float = 0.0
-        self.auto_turn_right: float = 0.0
-        self.stabilize_left: float = 0.0
-        self.stabilize_right: float = 0.0
+        self.turn_L: float = 0.0
+        self.turn_R: float = 0.0
+        self.turn_back_L: float = 0.0
+        self.turn_back_R: float = 0.0
+        self.turn_final_L: float = 0.0
+        self.turn_final_R: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -250,28 +251,28 @@ class Ship(Disk):
 
     def smart_rotation(self) -> None:
         """Rotate `self` smartly, based on `self.turn_left` and `self.turn_right`."""
-        self.thruster_rot_right = False
-        self.thruster_rot_left = False
+        self.thruster_rot_R = False
+        self.thruster_rot_L = False
 
-        if self.turn_left > 0:
-            self.turn_left -= ONE
-            self.thruster_rot_left = True
-        elif self.auto_turn_right > 0:
-            self.auto_turn_right -= ONE
-            self.thruster_rot_right = True
-        elif self.stabilize_left > 0:
-            self.stabilize_left -= ONE
-            self.thruster_rot_left = True
+        if self.turn_L > 0:
+            self.turn_L -= ONE
+            self.thruster_rot_L = True
+        elif self.turn_back_R > 0:
+            self.turn_back_R -= ONE
+            self.thruster_rot_R = True
+        elif self.turn_final_L > 0:
+            self.turn_final_L -= ONE
+            self.thruster_rot_L = True
 
-        if self.turn_right > 0:
-            self.turn_right -= ONE
-            self.thruster_rot_right = True
-        elif self.auto_turn_left > 0:
-            self.auto_turn_left -= ONE
-            self.thruster_rot_left = True
-        elif self.stabilize_right > 0:
-            self.stabilize_right -= ONE
-            self.thruster_rot_right = True
+        if self.turn_R > 0:
+            self.turn_R -= ONE
+            self.thruster_rot_R = True
+        elif self.turn_back_L > 0:
+            self.turn_back_L -= ONE
+            self.thruster_rot_L = True
+        elif self.turn_final_R > 0:
+            self.turn_final_R -= ONE
+            self.thruster_rot_R = True
 
         if not (self.thruster_rot_right or self.thruster_rot_left):
             self.thruster_rot_right = self.angular_velocity > SMALL_ALGULAR_VEL
@@ -280,9 +281,9 @@ class Ship(Disk):
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         self.smart_rotation()
-        if self.thruster_rot_left:
+        if self.thruster_rot_L:
             self.apply_angular_force(self.rotation_thrust, dt)
-        if self.thruster_rot_right:
+        if self.thruster_rot_R:
             self.apply_angular_force(-self.rotation_thrust, dt)
 
         self.angle += self.angular_velocity * dt
@@ -307,13 +308,13 @@ class Ship(Disk):
     def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
         """Increment rotation counters."""
         if left:
-            self.turn_left += ONE
-            self.auto_turn_right += ONE * 1.5
-            self.stabilize_left += ONE * 0.5
+            self.turn_L += ONE
+            self.turn_back_R += ONE + EXTRA
+            self.turn_final_L += EXTRA
         if right:
-            self.turn_right += ONE
-            self.auto_turn_left += ONE * 1.5
-            self.stabilize_right += ONE * 0.5
+            self.turn_R += ONE
+            self.turn_back_L += ONE + EXTRA
+            self.turn_final_R += EXTRA
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
@@ -347,7 +348,7 @@ class Ship(Disk):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_left:
+        if self.thruster_rot_L:
             # thruster_rot_left, active
             drawy(
                 THRUST_COLOR,
@@ -367,7 +368,7 @@ class Ship(Disk):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_right:
+        if self.thruster_rot_R:
             # thruster_rot_right, active
             drawy(
                 THRUST_COLOR,
