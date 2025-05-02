@@ -43,6 +43,8 @@ HEALTH = 100
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
+ONE = 1.0
+SMALL_ALGULAR_VEL = 5.0
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -162,6 +164,10 @@ class Ship(Disk):
         self.thruster_rot_right: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
+        self.turn_left: float = 0.0
+        self.turn_right: float = 0.0
+        self.auto_turn_left: float = 0.0
+        self.auto_turn_right: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -240,8 +246,32 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
+    def smart_rotation(self) -> None:
+        """Rotate `self` smartly, based on `self.turn_left` and `self.turn_right`."""
+        self.thruster_rot_right = False
+        self.thruster_rot_left = False
+
+        if self.turn_left > 0:
+            self.turn_left -= ONE
+            self.thruster_rot_left = True
+        elif self.auto_turn_right > 0:
+            self.auto_turn_right -= ONE
+            self.thruster_rot_right = True
+
+        if self.turn_right > 0:
+            self.turn_right -= ONE
+            self.thruster_rot_right = True
+        elif self.auto_turn_left > 0:
+            self.auto_turn_left -= ONE
+            self.thruster_rot_left = True
+
+        if not (self.thruster_rot_right or self.thruster_rot_left):
+            self.thruster_rot_right = self.angular_velocity > SMALL_ALGULAR_VEL
+            self.thruster_rot_left = self.angular_velocity < -SMALL_ALGULAR_VEL
+
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
+        self.smart_rotation()
         if self.thruster_rot_left:
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_right:
@@ -425,8 +455,12 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.thruster_rot_left = keys[self.spaceship_input.thruster_rot_left]
-        self.thruster_rot_right = keys[self.spaceship_input.thruster_rot_right]
+        if keys[self.spaceship_input.thruster_rot_left]:
+            self.turn_left += ONE
+            self.auto_turn_right += ONE
+        if keys[self.spaceship_input.thruster_rot_right]:
+            self.turn_right += ONE
+            self.auto_turn_left += ONE
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
