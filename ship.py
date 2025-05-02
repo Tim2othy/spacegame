@@ -17,6 +17,7 @@ from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
     from camera import Camera
+
 GRAY = Color("gray")
 THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
@@ -30,7 +31,6 @@ ROCKET_RATE_OF_FIRE = 0.5
 MISSILE_RATE_OF_FIRE = 3.0
 FLARE_RATE_OF_FIRE = 5.0
 
-# Release speeds
 FLARE_MEAN_RELEASE_SPEED = 140
 FLARE_SD_RELEASE_SPEED = 28
 BULLET_RELEASE_SPEED = 700.0
@@ -39,7 +39,7 @@ ROCKET_RELEASE_SPEED = 300.0
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 25
 
-HEALTH = 100
+HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
