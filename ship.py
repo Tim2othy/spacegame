@@ -168,6 +168,8 @@ class Ship(Disk):
         self.turn_right: float = 0.0
         self.auto_turn_left: float = 0.0
         self.auto_turn_right: float = 0.0
+        self.stabilize_left: float = 0.0
+        self.stabilize_right: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -257,6 +259,9 @@ class Ship(Disk):
         elif self.auto_turn_right > 0:
             self.auto_turn_right -= ONE
             self.thruster_rot_right = True
+        elif self.stabilize_left > 0:
+            self.stabilize_left -= ONE
+            self.thruster_rot_left = True
 
         if self.turn_right > 0:
             self.turn_right -= ONE
@@ -264,6 +269,9 @@ class Ship(Disk):
         elif self.auto_turn_left > 0:
             self.auto_turn_left -= ONE
             self.thruster_rot_left = True
+        elif self.stabilize_right > 0:
+            self.stabilize_right -= ONE
+            self.thruster_rot_right = True
 
         if not (self.thruster_rot_right or self.thruster_rot_left):
             self.thruster_rot_right = self.angular_velocity > SMALL_ALGULAR_VEL
@@ -300,10 +308,12 @@ class Ship(Disk):
         """Increment rotation counters."""
         if left:
             self.turn_left += ONE
-            self.auto_turn_right += ONE
+            self.auto_turn_right += ONE * 1.5
+            self.stabilize_left += ONE * 0.5
         if right:
             self.turn_right += ONE
-            self.auto_turn_left += ONE
+            self.auto_turn_left += ONE * 1.5
+            self.stabilize_right += ONE * 0.5
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
