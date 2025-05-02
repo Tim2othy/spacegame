@@ -520,7 +520,7 @@ class RocketEnemy(BulletEnemy):
     SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
-        """Create a new missile relative to `self` targeting `self.target`."""
+        """Create a new rocket relative to `self` targeting `self.target`."""
         return Rocket(self, pos, vel, self.projectile_color, self.target)
 
 
