@@ -32,9 +32,8 @@ def test_shooting() -> None:
 
 def test_movement() -> None:
     ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
-    ship.thruster_rot_L = True
+    ship.rotating(left=True, right=False)
     ship.step(0.01)
-    ship.thruster_rot_L = False
     ship.thruster_forward = True
     ship.step(0.01)
     assert ship.vel_relative_to(ORIGIN).x > 0, "Ship should be moving forward"
