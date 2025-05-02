@@ -274,9 +274,9 @@ class Ship(Disk):
             self.turn_final_R -= ONE
             self.thruster_rot_R = True
 
-        if not (self.thruster_rot_right or self.thruster_rot_left):
-            self.thruster_rot_right = self.angular_velocity > SMALL_ALGULAR_VEL
-            self.thruster_rot_left = self.angular_velocity < -SMALL_ALGULAR_VEL
+        if not (self.thruster_rot_R or self.thruster_rot_L):
+            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
@@ -339,7 +339,7 @@ class Ship(Disk):
             darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
 
-        # thruster_rot_left, material
+        # thruster_rot_L, material
         drawy(
             darker_color,
             [
@@ -349,7 +349,7 @@ class Ship(Disk):
             ],
         )
         if self.thruster_rot_L:
-            # thruster_rot_left, active
+            # thruster_rot_L, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -359,7 +359,7 @@ class Ship(Disk):
                 ],
             )
 
-        # thruster_rot_right, material
+        # thruster_rot_R, material
         drawy(
             darker_color,
             [
@@ -369,7 +369,7 @@ class Ship(Disk):
             ],
         )
         if self.thruster_rot_R:
-            # thruster_rot_right, active
+            # thruster_rot_R, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -418,8 +418,8 @@ class ShipInput:
     """Specification for which keys trigger what spaceship-action.
 
     Attributes:
-        thruster_rot_left (pygame_key): Left rotation thruster's key
-        thruster_rot_right (pygame_key): Right rotation thruster's key
+        thruster_rot_L (pygame_key): Left rotation thruster's key
+        thruster_rot_R (pygame_key): Right rotation thruster's key
         thruster_forward (pygame_key): Forward thruster's key
         thruster_backward (pygame_key): Backward thruster's key
         shoot (pygame_key): Pew pew key
@@ -427,8 +427,8 @@ class ShipInput:
 
     """
 
-    thruster_rot_left: PygameKey
-    thruster_rot_right: PygameKey
+    thruster_rot_L: PygameKey  # noqa: N815
+    thruster_rot_R: PygameKey  # noqa: N815
     thruster_forward: PygameKey
     thruster_backward: PygameKey
     shoot: PygameKey
@@ -475,7 +475,7 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.rotating(keys[self.spaceship_input.thruster_rot_left], keys[self.spaceship_input.thruster_rot_right])
+        self.rotating(keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R])
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
