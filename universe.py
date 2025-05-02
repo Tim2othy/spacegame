@@ -28,7 +28,7 @@ PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
-RADIAL_SPACING = 1000
+GRID_RADIAL_SPACING = 1000
 ANGULAR_SPACING = 4
 MAX_RADIUS = 20000
 
@@ -508,7 +508,7 @@ class Universe:
         """Draw a polar grid centered on the star."""
         center = self.__star
 
-        for r in range(RADIAL_SPACING, MAX_RADIUS + 1, RADIAL_SPACING):
+        for r in range(GRID_RADIAL_SPACING, MAX_RADIUS + 1, GRID_RADIAL_SPACING):
             camera.draw_circle(GRID_COLOR, center, r, 2)
 
         for angle in range(0, 360, ANGULAR_SPACING * 2):
@@ -579,7 +579,7 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 100 if options.small else 500
+        star_size = 100 if options.small else 1000
         num_enemies = 2 if options.small else 20
         num_planets = 5 if options.small else 10
 
@@ -597,7 +597,7 @@ class Universe:
                 player.health = float("inf")
 
         for _ in range(num_enemies):
-            random_radius = random.uniform(star_size, star_size * 5)
+            random_radius = random.uniform(star_size * 3, star_size * 7)
             random_angle = random.uniform(0, 360)
             vec = Vec2(0, 0)
             vec.from_polar((random_radius, random_angle))
