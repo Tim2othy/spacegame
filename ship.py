@@ -146,7 +146,6 @@ class Ship(Disk):
         """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self._SHIP_COLOR)
 
-        self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.projectile_color: Color = generate_complementary_color(self._SHIP_COLOR)
         self.thrust: float = 1050000
         self.rotation_thrust: float = 132000000
@@ -238,7 +237,7 @@ class Ship(Disk):
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
                     self.projectiles.append(self.new_flare(Vec2(0, 0), flare_vel))
-                self.flare_cooldown_timer += self._flare_cooldown
+                self.flare_cooldown_timer += FLARE_RATE_OF_FIRE
 
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
