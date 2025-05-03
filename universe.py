@@ -255,7 +255,7 @@ class Universe:
     def collide_bullets(self) -> None:
         """Run bullet-collision checks and damage ships as a result."""
 
-        def projectile_check(projectile: Bullet, ships_it_can_hit: Sequence[Ship]) -> bool:
+        def projectile_check(projectile: Bullet) -> bool:
             """Check for collision and return whether the projectile should stay alive."""
             if projectile.is_expired() or (isinstance(self.__star, Star) and self.__star.intersects_disk(projectile)):
                 return False
@@ -263,7 +263,7 @@ class Universe:
                 if planet.intersects_disk(projectile):
                     self.create_particles_on_disk(planet, projectile, 5, projectile.color, 250)
                     return False
-            for ship in ships_it_can_hit:
+            for ship in chain(self._player_ships, self._enemy_ships):
                 if ship.intersects_disk(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.damage)
@@ -276,11 +276,8 @@ class Universe:
 
             return True
 
-        for player in self._player_ships:
-            player.projectiles = [p for p in player.projectiles if projectile_check(p, self._enemy_ships)]
-
-        for enemy in self._enemy_ships:
-            enemy.projectiles = [p for p in enemy.projectiles if projectile_check(p, self._player_ships)]
+        for ship in chain(self._player_ships, self._enemy_ships):
+            ship.projectiles = [p for p in ship.projectiles if projectile_check(p)]
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Run input-logic for player-ships.
