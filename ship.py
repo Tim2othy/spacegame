@@ -43,9 +43,9 @@ HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-ONE = 1.0
 SMALL_ALGULAR_VEL = 5.0
-EXTRA = 1 / math.sqrt(2)
+ROTATION_STATE_DELTA = 1.0
+ADJUSTED_ROTATION_STATE_DELTA = ROTATION_STATE_DELTA / math.sqrt(2)
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -255,23 +255,23 @@ class Ship(Disk):
         self.thruster_rot_L = False
 
         if self.turn_L > 0:
-            self.turn_L -= ONE
+            self.turn_L -= ROTATION_STATE_DELTA
             self.thruster_rot_L = True
         elif self.turn_back_R > 0:
-            self.turn_back_R -= ONE
+            self.turn_back_R -= ROTATION_STATE_DELTA
             self.thruster_rot_R = True
         elif self.turn_final_L > 0:
-            self.turn_final_L -= ONE
+            self.turn_final_L -= ROTATION_STATE_DELTA
             self.thruster_rot_L = True
 
         if self.turn_R > 0:
-            self.turn_R -= ONE
+            self.turn_R -= ROTATION_STATE_DELTA
             self.thruster_rot_R = True
         elif self.turn_back_L > 0:
-            self.turn_back_L -= ONE
+            self.turn_back_L -= ROTATION_STATE_DELTA
             self.thruster_rot_L = True
         elif self.turn_final_R > 0:
-            self.turn_final_R -= ONE
+            self.turn_final_R -= ROTATION_STATE_DELTA
             self.thruster_rot_R = True
 
         if not (self.thruster_rot_R or self.thruster_rot_L):
@@ -308,13 +308,13 @@ class Ship(Disk):
     def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
         """Increment rotation counters."""
         if left:
-            self.turn_L += ONE
-            self.turn_back_R += ONE + EXTRA
-            self.turn_final_L += EXTRA
+            self.turn_L += ROTATION_STATE_DELTA
+            self.turn_back_R += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_final_L += ADJUSTED_ROTATION_STATE_DELTA
         if right:
-            self.turn_R += ONE
-            self.turn_back_L += ONE + EXTRA
-            self.turn_final_R += EXTRA
+            self.turn_R += ROTATION_STATE_DELTA
+            self.turn_back_L += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_final_R += ADJUSTED_ROTATION_STATE_DELTA
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
