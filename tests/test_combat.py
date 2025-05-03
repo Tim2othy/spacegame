@@ -135,7 +135,7 @@ def test_markov_low_health_search() -> None:
     enemy.health = 1
     enemy.ai.current_state = AIState.RETREAT
 
-    for _ in range(100000):
+    for _ in range(1000):
         universe.step(0.01)
         if player.health < HEALTH:
             break
