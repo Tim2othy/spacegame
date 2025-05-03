@@ -250,7 +250,27 @@ class Ship(Disk):
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def smart_rotation(self) -> None:
-        """Rotate `self` smartly, based on `self.turn_left` and `self.turn_right`."""
+        """Rotate `self` using overly complicated method."""
+        """
+        The current implementation allows the player to press the left or right button until a desired angle is reached.
+        And the ship will settle there. Imagine you start at 40° and want to go to 110°. You can press the left until
+        your angle is 110° and then release the button.
+        Then the ship will decelerate for as many degrees as it accelerated for, 70° in this case. So it will be still
+        at 180°. Then it will accelerate back for 35°, so until 145° and then finally decelerate for 35° to 110°.
+
+        Between 40° and 110° thruster_rot_L is on because of turn_L (accelerating us counter-clockwise)
+        Between 110° and 180° thruster_rot_R is on because of turn_back_R (decelerating us)
+        Between 180° and 145° thruster_rot_R is still on because of turn_back_R (accelerating us clockwise)
+        Between 145° and 110° thruster_rot_L is on because of turn_final_L (decelerating us)
+
+        You can look at the `test_ship_rotation()` to see how this works, or just try it out in the game.
+
+
+        In the code this is implemented by having these three attributes incremented when the left key is pressed.
+        This happens in in the `rotating()` method.
+        And then here in turn we check if turn_L then turn_back_R then turn_final_L are positive. If any one is positive
+        then the ship is rotated in the direction the last letter (L or R) indicates and that attribute is decremented.
+        """
         self.thruster_rot_R = False
         self.thruster_rot_L = False
 
