@@ -134,9 +134,14 @@ class Disk(PosVel):
         """Apply a force to `self`."""
         self.add_impulse(force * dt)
 
+    def add_angular_impulse(self, angular_impulse: float) -> None:
+        """Add an angular impulse to `self`."""
+        moment_of_inertia = 0.5 * self.mass * self.radius**2
+        self.angular_velocity += angular_impulse / moment_of_inertia
+
     def apply_angular_force(self, force: float, dt: float) -> None:
-        """Apply a force to `self`."""
-        self.angular_velocity += force * dt
+        """Apply an angular force to `self`."""
+        self.add_angular_impulse(force * dt)
 
     def gravitational_force(self, pobj: Disk) -> Vec2:
         """Calculate gravitational force between `pobj` and `self` affecting `self`."""

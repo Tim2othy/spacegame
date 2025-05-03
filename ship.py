@@ -148,7 +148,7 @@ class Ship(Disk):
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
         self.projectile_color: Color = generate_complementary_color(self.SHIP_COLOR)
         self.thrust: float = 1050000
-        self.rotation_thrust: float = 628
+        self.rotation_thrust: float = 132000000
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
