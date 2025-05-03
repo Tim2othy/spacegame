@@ -13,10 +13,10 @@ ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_do
 def test_shooting() -> None:
     bullet_count = 10
     ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
-    ship.SHIP_GUN_COOLDOWN = 0.123
+    ship._SHIP_GUN_COOLDOWN = 0.123
     ship.angle = tau / 8
     ship.shooting = True
-    ship.handle_shooting(bullet_count * ship.SHIP_GUN_COOLDOWN)
+    ship.handle_shooting(bullet_count * ship._SHIP_GUN_COOLDOWN)
 
     assert len(ship.projectiles) == bullet_count, "Ship should have shot 10 bullets"
 

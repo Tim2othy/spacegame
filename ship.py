@@ -26,6 +26,7 @@ MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
 PLAYER_COLOR = Color("blue")
 
+# Make sure these are all positive and finite
 BULLET_RATE_OF_FIRE = 0.08
 ROCKET_RATE_OF_FIRE = 0.5
 MISSILE_RATE_OF_FIRE = 3.0
@@ -137,16 +138,16 @@ class Ship(Disk):
     """A basic spaceship."""
 
     # Class configuration
-    SHIP_COLOR = BULLET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
+    _SHIP_COLOR = BULLET_ENEMY_COLOR
+    _SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
+    _SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
 
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship."""
-        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self.SHIP_COLOR)
+        super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self._SHIP_COLOR)
 
         self._flare_cooldown: float = FLARE_RATE_OF_FIRE
-        self.projectile_color: Color = generate_complementary_color(self.SHIP_COLOR)
+        self.projectile_color: Color = generate_complementary_color(self._SHIP_COLOR)
         self.thrust: float = 1050000
         self.rotation_thrust: float = 132000000
 
@@ -200,7 +201,7 @@ class Ship(Disk):
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
                 forward = self.get_faced_direction()
-                bullet_vel = forward * self.SHIP_PROJECTILE_SPEED
+                bullet_vel = forward * self._SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -213,7 +214,7 @@ class Ship(Disk):
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
-                self.gun_cooldown_timer += self.SHIP_GUN_COOLDOWN
+                self.gun_cooldown_timer += self._SHIP_GUN_COOLDOWN
 
     def handle_flares(self, dt: float) -> None:
         """Handle flare-releasing."""
@@ -460,7 +461,7 @@ class PlayerShip(Ship):
     """A player-controlled spaceship."""
 
     # Class configuration
-    SHIP_COLOR = PLAYER_COLOR
+    _SHIP_COLOR = PLAYER_COLOR
 
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
@@ -512,9 +513,9 @@ class RocketEnemy(BulletEnemy):
     """An enemy ship shooting rockets, targeting a specific other ship."""
 
     # Class configuration
-    SHIP_COLOR = ROCKET_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
+    _SHIP_COLOR = ROCKET_ENEMY_COLOR
+    _SHIP_GUN_COOLDOWN = ROCKET_RATE_OF_FIRE
+    _SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new rocket relative to `self` targeting `self.target`."""
@@ -525,9 +526,9 @@ class MissileEnemy(BulletEnemy):
     """An enemy ship shooting powerful, smart, homing missiles, targeting a specific other ship."""
 
     # Class configuration
-    SHIP_COLOR = MISSILE_ENEMY_COLOR
-    SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
-    SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
+    _SHIP_COLOR = MISSILE_ENEMY_COLOR
+    _SHIP_GUN_COOLDOWN = MISSILE_RATE_OF_FIRE
+    _SHIP_PROJECTILE_SPEED = ROCKET_RELEASE_SPEED
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile relative to `self` targeting `self.target`."""
@@ -538,7 +539,7 @@ class MarkovEnemy(BulletEnemy):
     """An enemy ship using Markov chain AI for more sophisticated behavior."""
 
     # Class configuration
-    SHIP_COLOR = MARKOV_ENEMY_COLOR
+    _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
 class EnemyAI:
