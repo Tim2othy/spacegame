@@ -124,6 +124,7 @@ class Disk(PosVel):
         self.__radius_squared: float = radius**2
         self.color: Color = Color(color)
         self.mass = radius**3 * math.pi * 4 / 3
+        self.angle: float = 0.0
         self.angular_velocity: float = 0.0
 
     def add_impulse(self, impulse: Vec2) -> None:
@@ -219,3 +220,8 @@ class Disk(PosVel):
 
         # Return damage
         return max(0, impulse_scalar - BOUNCE_DAMAGE_THRESHOLD) * (1 - BOUNCINESS) * BOUNCE_DAMAGE_SCALAR
+
+    def step(self, dt: float) -> None:
+        """Apply velocity to `self` and angular velocity to `self`."""
+        self.angle += self.angular_velocity * dt
+        super().step(dt)

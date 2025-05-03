@@ -152,7 +152,6 @@ class Ship(Disk):
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
-        self.angle: float = 0
 
         self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
@@ -285,8 +284,6 @@ class Ship(Disk):
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_R:
             self.apply_angular_force(-self.rotation_thrust, dt)
-
-        self.angle += self.angular_velocity * dt
 
         forward = self.get_faced_direction()
         force = forward * self.thrust
