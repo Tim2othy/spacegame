@@ -250,9 +250,9 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def rotate(self) -> None:
-        """Rotate `self` using overly complicated method."""
-        """
+    def do_rotation(self) -> None:
+        """Rotate `self` using overly complicated method.
+
         The current implementation allows the player to press the left or right button until a desired angle is reached.
         And the ship will settle there. Imagine you start at 40° and want to go to 110°. You can press the left until
         your angle is 110° and then release the button.
@@ -299,6 +299,34 @@ class Ship(Disk):
             self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
             self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
 
+    def do_rotation_simple(self) -> None:
+        """Rotate `self` using overly less method.
+
+        This is a simplified version of the `do_rotation()` method.
+        Here, if you want to turn from 40° to 110° you have to press the left key until you reach 75°.
+        Then you automatically decelerate from  75° to 110°  and come to a stop there.
+        """
+        self.thruster_rot_R = False
+        self.thruster_rot_L = False
+
+        if self.turn_L > 0:
+            self.turn_L -= ROT_STATE_DELTA
+            self.thruster_rot_L = True
+        elif self.turn_back_R > 0:
+            self.turn_back_R -= ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.thruster_rot_R = True
+
+        if self.turn_R > 0:
+            self.turn_R -= ROT_STATE_DELTA
+            self.thruster_rot_R = True
+        elif self.turn_back_L > 0:
+            self.turn_back_L -= ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.thruster_rot_L = True
+
+        if not (self.thruster_rot_R or self.thruster_rot_L):
+            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
+
     def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
         """Increment rotation counters."""
         if left:
@@ -312,7 +340,7 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        self.rotate()
+        self.do_rotation_simple()
         if self.thruster_rot_L:
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_R:
