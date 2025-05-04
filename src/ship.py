@@ -236,7 +236,9 @@ class Ship(Disk):
                     flare_vel = -flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    self.projectiles.append(self.new_flare(Vec2(0, 0), flare_vel))
+                    flare_offset = -forward * self.radius * 1.2
+
+                    self.projectiles.append(self.new_flare(flare_offset, flare_vel))
                 self.flare_cooldown_timer += FLARE_RATE_OF_FIRE
 
     def suffer_damage(self, damage: float) -> None:
