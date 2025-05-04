@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-PLANET_SIZE_PARAMETER = 5.9
 SIGMA_PLANET_RADIUS = 0.3
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
@@ -512,7 +511,7 @@ class Universe:
             end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
             camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
 
-    def generate_planets(self, num_planets: int) -> list[Planet]:
+    def generate_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
         """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
         """
         What the random variables do:
@@ -544,7 +543,7 @@ class Universe:
 
             # random variables
             semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-            mu = PLANET_SIZE_PARAMETER + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+            mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
             radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
             eccentricity = random.betavariate(1, 15)
             true_anomaly = random.uniform(0, 2 * math.pi)
@@ -579,6 +578,7 @@ class Universe:
         star_size = 400 if options.small else 1400
         num_enemies = 2 if options.small else 20
         num_planets = 5 if options.small else 10
+        planet_size_parameter = 4.0 if options.small else 5.9
 
         universe = Universe(star_size, 1000)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
@@ -605,6 +605,6 @@ class Universe:
 
             universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
-        universe.generate_planets(num_planets)
+        universe.generate_planets(num_planets, planet_size_parameter)
 
         return universe, player_ships
