@@ -130,9 +130,9 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 400 if options.small else 1400
-        num_enemies = 2 if options.small else 20
-        num_planets = 5 if options.small else 10
+        star_size = 200 if options.small else 1400
+        num_enemies = 0 if options.small else 20
+        num_planets = 0 if options.small else 10
         planet_size_parameter = 4.0 if options.small else 5.9
 
         universe = Universe(star_size, 1000)
@@ -148,17 +148,27 @@ class Universe:
             for player in player_ships:
                 player.health = float("inf")
 
-        for _ in range(num_enemies):
-            random_radius = random.uniform(star_size * 3, star_size * 7)
-            random_angle = random.uniform(0, 360)
-            vec = Vec2(0, 0)
-            vec.from_polar((random_radius, random_angle))
+        if options.small:
+            for enemy in [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy]:
+                random_angle = random.uniform(0, 360)
+                vec = Vec2(0, 0)
+                vec.from_polar((1000, random_angle))
 
-            enemy_spawn_weights = [0.3, 0.3, 0.2, 0.2]
-            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], enemy_spawn_weights)[0]
-            targeting = random.choice(player_ships)
+                targeting = random.choice(player_ships)
+                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
 
-            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
+        else:
+            for _ in range(num_enemies):
+                random_radius = random.uniform(star_size * 3, star_size * 7)
+                random_angle = random.uniform(0, 360)
+                vec = Vec2(0, 0)
+                vec.from_polar((random_radius, random_angle))
+
+                spawn_weights = [0.3, 0.3, 0.2, 0.2]
+                enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], spawn_weights)[0]
+                targeting = random.choice(player_ships)
+
+                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
         universe.add_planets(num_planets, planet_size_parameter)
 
