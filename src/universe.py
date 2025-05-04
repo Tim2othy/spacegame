@@ -127,6 +127,43 @@ class Universe:
 
         self._particles: list[Particle] = []
 
+    @staticmethod
+    def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
+        """Create a universe from `options`."""
+        star_size = 400 if options.small else 1400
+        num_enemies = 2 if options.small else 20
+        num_planets = 5 if options.small else 10
+        planet_size_parameter = 4.0 if options.small else 5.9
+
+        universe = Universe(star_size, 1000)
+        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
+
+        if options.splitscreen:
+            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
+            # TODO: fix color for second player color=Color("darkred")
+            second_player = universe.add_player(second_config, relative_to=player_ships[0])
+            player_ships.append(second_player)
+
+        if options.invincible:
+            for player in player_ships:
+                player.health = float("inf")
+
+        for _ in range(num_enemies):
+            random_radius = random.uniform(star_size * 3, star_size * 7)
+            random_angle = random.uniform(0, 360)
+            vec = Vec2(0, 0)
+            vec.from_polar((random_radius, random_angle))
+
+            enemy_spawn_weights = [0.3, 0.3, 0.2, 0.2]
+            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], enemy_spawn_weights)[0]
+            targeting = random.choice(player_ships)
+
+            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
+
+        universe.generate_planets(num_planets, planet_size_parameter)
+
+        return universe, player_ships
+
     def add_player(self, ship_config: PlayerConfig, *, relative_to: None | PosVel = None) -> PlayerShip:
         """Add a player-ship from its config and return (a reference to) the created ship.
 
@@ -157,6 +194,67 @@ class Universe:
         chunk = self._pobj_to_planet_chunk(planet)
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
+
+    def generate_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
+        """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
+        """
+        What the random variables do:
+        - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
+        - radius_planet   - follows a lognormal distribution.
+        - eccentricity    - how non round orbit is - drawn from a beta distribution
+        - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
+        - orbit_direction - in which direction (in degrees) of the star it starts
+        - planet_angle  - does it go clockwise or anticlockwise
+
+        The method:
+        1. Starts with a minimum semi-major axis (just beyond the star).
+        2. For each planet, picks a new semi-major axis by multiplying the previous orbit
+            by a random factor (ensuring increasing distance).
+        3. Samples a low eccentricity from a beta distribution.
+        4. Determines the planet's radius from a lognormal distribution whose mean is slightly
+            shifted with the orbit distance.
+        5. Calculates the orbit geometry and initial position/velocity.
+        6. Updates the minimum allowed semi-major axis for the next planet.
+        """
+
+        if not isinstance(self.__star, Star):
+            return []
+        disk = self.__star
+        planets = []
+        current_min_a = disk.radius * 2
+
+        for _ in range(num_planets):
+
+            # random variables
+            semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
+            mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+            eccentricity = random.betavariate(1, 15)
+            true_anomaly = random.uniform(0, 2 * math.pi)
+            orbit_direction = random.uniform(0, 2 * math.pi)
+            planet_angle = random.choice([90, 270])
+
+            # pos_planet
+            r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
+            radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
+            pos_planet = radial_vector * r_initial
+
+            # velocity_planet
+            total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
+            orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
+            tangential_vector = radial_vector.rotate(planet_angle)
+            vel_planet = tangential_vector * orbital_velocity
+
+            planets.append(
+                self.add_planet(
+                    PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet),
+                    relative_to=disk,
+                )
+            )
+            r_a = semi_major_axis * (1 + eccentricity)
+            # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+            current_min_a = r_a + radius_planet
+        return planets
 
     def _nearby_planets(self, pos: Pos) -> Iterator[Planet]:
         (x, y) = self._pobj_to_planet_chunk(pos)
@@ -209,46 +307,6 @@ class Universe:
                 planet.bounce_disks(disk)
             if isinstance(self.__star, Star):
                 planet.bounce_disks(self.__star)
-
-    def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
-        """Create `n` particles on the disk's surface.
-
-        `projected_from` is projected onto `disk`'s surface, with velocity randomly sampled to face
-        away from `disk` with max-length `blast_vel` in addition to `disk`'s current velocity.
-        Colors are randomly sampled from interpolation
-        between `disk.color` and `color`.
-
-        The particles' lifetime is randomly sampled from (0.5, 1.0).
-
-        If pos is exactly on disk's center, nothing happens.
-        """
-        delta = projected_from.pos_relative_to(disk)
-        if delta == Vec2(0, 0):
-            return
-        delta_normalized = delta.normalize()
-        projected_relative_to_center = delta_normalized * disk.radius
-        for _ in range(n):
-            random_lifetime = random.uniform(0.5, 1.0)
-            random_angle = random.uniform(-90.0, 90.0)
-            random_vel = delta_normalized.rotate(random_angle) * blast_vel * random.random()
-            random_color = disk.color.lerp(color, random.random())
-            self._particles.append(
-                Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
-            )
-
-    def create_particle_cloud(self, source: PosVel, n: int, color: Color, blast_vel: float) -> None:
-        """Create `n` particles forming a blast-cloud around pos.
-
-        Particles' velocity are spherically sampled with length between 0 and blast_vel, added
-        to `initial_vel`.
-
-        The particles' lifetime is randomly sampled from (1.0, 2.0).
-        """
-        for _ in range(n):
-            random_lifetime = random.uniform(1.0, 2.0)
-            random_vel = Vec2(0, 0)
-            random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
-            self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def collide_bullets(self) -> None:
@@ -311,6 +369,46 @@ class Universe:
         self.apply_bounce()
         self.collide_bullets()
         self._enemy_ships = [ship for ship in self._enemy_ships if ship.health > 0]
+
+    def create_particles_on_disk(self, disk: Disk, projected_from: Pos, n: int, color: Color, blast_vel: float) -> None:
+        """Create `n` particles on the disk's surface.
+
+        `projected_from` is projected onto `disk`'s surface, with velocity randomly sampled to face
+        away from `disk` with max-length `blast_vel` in addition to `disk`'s current velocity.
+        Colors are randomly sampled from interpolation
+        between `disk.color` and `color`.
+
+        The particles' lifetime is randomly sampled from (0.5, 1.0).
+
+        If pos is exactly on disk's center, nothing happens.
+        """
+        delta = projected_from.pos_relative_to(disk)
+        if delta == Vec2(0, 0):
+            return
+        delta_normalized = delta.normalize()
+        projected_relative_to_center = delta_normalized * disk.radius
+        for _ in range(n):
+            random_lifetime = random.uniform(0.5, 1.0)
+            random_angle = random.uniform(-90.0, 90.0)
+            random_vel = delta_normalized.rotate(random_angle) * blast_vel * random.random()
+            random_color = disk.color.lerp(color, random.random())
+            self._particles.append(
+                Particle(disk, projected_relative_to_center, random_vel, random_color, random_lifetime)
+            )
+
+    def create_particle_cloud(self, source: PosVel, n: int, color: Color, blast_vel: float) -> None:
+        """Create `n` particles forming a blast-cloud around pos.
+
+        Particles' velocity are spherically sampled with length between 0 and blast_vel, added
+        to `initial_vel`.
+
+        The particles' lifetime is randomly sampled from (1.0, 2.0).
+        """
+        for _ in range(n):
+            random_lifetime = random.uniform(1.0, 2.0)
+            random_vel = Vec2(0, 0)
+            random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
+            self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 
     @global_profiler.profile_method
     def draw_background(self, camera: Camera) -> None:
@@ -467,23 +565,6 @@ class Universe:
         random.setstate(random_state)
 
     @global_profiler.profile_method
-    def draw(self, camera: Camera, *, minimap: bool = False) -> None:
-        """Draw all of `self` on `camera`."""
-        if not minimap:
-            self.draw_background(camera)
-            self.draw_grid(camera)
-
-        for obj in chain(*self._planet_chunks.values(), self._enemy_ships, self._player_ships):
-            obj.draw(camera)
-
-        if isinstance(self.__star, Star):
-            self.__star.draw(camera)
-
-        if not minimap:
-            for particle in self._particles:
-                particle.draw(camera)
-
-    @global_profiler.profile_method
     def draw_text(self, camera: Camera, player: PlayerShip, fps: float) -> None:
         """Draw "debugging" text on `camera`."""
         font_size = 32
@@ -513,100 +594,19 @@ class Universe:
             end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
             camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
 
-    def generate_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
-        """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
-        """
-        What the random variables do:
-        - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
-        - radius_planet   - follows a lognormal distribution.
-        - eccentricity    - how non round orbit is - drawn from a beta distribution
-        - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
-        - orbit_direction - in which direction (in degrees) of the star it starts
-        - planet_angle  - does it go clockwise or anticlockwise
+    @global_profiler.profile_method
+    def draw(self, camera: Camera, *, minimap: bool = False) -> None:
+        """Draw all of `self` on `camera`."""
+        if not minimap:
+            self.draw_background(camera)
+            self.draw_grid(camera)
 
-        The method:
-        1. Starts with a minimum semi-major axis (just beyond the star).
-        2. For each planet, picks a new semi-major axis by multiplying the previous orbit
-            by a random factor (ensuring increasing distance).
-        3. Samples a low eccentricity from a beta distribution.
-        4. Determines the planet's radius from a lognormal distribution whose mean is slightly
-            shifted with the orbit distance.
-        5. Calculates the orbit geometry and initial position/velocity.
-        6. Updates the minimum allowed semi-major axis for the next planet.
-        """
+        for obj in chain(*self._planet_chunks.values(), self._enemy_ships, self._player_ships):
+            obj.draw(camera)
 
-        if not isinstance(self.__star, Star):
-            return []
-        disk = self.__star
-        planets = []
-        current_min_a = disk.radius * 2
+        if isinstance(self.__star, Star):
+            self.__star.draw(camera)
 
-        for _ in range(num_planets):
-
-            # random variables
-            semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-            mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
-            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
-            eccentricity = random.betavariate(1, 15)
-            true_anomaly = random.uniform(0, 2 * math.pi)
-            orbit_direction = random.uniform(0, 2 * math.pi)
-            planet_angle = random.choice([90, 270])
-
-            # pos_planet
-            r_initial = (semi_major_axis * (1 - eccentricity**2)) / (1 + eccentricity * math.cos(true_anomaly))
-            radial_vector = Vec2(1, 0).rotate(math.degrees(true_anomaly + orbit_direction))
-            pos_planet = radial_vector * r_initial
-
-            # velocity_planet
-            total_specific_energy = -GRAVITATIONAL_CONSTANT * disk.mass / (2 * semi_major_axis)
-            orbital_velocity = (2 * (GRAVITATIONAL_CONSTANT * disk.mass / r_initial + total_specific_energy)) ** 0.5
-            tangential_vector = radial_vector.rotate(planet_angle)
-            vel_planet = tangential_vector * orbital_velocity
-
-            planets.append(
-                self.add_planet(
-                    PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet),
-                    relative_to=disk,
-                )
-            )
-            r_a = semi_major_axis * (1 + eccentricity)
-            # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
-            current_min_a = r_a + radius_planet
-        return planets
-
-    @staticmethod
-    def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
-        """Create a universe from `options`."""
-        star_size = 400 if options.small else 1400
-        num_enemies = 2 if options.small else 20
-        num_planets = 5 if options.small else 10
-        planet_size_parameter = 4.0 if options.small else 5.9
-
-        universe = Universe(star_size, 1000)
-        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
-
-        if options.splitscreen:
-            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
-            # TODO: fix color for second player color=Color("darkred")
-            second_player = universe.add_player(second_config, relative_to=player_ships[0])
-            player_ships.append(second_player)
-
-        if options.invincible:
-            for player in player_ships:
-                player.health = float("inf")
-
-        for _ in range(num_enemies):
-            random_radius = random.uniform(star_size * 3, star_size * 7)
-            random_angle = random.uniform(0, 360)
-            vec = Vec2(0, 0)
-            vec.from_polar((random_radius, random_angle))
-
-            enemy_spawn_weights = [0.3, 0.3, 0.2, 0.2]
-            enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], enemy_spawn_weights)[0]
-            targeting = random.choice(player_ships)
-
-            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
-
-        universe.generate_planets(num_planets, planet_size_parameter)
-
-        return universe, player_ships
+        if not minimap:
+            for particle in self._particles:
+                particle.draw(camera)
