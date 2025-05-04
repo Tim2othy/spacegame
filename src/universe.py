@@ -160,7 +160,7 @@ class Universe:
 
             universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
-        universe.generate_planets(num_planets, planet_size_parameter)
+        universe.add_planets(num_planets, planet_size_parameter)
 
         return universe, player_ships
 
@@ -195,7 +195,7 @@ class Universe:
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
 
-    def generate_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
+    def add_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
         """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
         """
         What the random variables do:

@@ -187,7 +187,7 @@ def test_planet_generation() -> None:
 
     # run test 10 times
     for _ in range(10):
-        planets = universe.generate_planets(10)
+        planets = universe.add_planets(10)
 
         for planet in planets:
             assert 200 < planet.radius < 1200, f"Planet has invalid radius: {planet.radius}"
@@ -195,7 +195,7 @@ def test_planet_generation() -> None:
 
 def test_empty_universe() -> None:
     universe = Universe(None, 10000)
-    planets = universe.generate_planets(5)
+    planets = universe.add_planets(5)
     assert len(planets) == 0, "Universe should have generated 0 planets"
 
 
@@ -203,7 +203,7 @@ def test_orbit_stability() -> None:
     """Test that planets generated in orbit remain stable and don't crash into the star."""
     star_size = 1400
     universe = Universe(star_size, 2 * star_size)
-    planets = universe.generate_planets(10)
+    planets = universe.add_planets(10)
 
     # Run simulation for 40 seconds
     for step in range(40000):
