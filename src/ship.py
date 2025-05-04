@@ -45,8 +45,8 @@ DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 SMALL_ALGULAR_VEL = 5.0
-ROTATION_STATE_DELTA = 1.0
-ADJUSTED_ROTATION_STATE_DELTA = ROTATION_STATE_DELTA / math.sqrt(2)
+ROT_STATE_DELTA = 1.0
+ADJUSTED_ROT_STATE_DELTA = ROT_STATE_DELTA / math.sqrt(2)
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -250,7 +250,7 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def smart_rotation(self) -> None:
+    def rotate(self) -> None:
         """Rotate `self` using overly complicated method."""
         """
         The current implementation allows the player to press the left or right button until a desired angle is reached.
@@ -276,43 +276,43 @@ class Ship(Disk):
         self.thruster_rot_L = False
 
         if self.turn_L > 0:
-            self.turn_L -= ROTATION_STATE_DELTA
+            self.turn_L -= ROT_STATE_DELTA
             self.thruster_rot_L = True
         elif self.turn_back_R > 0:
-            self.turn_back_R -= ROTATION_STATE_DELTA
+            self.turn_back_R -= ROT_STATE_DELTA
             self.thruster_rot_R = True
         elif self.turn_final_L > 0:
-            self.turn_final_L -= ROTATION_STATE_DELTA
+            self.turn_final_L -= ROT_STATE_DELTA
             self.thruster_rot_L = True
 
         if self.turn_R > 0:
-            self.turn_R -= ROTATION_STATE_DELTA
+            self.turn_R -= ROT_STATE_DELTA
             self.thruster_rot_R = True
         elif self.turn_back_L > 0:
-            self.turn_back_L -= ROTATION_STATE_DELTA
+            self.turn_back_L -= ROT_STATE_DELTA
             self.thruster_rot_L = True
         elif self.turn_final_R > 0:
-            self.turn_final_R -= ROTATION_STATE_DELTA
+            self.turn_final_R -= ROT_STATE_DELTA
             self.thruster_rot_R = True
 
         if not (self.thruster_rot_R or self.thruster_rot_L):
             self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
             self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
 
-    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
+    def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
         """Increment rotation counters."""
         if left:
-            self.turn_L += ROTATION_STATE_DELTA
-            self.turn_back_R += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_L += ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_L += ROT_STATE_DELTA
+            self.turn_back_R += ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.turn_final_L += ADJUSTED_ROT_STATE_DELTA
         if right:
-            self.turn_R += ROTATION_STATE_DELTA
-            self.turn_back_L += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_R += ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_R += ROT_STATE_DELTA
+            self.turn_back_L += ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.turn_final_R += ADJUSTED_ROT_STATE_DELTA
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        self.smart_rotation()
+        self.rotate()
         if self.thruster_rot_L:
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_R:
@@ -494,7 +494,9 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.rotating(keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R])
+        self.increment_rot_counters(
+            keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R]
+        )
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
@@ -594,7 +596,7 @@ class EnemyAI:
 
         left = angle_diff > SMALL_ANGLE
         right = angle_diff < -SMALL_ANGLE
-        self.ship.rotating(left, right)
+        self.ship.increment_rot_counters(left, right)
         self.ship.thruster_forward = thruster
 
     def _transition_markov(self) -> None:

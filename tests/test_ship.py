@@ -32,7 +32,7 @@ def test_shooting() -> None:
 
 def test_movement() -> None:
     ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
-    ship.rotating(left=True, right=False)
+    ship.increment_rot_counters(left=True, right=False)
     ship.step(0.01)
     ship.thruster_forward = True
     ship.step(0.01)
@@ -53,7 +53,7 @@ def test_ship_rotation() -> None:
 
     for _ in range(5000):
         if ship.angle < 70:
-            ship.rotating(left=True, right=False)
+            ship.increment_rot_counters(left=True, right=False)
 
         ship.step(dt)
         max_angle = max(max_angle, ship.angle)
