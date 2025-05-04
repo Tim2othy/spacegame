@@ -224,7 +224,6 @@ class Universe:
         current_min_a = disk.radius * 2
 
         for _ in range(num_planets):
-
             # random variables
             semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
             mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
