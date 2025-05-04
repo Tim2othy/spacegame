@@ -299,6 +299,17 @@ class Ship(Disk):
             self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
             self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
 
+    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
+        """Increment rotation counters."""
+        if left:
+            self.turn_L += ROTATION_STATE_DELTA
+            self.turn_back_R += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_final_L += ADJUSTED_ROTATION_STATE_DELTA
+        if right:
+            self.turn_R += ROTATION_STATE_DELTA
+            self.turn_back_L += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
+            self.turn_final_R += ADJUSTED_ROTATION_STATE_DELTA
+
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         self.smart_rotation()
@@ -323,17 +334,6 @@ class Ship(Disk):
 
         self.handle_shooting(dt)
         self.handle_flares(dt)
-
-    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
-        """Increment rotation counters."""
-        if left:
-            self.turn_L += ROTATION_STATE_DELTA
-            self.turn_back_R += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_L += ADJUSTED_ROTATION_STATE_DELTA
-        if right:
-            self.turn_R += ROTATION_STATE_DELTA
-            self.turn_back_L += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_R += ADJUSTED_ROTATION_STATE_DELTA
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
