@@ -44,7 +44,7 @@ HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-SMALL_ALGULAR_VEL = 5.0
+SMALL_ANGULAR_VEL = 5.0
 ROT_STATE_DELTA = 1.0
 ADJUSTED_ROT_STATE_DELTA = ROT_STATE_DELTA / math.sqrt(2)
 
@@ -296,8 +296,8 @@ class Ship(Disk):
             self.thruster_rot_R = True
 
         if not (self.thruster_rot_R or self.thruster_rot_L):
-            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
-            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
+            self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
     def do_rotation_simple(self) -> None:
         """Rotate `self` using overly less method.
@@ -324,8 +324,8 @@ class Ship(Disk):
             self.thruster_rot_L = True
 
         if not (self.thruster_rot_R or self.thruster_rot_L):
-            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
-            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
+            self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
     def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
         """Increment rotation counters."""
@@ -710,7 +710,7 @@ class EnemyAI:
         stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
 
         # If within small angle and velocity is low enough, don't rotate
-        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ALGULAR_VEL:
+        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
             return RotationState.NONE
 
         if angular_velocity > 0:  # Moving counterclockwise
