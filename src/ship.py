@@ -594,7 +594,7 @@ class MarkovEnemy(BulletEnemy):
 
 
 class EnemyAI:
-    """Markov chain-based AI for enemy ships."""
+    """AI for enemy ships."""
 
     def __init__(self, ship: BulletEnemy) -> None:
         """Create a new AI controller."""
@@ -602,30 +602,6 @@ class EnemyAI:
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
         self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
-
-    def step(self, dt: float) -> None:
-        """Transition state and apply appropriate behavior for different enemy types."""
-        self.action_timer -= dt
-        if self.action_timer <= 0:
-            self.action_timer = ENEMY_ACTION_TIMER
-
-            if isinstance(self.ship, MarkovEnemy):
-                self._transition_markov()
-            else:
-                self._transition_simple()
-
-        goal_direction, thruster = self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
-
-        # Determine which way to turn (left or right)
-        current_angle = self.ship.angle
-        target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
-        angle_diff = (target_angle - current_angle + 180) % 360 - 180
-
-        left = angle_diff > SMALL_ANGLE
-        right = angle_diff < -SMALL_ANGLE
-        self.ship.increment_rot_counters(left, right)
-        self.ship.thruster_forward = thruster
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -656,6 +632,30 @@ class EnemyAI:
             x, y = random.gauss(sigma=distance_to_target), random.gauss(sigma=distance_to_target)
             self.seek_towards = Pos(self.ship.target, Vec2(x, y))
             self.current_state = AIState.RANDOM
+
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer -= dt
+        if self.action_timer <= 0:
+            self.action_timer = ENEMY_ACTION_TIMER
+
+            if isinstance(self.ship, MarkovEnemy):
+                self._transition_markov()
+            else:
+                self._transition_simple()
+
+        goal_direction, thruster = self._match()
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+
+        # Determine which way to turn (left or right)
+        current_angle = self.ship.angle
+        target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
+        angle_diff = (target_angle - current_angle + 180) % 360 - 180
+
+        left = angle_diff > SMALL_ANGLE
+        right = angle_diff < -SMALL_ANGLE
+        self.ship.increment_rot_counters(left, right)
+        self.ship.thruster_forward = thruster
 
     def _match(self) -> tuple[Vec2, bool]:
         """Match and then, execute behavior based on current state."""
