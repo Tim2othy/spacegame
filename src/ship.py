@@ -673,37 +673,62 @@ class EnemyAI:
     def _match(self) -> tuple[RotationState, ThrustState]:
         """Match current state to behavior."""
         desired_direction = Vec2(0, 0)
-        thruster = ThrustState.BACKWARD
+        thrust_state = ThrustState.BACKWARD
         match self.current_state:
             case AIState.SEARCH:
-                desired_direction, thruster = self._execute_search()
+                desired_direction, thrust_state = self._execute_search()
             case AIState.ATTACK:
-                desired_direction, thruster = self._execute_attack()
+                desired_direction, thrust_state = self._execute_attack()
             case AIState.AIM:
-                desired_direction, thruster = self._execute_aim()
+                desired_direction, thrust_state = self._execute_aim()
             case AIState.RETREAT:
-                desired_direction, thruster = self._execute_retreat()
+                desired_direction, thrust_state = self._execute_retreat()
             case AIState.RANDOM:
-                desired_direction, thruster = self._execute_randomly()
+                desired_direction, thrust_state = self._execute_randomly()
 
         rotation_state = self._calculate_rotation(desired_direction)
 
-        return rotation_state, thruster
+        return rotation_state, thrust_state
 
     def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
-        """Calculate rotation state based on current angle and desired angle."""
+        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
         current_angle = self.ship.angle
-
+        angular_velocity = self.ship.angular_velocity
         desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
-        # Calculate angle difference (-180 to 180)
+
         angle_diff = (desired_angle - current_angle + 180) % 360 - 180
 
-        # Determine rotation direction
-        if abs(angle_diff) < SMALL_ANGLE:
-            return RotationState.NONE  # Already facing desired direction
-        if angle_diff > 0:
-            return RotationState.LEFT  # Turn counter-clockwise
-        return RotationState.RIGHT  # Turn clockwise
+        # Calculate stopping distance with current angular velocity
+        # This is the angle the ship would rotate through before stopping
+        moment_of_inertia = 0.5 * self.ship.mass * self.ship.radius**2
+        rotation_accel = self.ship.rotation_thrust / moment_of_inertia
+        stopping_distance = (angular_velocity * abs(angular_velocity)) / (2 * rotation_accel)
+
+        # Calculate the actual stopping point based on direction of rotation
+        if angular_velocity >= 0:  # Moving counterclockwise
+            stopping_point = (current_angle + stopping_distance) % 360
+        else:  # Moving clockwise
+            stopping_point = (current_angle - stopping_distance) % 360
+
+        # If within small angle and velocity is low enough, don't rotate
+        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ALGULAR_VEL:
+            return RotationState.NONE
+
+        # Check if we'll overshoot by comparing stopping point to desired angle
+        if angular_velocity > 0:  # Moving counterclockwise
+            # Calculate angle from stopping point to desired angle (-180 to 180)
+            remaining_after_stop = (desired_angle - stopping_point + 180) % 360 - 180
+            if remaining_after_stop < 0:  # Stopping point is past desired angle
+                return RotationState.RIGHT  # Brake counterclockwise rotation
+            return RotationState.LEFT
+        elif angular_velocity < 0:  # Moving clockwise
+            # Calculate angle from stopping point to desired angle (-180 to 180)
+            remaining_after_stop = (desired_angle - stopping_point + 180) % 360 - 180
+            if remaining_after_stop > 0:  # Stopping point is past desired angle
+                return RotationState.LEFT  # Brake clockwise rotation
+            return RotationState.RIGHT
+        else:  # Not moving
+            return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
 
     def _execute_search(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for search behavior."""
