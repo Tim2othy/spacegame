@@ -699,36 +699,34 @@ class EnemyAI:
         angle_diff = (desired_angle - current_angle + 180) % 360 - 180
 
         # Calculate stopping distance with current angular velocity
-        # This is the angle the ship would rotate through before stopping
         moment_of_inertia = 0.5 * self.ship.mass * self.ship.radius**2
         rotation_accel = self.ship.rotation_thrust / moment_of_inertia
-        stopping_distance = (angular_velocity * abs(angular_velocity)) / (2 * rotation_accel)
+        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
 
-        # Calculate the actual stopping point based on direction of rotation
-        if angular_velocity >= 0:  # Moving counterclockwise
-            stopping_point = (current_angle + stopping_distance) % 360
-        else:  # Moving clockwise
-            stopping_point = (current_angle - stopping_distance) % 360
+        # Predict where we would stop if we start decelerating now
+        stopping_point = (current_angle + stopping_distance) % 360
+
+        # Calculate the angle difference between where we would stop and the desired angle
+        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
 
         # If within small angle and velocity is low enough, don't rotate
         if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ALGULAR_VEL:
             return RotationState.NONE
 
-        # Check if we'll overshoot by comparing stopping point to desired angle
         if angular_velocity > 0:  # Moving counterclockwise
-            # Calculate angle from stopping point to desired angle (-180 to 180)
-            remaining_after_stop = (desired_angle - stopping_point + 180) % 360 - 180
-            if remaining_after_stop < 0:  # Stopping point is past desired angle
-                return RotationState.RIGHT  # Brake counterclockwise rotation
-            return RotationState.LEFT
-        elif angular_velocity < 0:  # Moving clockwise
-            # Calculate angle from stopping point to desired angle (-180 to 180)
-            remaining_after_stop = (desired_angle - stopping_point + 180) % 360 - 180
-            if remaining_after_stop > 0:  # Stopping point is past desired angle
-                return RotationState.LEFT  # Brake clockwise rotation
-            return RotationState.RIGHT
-        else:  # Not moving
-            return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
+            if stopping_diff > 0:  # We would stop before reaching the desired angle
+                return RotationState.LEFT  # Continue accelerating counterclockwise
+            # We would stop past the desired angle
+            return RotationState.RIGHT  # Start decelerating
+
+        if angular_velocity < 0:  # Moving clockwise
+            if stopping_diff < 0:  # We would stop before reaching the desired angle
+                return RotationState.RIGHT  # Continue accelerating clockwise
+            # We would stop past the desired angle
+            return RotationState.LEFT  # Start decelerating
+
+        # If not moving yet, choose direction based on shortest angle
+        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
 
     def _execute_search(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for search behavior."""
