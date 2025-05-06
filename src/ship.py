@@ -593,6 +593,22 @@ class MarkovEnemy(BulletEnemy):
     _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
+class ThrustState(Enum):
+    """Possible thrust states for the ship."""
+
+    NONE = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
+class RotationState(Enum):
+    """Possible rotation states for the ship."""
+
+    NONE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+
 class EnemyAI:
     """AI for enemy ships."""
 
@@ -644,23 +660,20 @@ class EnemyAI:
             else:
                 self._transition_simple()
 
-        goal_direction, thruster = self._match()
+        rotation_state, thrust_state = self._match()
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
-        # Determine which way to turn (left or right)
-        current_angle = self.ship.angle
-        target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
-        angle_diff = (target_angle - current_angle + 180) % 360 - 180
+        # Apply Thrusters
+        self.ship.increment_rot_counters(
+            left=rotation_state == RotationState.LEFT, right=rotation_state == RotationState.RIGHT
+        )
+        self.ship.thruster_forward = thrust_state == ThrustState.FORWARD
+        self.ship.thruster_backward = thrust_state == ThrustState.BACKWARD
 
-        left = angle_diff > SMALL_ANGLE
-        right = angle_diff < -SMALL_ANGLE
-        self.ship.increment_rot_counters(left, right)
-        self.ship.thruster_forward = thruster
-
-    def _match(self) -> tuple[Vec2, bool]:
-        """Match and then, execute behavior based on current state."""
-        desired_direction: Vec2 = Vec2(0, 0)
-        thruster: bool = False
+    def _match(self) -> tuple[RotationState, ThrustState]:
+        """Match current state to behavior."""
+        desired_direction = Vec2(0, 0)
+        thruster = ThrustState.BACKWARD
         match self.current_state:
             case AIState.SEARCH:
                 desired_direction, thruster = self._execute_search()
@@ -672,27 +685,46 @@ class EnemyAI:
                 desired_direction, thruster = self._execute_retreat()
             case AIState.RANDOM:
                 desired_direction, thruster = self._execute_randomly()
-        return desired_direction, thruster
 
-    def _execute_search(self) -> tuple[Vec2, bool]:
-        """Return force required for the search-behavior."""
+        rotation_state = self._calculate_rotation(desired_direction)
+
+        return rotation_state, thruster
+
+    def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+        """Calculate rotation state based on current angle and desired angle."""
+        current_angle = self.ship.angle
+
+        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
+        # Calculate angle difference (-180 to 180)
+        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
+
+        # Determine rotation direction
+        if abs(angle_diff) < SMALL_ANGLE:
+            return RotationState.NONE  # Already facing desired direction
+        if angle_diff > 0:
+            return RotationState.LEFT  # Turn counter-clockwise
+        return RotationState.RIGHT  # Turn clockwise
+
+    def _execute_search(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for search behavior."""
         delta = self.ship.target.pos_relative_to(self.ship)
         relative_velocity = self.ship.vel_relative_to(self.ship.target)
 
         desired_relative_vel = delta.normalize() * DESIRED_APPROACH_SPEED
         desired_direction = desired_relative_vel - relative_velocity
 
-        thruster = relative_velocity.length() < DESIRED_APPROACH_SPEED
+        thruster = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
+
         return desired_direction, thruster
 
-    def _execute_attack(self) -> tuple[Vec2, bool]:
-        """Return force required for the attack-behavior."""
+    def _execute_attack(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for attack behavior."""
         desired_direction = self.ship.target.pos_relative_to(self.ship)
-        thruster = not self.can_see_target
+        thruster = ThrustState.FORWARD if not self.can_see_target else ThrustState.BACKWARD
         return desired_direction, thruster
 
-    def _execute_aim(self) -> tuple[Vec2, bool]:
-        """Return force required for the aim-behavior."""
+    def _execute_aim(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for aim behavior."""
         # Relative position and velocity
         relative_pos = self.ship.target.pos_relative_to(self.ship)
         relative_vel = self.ship.target.vel_relative_to(self.ship)
@@ -721,8 +753,8 @@ class EnemyAI:
         if discriminant < 0:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0), True
+            intercept_vector = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
+            return intercept_vector, ThrustState.NONE
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -743,16 +775,16 @@ class EnemyAI:
         # Calculate predicted position
         if intercept_time <= 0:
             # Fallback if no solution found
-            return relative_pos.normalize(), True
-        thruster = not self.can_see_target
+            return relative_pos.normalize(), ThrustState.NONE
+        thruster = ThrustState.FORWARD if not self.can_see_target else ThrustState.BACKWARD
         # Now calculate what direction the bullet must be fired in
         return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thruster
 
-    def _execute_retreat(self) -> tuple[Vec2, bool]:
-        """Return force required for the retreat-behavior."""
+    def _execute_retreat(self) -> tuple[Vec2, ThrustState]:
+        """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
-            return Vec2(0, 0), False
-        return self.ship.pos_relative_to(self.ship.target), True
+            return Vec2(0, 0), ThrustState.NONE
+        return self.ship.pos_relative_to(self.ship.target), ThrustState.FORWARD
 
-    def _execute_randomly(self) -> tuple[Vec2, bool]:
-        return self.seek_towards.pos_relative_to(self.ship), True
+    def _execute_randomly(self) -> tuple[Vec2, ThrustState]:
+        return self.seek_towards.pos_relative_to(self.ship), ThrustState.FORWARD
