@@ -340,7 +340,6 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        self.do_rotation_simple()
         if self.thruster_rot_L:
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_R:
@@ -530,6 +529,12 @@ class PlayerShip(Ship):
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
 
+    def step(self, dt: float) -> None:
+        """Handle player rotation and call super step."""
+        self.do_rotation_simple()
+
+        super().step(dt)
+
 
 @dataclass(kw_only=True)
 class EnemyConfig(ShipConfig):
@@ -664,9 +669,8 @@ class EnemyAI:
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
         # Apply Thrusters
-        self.ship.increment_rot_counters(
-            left=rotation_state == RotationState.LEFT, right=rotation_state == RotationState.RIGHT
-        )
+        self.ship.thruster_rot_L = rotation_state == RotationState.LEFT
+        self.ship.thruster_rot_R = rotation_state == RotationState.RIGHT
         self.ship.thruster_forward = thrust_state == ThrustState.FORWARD
         self.ship.thruster_backward = thrust_state == ThrustState.BACKWARD
 
