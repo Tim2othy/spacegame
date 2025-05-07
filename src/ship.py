@@ -751,29 +751,21 @@ class EnemyAI:
         desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
         desired_direction = desired_relative_vel - relative_velocity
 
-        thruster = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
+        thrust_state = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
 
-        return desired_direction, thruster
+        return desired_direction, thrust_state
 
     def _execute_attack(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for attack behavior."""
-        rel_vel = self.ship.vel_relative_to(self.ship.target)
-
-        # Project relative velocity onto the desired direction:
-        approach_speed = rel_vel.dot(self.delta_target.normalize())
-
-        thruster = (
-            ThrustState.FORWARD
-            if approach_speed < APPROACH_LOWER
-            else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
-        )
-        return self.delta_target, thruster
+        thrust_state = self._keep_distance()
+        return self.delta_target, thrust_state
 
     def _execute_aim(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for aim behavior."""
         # Relative position and velocity
         relative_pos = self.delta_target
         relative_vel = self.ship.target.vel_relative_to(self.ship)
+        thrust_state = self._keep_distance()
 
         """
         We need to find the direction where:
@@ -800,7 +792,7 @@ class EnemyAI:
             # No real solution exists (target unreachable)
             # Fall back to simpler approach
             intercept_vector = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-            return intercept_vector, ThrustState.NONE
+            return intercept_vector, thrust_state
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -821,10 +813,9 @@ class EnemyAI:
         # Calculate predicted position
         if intercept_time <= 0:
             # Fallback if no solution found
-            return relative_pos.normalize(), ThrustState.NONE
-        thruster = ThrustState.FORWARD if not self.can_see_target else ThrustState.BACKWARD
+            return relative_pos.normalize(), thrust_state
         # Now calculate what direction the bullet must be fired in
-        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thruster
+        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thrust_state
 
     def _execute_retreat(self) -> tuple[Vec2, ThrustState]:
         """Return desired angle and thrust state for retreat behavior."""
@@ -842,3 +833,12 @@ class EnemyAI:
         desired_direction = self.delta_target - relative_vel
 
         return desired_direction, ThrustState.FORWARD
+
+    def _keep_distance(self) -> ThrustState:
+        rel_vel = self.ship.vel_relative_to(self.ship.target)
+        approach_speed = rel_vel.dot(self.delta_target.normalize())
+        return (
+            ThrustState.FORWARD
+            if approach_speed < APPROACH_LOWER
+            else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
+        )
