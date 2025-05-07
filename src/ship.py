@@ -627,6 +627,7 @@ class EnemyAI:
         self.current_state = AIState.SEARCH
         self.action_timer = 0.0
         self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+        self.delta_target = self.ship.target.pos_relative_to(self.ship)
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -743,10 +744,9 @@ class EnemyAI:
 
     def _execute_search(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for search behavior."""
-        delta = self.ship.target.pos_relative_to(self.ship)
         relative_velocity = self.ship.vel_relative_to(self.ship.target)
 
-        desired_relative_vel = delta.normalize() * DESIRED_APPROACH_SPEED
+        desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
         desired_direction = desired_relative_vel - relative_velocity
 
         thruster = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
@@ -755,24 +755,22 @@ class EnemyAI:
 
     def _execute_attack(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for attack behavior."""
-        desired_direction = self.ship.target.pos_relative_to(self.ship)
-
         rel_vel = self.ship.vel_relative_to(self.ship.target)
 
         # Project relative velocity onto the desired direction:
-        approach_speed = rel_vel.dot(desired_direction.normalize())
+        approach_speed = rel_vel.dot(self.delta_target.normalize())
 
         thruster = (
             ThrustState.FORWARD
             if approach_speed < APPROACH_LOWER
             else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
         )
-        return desired_direction, thruster
+        return self.delta_target, thruster
 
     def _execute_aim(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for aim behavior."""
         # Relative position and velocity
-        relative_pos = self.ship.target.pos_relative_to(self.ship)
+        relative_pos = self.delta_target
         relative_vel = self.ship.target.vel_relative_to(self.ship)
 
         """
@@ -830,16 +828,15 @@ class EnemyAI:
         """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
             return Vec2(0, 0), ThrustState.NONE
-        return self.ship.pos_relative_to(self.ship.target), ThrustState.FORWARD
+        return -self.delta_target, ThrustState.FORWARD
 
     def _execute_randomly(self) -> tuple[Vec2, ThrustState]:
         return self.seek_towards.pos_relative_to(self.ship), ThrustState.FORWARD
 
     def _execute_ram(self) -> tuple[Vec2, ThrustState]:
         """Return the direction vector and thrust state for ram behavior."""
-        relative_pos = self.ship.target.pos_relative_to(self.ship)
         relative_vel = self.ship.vel_relative_to(self.ship.target)
 
-        desired_direction = relative_pos - relative_vel
+        desired_direction = self.delta_target - relative_vel
 
         return desired_direction, ThrustState.FORWARD
