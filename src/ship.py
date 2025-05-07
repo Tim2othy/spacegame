@@ -250,7 +250,7 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def do_rotation(self) -> None:
+    def do_rotation_for_player_complicated(self) -> None:
         """Rotate `self` using overly complicated method.
 
         The current implementation allows the player to press the left or right button until a desired angle is reached.
@@ -299,7 +299,7 @@ class Ship(Disk):
             self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
             self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
-    def do_rotation_simple(self) -> None:
+    def do_rotation_for_player(self) -> None:
         """Rotate `self` using overly less method.
 
         This is a simplified version of the `do_rotation()` method.
@@ -531,7 +531,7 @@ class PlayerShip(Ship):
 
     def step(self, dt: float) -> None:
         """Handle player rotation and call super step."""
-        self.do_rotation_simple()
+        self.do_rotation_for_player()
 
         super().step(dt)
 
