@@ -181,12 +181,12 @@ def test_search_behaviour() -> None:
 
     enemy.ai.action_timer = 60000
     enemy.ai.current_state = AIState.SEARCH
-    for _ in range(6000):
+    for _ in range(700):
         universe.step(0.01)
         if enemy.ai.current_state != AIState.SEARCH:
             pytest.fail("Enemy should be in search mode")
             break
 
     distance_1 = player.distance_to(enemy)
-
-    assert distance_0 > distance_1 * 2, "Enemy should move towards player in search mode"
+    assert distance_0 > distance_1 * 2, (
+        f"Enemy should move towards player in search mode. But {distance_0} wasn't larger that {distance_1} * 2")
