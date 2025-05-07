@@ -38,8 +38,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2
     assert player.health < starting_health
 
 
-# TODO: add MarkovEnemy here and make sure test passes
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
 def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
     monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
     monkeypatch.setattr(BulletEnemy, "step", lambda _self, _dt: None)
