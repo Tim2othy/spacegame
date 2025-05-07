@@ -59,13 +59,16 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     player.projectiles.extend([bullet_up, bullet_right, bullet_down])
 
-    # Also try shooting the enemy on the right with enemy bullets (hopefully won't work)
+    # Also try shooting the enemy on the right with enemy bullets
+    # (hopefully works because enemies can now hit each other)
+    # We need an enemy here that's always a BulletEnemy as Rockets and Missiles fly towards the player so won't hit the other Enemy Ships
+    enemy_shooter = universe.add_enemy(
+        EnemyConfig(relative_pos=Vec2(700, 700), target_ship=player), BulletEnemy, relative_to=player
+    )
 
     enemy_up.projectiles.extend(
         [
-            enemy_up.new_bullet(enemy_right.pos_relative_to(enemy_up) - Vec2(1, 0), Vec2(0.1, 0)),
-            enemy_right.new_bullet(-Vec2(1, 0), Vec2(0.1, 0)),
-            enemy_down.new_bullet(enemy_right.pos_relative_to(enemy_down) - Vec2(1, 0), Vec2(0.1, 0)),
+            enemy_shooter.new_bullet(enemy_right.pos_relative_to(enemy_shooter) - Vec2(1, 0), Vec2(0.1, 0)),
         ]
     )
 
@@ -75,7 +78,7 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     assert len(player.projectiles) == 0, "All player-bullets should have hit something"
     assert enemy_up.health == HEALTH, "The enemy on the top should be unharmed"
-    assert enemy_right.health == HEALTH, "The enemy on the right should be unharmed"
+    assert enemy_right.health < HEALTH, "The enemy on the right should have been hit by an enemy bullet"
     assert enemy_down.health < HEALTH, "The enemy on the bottom should be harmed"
 
 
