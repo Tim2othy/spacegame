@@ -673,6 +673,8 @@ class EnemyAI:
             else:
                 self._transition_simple()
 
+        self.delta_target = self.ship.target.pos_relative_to(self.ship)
+
         rotation_state, thrust_state = self._match()
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
