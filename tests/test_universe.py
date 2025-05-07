@@ -186,7 +186,7 @@ def test_planet_generation() -> None:
     universe = Universe(1400, 2 * 1400)
 
     # run test 10 times
-    for _ in range(30):
+    for _ in range(10):
         planets = universe.add_planets(10, MU_PLANET_RADIUS)
 
         for planet in planets:

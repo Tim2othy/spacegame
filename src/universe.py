@@ -24,8 +24,8 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-MU_PLANET_RADIUS = 5.8
-SIGMA_PLANET_RADIUS = 0.25
+MU_PLANET_RADIUS = 5.7
+SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
 GRID_RADIAL_SPACING = 1000
