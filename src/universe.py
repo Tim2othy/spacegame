@@ -24,7 +24,8 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-SIGMA_PLANET_RADIUS = 0.3
+MU_PLANET_RADIUS = 5.8
+SIGMA_PLANET_RADIUS = 0.27
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
 GRID_RADIAL_SPACING = 1000
@@ -133,7 +134,7 @@ class Universe:
         star_size = 200 if options.small else 1400
         num_enemies = 0 if options.small else 20
         num_planets = 0 if options.small else 10
-        planet_size_parameter = 4.0 if options.small else 5.9
+        planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
 
         universe = Universe(star_size, 1000)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
