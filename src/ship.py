@@ -53,6 +53,8 @@ ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
 SMALL_ANGLE = 5
+APPROACH_LOWER = 10
+APPROACH_UPPER = 60
 
 
 class AIState(Enum):
@@ -749,9 +751,15 @@ class EnemyAI:
         desired_direction = self.ship.target.pos_relative_to(self.ship)
 
         rel_vel = self.ship.vel_relative_to(self.ship.target)
-        current_speed = rel_vel.length()
-        thruster = ThrustState.FORWARD if current_speed < DESIRED_APPROACH_SPEED else ThrustState.BACKWARD
 
+        # Project relative velocity onto the desired direction:
+        approach_speed = rel_vel.dot(desired_direction.normalize())
+
+        thruster = (
+            ThrustState.FORWARD
+            if approach_speed < APPROACH_LOWER
+            else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
+        )
         return desired_direction, thruster
 
     def _execute_aim(self) -> tuple[Vec2, ThrustState]:
