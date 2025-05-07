@@ -153,19 +153,19 @@ def test_randomly_behaviour() -> None:
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(1000, 0), target_ship=player), BulletEnemy)
-    distance_squared_0 = player.distance_squared_to(enemy)
+    distance_0 = player.distance_to(enemy)
 
     for _ in range(6000):
         enemy.ai.current_state = AIState.RANDOM
         universe.step(0.01)
 
-    distance_squared_1 = player.distance_squared_to(enemy)
-    print(distance_squared_0**0.5)
-    print(distance_squared_1**0.5)
+    distance_1 = player.distance_to(enemy)
+    print(distance_0)
+    print(distance_1)
     print(enemy.ai.seek_towards)
     assert 4 == 5
 
-    assert distance_squared_0 > distance_squared_1, "Enemy should move towards player in random mode"
+    assert distance_0 > distance_1, "Enemy should move towards player in random mode"
 
 
 def test_search_behaviour() -> None:
