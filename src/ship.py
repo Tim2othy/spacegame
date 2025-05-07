@@ -763,13 +763,8 @@ class EnemyAI:
         return self.delta_target, thrust_state
 
     def _execute_aim(self) -> tuple[Vec2, ThrustState]:
-        """Return desired direction and thrust state for aim behavior."""
-        # Relative position and velocity
-        relative_pos = self.delta_target
-        relative_vel = self.delta_target_vel
-        thrust_state = self._keep_distance()
+        """Return desired direction and thrust state for aim behavior.
 
-        """
         We need to find the direction where:
             target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
         Which is equivalent to:
@@ -781,6 +776,10 @@ class EnemyAI:
         This expands to:
             |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
         """
+        # Relative position and velocity
+        relative_pos = self.delta_target
+        relative_vel = self.delta_target_vel
+        thrust_state = self._keep_distance()
 
         # Quadratic equation coefficients:
         a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
@@ -791,8 +790,7 @@ class EnemyAI:
         discriminant = b**2 - 4 * a * c
 
         if discriminant < 0:
-            # No real solution exists (target unreachable)
-            # Fall back to simpler approach
+            # No real solution exists (target unreachable), Fall back to simpler approach
             intercept_vector = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
             return intercept_vector, thrust_state
 
@@ -808,16 +806,10 @@ class EnemyAI:
         elif t2 > 0:
             intercept_time = t2
         else:
-            # No positive solution, target moving too fast or in wrong direction
-            # Fall back to simple leading shot
-            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED
+            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED  # No positive solution: use fallback
 
-        # Calculate predicted position
-        if intercept_time <= 0:
-            # Fallback if no solution found
-            return relative_pos.normalize(), thrust_state
-        # Now calculate what direction the bullet must be fired in
-        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thrust_state
+        desired_direction = relative_pos + relative_vel * intercept_time
+        return desired_direction, thrust_state
 
     def _execute_retreat(self) -> tuple[Vec2, ThrustState]:
         """Return desired angle and thrust state for retreat behavior."""
