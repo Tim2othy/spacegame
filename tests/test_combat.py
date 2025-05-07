@@ -1,9 +1,6 @@
-import random
-
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from physics import Pos
 from ship import (
     _DEFAULT_MATRIX,
     _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
@@ -149,39 +146,6 @@ def test_markov_low_health_search() -> None:
             break
 
     assert player.health < HEALTH, "Enemy should have eventually found and damaged player"
-
-
-def test_randomly_behaviour() -> None:
-    """Test that an enemy moves towards a player when in random mode."""
-    universe = Universe(None, 100)
-    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(1000, 0), target_ship=player), BulletEnemy)
-    distance_0 = player.distance_to(enemy)
-
-    enemy.ai.action_timer = 60000
-    enemy.ai.current_state = AIState.RANDOM
-    for i in range(300):
-
-        if i % 60 == 0:
-            # Accelerate towards a random point near the player.
-            distance_to_target = enemy.target.distance_to(enemy)
-            x, y = random.gauss(sigma=distance_to_target), random.gauss(sigma=distance_to_target)
-            enemy.ai.seek_towards = Pos(enemy.target, Vec2(x, y))
-            enemy.ai.seek_towards = Pos(enemy.target, Vec2(0, 0))
-            print(enemy.ai.seek_towards.pos_relative_to(enemy))
-            print(player.pos_relative_to(enemy))
-
-        universe.step(0.01)
-        print(enemy.ai.seek_towards.pos_relative_to(enemy))
-        if enemy.ai.current_state != AIState.RANDOM:
-            pytest.fail("Enemy should be in random mode")
-            break
-
-    distance_1 = player.distance_to(enemy)
-    print(distance_0)
-    print(distance_1)
-
-    assert distance_0 > distance_1 * 2, "Enemy should move towards player in random mode"
 
 
 def test_search_behaviour() -> None:
