@@ -55,6 +55,7 @@ DESIRED_APPROACH_SPEED = 500
 SMALL_ANGLE = 5
 APPROACH_LOWER = 10
 APPROACH_UPPER = 60
+RAM_PROBABILITY = 0.3
 
 
 class AIState(Enum):
@@ -65,6 +66,7 @@ class AIState(Enum):
     AIM = auto()
     RETREAT = auto()
     RANDOM = auto()
+    RAM = auto()
 
 
 type MatrixRow = dict[AIState, float]
@@ -647,6 +649,9 @@ class EnemyAI:
         self.current_state = random.choices(states, probabilities)[0]
 
     def _transition_simple(self) -> None:
+        if random.random() < RAM_PROBABILITY:
+            self.current_state = AIState.RAM
+            return
         if self.can_see_target:
             self.current_state = AIState.ATTACK
         else:
@@ -691,6 +696,8 @@ class EnemyAI:
                 desired_direction, thrust_state = self._execute_retreat()
             case AIState.RANDOM:
                 desired_direction, thrust_state = self._execute_randomly()
+            case AIState.RAM:
+                desired_direction, thrust_state = self._execute_ram()
 
         rotation_state = self._calculate_rotation(desired_direction)
 
@@ -827,3 +834,12 @@ class EnemyAI:
 
     def _execute_randomly(self) -> tuple[Vec2, ThrustState]:
         return self.seek_towards.pos_relative_to(self.ship), ThrustState.FORWARD
+
+    def _execute_ram(self) -> tuple[Vec2, ThrustState]:
+        """Return the direction vector and thrust state for ram behavior."""
+        relative_pos = self.ship.target.pos_relative_to(self.ship)
+        relative_vel = self.ship.vel_relative_to(self.ship.target)
+
+        desired_direction = relative_pos - relative_vel
+
+        return desired_direction, ThrustState.FORWARD
