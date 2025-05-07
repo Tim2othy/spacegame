@@ -747,7 +747,11 @@ class EnemyAI:
     def _execute_attack(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for attack behavior."""
         desired_direction = self.ship.target.pos_relative_to(self.ship)
-        thruster = ThrustState.FORWARD
+
+        rel_vel = self.ship.vel_relative_to(self.ship.target)
+        current_speed = rel_vel.length()
+        thruster = ThrustState.FORWARD if current_speed < DESIRED_APPROACH_SPEED else ThrustState.BACKWARD
+
         return desired_direction, thruster
 
     def _execute_aim(self) -> tuple[Vec2, ThrustState]:
