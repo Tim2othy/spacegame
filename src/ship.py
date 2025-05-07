@@ -628,6 +628,7 @@ class EnemyAI:
         self.action_timer: float = 0.0
         self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
         self.delta_target: Vec2 = Vec2(1, 1)
+        self.delta_target_vel: Vec2 = Vec2(1, 1)
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -674,6 +675,7 @@ class EnemyAI:
                 self._transition_simple()
 
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
+        self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
 
         rotation_state, thrust_state = self._match()
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
@@ -746,7 +748,7 @@ class EnemyAI:
 
     def _execute_search(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for search behavior."""
-        relative_velocity = self.ship.vel_relative_to(self.ship.target)
+        relative_velocity = -self.delta_target_vel
 
         desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
         desired_direction = desired_relative_vel - relative_velocity
@@ -764,7 +766,7 @@ class EnemyAI:
         """Return desired direction and thrust state for aim behavior."""
         # Relative position and velocity
         relative_pos = self.delta_target
-        relative_vel = self.ship.target.vel_relative_to(self.ship)
+        relative_vel = self.delta_target_vel
         thrust_state = self._keep_distance()
 
         """
@@ -828,15 +830,11 @@ class EnemyAI:
 
     def _execute_ram(self) -> tuple[Vec2, ThrustState]:
         """Return the direction vector and thrust state for ram behavior."""
-        relative_vel = self.ship.vel_relative_to(self.ship.target)
-
-        desired_direction = self.delta_target - relative_vel
-
+        desired_direction = self.delta_target + self.delta_target_vel
         return desired_direction, ThrustState.FORWARD
 
     def _keep_distance(self) -> ThrustState:
-        rel_vel = self.ship.vel_relative_to(self.ship.target)
-        approach_speed = rel_vel.dot(self.delta_target.normalize())
+        approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
         return (
             ThrustState.FORWARD
             if approach_speed < APPROACH_LOWER
