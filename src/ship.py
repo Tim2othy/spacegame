@@ -768,13 +768,8 @@ class EnemyAI:
             self.x, self.y = random.gauss(
                 sigma=math.sqrt(distance_to_target)), random.gauss(sigma=math.sqrt(distance_to_target)) * 0.2
 
-        desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
-        desired_direction = desired_relative_vel + self.delta_target_vel
-
-        thrust_state = ThrustState.FORWARD if (
-            self.delta_target_vel.length() < DESIRED_APPROACH_SPEED) else ThrustState.NONE
-
-        return desired_direction+ Vec2(self.x,self.y), thrust_state
+        desired_direction, thrust_state = self._execute_search()
+        return desired_direction + Vec2(self.x,self.y), thrust_state
 
 
     def _execute_ram(self) -> tuple[Vec2, ThrustState]:
