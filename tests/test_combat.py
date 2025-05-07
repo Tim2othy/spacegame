@@ -35,7 +35,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2
         if player.health < starting_health:
             break
 
-    assert player.health < starting_health
+    assert player.health < starting_health, "The player should have been hit by the enemy"
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
