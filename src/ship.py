@@ -575,7 +575,8 @@ class EnemyAI:
         self.can_see_target: bool = False
         self.delta_target: Vec2 = Vec2(1, 1)
         self.delta_target_vel: Vec2 = Vec2(1, 1)
-
+        self.x: float = 0
+        self.y: float = 0
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         # Get context information
@@ -599,14 +600,9 @@ class EnemyAI:
     def _transition_simple(self) -> None:
         if random.random() < RAM_PROBABILITY:
             self.current_state = AIState.RAM
-            return
-        if self.can_see_target:
+        elif self.can_see_target:
             self.current_state = AIState.ATTACK
         else:
-            # Accelerate towards a random point near the player.
-            distance_to_target = self.ship.target.distance_to(self.ship)
-            x, y = random.gauss(sigma=distance_to_target), random.gauss(sigma=distance_to_target)
-            self.seek_towards = Pos(self.ship.target, Vec2(x, y))
             self.current_state = AIState.RANDOM
 
     def step(self, dt: float) -> None:
@@ -766,7 +762,20 @@ class EnemyAI:
         return -self.delta_target, ThrustState.FORWARD
 
     def _execute_randomly(self) -> tuple[Vec2, ThrustState]:
-        return self.seek_towards.pos_relative_to(self.ship), ThrustState.FORWARD
+        """Return desired direction and thrust state for random behavior."""
+        if random.random() < 1/60:
+            distance_to_target = self.delta_target.length()
+            self.x, self.y = random.gauss(
+                sigma=math.sqrt(distance_to_target)), random.gauss(sigma=math.sqrt(distance_to_target)) * 0.2
+
+        desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
+        desired_direction = desired_relative_vel + self.delta_target_vel
+
+        thrust_state = ThrustState.FORWARD if (
+            self.delta_target_vel.length() < DESIRED_APPROACH_SPEED) else ThrustState.NONE
+
+        return desired_direction+ Vec2(self.x,self.y), thrust_state
+
 
     def _execute_ram(self) -> tuple[Vec2, ThrustState]:
         """Return the direction vector and thrust state for ram behavior."""

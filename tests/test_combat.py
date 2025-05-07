@@ -148,6 +148,29 @@ def test_markov_low_health_search() -> None:
     assert player.health < HEALTH, "Enemy should have eventually found and damaged player"
 
 
+
+def test_randomly_behaviour() -> None:
+    """Test that an enemy moves towards a player when in random mode."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(30, 50)))
+    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(1000, 0), target_ship=player), BulletEnemy)
+
+    distance_0 = player.distance_to(enemy)
+
+    enemy.ai.action_timer = 60000
+    enemy.ai.current_state = AIState.RANDOM
+    for _ in range(700):
+        universe.step(0.01)
+        if enemy.ai.current_state != AIState.RANDOM:
+            pytest.fail("Enemy should be in random mode")
+            break
+
+    distance_1 = player.distance_to(enemy)
+    assert distance_0 > distance_1 * 2, (
+        f"Enemy should move towards player. But {distance_0} wasn't larger that {distance_1} * 2")
+
+
+
 def test_search_behaviour() -> None:
     """Test that an enemy moves towards a player when in search mode."""
     universe = Universe(None, 100)
