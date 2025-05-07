@@ -623,11 +623,11 @@ class EnemyAI:
 
     def __init__(self, ship: BulletEnemy) -> None:
         """Create a new AI controller."""
-        self.ship = ship
+        self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
-        self.action_timer = 0.0
-        self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
-        self.delta_target = self.ship.target.pos_relative_to(self.ship)
+        self.action_timer: float = 0.0
+        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+        self.delta_target: Vec2 = Vec2(1, 1)
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
