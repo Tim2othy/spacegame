@@ -3,7 +3,7 @@ from math import tau
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
-from ship import Ship, ShipConfig
+from ship import PlayerConfig, PlayerShip, Ship, ShipConfig
 
 EPSILON = 1e-8
 
@@ -31,7 +31,7 @@ def test_shooting() -> None:
 
 
 def test_movement() -> None:
-    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
+    ship = PlayerShip(ORIGIN, PlayerConfig(relative_pos=Vec2(0, 0)))
     ship.increment_rot_counters(left=True, right=False)
     ship.step(0.01)
     ship.thruster_forward = True
@@ -46,7 +46,7 @@ def test_ship_rotation() -> None:
     ship.angle reaches ~70. Then release the input, allow the ship to decelerate,
     and verify that the maximum angle is near 140° and the final angle settles near 70°.
     """
-    ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
+    ship = PlayerShip(ORIGIN, PlayerConfig(relative_pos=Vec2(0, 0)))
     ship.angle = 0.0
     dt = 0.01
     max_angle = ship.angle
