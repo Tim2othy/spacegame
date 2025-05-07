@@ -166,3 +166,24 @@ def test_randomly_behaviour() -> None:
     assert 4 == 5
 
     assert distance_squared_0 > distance_squared_1, "Enemy should move towards player in random mode"
+
+
+def test_search_behaviour() -> None:
+    """Test that an enemy moves towards a player when in search mode."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
+    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(1000, 0), target_ship=player), MarkovEnemy)
+
+    distance_0 = player.distance_to(enemy)
+
+    enemy.ai.action_timer = 60000
+    enemy.ai.current_state = AIState.SEARCH
+    for _ in range(6000):
+        universe.step(0.01)
+        if enemy.ai.current_state != AIState.SEARCH:
+            pytest.fail("Enemy should be in search mode")
+            break
+
+    distance_1 = player.distance_to(enemy)
+
+    assert distance_0 > distance_1 * 2, "Enemy should move towards player in search mode"
