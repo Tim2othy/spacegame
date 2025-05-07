@@ -61,7 +61,8 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     # Also try shooting the enemy on the right with enemy bullets
     # (hopefully works because enemies can now hit each other)
-    # We need an enemy here that's always a BulletEnemy as Rockets and Missiles fly towards the player so won't hit the other Enemy Ships
+    # We need an enemy here that's always a BulletEnemy as Rockets and Missiles fly
+    # towards the player so won't hit the other Enemy Ships
     enemy_shooter = universe.add_enemy(
         EnemyConfig(relative_pos=Vec2(700, 700), target_ship=player), BulletEnemy, relative_to=player
     )
