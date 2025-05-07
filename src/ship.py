@@ -572,7 +572,7 @@ class EnemyAI:
         self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
         self.action_timer: float = 0.0
-        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+        self.can_see_target: bool = False
         self.delta_target: Vec2 = Vec2(1, 1)
         self.delta_target_vel: Vec2 = Vec2(1, 1)
 
@@ -612,6 +612,8 @@ class EnemyAI:
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer -= dt
+        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+
         if self.action_timer <= 0:
             self.action_timer = ENEMY_ACTION_TIMER
 
