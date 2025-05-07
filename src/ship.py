@@ -46,7 +46,6 @@ GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 SMALL_ANGULAR_VEL = 5.0
 ROT_STATE_DELTA = 1.0
-ADJUSTED_ROT_STATE_DELTA = ROT_STATE_DELTA / math.sqrt(2)
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -168,10 +167,6 @@ class Ship(Disk):
         self.thruster_rot_R: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.turn_L: float = 0.0
-        self.turn_R: float = 0.0
-        self.turn_back_L: float = 0.0
-        self.turn_back_R: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -429,6 +424,10 @@ class PlayerShip(Ship):
         """Create a new player-spaceship."""
         super().__init__(relative_to, config)
         self.spaceship_input = config.ship_input
+        self.turn_L: float = 0.0
+        self.turn_R: float = 0.0
+        self.turn_back_L: float = 0.0
+        self.turn_back_R: float = 0.0
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -457,14 +456,14 @@ class PlayerShip(Ship):
             self.turn_L -= ROT_STATE_DELTA
             self.thruster_rot_L = True
         elif self.turn_back_R > 0:
-            self.turn_back_R -= ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.turn_back_R -= ROT_STATE_DELTA
             self.thruster_rot_R = True
 
         if self.turn_R > 0:
             self.turn_R -= ROT_STATE_DELTA
             self.thruster_rot_R = True
         elif self.turn_back_L > 0:
-            self.turn_back_L -= ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
+            self.turn_back_L -= ROT_STATE_DELTA
             self.thruster_rot_L = True
 
         if not (self.thruster_rot_R or self.thruster_rot_L):
@@ -475,12 +474,10 @@ class PlayerShip(Ship):
         """Increment rotation counters."""
         if left:
             self.turn_L += ROT_STATE_DELTA
-            self.turn_back_R += ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
-            self.turn_final_L += ADJUSTED_ROT_STATE_DELTA
+            self.turn_back_R += ROT_STATE_DELTA
         if right:
             self.turn_R += ROT_STATE_DELTA
-            self.turn_back_L += ROT_STATE_DELTA + ADJUSTED_ROT_STATE_DELTA
-            self.turn_final_R += ADJUSTED_ROT_STATE_DELTA
+            self.turn_back_L += ROT_STATE_DELTA
 
     def step(self, dt: float) -> None:
         """Handle player rotation and call super step."""
