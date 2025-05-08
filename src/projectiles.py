@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from camera import Camera
     from ship import Ship
 
-
 # Damage
 BULLET_DAMAGE = 16
 ROCKET_DAMAGE = 26
