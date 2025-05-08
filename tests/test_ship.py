@@ -3,7 +3,7 @@ from math import tau
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
-from ship import PlayerConfig, PlayerShip, RotationState, Ship, ShipConfig
+from ship import PlayerConfig, PlayerShip, RotationState, Ship, ShipConfig, ThrustState
 
 EPSILON = 1e-8
 
@@ -34,7 +34,7 @@ def test_movement() -> None:
     ship = PlayerShip(ORIGIN, PlayerConfig(relative_pos=Vec2(0, 0)))
     ship.increment_rot_counters(RotationState.LEFT)
     ship.step(0.01)
-    ship.thruster_forward = True
+    ship.thrust_state = ThrustState.FORWARD
     ship.step(0.01)
     assert ship.vel_relative_to(ORIGIN).x > 0, "Ship should be moving forward"
     assert ship.vel_relative_to(ORIGIN).y > 0, "Ship should be moving upward"
@@ -53,7 +53,7 @@ def test_ship_rotation() -> None:
             ship.increment_rot_counters(RotationState.LEFT)
 
         ship.step(0.01)
-        if abs(ship.angular_velocity) < 0.01 and not (ship.thruster_R or ship.thruster_L):
+        if abs(ship.angular_velocity) < 0.01 and ship.rotation_state == RotationState.NONE:
             break
 
     tol_final = 4.0
