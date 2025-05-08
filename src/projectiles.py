@@ -129,17 +129,11 @@ class Rocket(Bullet):
 
 
 class Missile(Rocket):
-    """A pentagonal bullet, homing on a target-ship."""
+    """A pentagonal bullet, homing on target-ship."""
 
     THRUST = MISSILE_HOMING_THRUST
     HOMING_DURATION = MISSILE_HOMING_DURATION
     DAMAGE = MISSILE_DAMAGE
-
-    def __init__(
-        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
-    ) -> None:
-        """Create a new Missile targeting `target_ship`."""
-        super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
