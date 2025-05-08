@@ -18,8 +18,8 @@ MISSILE_DAMAGE = 60
 FLARE_DAMAGE = 10
 # Thrust
 ROCKET_THRUST_COLOR = Color("orange")
-ROCKET_HOMING_THRUST = 300.0
-MISSILE_HOMING_THRUST = 600.0
+ROCKET_HOMING_THRUST = 1257.0
+MISSILE_HOMING_THRUST = 2513.0
 # Homing
 ROCKET_HOMING_DURATION = 2.0
 ROCKET_NONHOMING_DURATION = 2.0
@@ -72,7 +72,7 @@ class Rocket(Bullet):
         """Create a new rocket targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color)
         self.target_ship = target_ship
-        self.homing_thrust = ROCKET_HOMING_THRUST * self.mass
+        self.homing_thrust = ROCKET_HOMING_THRUST
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
@@ -148,8 +148,7 @@ class Missile(Rocket):
     ) -> None:
         """Create a new Missile targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
-        self.homing_thrust = MISSILE_HOMING_THRUST * self.mass
-        self.homing_timer = 0.0
+        self.homing_thrust = MISSILE_HOMING_THRUST
         self.homing_duration = MISSILE_HOMING_DURATION
         self.damage = MISSILE_DAMAGE
 
