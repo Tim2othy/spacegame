@@ -60,7 +60,6 @@ class Bullet(Mover):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
-        # QUESTION: You wrote that we violate relativity if we don't use forward = Vec2(1,0), why?
         forward = Vec2(1, 0) if self.relative_vel.length_squared() == 0 else self.relative_vel.normalize()
         camera.draw_polygon(
             color or self.color,
