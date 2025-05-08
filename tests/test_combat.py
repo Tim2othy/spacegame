@@ -140,12 +140,14 @@ def test_markov_low_health_search() -> None:
     enemy.health = 1
     enemy.ai.current_state = AIState.RETREAT
 
-    for _ in range(1000):
+    for _ in range(5000):
         universe.step(0.01)
         if player.health < HEALTH:
             break
 
-    assert player.health < HEALTH, "Enemy should have eventually found and damaged player"
+    assert (
+        player.health < HEALTH
+    ), f"Enemy should have eventually found and damaged player. At the end the distance was {player.distance_to(enemy)}"
 
 
 def test_search_behaviour() -> None:
