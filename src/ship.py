@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
+from physics import FUEL, SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -235,7 +235,7 @@ class Ship(Mover):
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
     def repair_refuel(self) -> None:
-        """Repair and refuel the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds."""
+        """Repair the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds. Refuel."""
         if (
             self.damage_indicator_timer > 0
             or self.rotation_state != RotationState.NONE
@@ -246,6 +246,8 @@ class Ship(Mover):
 
         self.repair_eligibility_timer += 0.01
 
+        if self.rotation_state == RotationState.NONE and self.thrust_state == ThrustState.NONE and self.fuel < FUEL:
+            self.fuel += 0.02
         if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < HEALTH:
             self.health += 0.01
 

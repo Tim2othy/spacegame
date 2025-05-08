@@ -35,6 +35,7 @@ class RotationState(Enum):
 GRAVITATIONAL_CONSTANT = 0.02
 
 GRAY = Color("gray")
+FUEL = 100
 
 
 # physics constants
@@ -260,6 +261,8 @@ class Mover(Disk):
         """Initialize a Mover, inheriting from Disk."""
         super().__init__(relative_to, relative_pos, relative_vel, radius, color)
         self.forward: Vec2 = Vec2(0, 0)
+        self.fuel: float = FUEL
+
         self.rotation_state = RotationState.NONE
         self.thrust_state = ThrustState.NONE
 
@@ -311,16 +314,22 @@ class Mover(Disk):
         """Get direction and use thrusters."""
         self.forward = self.get_faced_direction()
 
-        if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.ROTATION_THRUST, dt)
-        if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.ROTATION_THRUST, dt)
+        if self.fuel > 0.2:
+            if self.rotation_state == RotationState.LEFT:
+                self.apply_angular_force(self.ROTATION_THRUST, dt)
+            if self.rotation_state == RotationState.RIGHT:
+                self.apply_angular_force(-self.ROTATION_THRUST, dt)
 
-        force = self.forward * self.THRUST
-        if self.thrust_state == ThrustState.FORWARD:
-            self.apply_force(force, dt)
-        if self.thrust_state == ThrustState.BACKWARD:
-            self.apply_force(-force, dt)
+            force = self.forward * self.THRUST
+            if self.thrust_state == ThrustState.FORWARD:
+                self.apply_force(force, dt)
+            if self.thrust_state == ThrustState.BACKWARD:
+                self.apply_force(-force, dt)
+
+            if self.rotation_state != RotationState.NONE:
+                self.fuel -= 0.1
+            if self.thrust_state != ThrustState.NONE:
+                self.fuel -= 0.1
 
         return super().step(dt)
 
