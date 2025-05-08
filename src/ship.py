@@ -443,11 +443,10 @@ class PlayerShip(Ship):
         self.releasing_flares = keys[self.spaceship_input.release_flares]
 
     def do_rotation_for_player(self) -> None:
-        """Rotate `self` using overly less method.
+        """Activates rotation thrusters for player based on attributes modified by `increment_rot_counters()`.
 
-        This is a simplified version of the `do_rotation()` method.
-        Here, if you want to turn from 40° to 110° you have to press the left key until you reach 75°.
-        Then you automatically decelerate from  75° to 110°  and come to a stop there.
+        If you want to turn from 40° to 110° you have to press the left key until you reach 75°.
+        Then you automatically decelerate from  75° to 110° and come to a stop there.
         """
         self.thruster_rot_R = False
         self.thruster_rot_L = False
@@ -471,7 +470,7 @@ class PlayerShip(Ship):
             self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
     def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
-        """Increment rotation counters."""
+        """Increment rotation counters based on key-press info taken from `handle_input`."""
         if left:
             self.turn_L += ROT_STATE_DELTA
             self.turn_back_R += ROT_STATE_DELTA
