@@ -333,7 +333,7 @@ class Universe:
             for ship in chain(self._player_ships, self._enemy_ships):
                 if ship.intersects_disk(projectile):
                     self.create_particle_cloud(ship, 100, ship.color, 150)
-                    ship.suffer_damage(projectile.damage)
+                    ship.suffer_damage(projectile.DAMAGE)
                     return False
                 if isinstance(projectile, Missile) and any(
                     other_projectile.distance_squared_to(projectile) < 10**2

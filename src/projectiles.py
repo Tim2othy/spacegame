@@ -41,11 +41,12 @@ PROJECTILE_LIFETIME = 50.0  # Lifetime in seconds
 class Bullet(Mover):
     """A triangular bullet."""
 
+    DAMAGE = BULLET_DAMAGE
+
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
         """Create a new basic Bullet."""
         super().__init__(relative_to, relative_pos, relative_vel, 1.0)
         self.color = Color(color)
-        self.damage = BULLET_DAMAGE
         self.relative_vel = relative_vel
         self.lifetime = PROJECTILE_LIFETIME
 
@@ -72,6 +73,9 @@ class Rocket(Bullet):
 
     THRUST = ROCKET_HOMING_THRUST
     ROTATION_THRUST = PROJECTILE_ROTATION_THRUST
+    HOMING_DURATION = ROCKET_HOMING_DURATION
+    NONHOMING_DURATION = ROCKET_NONHOMING_DURATION
+    DAMAGE = ROCKET_DAMAGE
 
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
@@ -81,11 +85,9 @@ class Rocket(Bullet):
         self.target = target_ship
 
         self.homing_timer = 0.0
-        self.homing_duration = ROCKET_HOMING_DURATION
-        self.nonhoming_duration = ROCKET_NONHOMING_DURATION
-        self._cycle_duration = self.homing_duration + self.nonhoming_duration
+
+        self._cycle_duration = self.HOMING_DURATION + self.NONHOMING_DURATION
         self.color = Color(color)
-        self.damage = ROCKET_DAMAGE
         self.current_heading = Vec2(0, 0)
         self.ai = ProjectileAI(self)
 
@@ -96,7 +98,7 @@ class Rocket(Bullet):
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
-        is_homing_phase = time_in_current_cycle <= self.homing_duration
+        is_homing_phase = time_in_current_cycle <= self.HOMING_DURATION
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
@@ -136,7 +138,7 @@ class Rocket(Bullet):
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
-        is_homing_phase = time_in_current_cycle <= self.homing_duration
+        is_homing_phase = time_in_current_cycle <= self.HOMING_DURATION
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
             # Thrust flame
@@ -166,14 +168,15 @@ class Rocket(Bullet):
 class Missile(Rocket):
     """A pentagonal bullet, homing on a target-ship."""
 
+    THRUST = MISSILE_HOMING_THRUST
+    HOMING_DURATION = MISSILE_HOMING_DURATION
+    DAMAGE = MISSILE_DAMAGE
+
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
     ) -> None:
         """Create a new Missile targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
-        self.homing_thrust = MISSILE_HOMING_THRUST
-        self.homing_duration = MISSILE_HOMING_DURATION
-        self.damage = MISSILE_DAMAGE
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
@@ -197,10 +200,11 @@ class Missile(Rocket):
 class Flare(Bullet):
     """A round bullet, designed to distract other bullets, but also capable of harming enemies."""
 
+    DAMAGE = FLARE_DAMAGE
+
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2) -> None:
         """Create a new flare."""
         super().__init__(relative_to, relative_pos, relative_vel, FLARE_COLOR)
-        self.damage = FLARE_DAMAGE
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
