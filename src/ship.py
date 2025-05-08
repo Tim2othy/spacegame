@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Disk, Pos, PosVel, RotationState, ThrustState
+from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Mover, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -135,7 +135,7 @@ class ShipConfig:
     size: float = 10.0
 
 
-class Ship(Disk):
+class Ship(Mover):
     """A basic spaceship."""
 
     # Class configuration
@@ -163,12 +163,6 @@ class Ship(Disk):
 
         self.rotation_state: RotationState = RotationState.NONE
         self.thrust_state: ThrustState = ThrustState.NONE
-
-    def get_faced_direction(self) -> Vec2:
-        """Get `self`'s (normalized) faced direction from its `angle`."""
-        direction = Vec2(0, 0)
-        direction.from_polar((1, self.angle))
-        return direction
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`, relative to self."""

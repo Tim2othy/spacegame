@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Disk, Pos, PosVel, RotationState, ThrustState
+from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Mover, Pos, PosVel, RotationState, ThrustState
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -38,7 +38,7 @@ FLARE_COLOR = Color("yellow")
 PROJECTILE_LIFETIME = 50.0  # Lifetime in seconds
 
 
-class Bullet(Disk):
+class Bullet(Mover):
     """A triangular bullet."""
 
     def __init__(self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color) -> None:
@@ -164,12 +164,6 @@ class Rocket(Bullet):
                 Pos(self, 2 * (3 * forward)),
             ],
         )
-
-    def get_faced_direction(self) -> Vec2:
-        """Get `self`'s (normalized) faced direction from its `angle`."""
-        direction = Vec2(0, 0)
-        direction.from_polar((1, self.angle))
-        return direction
 
 
 class Missile(Rocket):

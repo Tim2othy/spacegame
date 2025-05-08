@@ -246,3 +246,13 @@ class Disk(PosVel):
         """Apply velocity to `self` and angular velocity to `self`."""
         self.angle += self.angular_velocity * dt
         super().step(dt)
+
+
+class Mover(Disk):
+    """A disk that can apply force to itself and move around."""
+
+    def get_faced_direction(self) -> Vec2:
+        """Get `self`'s (normalized) faced direction from its `angle`."""
+        direction = Vec2(0, 0)
+        direction.from_polar((1, self.angle))
+        return direction
