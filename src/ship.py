@@ -142,14 +142,14 @@ class Ship(Mover):
     _SHIP_COLOR = BULLET_ENEMY_COLOR
     _SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     _SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
+    THRUST = 1050000
+    ROTATION_THRUST = 132000000
 
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self._SHIP_COLOR)
 
         self.projectile_color: Color = generate_complementary_color(self._SHIP_COLOR)
-        self.thrust: float = 1050000
-        self.rotation_thrust: float = 132000000
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
@@ -160,9 +160,6 @@ class Ship(Mover):
 
         self.releasing_flares: bool = False
         self.shooting: bool = False
-
-        self.rotation_state: RotationState = RotationState.NONE
-        self.thrust_state: ThrustState = ThrustState.NONE
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`, relative to self."""
@@ -238,11 +235,11 @@ class Ship(Mover):
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.rotation_thrust, dt)
+            self.apply_angular_force(self.ROTATION_THRUST, dt)
         if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.rotation_thrust, dt)
+            self.apply_angular_force(-self.ROTATION_THRUST, dt)
 
-        force = self.forward * self.thrust
+        force = self.forward * self.THRUST
         if self.thrust_state == ThrustState.FORWARD:
             self.apply_force(force, dt)
         if self.thrust_state == ThrustState.BACKWARD:
@@ -645,7 +642,7 @@ class EnemyAI:
 
         # Calculate stopping distance with current angular velocity
         moment_of_inertia = 0.5 * self.ship.mass * self.ship.radius**2
-        rotation_accel = self.ship.rotation_thrust / moment_of_inertia
+        rotation_accel = self.ship.ROTATION_THRUST / moment_of_inertia
         stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
 
         # Predict where we would stop if we start decelerating now

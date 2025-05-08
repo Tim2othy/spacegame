@@ -70,14 +70,16 @@ class Bullet(Mover):
 class Rocket(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
+    THRUST = ROCKET_HOMING_THRUST
+    ROTATION_THRUST = PROJECTILE_ROTATION_THRUST
+
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
     ) -> None:
         """Create a new rocket targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color)
         self.target = target_ship
-        self.thrust = ROCKET_HOMING_THRUST
-        self.rotation_thrust = PROJECTILE_ROTATION_THRUST
+
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
@@ -86,9 +88,6 @@ class Rocket(Bullet):
         self.damage = ROCKET_DAMAGE
         self.current_heading = Vec2(0, 0)
         self.ai = ProjectileAI(self)
-
-        self.rotation_state = RotationState.NONE
-        self.thrust_state = ThrustState.NONE
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics."""
@@ -107,7 +106,7 @@ class Rocket(Bullet):
             force_direction = desired_velocity - self.vel_relative_to(self.target)
 
             if force_direction != Vec2(0, 0):
-                self.my_force = force_direction.normalize() * self.thrust
+                self.my_force = force_direction.normalize() * self.THRUST
 
         self.ai.step(dt)
 
@@ -117,11 +116,11 @@ class Rocket(Bullet):
     def step_thrust(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.rotation_thrust, dt)
+            self.apply_angular_force(self.ROTATION_THRUST, dt)
         if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.rotation_thrust, dt)
+            self.apply_angular_force(-self.ROTATION_THRUST, dt)
 
-        force = self.forward * self.thrust
+        force = self.forward * self.THRUST
         if self.thrust_state == ThrustState.FORWARD:
             self.apply_force(force, dt)
         if self.thrust_state == ThrustState.BACKWARD:
@@ -240,7 +239,7 @@ class ProjectileAI:
 
         # Calculate stopping distance with current angular velocity
         moment_of_inertia = 0.5 * self.projectile.mass * self.projectile.radius**2
-        rotation_accel = self.projectile.rotation_thrust / moment_of_inertia
+        rotation_accel = self.projectile.ROTATION_THRUST / moment_of_inertia
         stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
 
         # Predict where we would stop if we start decelerating now

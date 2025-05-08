@@ -257,6 +257,8 @@ class Mover(Disk):
         """Initialize a Mover, inheriting from Disk."""
         super().__init__(relative_to, relative_pos, relative_vel, radius, color)
         self.forward: Vec2 = Vec2(0, 0)
+        self.rotation_state = RotationState.NONE
+        self.thrust_state = ThrustState.NONE
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
