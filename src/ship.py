@@ -234,17 +234,6 @@ class Ship(Mover):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.ROTATION_THRUST, dt)
-        if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.ROTATION_THRUST, dt)
-
-        force = self.forward * self.THRUST
-        if self.thrust_state == ThrustState.FORWARD:
-            self.apply_force(force, dt)
-        if self.thrust_state == ThrustState.BACKWARD:
-            self.apply_force(-force, dt)
-
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
 
         super().step(dt)

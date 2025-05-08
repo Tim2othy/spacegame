@@ -251,6 +251,7 @@ class Disk(PosVel):
 class Mover(Disk):
     """A disk that can apply force to itself and move around."""
 
+    THRUST = 1.0
     ROTATION_THRUST = 1.0
 
     def __init__(
@@ -307,6 +308,18 @@ class Mover(Disk):
         return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
 
     def step(self, dt: float) -> None:
-        """Get direction and do moving logic."""
+        """Get direction and use thrusters."""
         self.forward = self.get_faced_direction()
+
+        if self.rotation_state == RotationState.LEFT:
+            self.apply_angular_force(self.ROTATION_THRUST, dt)
+        if self.rotation_state == RotationState.RIGHT:
+            self.apply_angular_force(-self.ROTATION_THRUST, dt)
+
+        force = self.forward * self.THRUST
+        if self.thrust_state == ThrustState.FORWARD:
+            self.apply_force(force, dt)
+        if self.thrust_state == ThrustState.BACKWARD:
+            self.apply_force(-force, dt)
+
         return super().step(dt)

@@ -110,22 +110,7 @@ class Rocket(Bullet):
                 self.my_force = force_direction.normalize() * self.THRUST
 
         self.ai.step(dt)
-
-        self.step_thrust(dt)
         super().step(dt)
-
-    def step_thrust(self, dt: float) -> None:
-        """Step physics, control, and `self`'s bullets."""
-        if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.ROTATION_THRUST, dt)
-        if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.ROTATION_THRUST, dt)
-
-        force = self.forward * self.THRUST
-        if self.thrust_state == ThrustState.FORWARD:
-            self.apply_force(force, dt)
-        if self.thrust_state == ThrustState.BACKWARD:
-            self.apply_force(-force, dt)
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
