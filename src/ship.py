@@ -64,7 +64,6 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
-    RANDOM = auto()
     RAM = auto()
 
 
@@ -577,6 +576,7 @@ class EnemyAI:
         self.delta_target_vel: Vec2 = Vec2(1, 1)
         self.x: float = 0
         self.y: float = 0
+
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         # Get context information
@@ -600,10 +600,8 @@ class EnemyAI:
     def _transition_simple(self) -> None:
         if random.random() < RAM_PROBABILITY:
             self.current_state = AIState.RAM
-        elif self.can_see_target:
-            self.current_state = AIState.ATTACK
         else:
-            self.current_state = AIState.RANDOM
+            self.current_state = AIState.ATTACK
 
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
@@ -643,11 +641,17 @@ class EnemyAI:
                 desired_direction, thrust_state = self._execute_aim()
             case AIState.RETREAT:
                 desired_direction, thrust_state = self._execute_retreat()
-            case AIState.RANDOM:
-                desired_direction, thrust_state = self._execute_randomly()
             case AIState.RAM:
                 desired_direction, thrust_state = self._execute_ram()
 
+        if (random.random() < (0.9)) and (not self.can_see_target):
+            distance_to_target = self.delta_target.length()
+            self.x, self.y = (
+                random.gauss(sigma=math.sqrt(distance_to_target)) * 99999,
+                random.gauss(sigma=math.sqrt(distance_to_target)) * 99999,
+            )
+
+        desired_direction += Vec2(self.x, self.y)
         rotation_state = self._calculate_rotation(desired_direction)
 
         return rotation_state, thrust_state
@@ -698,7 +702,6 @@ class EnemyAI:
         desired_direction = desired_relative_vel - relative_velocity
 
         thrust_state = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
-
         return desired_direction, thrust_state
 
     def _execute_attack(self) -> tuple[Vec2, ThrustState]:
@@ -760,17 +763,6 @@ class EnemyAI:
         if not self.can_see_target:
             return Vec2(0, 0), ThrustState.NONE
         return -self.delta_target, ThrustState.FORWARD
-
-    def _execute_randomly(self) -> tuple[Vec2, ThrustState]:
-        """Return desired direction and thrust state for random behavior."""
-        if random.random() < 1/60:
-            distance_to_target = self.delta_target.length()
-            self.x, self.y = random.gauss(
-                sigma=math.sqrt(distance_to_target)), random.gauss(sigma=math.sqrt(distance_to_target)) * 0.2
-
-        desired_direction, thrust_state = self._execute_search()
-        return desired_direction + Vec2(self.x,self.y), thrust_state
-
 
     def _execute_ram(self) -> tuple[Vec2, ThrustState]:
         """Return the direction vector and thrust state for ram behavior."""
