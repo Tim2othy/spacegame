@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Mover, Pos, PosVel, RotationState, ThrustState
+from physics import Mover, Pos, PosVel, RotationState, ThrustState
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -229,44 +228,6 @@ class ProjectileAI:
     def _match(self) -> tuple[RotationState, ThrustState]:
         """Match current state to behavior."""
         desired_direction = self.projectile.my_force
-        rotation_state = self._calculate_rotation(desired_direction)
+        rotation_state = self.projectile.calculate_rotation(desired_direction)
 
         return rotation_state, ThrustState.FORWARD
-
-    def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
-        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
-        current_angle = self.projectile.angle
-        angular_velocity = self.projectile.angular_velocity
-        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
-
-        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
-
-        # Calculate stopping distance with current angular velocity
-        moment_of_inertia = 0.5 * self.projectile.mass * self.projectile.radius**2
-        rotation_accel = self.projectile.ROTATION_THRUST / moment_of_inertia
-        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
-
-        # Predict where we would stop if we start decelerating now
-        stopping_point = (current_angle + stopping_distance) % 360
-
-        # Calculate the angle difference between where we would stop and the desired angle
-        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
-
-        # If within small angle and velocity is low enough, don't rotate
-        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
-            return RotationState.NONE
-
-        if angular_velocity > 0:  # Moving counterclockwise
-            if stopping_diff > 0:  # We would stop before reaching the desired angle
-                return RotationState.LEFT  # Continue accelerating counterclockwise
-            # We would stop past the desired angle
-            return RotationState.RIGHT  # Start decelerating
-
-        if angular_velocity < 0:  # Moving clockwise
-            if stopping_diff < 0:  # We would stop before reaching the desired angle
-                return RotationState.RIGHT  # Continue accelerating clockwise
-            # We would stop past the desired angle
-            return RotationState.LEFT  # Start decelerating
-
-        # If not moving yet, choose direction based on shortest angle
-        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
