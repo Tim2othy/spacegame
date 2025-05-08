@@ -75,6 +75,7 @@ class Rocket(Bullet):
     HOMING_DURATION = ROCKET_HOMING_DURATION
     NONHOMING_DURATION = ROCKET_NONHOMING_DURATION
     DAMAGE = ROCKET_DAMAGE
+    CYCLE_DURATION = HOMING_DURATION + NONHOMING_DURATION
 
     def __init__(
         self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
@@ -82,33 +83,11 @@ class Rocket(Bullet):
         """Create a new rocket targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color)
         self.target = target_ship
-
-        self.homing_timer = 0.0
-
-        self._cycle_duration = self.HOMING_DURATION + self.NONHOMING_DURATION
         self.color = Color(color)
-        self.current_heading = Vec2(0, 0)
         self.ai = ProjectileAI(self)
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics."""
-        self.homing_timer += dt
-        delta_target_ship = self.target.pos_relative_to(self)
-
-        current_cycle = int(self.homing_timer / self._cycle_duration)
-        time_in_current_cycle = self.homing_timer % self._cycle_duration
-        is_homing_phase = time_in_current_cycle <= self.HOMING_DURATION
-
-        # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
-            target_ship_direction = delta_target_ship.normalize()
-
-            desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
-            force_direction = desired_velocity - self.vel_relative_to(self.target)
-
-            if force_direction != Vec2(0, 0):
-                self.my_force = force_direction.normalize() * self.THRUST
-
         self.ai.step(dt)
         super().step(dt)
 
@@ -120,8 +99,8 @@ class Rocket(Bullet):
         right = -left
         backward = -forward
 
-        current_cycle = int(self.homing_timer / self._cycle_duration)
-        time_in_current_cycle = self.homing_timer % self._cycle_duration
+        current_cycle = int(self.ai.action_timer / self.CYCLE_DURATION)
+        time_in_current_cycle = self.ai.action_timer % self.CYCLE_DURATION
         is_homing_phase = time_in_current_cycle <= self.HOMING_DURATION
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
@@ -208,11 +187,28 @@ class ProjectileAI:
 
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer += dt
+        delta_target_ship = self.projectile.target.pos_relative_to(self.projectile)
+
+        current_cycle = int(self.action_timer / self.projectile.CYCLE_DURATION)
+        time_in_current_cycle = self.action_timer % self.projectile.CYCLE_DURATION
+        is_homing_phase = time_in_current_cycle <= self.projectile.HOMING_DURATION
+
+        # Only home if we're in a homing phase and haven't exceeded 3 cycles
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
+            target_ship_direction = delta_target_ship.normalize()
+
+            desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
+            force_direction = desired_velocity - self.projectile.vel_relative_to(self.projectile.target)
+
+            if force_direction != Vec2(0, 0):
+                self.my_force = force_direction.normalize() * self.projectile.THRUST
+
         self.projectile.rotation_state, self.projectile.thrust_state = self._match()
 
     def _match(self) -> tuple[RotationState, ThrustState]:
         """Match current state to behavior."""
-        desired_direction = self.projectile.my_force
+        desired_direction = self.my_force
         rotation_state = self.projectile.calculate_rotation(desired_direction)
 
         return rotation_state, ThrustState.FORWARD
