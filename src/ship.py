@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, Pos, PosVel
+from physics import SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -44,7 +44,6 @@ HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-SMALL_ANGULAR_VEL = 5.0
 ROT_STATE_DELTA = 1.0
 PROB_ADD_NOISE = 0.01
 
@@ -52,26 +51,9 @@ RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
-SMALL_ANGLE = 5
 APPROACH_LOWER = 10
 APPROACH_UPPER = 60
-RAM_PROBABILITY = 0.3
-
-
-class ThrustState(Enum):
-    """Possible thrust states for the ship."""
-
-    NONE = auto()
-    FORWARD = auto()
-    BACKWARD = auto()
-
-
-class RotationState(Enum):
-    """Possible rotation states for the ship."""
-
-    NONE = auto()
-    LEFT = auto()
-    RIGHT = auto()
+RAM_PROBABILITY = 0.2
 
 
 class AIState(Enum):
@@ -153,21 +135,21 @@ class ShipConfig:
     size: float = 10.0
 
 
-class Ship(Disk):
+class Ship(Mover):
     """A basic spaceship."""
 
     # Class configuration
     _SHIP_COLOR = BULLET_ENEMY_COLOR
     _SHIP_GUN_COOLDOWN = BULLET_RATE_OF_FIRE
     _SHIP_PROJECTILE_SPEED = BULLET_RELEASE_SPEED
+    THRUST = 1050000
+    ROTATION_THRUST = 132000000
 
     def __init__(self, relative_to: PosVel, config: ShipConfig) -> None:
         """Create a new spaceship."""
         super().__init__(relative_to, config.relative_pos, config.relative_vel, config.size, self._SHIP_COLOR)
 
         self.projectile_color: Color = generate_complementary_color(self._SHIP_COLOR)
-        self.thrust: float = 1050000
-        self.rotation_thrust: float = 132000000
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
@@ -178,15 +160,6 @@ class Ship(Disk):
 
         self.releasing_flares: bool = False
         self.shooting: bool = False
-
-        self.rotation_state: RotationState = RotationState.NONE
-        self.thrust_state: ThrustState = ThrustState.NONE
-
-    def get_faced_direction(self) -> Vec2:
-        """Get `self`'s (normalized) faced direction from its `angle`."""
-        direction = Vec2(0, 0)
-        direction.from_polar((1, self.angle))
-        return direction
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`, relative to self."""
@@ -210,8 +183,7 @@ class Ship(Disk):
 
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
-                forward = self.get_faced_direction()
-                bullet_vel = forward * self._SHIP_PROJECTILE_SPEED
+                bullet_vel = self.forward * self._SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -220,7 +192,7 @@ class Ship(Disk):
                 # by the (time since the shot was fired) * bullet_vel.
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
-                gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
+                gunbarrel_offset = self.forward * self.radius * GUNBARREL_LENGTH
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
@@ -239,15 +211,14 @@ class Ship(Disk):
             self.flare_cooldown_timer -= dt
 
             while self.flare_cooldown_timer < 0:
-                forward = self.get_faced_direction()
 
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
-                    flare_direction = forward.rotate(random_rotation)
+                    flare_direction = self.forward.rotate(random_rotation)
                     flare_vel = -flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    flare_offset = -forward * self.radius * 1.2
+                    flare_offset = -self.forward * self.radius * 1.2
 
                     self.projectiles.append(self.new_flare(flare_offset, flare_vel))
                 self.flare_cooldown_timer += FLARE_RATE_OF_FIRE
@@ -263,18 +234,6 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        if self.rotation_state == RotationState.LEFT:
-            self.apply_angular_force(self.rotation_thrust, dt)
-        if self.rotation_state == RotationState.RIGHT:
-            self.apply_angular_force(-self.rotation_thrust, dt)
-
-        forward = self.get_faced_direction()
-        force = forward * self.thrust
-        if self.thrust_state == ThrustState.FORWARD:
-            self.apply_force(force, dt)
-        if self.thrust_state == ThrustState.BACKWARD:
-            self.apply_force(-force, dt)
-
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
 
         super().step(dt)
@@ -287,7 +246,7 @@ class Ship(Disk):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
-        forward = self.get_faced_direction()
+        forward = self.forward
         right = Vec2(-forward.y, forward.x)
         left = -right
         backward = -forward
@@ -575,17 +534,15 @@ class MarkovEnemy(BulletEnemy):
     _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
-class EnemyAI:
+class EnemyAI(BasicAI):
     """AI for enemy ships."""
 
     def __init__(self, ship: BulletEnemy) -> None:
         """Create a new AI controller."""
+        super().__init__()
         self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
-        self.action_timer: float = 0.0
         self.can_see_target: bool = False
-        self.delta_target: Vec2 = Vec2(1, 1)
-        self.delta_target_vel: Vec2 = Vec2(1, 1)
         self.x: float = 0
         self.y: float = 0
 
@@ -658,47 +615,9 @@ class EnemyAI:
             )
 
         desired_direction += Vec2(self.x, self.y)
-        rotation_state = self._calculate_rotation(desired_direction)
+        rotation_state = self.ship.calculate_rotation(desired_direction)
 
         return rotation_state, thrust_state
-
-    def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
-        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
-        current_angle = self.ship.angle
-        angular_velocity = self.ship.angular_velocity
-        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
-
-        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
-
-        # Calculate stopping distance with current angular velocity
-        moment_of_inertia = 0.5 * self.ship.mass * self.ship.radius**2
-        rotation_accel = self.ship.rotation_thrust / moment_of_inertia
-        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
-
-        # Predict where we would stop if we start decelerating now
-        stopping_point = (current_angle + stopping_distance) % 360
-
-        # Calculate the angle difference between where we would stop and the desired angle
-        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
-
-        # If within small angle and velocity is low enough, don't rotate
-        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
-            return RotationState.NONE
-
-        if angular_velocity > 0:  # Moving counterclockwise
-            if stopping_diff > 0:  # We would stop before reaching the desired angle
-                return RotationState.LEFT  # Continue accelerating counterclockwise
-            # We would stop past the desired angle
-            return RotationState.RIGHT  # Start decelerating
-
-        if angular_velocity < 0:  # Moving clockwise
-            if stopping_diff < 0:  # We would stop before reaching the desired angle
-                return RotationState.RIGHT  # Continue accelerating clockwise
-            # We would stop past the desired angle
-            return RotationState.LEFT  # Start decelerating
-
-        # If not moving yet, choose direction based on shortest angle
-        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
 
     def _execute_search(self) -> tuple[Vec2, ThrustState]:
         """Return desired direction and thrust state for search behavior."""

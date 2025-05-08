@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from pygame import Color
@@ -10,6 +11,26 @@ from pygame.math import Vector2 as Vec2
 
 if TYPE_CHECKING:
     from camera import Camera
+
+SMALL_ANGLE = 5
+SMALL_ANGULAR_VEL = 5.0
+
+
+class ThrustState(Enum):
+    """Possible thrust states for the ship."""
+
+    NONE = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
+class RotationState(Enum):
+    """Possible rotation states for the ship."""
+
+    NONE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
 
 GRAVITATIONAL_CONSTANT = 0.02
 
@@ -225,3 +246,90 @@ class Disk(PosVel):
         """Apply velocity to `self` and angular velocity to `self`."""
         self.angle += self.angular_velocity * dt
         super().step(dt)
+
+
+class Mover(Disk):
+    """A disk that can apply force to itself and move around."""
+
+    THRUST = 1.0
+    ROTATION_THRUST = 1.0
+
+    def __init__(
+        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
+    ) -> None:
+        """Initialize a Mover, inheriting from Disk."""
+        super().__init__(relative_to, relative_pos, relative_vel, radius, color)
+        self.forward: Vec2 = Vec2(0, 0)
+        self.rotation_state = RotationState.NONE
+        self.thrust_state = ThrustState.NONE
+
+    def get_faced_direction(self) -> Vec2:
+        """Get `self`'s (normalized) faced direction from its `angle`."""
+        direction = Vec2(0, 0)
+        direction.from_polar((1, self.angle))
+        return direction
+
+    def calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
+        current_angle = self.angle
+        angular_velocity = self.angular_velocity
+        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
+
+        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
+
+        # Calculate stopping distance with current angular velocity
+        moment_of_inertia = 0.5 * self.mass * self.radius**2
+        rotation_accel = self.ROTATION_THRUST / moment_of_inertia
+        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
+
+        # Predict where we would stop if we start decelerating now
+        stopping_point = (current_angle + stopping_distance) % 360
+
+        # Calculate the angle difference between where we would stop and the desired angle
+        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
+
+        # If within small angle and velocity is low enough, don't rotate
+        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
+            return RotationState.NONE
+
+        if angular_velocity > 0:  # Moving counterclockwise
+            if stopping_diff > 0:  # We would stop before reaching the desired angle
+                return RotationState.LEFT  # Continue accelerating counterclockwise
+            # We would stop past the desired angle
+            return RotationState.RIGHT  # Start decelerating
+
+        if angular_velocity < 0:  # Moving clockwise
+            if stopping_diff < 0:  # We would stop before reaching the desired angle
+                return RotationState.RIGHT  # Continue accelerating clockwise
+            # We would stop past the desired angle
+            return RotationState.LEFT  # Start decelerating
+
+        # If not moving yet, choose direction based on shortest angle
+        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
+
+    def step(self, dt: float) -> None:
+        """Get direction and use thrusters."""
+        self.forward = self.get_faced_direction()
+
+        if self.rotation_state == RotationState.LEFT:
+            self.apply_angular_force(self.ROTATION_THRUST, dt)
+        if self.rotation_state == RotationState.RIGHT:
+            self.apply_angular_force(-self.ROTATION_THRUST, dt)
+
+        force = self.forward * self.THRUST
+        if self.thrust_state == ThrustState.FORWARD:
+            self.apply_force(force, dt)
+        if self.thrust_state == ThrustState.BACKWARD:
+            self.apply_force(-force, dt)
+
+        return super().step(dt)
+
+
+class BasicAI:
+    """Base class for AI."""
+
+    def __init__(self) -> None:
+        """Create a new AI controller."""
+        self.action_timer: float = 0.0
+        self.delta_target: Vec2 = Vec2(1, 1)
+        self.delta_target_vel: Vec2 = Vec2(1, 1)
