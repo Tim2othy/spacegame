@@ -323,3 +323,13 @@ class Mover(Disk):
             self.apply_force(-force, dt)
 
         return super().step(dt)
+
+
+class BasicAI:
+    """Base class for AI."""
+
+    def __init__(self) -> None:
+        """Create a new AI controller."""
+        self.action_timer: float = 0.0
+        self.delta_target: Vec2 = Vec2(1, 1)
+        self.delta_target_vel: Vec2 = Vec2(1, 1)

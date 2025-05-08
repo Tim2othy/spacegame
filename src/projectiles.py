@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Mover, Pos, PosVel, ThrustState
+from physics import BasicAI, Mover, Pos, PosVel, ThrustState
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -168,16 +168,13 @@ class Flare(Bullet):
         camera.draw_circle(color or self.color, self, 3)
 
 
-class ProjectileAI:
+class ProjectileAI(BasicAI):
     """AI for enemy ships."""
 
     def __init__(self, projectile: Rocket) -> None:
         """Create a new AI controller."""
+        super().__init__()
         self.projectile: Rocket = projectile
-        self.current_state: bool = False
-        self.action_timer: float = 0.0
-        self.delta_target: Vec2 = Vec2(1, 1)
-        self.delta_target_vel: Vec2 = Vec2(1, 1)
 
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""

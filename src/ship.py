@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import SMALL_ANGULAR_VEL, Mover, Pos, PosVel, RotationState, ThrustState
+from physics import SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -534,17 +534,15 @@ class MarkovEnemy(BulletEnemy):
     _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
-class EnemyAI:
+class EnemyAI(BasicAI):
     """AI for enemy ships."""
 
     def __init__(self, ship: BulletEnemy) -> None:
         """Create a new AI controller."""
+        super().__init__()
         self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
-        self.action_timer: float = 0.0
         self.can_see_target: bool = False
-        self.delta_target: Vec2 = Vec2(1, 1)
-        self.delta_target_vel: Vec2 = Vec2(1, 1)
         self.x: float = 0
         self.y: float = 0
 
