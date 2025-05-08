@@ -1,15 +1,19 @@
 """Projectiles, shooting through space."""
 
+from __future__ import annotations
+
+import math
 from typing import TYPE_CHECKING
 
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from camera import Camera
-from physics import Disk, Pos, PosVel
+from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Disk, Pos, PosVel, RotationState, ThrustState
 
 if TYPE_CHECKING:
+    from camera import Camera
     from ship import Ship
+
 
 # Damage
 BULLET_DAMAGE = 16
@@ -20,6 +24,7 @@ FLARE_DAMAGE = 10
 ROCKET_THRUST_COLOR = Color("orange")
 ROCKET_HOMING_THRUST = 1257.0
 MISSILE_HOMING_THRUST = 2513.0
+PROJECTILE_ROTATION_THRUST = 4000.0
 # Homing
 ROCKET_HOMING_DURATION = 2.0
 ROCKET_NONHOMING_DURATION = 2.0
@@ -67,12 +72,13 @@ class Rocket(Bullet):
     """A pentagonal bullet, homing on a target-ship."""
 
     def __init__(
-        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: "Ship"
+        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
     ) -> None:
         """Create a new rocket targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color)
-        self.target_ship = target_ship
-        self.homing_thrust = ROCKET_HOMING_THRUST
+        self.target = target_ship
+        self.thrust = ROCKET_HOMING_THRUST
+        self.rotation_thrust = PROJECTILE_ROTATION_THRUST
         self.homing_timer = 0.0
         self.homing_duration = ROCKET_HOMING_DURATION
         self.nonhoming_duration = ROCKET_NONHOMING_DURATION
@@ -80,11 +86,15 @@ class Rocket(Bullet):
         self.color = Color(color)
         self.damage = ROCKET_DAMAGE
         self.current_heading = Vec2(0, 0)
+        self.ai = ProjectileAI(self)
+
+        self.rotation_state = RotationState.NONE
+        self.thrust_state = ThrustState.NONE
 
     def step(self, dt: float) -> None:
         """Apply homing and physics-logics."""
         self.homing_timer += dt
-        delta_target_ship = self.target_ship.pos_relative_to(self)
+        delta_target_ship = self.target.pos_relative_to(self)
 
         current_cycle = int(self.homing_timer / self._cycle_duration)
         time_in_current_cycle = self.homing_timer % self._cycle_duration
@@ -95,18 +105,34 @@ class Rocket(Bullet):
             target_ship_direction = delta_target_ship.normalize()
 
             desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
-            force_direction = desired_velocity - self.vel_relative_to(self.target_ship)
+            force_direction = desired_velocity - self.vel_relative_to(self.target)
 
             if force_direction != Vec2(0, 0):
-                force = force_direction.normalize() * self.homing_thrust
-                self.current_heading = force_direction.normalize()
-                self.apply_force(force, dt)
+                self.my_force = force_direction.normalize() * self.thrust
+
+        self.ai.step(dt)
+
+        self.step_thrust(dt)
         super().step(dt)
+
+    def step_thrust(self, dt: float) -> None:
+        """Step physics, control, and `self`'s bullets."""
+        if self.rotation_state == RotationState.LEFT:
+            self.apply_angular_force(self.rotation_thrust, dt)
+        if self.rotation_state == RotationState.RIGHT:
+            self.apply_angular_force(-self.rotation_thrust, dt)
+
+        forward = self.get_faced_direction()
+        force = forward * self.thrust
+        if self.thrust_state == ThrustState.FORWARD:
+            self.apply_force(force, dt)
+        if self.thrust_state == ThrustState.BACKWARD:
+            self.apply_force(-force, dt)
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
         draw_color = color or self.color
-        forward = self.current_heading
+        forward = self.get_faced_direction()
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -139,12 +165,18 @@ class Rocket(Bullet):
             ],
         )
 
+    def get_faced_direction(self) -> Vec2:
+        """Get `self`'s (normalized) faced direction from its `angle`."""
+        direction = Vec2(0, 0)
+        direction.from_polar((1, self.angle))
+        return direction
+
 
 class Missile(Rocket):
     """A pentagonal bullet, homing on a target-ship."""
 
     def __init__(
-        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: "Ship"
+        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, color: Color, target_ship: Ship
     ) -> None:
         """Create a new Missile targeting `target_ship`."""
         super().__init__(relative_to, relative_pos, relative_vel, color, target_ship)
@@ -154,7 +186,7 @@ class Missile(Rocket):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
-        forward = self.current_heading
+        forward = self.get_faced_direction()
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -182,3 +214,64 @@ class Flare(Bullet):
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
         camera.draw_circle(color or self.color, self, 3)
+
+
+class ProjectileAI:
+    """AI for enemy ships."""
+
+    def __init__(self, projectile: Rocket) -> None:
+        """Create a new AI controller."""
+        self.projectile: Rocket = projectile
+        self.current_state: bool = False
+        self.action_timer: float = 0.0
+        self.delta_target: Vec2 = Vec2(1, 1)
+        self.delta_target_vel: Vec2 = Vec2(1, 1)
+
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.projectile.rotation_state, self.projectile.thrust_state = self._match()
+
+    def _match(self) -> tuple[RotationState, ThrustState]:
+        """Match current state to behavior."""
+        desired_direction = self.projectile.my_force
+        rotation_state = self._calculate_rotation(desired_direction)
+
+        return rotation_state, ThrustState.FORWARD
+
+    def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
+        current_angle = self.projectile.angle
+        angular_velocity = self.projectile.angular_velocity
+        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
+
+        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
+
+        # Calculate stopping distance with current angular velocity
+        moment_of_inertia = 0.5 * self.projectile.mass * self.projectile.radius**2
+        rotation_accel = self.projectile.rotation_thrust / moment_of_inertia
+        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
+
+        # Predict where we would stop if we start decelerating now
+        stopping_point = (current_angle + stopping_distance) % 360
+
+        # Calculate the angle difference between where we would stop and the desired angle
+        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
+
+        # If within small angle and velocity is low enough, don't rotate
+        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
+            return RotationState.NONE
+
+        if angular_velocity > 0:  # Moving counterclockwise
+            if stopping_diff > 0:  # We would stop before reaching the desired angle
+                return RotationState.LEFT  # Continue accelerating counterclockwise
+            # We would stop past the desired angle
+            return RotationState.RIGHT  # Start decelerating
+
+        if angular_velocity < 0:  # Moving clockwise
+            if stopping_diff < 0:  # We would stop before reaching the desired angle
+                return RotationState.RIGHT  # Continue accelerating clockwise
+            # We would stop past the desired angle
+            return RotationState.LEFT  # Start decelerating
+
+        # If not moving yet, choose direction based on shortest angle
+        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT

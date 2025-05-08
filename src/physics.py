@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 from pygame import Color
@@ -10,6 +11,26 @@ from pygame.math import Vector2 as Vec2
 
 if TYPE_CHECKING:
     from camera import Camera
+
+SMALL_ANGLE = 5
+SMALL_ANGULAR_VEL = 5.0
+
+
+class ThrustState(Enum):
+    """Possible thrust states for the ship."""
+
+    NONE = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
+class RotationState(Enum):
+    """Possible rotation states for the ship."""
+
+    NONE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
 
 GRAVITATIONAL_CONSTANT = 0.02
 

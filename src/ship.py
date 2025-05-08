@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Disk, Pos, PosVel
+from physics import SMALL_ANGLE, SMALL_ANGULAR_VEL, Disk, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -44,7 +44,6 @@ HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-SMALL_ANGULAR_VEL = 5.0
 ROT_STATE_DELTA = 1.0
 PROB_ADD_NOISE = 0.01
 
@@ -52,26 +51,9 @@ RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
-SMALL_ANGLE = 5
 APPROACH_LOWER = 10
 APPROACH_UPPER = 60
 RAM_PROBABILITY = 0.3
-
-
-class ThrustState(Enum):
-    """Possible thrust states for the ship."""
-
-    NONE = auto()
-    FORWARD = auto()
-    BACKWARD = auto()
-
-
-class RotationState(Enum):
-    """Possible rotation states for the ship."""
-
-    NONE = auto()
-    LEFT = auto()
-    RIGHT = auto()
 
 
 class AIState(Enum):
