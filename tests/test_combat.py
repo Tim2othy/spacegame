@@ -167,4 +167,4 @@ def test_search_behaviour() -> None:
     distance_1 = player.distance_to(enemy)
     assert (
         distance_0 > distance_1 * 2
-    ), f"Enemy should move towards player in search mode. But {distance_0} wasn't larger that {distance_1} * 2"
+    ), f"Enemy should move towards player in search mode. But {distance_0} wasn't larger than {distance_1} * 2"
