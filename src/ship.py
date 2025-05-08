@@ -58,6 +58,22 @@ APPROACH_UPPER = 60
 RAM_PROBABILITY = 0.3
 
 
+class ThrustState(Enum):
+    """Possible thrust states for the ship."""
+
+    NONE = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
+class RotationState(Enum):
+    """Possible rotation states for the ship."""
+
+    NONE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+
 class AIState(Enum):
     """Possible AI states for enemies chain."""
 
@@ -545,22 +561,6 @@ class MarkovEnemy(BulletEnemy):
 
     # Class configuration
     _SHIP_COLOR = MARKOV_ENEMY_COLOR
-
-
-class ThrustState(Enum):
-    """Possible thrust states for the ship."""
-
-    NONE = auto()
-    FORWARD = auto()
-    BACKWARD = auto()
-
-
-class RotationState(Enum):
-    """Possible rotation states for the ship."""
-
-    NONE = auto()
-    LEFT = auto()
-    RIGHT = auto()
 
 
 class EnemyAI:
