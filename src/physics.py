@@ -314,7 +314,7 @@ class Mover(Disk):
         """Get direction and use thrusters."""
         self.forward = self.get_faced_direction()
 
-        if self.fuel > 0.2:
+        if self.fuel > 0.2:  # noqa: PLR2004
             if self.rotation_state == RotationState.LEFT:
                 self.apply_angular_force(self.ROTATION_THRUST, dt)
             if self.rotation_state == RotationState.RIGHT:
@@ -331,7 +331,7 @@ class Mover(Disk):
             if self.thrust_state != ThrustState.NONE:
                 self.fuel -= 0.1
 
-        return super().step(dt)
+        super().step(dt)
 
 
 class BasicAI:
