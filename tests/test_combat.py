@@ -20,26 +20,6 @@ from universe import PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
-@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
-def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
-    """Verify that any enemy will eventually find and hit the player."""
-    universe = Universe(None, 100)
-    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    _enemy = universe.add_enemy(EnemyConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
-
-    starting_health = player.health
-
-    # 30 seconds
-    for _ in range(3000):
-        universe.step(0.01)
-        if player.health < starting_health:
-            break
-
-    assert player.health < starting_health
-
-
-# TODO: add MarkovEnemy here and make sure test passes
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
     monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
     monkeypatch.setattr(BulletEnemy, "step", lambda _self, _dt: None)
@@ -53,19 +33,23 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     _planet = universe.add_planet(PlanetConfig(relative_pos=Vec2(0, 250), radius=1), relative_to=player)
 
-    bullet_up = player.new_bullet(Vec2(0, 0), Vec2(0, 100))
-    bullet_right = player.new_bullet(Vec2(0, 0), Vec2(100, 0))
-    bullet_down = player.new_bullet(Vec2(0, 0), Vec2(0, -100))
+    bullet_up = player.new_bullet(Vec2(0, 50), Vec2(0, 100))
+    bullet_right = player.new_bullet(Vec2(50, 0), Vec2(100, 0))
+    bullet_down = player.new_bullet(Vec2(0, -50), Vec2(0, -100))
 
     player.projectiles.extend([bullet_up, bullet_right, bullet_down])
 
-    # Also try shooting the enemy on the right with enemy bullets (hopefully won't work)
+    # Also try shooting the enemy on the right with enemy bullets
+    # (hopefully works because enemies can now hit each other)
+    # We need an enemy here that's always a BulletEnemy as Rockets and Missiles fly
+    # towards the player so won't hit the other Enemy Ships
+    enemy_shooter = universe.add_enemy(
+        EnemyConfig(relative_pos=Vec2(700, 700), target_ship=player), BulletEnemy, relative_to=player
+    )
 
     enemy_up.projectiles.extend(
         [
-            enemy_up.new_bullet(enemy_right.pos_relative_to(enemy_up) - Vec2(1, 0), Vec2(0.1, 0)),
-            enemy_right.new_bullet(-Vec2(1, 0), Vec2(0.1, 0)),
-            enemy_down.new_bullet(enemy_right.pos_relative_to(enemy_down) - Vec2(1, 0), Vec2(0.1, 0)),
+            enemy_shooter.new_bullet(enemy_right.pos_relative_to(enemy_shooter) - Vec2(1, 0), Vec2(0.1, 0)),
         ]
     )
 
@@ -75,7 +59,7 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
 
     assert len(player.projectiles) == 0, "All player-bullets should have hit something"
     assert enemy_up.health == HEALTH, "The enemy on the top should be unharmed"
-    assert enemy_right.health == HEALTH, "The enemy on the right should be unharmed"
+    assert enemy_right.health < HEALTH, "The enemy on the right should have been hit by an enemy bullet"
     assert enemy_down.health < HEALTH, "The enemy on the bottom should be harmed"
 
 
@@ -95,7 +79,26 @@ def test_transition_matrix_sums(matrix: Matrix) -> None:
         assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"
 
 
-def test_markov_enemy_retreat_behavior() -> None:
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
+@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
+def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
+    """Verify that any enemy will eventually find and hit the player."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
+    _enemy = universe.add_enemy(EnemyConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
+
+    starting_health = player.health
+
+    # 30 seconds
+    for _ in range(3000):
+        universe.step(0.01)
+        if player.health < starting_health:
+            break
+
+    assert player.health < starting_health, "The player should have been hit by the enemy"
+
+
+def test_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
@@ -112,18 +115,20 @@ def test_markov_enemy_retreat_behavior() -> None:
         assert distance_squared_0 < distance_squared_1, "Enemy should move away from player in retreat mode"
 
 
-# TODO: Parametrise over relative velocities of player and markov enemy
-def test_markov_enemy_aim() -> None:
-    """Test that a MarkovEnemy will hit a moving player."""
+@pytest.mark.parametrize("enemy_vel", [Vec2(0, 0), Vec2(-20, 30), Vec2(40, -10)])
+@pytest.mark.parametrize("player_vel", [Vec2(0, 0), Vec2(0, 50), Vec2(-30, 20)])
+def test_aim_behaviour(player_vel: Vec2, enemy_vel: Vec2) -> None:
+    """Test that a MarkovEnemy will hit a moving player with various relative velocities."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
 
-    # Run simulation for a few seconds
+    player._add_vel(player_vel)
+    enemy._add_vel(enemy_vel)
+
     for _ in range(200):
         enemy.ai.current_state = AIState.AIM
         universe.step(0.01)
-
     assert player.health != HEALTH, "Enemy should have hit the player"
 
 
@@ -135,9 +140,33 @@ def test_markov_low_health_search() -> None:
     enemy.health = 1
     enemy.ai.current_state = AIState.RETREAT
 
-    for _ in range(1000):
+    for _ in range(5000):
         universe.step(0.01)
         if player.health < HEALTH:
             break
 
-    assert player.health < HEALTH, "Enemy should have eventually found and damaged player"
+    assert (
+        player.health < HEALTH
+    ), f"Enemy should have eventually found and damaged player. At the end the distance was {player.distance_to(enemy)}"
+
+
+def test_search_behaviour() -> None:
+    """Test that an enemy moves towards a player when in search mode."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
+    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(5000, 0), target_ship=player), MarkovEnemy)
+
+    distance_0 = player.distance_to(enemy)
+
+    enemy.ai.action_timer = 60000
+    enemy.ai.current_state = AIState.SEARCH
+    for _ in range(1000):
+        universe.step(0.01)
+        if enemy.ai.current_state != AIState.SEARCH:
+            pytest.fail("Enemy should be in search mode")
+            break
+
+    distance_1 = player.distance_to(enemy)
+    assert (
+        distance_0 > distance_1 * 2
+    ), f"Enemy should move towards player in search mode. But {distance_0} wasn't larger than {distance_1} * 2"

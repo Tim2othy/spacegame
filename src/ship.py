@@ -44,15 +44,18 @@ HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
-SMALL_ALGULAR_VEL = 5.0
-ROTATION_STATE_DELTA = 1.0
-ADJUSTED_ROTATION_STATE_DELTA = ROTATION_STATE_DELTA / math.sqrt(2)
+SMALL_ANGULAR_VEL = 5.0
+ROT_STATE_DELTA = 1.0
+PROB_ADD_NOISE = 0.01
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
 SMALL_ANGLE = 5
+APPROACH_LOWER = 10
+APPROACH_UPPER = 60
+RAM_PROBABILITY = 0.3
 
 
 class AIState(Enum):
@@ -62,7 +65,7 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
-    RANDOM = auto()
+    RAM = auto()
 
 
 type MatrixRow = dict[AIState, float]
@@ -164,12 +167,6 @@ class Ship(Disk):
         self.thruster_rot_R: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
-        self.turn_L: float = 0.0
-        self.turn_R: float = 0.0
-        self.turn_back_L: float = 0.0
-        self.turn_back_R: float = 0.0
-        self.turn_final_L: float = 0.0
-        self.turn_final_R: float = 0.0
 
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
@@ -250,69 +247,8 @@ class Ship(Disk):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
-    def smart_rotation(self) -> None:
-        """Rotate `self` using overly complicated method."""
-        """
-        The current implementation allows the player to press the left or right button until a desired angle is reached.
-        And the ship will settle there. Imagine you start at 40° and want to go to 110°. You can press the left until
-        your angle is 110° and then release the button.
-        Then the ship will decelerate for as many degrees as it accelerated for, 70° in this case. So it will be still
-        at 180°. Then it will accelerate back for 35°, so until 145° and then finally decelerate for 35° to 110°.
-
-        Between 40° and 110° thruster_rot_L is on because of turn_L (accelerating us counter-clockwise)
-        Between 110° and 180° thruster_rot_R is on because of turn_back_R (decelerating us)
-        Between 180° and 145° thruster_rot_R is still on because of turn_back_R (accelerating us clockwise)
-        Between 145° and 110° thruster_rot_L is on because of turn_final_L (decelerating us)
-
-        You can look at the `test_ship_rotation()` to see how this works, or just try it out in the game.
-
-
-        In the code this is implemented by having these three attributes incremented when the left key is pressed.
-        This happens in in the `rotating()` method.
-        And then here in turn we check if turn_L then turn_back_R then turn_final_L are positive. If any one is positive
-        then the ship is rotated in the direction the last letter (L or R) indicates and that attribute is decremented.
-        """
-        self.thruster_rot_R = False
-        self.thruster_rot_L = False
-
-        if self.turn_L > 0:
-            self.turn_L -= ROTATION_STATE_DELTA
-            self.thruster_rot_L = True
-        elif self.turn_back_R > 0:
-            self.turn_back_R -= ROTATION_STATE_DELTA
-            self.thruster_rot_R = True
-        elif self.turn_final_L > 0:
-            self.turn_final_L -= ROTATION_STATE_DELTA
-            self.thruster_rot_L = True
-
-        if self.turn_R > 0:
-            self.turn_R -= ROTATION_STATE_DELTA
-            self.thruster_rot_R = True
-        elif self.turn_back_L > 0:
-            self.turn_back_L -= ROTATION_STATE_DELTA
-            self.thruster_rot_L = True
-        elif self.turn_final_R > 0:
-            self.turn_final_R -= ROTATION_STATE_DELTA
-            self.thruster_rot_R = True
-
-        if not (self.thruster_rot_R or self.thruster_rot_L):
-            self.thruster_rot_R = self.angular_velocity > SMALL_ALGULAR_VEL
-            self.thruster_rot_L = self.angular_velocity < -SMALL_ALGULAR_VEL
-
-    def rotating(self, left: bool, right: bool) -> None:  # noqa: FBT001
-        """Increment rotation counters."""
-        if left:
-            self.turn_L += ROTATION_STATE_DELTA
-            self.turn_back_R += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_L += ADJUSTED_ROTATION_STATE_DELTA
-        if right:
-            self.turn_R += ROTATION_STATE_DELTA
-            self.turn_back_L += ROTATION_STATE_DELTA + ADJUSTED_ROTATION_STATE_DELTA
-            self.turn_final_R += ADJUSTED_ROTATION_STATE_DELTA
-
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        self.smart_rotation()
         if self.thruster_rot_L:
             self.apply_angular_force(self.rotation_thrust, dt)
         if self.thruster_rot_R:
@@ -488,17 +424,66 @@ class PlayerShip(Ship):
         """Create a new player-spaceship."""
         super().__init__(relative_to, config)
         self.spaceship_input = config.ship_input
+        self.turn_L: float = 0.0
+        self.turn_R: float = 0.0
+        self.turn_back_L: float = 0.0
+        self.turn_back_R: float = 0.0
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.rotating(keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R])
+        self.increment_rot_counters(
+            keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R]
+        )
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
+
+    def do_rotation_for_player(self) -> None:
+        """Rotate `self` using overly less method.
+
+        This is a simplified version of the `do_rotation()` method.
+        Here, if you want to turn from 40° to 110° you have to press the left key until you reach 75°.
+        Then you automatically decelerate from  75° to 110°  and come to a stop there.
+        """
+        self.thruster_rot_R = False
+        self.thruster_rot_L = False
+
+        if self.turn_L > 0:
+            self.turn_L -= ROT_STATE_DELTA
+            self.thruster_rot_L = True
+        elif self.turn_back_R > 0:
+            self.turn_back_R -= ROT_STATE_DELTA
+            self.thruster_rot_R = True
+
+        if self.turn_R > 0:
+            self.turn_R -= ROT_STATE_DELTA
+            self.thruster_rot_R = True
+        elif self.turn_back_L > 0:
+            self.turn_back_L -= ROT_STATE_DELTA
+            self.thruster_rot_L = True
+
+        if not (self.thruster_rot_R or self.thruster_rot_L):
+            self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
+            self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
+
+    def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
+        """Increment rotation counters."""
+        if left:
+            self.turn_L += ROT_STATE_DELTA
+            self.turn_back_R += ROT_STATE_DELTA
+        if right:
+            self.turn_R += ROT_STATE_DELTA
+            self.turn_back_L += ROT_STATE_DELTA
+
+    def step(self, dt: float) -> None:
+        """Handle player rotation and call super step."""
+        self.do_rotation_for_player()
+
+        super().step(dt)
 
 
 @dataclass(kw_only=True)
@@ -563,39 +548,35 @@ class MarkovEnemy(BulletEnemy):
     _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
+class ThrustState(Enum):
+    """Possible thrust states for the ship."""
+
+    NONE = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+
+
+class RotationState(Enum):
+    """Possible rotation states for the ship."""
+
+    NONE = auto()
+    LEFT = auto()
+    RIGHT = auto()
+
+
 class EnemyAI:
-    """Markov chain-based AI for enemy ships."""
+    """AI for enemy ships."""
 
     def __init__(self, ship: BulletEnemy) -> None:
         """Create a new AI controller."""
-        self.ship = ship
+        self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
-        self.action_timer = 0.0
-        self.can_see_target = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
-
-    def step(self, dt: float) -> None:
-        """Transition state and apply appropriate behavior for different enemy types."""
-        self.action_timer -= dt
-        if self.action_timer <= 0:
-            self.action_timer = ENEMY_ACTION_TIMER
-
-            if isinstance(self.ship, MarkovEnemy):
-                self._transition_markov()
-            else:
-                self._transition_simple()
-
-        goal_direction, thruster = self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
-
-        # Determine which way to turn (left or right)
-        current_angle = self.ship.angle
-        target_angle = math.degrees(math.atan2(goal_direction.y, goal_direction.x))
-        angle_diff = (target_angle - current_angle + 180) % 360 - 180
-
-        left = angle_diff > SMALL_ANGLE
-        right = angle_diff < -SMALL_ANGLE
-        self.ship.rotating(left, right)
-        self.ship.thruster_forward = thruster
+        self.action_timer: float = 0.0
+        self.can_see_target: bool = False
+        self.delta_target: Vec2 = Vec2(1, 1)
+        self.delta_target_vel: Vec2 = Vec2(1, 1)
+        self.x: float = 0
+        self.y: float = 0
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -618,56 +599,120 @@ class EnemyAI:
         self.current_state = random.choices(states, probabilities)[0]
 
     def _transition_simple(self) -> None:
-        if self.can_see_target:
-            self.current_state = AIState.ATTACK
+        if random.random() < RAM_PROBABILITY:
+            self.current_state = AIState.RAM
         else:
-            # Accelerate towards a random point near the player.
-            distance_to_target = self.ship.target.distance_to(self.ship)
-            x, y = random.gauss(sigma=distance_to_target), random.gauss(sigma=distance_to_target)
-            self.seek_towards = Pos(self.ship.target, Vec2(x, y))
-            self.current_state = AIState.RANDOM
+            self.current_state = AIState.ATTACK
 
-    def _match(self) -> tuple[Vec2, bool]:
-        """Match and then, execute behavior based on current state."""
-        desired_direction: Vec2 = Vec2(0, 0)
-        thruster: bool = False
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer -= dt
+        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+
+        if self.action_timer <= 0:
+            self.action_timer = ENEMY_ACTION_TIMER
+
+            if isinstance(self.ship, MarkovEnemy):
+                self._transition_markov()
+            else:
+                self._transition_simple()
+
+        self.delta_target = self.ship.target.pos_relative_to(self.ship)
+        self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
+
+        rotation_state, thrust_state = self._match()
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+
+        # Apply Thrusters
+        self.ship.thruster_rot_L = rotation_state == RotationState.LEFT
+        self.ship.thruster_rot_R = rotation_state == RotationState.RIGHT
+        self.ship.thruster_forward = thrust_state == ThrustState.FORWARD
+        self.ship.thruster_backward = thrust_state == ThrustState.BACKWARD
+
+    def _match(self) -> tuple[RotationState, ThrustState]:
+        """Match current state to behavior."""
+        desired_direction = Vec2(0, 0)
+        thrust_state = ThrustState.BACKWARD
         match self.current_state:
             case AIState.SEARCH:
-                desired_direction, thruster = self._execute_search()
+                desired_direction, thrust_state = self._execute_search()
             case AIState.ATTACK:
-                desired_direction, thruster = self._execute_attack()
+                desired_direction, thrust_state = self._execute_attack()
             case AIState.AIM:
-                desired_direction, thruster = self._execute_aim()
+                desired_direction, thrust_state = self._execute_aim()
             case AIState.RETREAT:
-                desired_direction, thruster = self._execute_retreat()
-            case AIState.RANDOM:
-                desired_direction, thruster = self._execute_randomly()
-        return desired_direction, thruster
+                desired_direction, thrust_state = self._execute_retreat()
+            case AIState.RAM:
+                desired_direction, thrust_state = self._execute_ram()
 
-    def _execute_search(self) -> tuple[Vec2, bool]:
-        """Return force required for the search-behavior."""
-        delta = self.ship.target.pos_relative_to(self.ship)
-        relative_velocity = self.ship.vel_relative_to(self.ship.target)
+        if (random.random() < (PROB_ADD_NOISE)) and (not self.can_see_target):
+            distance_to_target = self.delta_target.length()
+            self.x, self.y = (
+                random.gauss(sigma=math.sqrt(distance_to_target)),
+                random.gauss(sigma=math.sqrt(distance_to_target)),
+            )
 
-        desired_relative_vel = delta.normalize() * DESIRED_APPROACH_SPEED
+        desired_direction += Vec2(self.x, self.y)
+        rotation_state = self._calculate_rotation(desired_direction)
+
+        return rotation_state, thrust_state
+
+    def _calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+        """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
+        current_angle = self.ship.angle
+        angular_velocity = self.ship.angular_velocity
+        desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
+
+        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
+
+        # Calculate stopping distance with current angular velocity
+        moment_of_inertia = 0.5 * self.ship.mass * self.ship.radius**2
+        rotation_accel = self.ship.rotation_thrust / moment_of_inertia
+        stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
+
+        # Predict where we would stop if we start decelerating now
+        stopping_point = (current_angle + stopping_distance) % 360
+
+        # Calculate the angle difference between where we would stop and the desired angle
+        stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
+
+        # If within small angle and velocity is low enough, don't rotate
+        if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
+            return RotationState.NONE
+
+        if angular_velocity > 0:  # Moving counterclockwise
+            if stopping_diff > 0:  # We would stop before reaching the desired angle
+                return RotationState.LEFT  # Continue accelerating counterclockwise
+            # We would stop past the desired angle
+            return RotationState.RIGHT  # Start decelerating
+
+        if angular_velocity < 0:  # Moving clockwise
+            if stopping_diff < 0:  # We would stop before reaching the desired angle
+                return RotationState.RIGHT  # Continue accelerating clockwise
+            # We would stop past the desired angle
+            return RotationState.LEFT  # Start decelerating
+
+        # If not moving yet, choose direction based on shortest angle
+        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
+
+    def _execute_search(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for search behavior."""
+        relative_velocity = -self.delta_target_vel
+
+        desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
         desired_direction = desired_relative_vel - relative_velocity
 
-        thruster = relative_velocity.length() < DESIRED_APPROACH_SPEED
-        return desired_direction, thruster
+        thrust_state = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
+        return desired_direction, thrust_state
 
-    def _execute_attack(self) -> tuple[Vec2, bool]:
-        """Return force required for the attack-behavior."""
-        desired_direction = self.ship.target.pos_relative_to(self.ship)
-        thruster = not self.can_see_target
-        return desired_direction, thruster
+    def _execute_attack(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for attack behavior."""
+        thrust_state = self._keep_distance()
+        return self.delta_target, thrust_state
 
-    def _execute_aim(self) -> tuple[Vec2, bool]:
-        """Return force required for the aim-behavior."""
-        # Relative position and velocity
-        relative_pos = self.ship.target.pos_relative_to(self.ship)
-        relative_vel = self.ship.target.vel_relative_to(self.ship)
+    def _execute_aim(self) -> tuple[Vec2, ThrustState]:
+        """Return desired direction and thrust state for aim behavior.
 
-        """
         We need to find the direction where:
             target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
         Which is equivalent to:
@@ -679,6 +724,10 @@ class EnemyAI:
         This expands to:
             |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
         """
+        # Relative position and velocity
+        relative_pos = self.delta_target
+        relative_vel = self.delta_target_vel
+        thrust_state = self._keep_distance()
 
         # Quadratic equation coefficients:
         a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
@@ -689,10 +738,9 @@ class EnemyAI:
         discriminant = b**2 - 4 * a * c
 
         if discriminant < 0:
-            # No real solution exists (target unreachable)
-            # Fall back to simpler approach
-            force = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-            return force.normalize() if force != Vec2(0, 0) else Vec2(0, 0), True
+            # No real solution exists (target unreachable), Fall back to simpler approach
+            intercept_vector = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
+            return intercept_vector, thrust_state
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -706,23 +754,26 @@ class EnemyAI:
         elif t2 > 0:
             intercept_time = t2
         else:
-            # No positive solution, target moving too fast or in wrong direction
-            # Fall back to simple leading shot
-            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED
+            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED  # No positive solution: use fallback
 
-        # Calculate predicted position
-        if intercept_time <= 0:
-            # Fallback if no solution found
-            return relative_pos.normalize(), True
-        thruster = not self.can_see_target
-        # Now calculate what direction the bullet must be fired in
-        return (relative_pos + relative_vel * intercept_time) / (BULLET_RELEASE_SPEED * intercept_time), thruster
+        desired_direction = relative_pos + relative_vel * intercept_time
+        return desired_direction, thrust_state
 
-    def _execute_retreat(self) -> tuple[Vec2, bool]:
-        """Return force required for the retreat-behavior."""
+    def _execute_retreat(self) -> tuple[Vec2, ThrustState]:
+        """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
-            return Vec2(0, 0), False
-        return self.ship.pos_relative_to(self.ship.target), True
+            return Vec2(0, 0), ThrustState.NONE
+        return -self.delta_target, ThrustState.FORWARD
 
-    def _execute_randomly(self) -> tuple[Vec2, bool]:
-        return self.seek_towards.pos_relative_to(self.ship), True
+    def _execute_ram(self) -> tuple[Vec2, ThrustState]:
+        """Return the direction vector and thrust state for ram behavior."""
+        desired_direction = self.delta_target + self.delta_target_vel
+        return desired_direction, ThrustState.FORWARD
+
+    def _keep_distance(self) -> ThrustState:
+        approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
+        return (
+            ThrustState.FORWARD
+            if approach_speed < APPROACH_LOWER
+            else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
+        )
