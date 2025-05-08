@@ -182,21 +182,15 @@ class ProjectileAI:
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer += dt
-        delta_target_ship = self.projectile.target.pos_relative_to(self.projectile)
-
+        self.delta_target = self.projectile.target.pos_relative_to(self.projectile)
+        self.delta_target_vel = self.projectile.target.vel_relative_to(self.projectile)
         current_cycle = int(self.action_timer / self.projectile.CYCLE_DURATION)
         time_in_current_cycle = self.action_timer % self.projectile.CYCLE_DURATION
         is_homing_phase = time_in_current_cycle <= self.projectile.HOMING_DURATION
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
-        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and delta_target_ship != Vec2(0, 0):
-            target_ship_direction = delta_target_ship.normalize()
-
-            desired_velocity = target_ship_direction * ROCKET_MIN_SPEED
-            force_direction = desired_velocity - self.projectile.vel_relative_to(self.projectile.target)
-
-            if force_direction != Vec2(0, 0):
-                self.my_force = force_direction.normalize() * self.projectile.THRUST
+        if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and self.delta_target != Vec2(0, 0):
+            self.my_force, x = self.do_attack()
 
         self.projectile.rotation_state, self.projectile.thrust_state = self._match()
 
@@ -206,3 +200,9 @@ class ProjectileAI:
         rotation_state = self.projectile.calculate_rotation(desired_direction)
 
         return rotation_state, ThrustState.FORWARD
+
+    def do_attack(self) -> tuple[Vec2, ThrustState]:
+        """Perform an attack."""
+        goal_direction = self.delta_target.normalize() * ROCKET_MIN_SPEED
+        desired_direction = goal_direction + self.delta_target_vel
+        return desired_direction, ThrustState.FORWARD
