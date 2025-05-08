@@ -20,25 +20,6 @@ from universe import PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
-@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
-def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
-    """Verify that any enemy will eventually find and hit the player."""
-    universe = Universe(None, 100)
-    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    _enemy = universe.add_enemy(EnemyConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
-
-    starting_health = player.health
-
-    # 30 seconds
-    for _ in range(3000):
-        universe.step(0.01)
-        if player.health < starting_health:
-            break
-
-    assert player.health < starting_health, "The player should have been hit by the enemy"
-
-
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
 def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
     monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
     monkeypatch.setattr(BulletEnemy, "step", lambda _self, _dt: None)
@@ -98,7 +79,26 @@ def test_transition_matrix_sums(matrix: Matrix) -> None:
         assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"
 
 
-def test_markov_enemy_retreat_behavior() -> None:
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
+@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
+def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
+    """Verify that any enemy will eventually find and hit the player."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
+    _enemy = universe.add_enemy(EnemyConfig(relative_pos=enemy_starting_pos, target_ship=player), enemy_type)
+
+    starting_health = player.health
+
+    # 30 seconds
+    for _ in range(3000):
+        universe.step(0.01)
+        if player.health < starting_health:
+            break
+
+    assert player.health < starting_health, "The player should have been hit by the enemy"
+
+
+def test_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
@@ -117,7 +117,7 @@ def test_markov_enemy_retreat_behavior() -> None:
 
 @pytest.mark.parametrize("enemy_vel", [Vec2(0, 0), Vec2(-20, 30), Vec2(40, -10)])
 @pytest.mark.parametrize("player_vel", [Vec2(0, 0), Vec2(0, 50), Vec2(-30, 20)])
-def test_markov_enemy_aim(player_vel: Vec2, enemy_vel: Vec2) -> None:
+def test_aim_behaviour(player_vel: Vec2, enemy_vel: Vec2) -> None:
     """Test that a MarkovEnemy will hit a moving player with various relative velocities."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
