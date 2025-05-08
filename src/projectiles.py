@@ -188,12 +188,12 @@ class ProjectileAI(BasicAI):
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and self.delta_target != Vec2(0, 0):
-            self.my_force, thrust_state = self.do_attack()
+            self.my_force, thrust_state = self.get_direction()
 
         self.projectile.rotation_state = self.projectile.calculate_rotation(self.my_force)
         self.projectile.thrust_state = ThrustState.FORWARD
 
-    def do_attack(self) -> tuple[Vec2, ThrustState]:
+    def get_direction(self) -> tuple[Vec2, ThrustState]:
         """Determine desired direction."""
         goal_direction = self.delta_target.normalize() * ROCKET_MIN_SPEED
         desired_direction = goal_direction + self.delta_target_vel
