@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import Mover, Pos, PosVel, RotationState, ThrustState
+from physics import Mover, Pos, PosVel, ThrustState
 
 if TYPE_CHECKING:
     from camera import Camera
@@ -197,7 +197,7 @@ class ProjectileAI:
         self.projectile.thrust_state = ThrustState.FORWARD
 
     def do_attack(self) -> tuple[Vec2, ThrustState]:
-        """Perform an attack."""
+        """Determine desired direction."""
         goal_direction = self.delta_target.normalize() * ROCKET_MIN_SPEED
         desired_direction = goal_direction + self.delta_target_vel
         return desired_direction, ThrustState.FORWARD
