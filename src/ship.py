@@ -42,6 +42,7 @@ SD_FLARE_ANGLE = 25
 
 HEALTH = 10000
 DAMAGE_INDICATOR_TIME = 1
+REPAIR_DELAY = 5.0
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
@@ -157,6 +158,7 @@ class Ship(Mover):
         self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
+        self.repair_eligibility_timer: float = 0
 
         self.releasing_flares: bool = False
         self.shooting: bool = False
@@ -232,6 +234,21 @@ class Ship(Mover):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
+    def repair_refuel(self) -> None:
+        """Repair and refuel the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds."""
+        if (
+            self.damage_indicator_timer > 0
+            or self.rotation_state != RotationState.NONE
+            or self.thrust_state != ThrustState.NONE
+        ):
+            self.repair_eligibility_timer = 0
+            return
+
+        self.repair_eligibility_timer += 0.01
+
+        if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < HEALTH:
+            self.health += 0.01
+
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
         self.damage_indicator_timer = max(0, self.damage_indicator_timer - dt)
@@ -243,6 +260,7 @@ class Ship(Mover):
 
         self.handle_shooting(dt)
         self.handle_flares(dt)
+        self.repair_refuel()
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
