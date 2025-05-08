@@ -448,18 +448,23 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        rotation_state = (
-            RotationState.NONE
-            if keys[self.spaceship_input.thruster_L] == keys[self.spaceship_input.thruster_R]
-            else (RotationState.LEFT if keys[self.spaceship_input.thruster_L] else RotationState.RIGHT)
-        )
-        self.increment_rot_counters(rotation_state)
+        match (keys[self.spaceship_input.thruster_L], keys[self.spaceship_input.thruster_R]):
+            case (True, True) | (False, False):
+                rotation_state = RotationState.NONE
+            case (True, False):
+                rotation_state = RotationState.LEFT
+            case (False, True):
+                rotation_state = RotationState.RIGHT
 
-        self.thrust_state = (
-            ThrustState.NONE
-            if keys[self.spaceship_input.thruster_forward] == keys[self.spaceship_input.thruster_backward]
-            else (ThrustState.FORWARD if keys[self.spaceship_input.thruster_forward] else ThrustState.BACKWARD)
-        )
+        match (keys[self.spaceship_input.thruster_forward], keys[self.spaceship_input.thruster_backward]):
+            case (True, True) | (False, False):
+                self.thrust_state = ThrustState.NONE
+            case (True, False):
+                self.thrust_state = ThrustState.FORWARD
+            case (False, True):
+                self.thrust_state = ThrustState.BACKWARD
+
+        self.increment_rot_counters(rotation_state)
 
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
