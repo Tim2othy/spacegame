@@ -450,9 +450,12 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        self.increment_rot_counters(
-            keys[self.spaceship_input.thruster_rot_L], keys[self.spaceship_input.thruster_rot_R]
+        rotation_state = (
+            RotationState.NONE
+            if keys[self.spaceship_input.thruster_rot_L] == keys[self.spaceship_input.thruster_rot_R]
+            else (RotationState.LEFT if keys[self.spaceship_input.thruster_rot_L] else RotationState.RIGHT)
         )
+        self.increment_rot_counters(rotation_state)
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
         self.thruster_backward = keys[self.spaceship_input.thruster_backward]
         self.shooting = keys[self.spaceship_input.shoot]
@@ -485,12 +488,12 @@ class PlayerShip(Ship):
             self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
             self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
-    def increment_rot_counters(self, left: bool, right: bool) -> None:  # noqa: FBT001
+    def increment_rot_counters(self, rotation_state: RotationState) -> None:
         """Increment rotation counters based on key-press info taken from `handle_input`."""
-        if left:
+        if rotation_state == RotationState.LEFT:
             self.turn_L += ROT_STATE_DELTA
             self.turn_back_R += ROT_STATE_DELTA
-        if right:
+        if rotation_state == RotationState.RIGHT:
             self.turn_R += ROT_STATE_DELTA
             self.turn_back_L += ROT_STATE_DELTA
 

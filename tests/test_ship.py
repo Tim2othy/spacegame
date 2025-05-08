@@ -3,7 +3,7 @@ from math import tau
 from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
-from ship import PlayerConfig, PlayerShip, Ship, ShipConfig
+from ship import PlayerConfig, PlayerShip, RotationState, Ship, ShipConfig
 
 EPSILON = 1e-8
 
@@ -32,7 +32,7 @@ def test_shooting() -> None:
 
 def test_movement() -> None:
     ship = PlayerShip(ORIGIN, PlayerConfig(relative_pos=Vec2(0, 0)))
-    ship.increment_rot_counters(left=True, right=False)
+    ship.increment_rot_counters(RotationState.LEFT)
     ship.step(0.01)
     ship.thruster_forward = True
     ship.step(0.01)
@@ -50,7 +50,7 @@ def test_ship_rotation() -> None:
 
     for _ in range(5000):
         if ship.angle < 70:
-            ship.increment_rot_counters(left=True, right=False)
+            ship.increment_rot_counters(RotationState.LEFT)
 
         ship.step(0.01)
         if abs(ship.angular_velocity) < 0.01 and not (ship.thruster_rot_R or ship.thruster_rot_L):
