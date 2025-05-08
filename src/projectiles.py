@@ -184,22 +184,17 @@ class ProjectileAI:
         self.action_timer += dt
         self.delta_target = self.projectile.target.pos_relative_to(self.projectile)
         self.delta_target_vel = self.projectile.target.vel_relative_to(self.projectile)
+
         current_cycle = int(self.action_timer / self.projectile.CYCLE_DURATION)
         time_in_current_cycle = self.action_timer % self.projectile.CYCLE_DURATION
         is_homing_phase = time_in_current_cycle <= self.projectile.HOMING_DURATION
 
         # Only home if we're in a homing phase and haven't exceeded 3 cycles
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and self.delta_target != Vec2(0, 0):
-            self.my_force, x = self.do_attack()
+            self.my_force, thrust_state = self.do_attack()
 
-        self.projectile.rotation_state, self.projectile.thrust_state = self._match()
-
-    def _match(self) -> tuple[RotationState, ThrustState]:
-        """Match current state to behavior."""
-        desired_direction = self.my_force
-        rotation_state = self.projectile.calculate_rotation(desired_direction)
-
-        return rotation_state, ThrustState.FORWARD
+        self.projectile.rotation_state = self.projectile.calculate_rotation(self.my_force)
+        self.projectile.thrust_state = ThrustState.FORWARD
 
     def do_attack(self) -> tuple[Vec2, ThrustState]:
         """Perform an attack."""
