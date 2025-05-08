@@ -53,7 +53,7 @@ def test_ship_rotation() -> None:
             ship.increment_rot_counters(RotationState.LEFT)
 
         ship.step(0.01)
-        if abs(ship.angular_velocity) < 0.01 and not (ship.thruster_rot_R or ship.thruster_rot_L):
+        if abs(ship.angular_velocity) < 0.01 and not (ship.thruster_R or ship.thruster_L):
             break
 
     tol_final = 4.0

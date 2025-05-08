@@ -179,8 +179,8 @@ class Ship(Disk):
         self.releasing_flares: bool = False
         self.shooting: bool = False
 
-        self.thruster_rot_L: bool = False
-        self.thruster_rot_R: bool = False
+        self.thruster_L: bool = False
+        self.thruster_R: bool = False
         self.thruster_backward: bool = False
         self.thruster_forward: bool = False
 
@@ -265,9 +265,9 @@ class Ship(Disk):
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
-        if self.thruster_rot_L:
+        if self.thruster_L:
             self.apply_angular_force(self.rotation_thrust, dt)
-        if self.thruster_rot_R:
+        if self.thruster_R:
             self.apply_angular_force(-self.rotation_thrust, dt)
 
         forward = self.get_faced_direction()
@@ -310,7 +310,7 @@ class Ship(Disk):
             darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
 
-        # thruster_rot_L, material
+        # thruster_L, material
         drawy(
             darker_color,
             [
@@ -319,8 +319,8 @@ class Ship(Disk):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_L:
-            # thruster_rot_L, active
+        if self.thruster_L:
+            # thruster_L, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -330,7 +330,7 @@ class Ship(Disk):
                 ],
             )
 
-        # thruster_rot_R, material
+        # thruster_R, material
         drawy(
             darker_color,
             [
@@ -339,8 +339,8 @@ class Ship(Disk):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        if self.thruster_rot_R:
-            # thruster_rot_R, active
+        if self.thruster_R:
+            # thruster_R, active
             drawy(
                 THRUST_COLOR,
                 [
@@ -389,8 +389,8 @@ class ShipInput:
     """Specification for which keys trigger what spaceship-action.
 
     Attributes:
-        thruster_rot_L (pygame_key): Left rotation thruster's key
-        thruster_rot_R (pygame_key): Right rotation thruster's key
+        thruster_L (pygame_key): Left rotation thruster's key
+        thruster_R (pygame_key): Right rotation thruster's key
         thruster_forward (pygame_key): Forward thruster's key
         thruster_backward (pygame_key): Backward thruster's key
         shoot (pygame_key): Pew pew key
@@ -398,8 +398,8 @@ class ShipInput:
 
     """
 
-    thruster_rot_L: PygameKey  # noqa: N815
-    thruster_rot_R: PygameKey  # noqa: N815
+    thruster_L: PygameKey  # noqa: N815
+    thruster_R: PygameKey  # noqa: N815
     thruster_forward: PygameKey
     thruster_backward: PygameKey
     shoot: PygameKey
@@ -452,8 +452,8 @@ class PlayerShip(Ship):
         """
         rotation_state = (
             RotationState.NONE
-            if keys[self.spaceship_input.thruster_rot_L] == keys[self.spaceship_input.thruster_rot_R]
-            else (RotationState.LEFT if keys[self.spaceship_input.thruster_rot_L] else RotationState.RIGHT)
+            if keys[self.spaceship_input.thruster_L] == keys[self.spaceship_input.thruster_R]
+            else (RotationState.LEFT if keys[self.spaceship_input.thruster_L] else RotationState.RIGHT)
         )
         self.increment_rot_counters(rotation_state)
         self.thruster_forward = keys[self.spaceship_input.thruster_forward]
@@ -467,26 +467,26 @@ class PlayerShip(Ship):
         If you want to turn from 40° to 110° you have to press the left key until you reach 75°.
         Then you automatically decelerate from  75° to 110° and come to a stop there.
         """
-        self.thruster_rot_R = False
-        self.thruster_rot_L = False
+        self.thruster_R = False
+        self.thruster_L = False
 
         if self.turn_L > 0:
             self.turn_L -= ROT_STATE_DELTA
-            self.thruster_rot_L = True
+            self.thruster_L = True
         elif self.turn_back_R > 0:
             self.turn_back_R -= ROT_STATE_DELTA
-            self.thruster_rot_R = True
+            self.thruster_R = True
 
         if self.turn_R > 0:
             self.turn_R -= ROT_STATE_DELTA
-            self.thruster_rot_R = True
+            self.thruster_R = True
         elif self.turn_back_L > 0:
             self.turn_back_L -= ROT_STATE_DELTA
-            self.thruster_rot_L = True
+            self.thruster_L = True
 
-        if not (self.thruster_rot_R or self.thruster_rot_L):
-            self.thruster_rot_R = self.angular_velocity > SMALL_ANGULAR_VEL
-            self.thruster_rot_L = self.angular_velocity < -SMALL_ANGULAR_VEL
+        if not (self.thruster_R or self.thruster_L):
+            self.thruster_R = self.angular_velocity > SMALL_ANGULAR_VEL
+            self.thruster_L = self.angular_velocity < -SMALL_ANGULAR_VEL
 
     def increment_rot_counters(self, rotation_state: RotationState) -> None:
         """Increment rotation counters based on key-press info taken from `handle_input`."""
@@ -626,8 +626,8 @@ class EnemyAI:
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
         # Apply Thrusters
-        self.ship.thruster_rot_L = rotation_state == RotationState.LEFT
-        self.ship.thruster_rot_R = rotation_state == RotationState.RIGHT
+        self.ship.thruster_L = rotation_state == RotationState.LEFT
+        self.ship.thruster_R = rotation_state == RotationState.RIGHT
         self.ship.thruster_forward = thrust_state == ThrustState.FORWARD
         self.ship.thruster_backward = thrust_state == ThrustState.BACKWARD
 
