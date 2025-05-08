@@ -46,6 +46,7 @@ GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 SMALL_ANGULAR_VEL = 5.0
 ROT_STATE_DELTA = 1.0
+PROB_ADD_NOISE = 0.01
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -644,11 +645,11 @@ class EnemyAI:
             case AIState.RAM:
                 desired_direction, thrust_state = self._execute_ram()
 
-        if (random.random() < (0.9)) and (not self.can_see_target):
+        if (random.random() < (PROB_ADD_NOISE)) and (not self.can_see_target):
             distance_to_target = self.delta_target.length()
             self.x, self.y = (
-                random.gauss(sigma=math.sqrt(distance_to_target)) * 99999,
-                random.gauss(sigma=math.sqrt(distance_to_target)) * 99999,
+                random.gauss(sigma=math.sqrt(distance_to_target)),
+                random.gauss(sigma=math.sqrt(distance_to_target)),
             )
 
         desired_direction += Vec2(self.x, self.y)
