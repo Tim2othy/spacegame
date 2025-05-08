@@ -122,8 +122,7 @@ class Rocket(Bullet):
         if self.rotation_state == RotationState.RIGHT:
             self.apply_angular_force(-self.rotation_thrust, dt)
 
-        forward = self.get_faced_direction()
-        force = forward * self.thrust
+        force = self.forward * self.thrust
         if self.thrust_state == ThrustState.FORWARD:
             self.apply_force(force, dt)
         if self.thrust_state == ThrustState.BACKWARD:
@@ -132,7 +131,7 @@ class Rocket(Bullet):
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
         draw_color = color or self.color
-        forward = self.get_faced_direction()
+        forward = self.forward
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward
@@ -180,7 +179,7 @@ class Missile(Rocket):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
-        forward = self.get_faced_direction()
+        forward = self.forward
         left = Vec2(-forward.y, forward.x)
         right = -left
         backward = -forward

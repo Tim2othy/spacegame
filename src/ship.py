@@ -186,8 +186,7 @@ class Ship(Mover):
 
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
-                forward = self.get_faced_direction()
-                bullet_vel = forward * self._SHIP_PROJECTILE_SPEED
+                bullet_vel = self.forward * self._SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -196,7 +195,7 @@ class Ship(Mover):
                 # by the (time since the shot was fired) * bullet_vel.
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
-                gunbarrel_offset = forward * self.radius * GUNBARREL_LENGTH
+                gunbarrel_offset = self.forward * self.radius * GUNBARREL_LENGTH
                 bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
@@ -215,15 +214,14 @@ class Ship(Mover):
             self.flare_cooldown_timer -= dt
 
             while self.flare_cooldown_timer < 0:
-                forward = self.get_faced_direction()
 
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
-                    flare_direction = forward.rotate(random_rotation)
+                    flare_direction = self.forward.rotate(random_rotation)
                     flare_vel = -flare_direction * random.normalvariate(
                         FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
                     )
-                    flare_offset = -forward * self.radius * 1.2
+                    flare_offset = -self.forward * self.radius * 1.2
 
                     self.projectiles.append(self.new_flare(flare_offset, flare_vel))
                 self.flare_cooldown_timer += FLARE_RATE_OF_FIRE
@@ -244,8 +242,7 @@ class Ship(Mover):
         if self.rotation_state == RotationState.RIGHT:
             self.apply_angular_force(-self.rotation_thrust, dt)
 
-        forward = self.get_faced_direction()
-        force = forward * self.thrust
+        force = self.forward * self.thrust
         if self.thrust_state == ThrustState.FORWARD:
             self.apply_force(force, dt)
         if self.thrust_state == ThrustState.BACKWARD:
@@ -263,7 +260,7 @@ class Ship(Mover):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` on `camera`."""
-        forward = self.get_faced_direction()
+        forward = self.forward
         right = Vec2(-forward.y, forward.x)
         left = -right
         backward = -forward

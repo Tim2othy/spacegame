@@ -251,8 +251,20 @@ class Disk(PosVel):
 class Mover(Disk):
     """A disk that can apply force to itself and move around."""
 
+    def __init__(
+        self, relative_to: PosVel, relative_pos: Vec2, relative_vel: Vec2, radius: float, color: Color = GRAY
+    ) -> None:
+        """Initialize a Mover, inheriting from Disk."""
+        super().__init__(relative_to, relative_pos, relative_vel, radius, color)
+        self.forward: Vec2 = Vec2(0, 0)
+
     def get_faced_direction(self) -> Vec2:
         """Get `self`'s (normalized) faced direction from its `angle`."""
         direction = Vec2(0, 0)
         direction.from_polar((1, self.angle))
         return direction
+
+    def step(self, dt: float) -> None:
+        """Get direction and do moving logic."""
+        self.forward = self.get_faced_direction()
+        return super().step(dt)
