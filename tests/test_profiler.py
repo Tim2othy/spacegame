@@ -30,7 +30,9 @@ def test_profiler() -> None:
     for m in stats:
         if m.name == "test_profiler.<locals>.method_a":
             a_profile_count += 1
-            assert abs(1 - m.total_time / 40) < epsilon, "Total time did not match expectation"
+            assert (
+                abs(1 - m.total_time / 40) < epsilon
+            ), f"Total time did not match expectation. The difference was {abs(1 - m.total_time / 40)}"
             assert abs(1 - m.average_time / 20) < epsilon, "Average time did not match expectation"
             assert abs(1 - m.median_time / 20) < epsilon, "Median time did not match expectation"
             assert m.standard_deviation < stdev_cap, "Standard deviation should be low"
