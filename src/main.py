@@ -75,9 +75,6 @@ async def main() -> None:
 
             dt = clock.tick() / 1_000
 
-            universe.handle_input(pygame.key.get_pressed())
-            universe.step(dt)
-
             # Draw each camera's view
             for player, camera in players_and_cameras:
                 camera.start_drawing_new_frame()
@@ -92,6 +89,9 @@ async def main() -> None:
                 minimap_camera.step()
                 universe.draw(camera)
                 universe.draw_text(camera, player, clock.get_fps())
+
+            universe.handle_input(pygame.key.get_pressed())
+            universe.step(dt)
 
             minimap_camera.start_drawing_new_frame()
             universe.draw(minimap_camera)

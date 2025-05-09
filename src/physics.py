@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
 SMALL_ANGLE = 5
 SMALL_ANGULAR_VEL = 5.0
+FUEL_THRESHOLD = 0.2
 
 
 class ThrustState(Enum):
@@ -314,7 +315,7 @@ class Mover(Disk):
         """Get direction and use thrusters."""
         self.forward = self.get_faced_direction()
 
-        if self.fuel > 0.2:  # noqa: PLR2004
+        if self.fuel > FUEL_THRESHOLD:
             if self.rotation_state == RotationState.LEFT:
                 self.apply_angular_force(self.ROTATION_THRUST, dt)
             if self.rotation_state == RotationState.RIGHT:
