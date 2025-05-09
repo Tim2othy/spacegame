@@ -678,6 +678,7 @@ class EnemyAI(BasicAI):
             # No real solution exists (target unreachable), Fall back to simpler approach
             return relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
 
+        a = 1.0 if a == 0.0 else a
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
         t2 = (-b - math.sqrt(discriminant)) / (2 * a)
