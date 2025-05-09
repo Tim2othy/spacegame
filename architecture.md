@@ -265,6 +265,31 @@ Module implementing the core physics engine and base classes for physical object
 
 
 
+## How thrusters work
+
+### PlayerShip
+
+- `handle_input` gets called. This modifies `self.thrust_state` and calls `increment_rot_counters`
+
+- `increment_rot_counters` increments self.turn_L/R and self.turn_back_L/R.
+
+- `step` calls `do_rotation_for_player`
+
+- `do_rotation_for_player` checks `self.turn_L/R` and `self.turn_back_L/R` and activates `self.rotation_state` accordingly.
+
+- `step` two classes up applies force based on `self.rotation_state` and `self.thrust_state`.
+
+
+### BulletEnemy
+
+- One of the `_execute_...` methods is called. This returns a `desired_direction` and a `thrust_state`.
+
+- `_match` transforms the `desired_direction` into a `rotation_state` using `calculate_rotation`.
+
+- TODO: finish this.
+
+
+
 
 ## Key Interactions
 - **Universe** here gravity, bounces, bullet interactions and more are handled
