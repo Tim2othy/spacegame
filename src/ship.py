@@ -12,7 +12,7 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import FUEL, FUEL_THRESHOLD, SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
+from physics import FUEL, FUEL_USAGE, SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -46,7 +46,7 @@ REPAIR_DELAY = 5.0
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
-REFUEL = 0.02
+REFUEL = FUEL_USAGE / 5
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -312,7 +312,7 @@ class Ship(Mover):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        if self.fuel > FUEL_THRESHOLD:
+        if self.fuel > FUEL_USAGE * 2:
             # thruster_L, active
             if self.rotation_state == RotationState.LEFT:
                 drawy(
