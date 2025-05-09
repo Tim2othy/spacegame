@@ -15,6 +15,7 @@ def test_shooting() -> None:
     ship = Ship(ORIGIN, ShipConfig(relative_pos=Vec2(0, 0)))
     ship._SHIP_GUN_COOLDOWN = 0.123
     ship.angle = tau / 8
+    ship.step(0.01)
     ship.shooting = True
     ship.handle_shooting(bullet_count * ship._SHIP_GUN_COOLDOWN)
 
