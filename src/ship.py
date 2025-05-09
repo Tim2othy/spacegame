@@ -282,7 +282,17 @@ class Ship(Mover):
         camera.draw_line(
             darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
         )
-
+        # thruster_forward, material
+        drawy(
+            darker_color,
+            [
+                0.7 * left + 0.7 * backward,
+                0.5 * left + 1.25 * backward,
+                1.0 * backward,
+                0.5 * right + 1.25 * backward,
+                0.7 * right + 0.7 * backward,
+            ],
+        )
         # thruster_L, material
         drawy(
             darker_color,
@@ -292,7 +302,6 @@ class Ship(Mover):
                 2.0 * left + 1.0 * backward,
             ],
         )
-
         # thruster_R, material
         drawy(
             darker_color,
@@ -303,13 +312,8 @@ class Ship(Mover):
             ],
         )
         if self.fuel > 0.1:
-
-            # thruster_backward
-            if self.thrust_state == ThrustState.BACKWARD:
-                drawy(THRUST_COLOR, [forward * 2, left * 1.25, right * 1.25])
-
+            # thruster_L, active
             if self.rotation_state == RotationState.LEFT:
-                # thruster_L, active
                 drawy(
                     THRUST_COLOR,
                     [
@@ -318,9 +322,8 @@ class Ship(Mover):
                         2.0 * left + 1.0 * backward,
                     ],
                 )
-
+            # thruster_R, active
             if self.rotation_state == RotationState.RIGHT:
-                # thruster_R, active
                 drawy(
                     THRUST_COLOR,
                     [
@@ -329,7 +332,6 @@ class Ship(Mover):
                         2.0 * right + 1.0 * backward,
                     ],
                 )
-
             # thruster_forward, active
             if self.thrust_state == ThrustState.FORWARD:
                 drawy(
@@ -342,17 +344,9 @@ class Ship(Mover):
                         0.7 * right + 0.7 * backward,
                     ],
                 )
-        # thruster_forward, material
-        drawy(
-            darker_color,
-            [
-                0.7 * left + 0.7 * backward,
-                0.5 * left + 1.25 * backward,
-                1.0 * backward,
-                0.5 * right + 1.25 * backward,
-                0.7 * right + 0.7 * backward,
-            ],
-        )
+            # thruster_backward
+            if self.thrust_state == ThrustState.BACKWARD:
+                drawy(THRUST_COLOR, [forward * 2, left * 1.25, right * 1.25])
 
         # Draw the circular body ("hitbox") with the base color
         super().draw(camera, color=base_color)
