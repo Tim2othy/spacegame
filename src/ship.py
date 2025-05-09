@@ -54,7 +54,7 @@ ENEMY_ACTION_TIMER = 6
 DESIRED_APPROACH_SPEED = 500
 APPROACH_LOWER = 10
 APPROACH_UPPER = 60
-RAM_PROBABILITY = 0.2
+BEHAVIOUR_PROBABILITY = 0.2
 
 
 class AIState(Enum):
@@ -584,8 +584,10 @@ class EnemyAI(BasicAI):
         self.current_state = random.choices(states, probabilities)[0]
 
     def _transition_simple(self) -> None:
-        if random.random() < RAM_PROBABILITY:
+        if random.random() < BEHAVIOUR_PROBABILITY:
             self.current_state = AIState.RAM
+        elif random.random() < BEHAVIOUR_PROBABILITY:
+            self.current_state = AIState.AIM
         else:
             self.current_state = AIState.ATTACK
 
