@@ -173,20 +173,19 @@ def test_search_behaviour() -> None:
 
 
 def test_enemy_healing() -> None:
-    """Test that an enemy ship can heal over time when undamaged and not using thrusters."""
+    """Test that an enemy ship will heal when damaged and away from the player."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(10000, 10000), target_ship=player), MarkovEnemy)
-
     starting_health = 5.0
-    health_threshold = 10.0
+    health_threshold = 15.0
     enemy.health = starting_health
 
-    for _ in range(100 * 20):
+    for _ in range(100 * 60):
         universe.step(0.01)
         if enemy.health > health_threshold:
             break
 
     assert (
-        enemy.health >= health_threshold
-    ), f"Enemy health is {enemy.health}, but should have increased to at least {health_threshold}"
+        enemy.health > health_threshold
+    ), f"Enemy health is {enemy.health}, but should have increased to at least {health_threshold}."

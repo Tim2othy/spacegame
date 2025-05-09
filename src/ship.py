@@ -81,7 +81,7 @@ _LOW_HEALTH_MATRIX: Matrix = {
     AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
     AIState.ATTACK: {AIState.SEARCH: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
     AIState.AIM: {AIState.RETREAT: 1.0},
-    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.1, AIState.RETREAT: 0.7},
+    AIState.RETREAT: {AIState.SEARCH: 0.03, AIState.ATTACK: 0.02, AIState.RETREAT: 0.95},
 }
 
 _PLAYER_VISIBLE_MATRIX: Matrix = {
@@ -632,6 +632,14 @@ class EnemyAI(BasicAI):
             )
 
         desired_direction += Vec2(self.x, self.y)
+        if (
+            not self.can_see_target
+            and self.ship.health < RETREAT_HEALTH_THRESHOLD
+            and self.current_state == AIState.RETREAT
+        ):
+            self.ship.rotation_state = RotationState.NONE
+            return
+
         self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
 
     def _execute_search(self) -> Vec2:
