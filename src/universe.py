@@ -14,7 +14,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import GRAVITATIONAL_CONSTANT, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
-from projectiles import Missile
+from projectiles import Missile, Rocket
 from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
@@ -137,7 +137,7 @@ class Universe:
         planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
 
         universe = Universe(star_size, 1000)
-        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size, star_size)))]
+        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size + 100, star_size + 100)))]
 
         if options.splitscreen:
             second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
@@ -160,7 +160,7 @@ class Universe:
 
         else:
             for _ in range(num_enemies):
-                random_radius = random.uniform(star_size * 3, star_size * 7)
+                random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
                 random_angle = random.uniform(0, 360)
                 vec = Vec2(0, 0)
                 vec.from_polar((random_radius, random_angle))
