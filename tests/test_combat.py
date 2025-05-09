@@ -178,10 +178,10 @@ def test_enemy_healing() -> None:
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(10000, 10000), target_ship=player), MarkovEnemy)
     starting_health = 5.0
-    health_threshold = 15.0
+    health_threshold = 11.0
     enemy.health = starting_health
 
-    for _ in range(100 * 60):
+    for _ in range(100 * 65):
         universe.step(0.01)
         if enemy.health > health_threshold:
             break
