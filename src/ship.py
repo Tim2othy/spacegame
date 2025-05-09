@@ -608,26 +608,26 @@ class EnemyAI(BasicAI):
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
         self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
 
-        self.ship.rotation_state, self.ship.thrust_state = self._match()
+        self._match()
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
-    def _match(self) -> tuple[RotationState, ThrustState]:
+    def _match(self) -> None:
         """Match current state to behavior."""
         desired_direction = Vec2(0, 0)
-        thrust_state = ThrustState.BACKWARD
+
         match self.current_state:
             case AIState.SEARCH:
-                desired_direction, thrust_state = self._execute_search()
+                desired_direction = self._execute_search()
             case AIState.ATTACK:
-                desired_direction, thrust_state = self._execute_attack()
+                desired_direction = self._execute_attack()
             case AIState.AIM:
-                desired_direction, thrust_state = self._execute_aim()
+                desired_direction = self._execute_aim()
             case AIState.RETREAT:
-                desired_direction, thrust_state = self._execute_retreat()
+                desired_direction = self._execute_retreat()
             case AIState.RAM:
-                desired_direction, thrust_state = self._execute_ram()
+                desired_direction = self._execute_ram()
 
-        if (random.random() < (PROB_ADD_NOISE)) and (not self.can_see_target):
+        if (random.random() < PROB_ADD_NOISE) and (not self.can_see_target):
             distance_to_target = self.delta_target.length()
             self.x, self.y = (
                 random.gauss(sigma=math.sqrt(distance_to_target)),
@@ -635,26 +635,22 @@ class EnemyAI(BasicAI):
             )
 
         desired_direction += Vec2(self.x, self.y)
-        rotation_state = self.ship.calculate_rotation(desired_direction)
+        self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
 
-        return rotation_state, thrust_state
-
-    def _execute_search(self) -> tuple[Vec2, ThrustState]:
+    def _execute_search(self) -> Vec2:
         """Return desired direction and thrust state for search behavior."""
-        relative_velocity = -self.delta_target_vel
-
+        self.ship.thrust_state = (
+            ThrustState.FORWARD if self.delta_target_vel.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
+        )
         desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
-        desired_direction = desired_relative_vel - relative_velocity
+        return desired_relative_vel + self.delta_target_vel
 
-        thrust_state = ThrustState.FORWARD if relative_velocity.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
-        return desired_direction, thrust_state
-
-    def _execute_attack(self) -> tuple[Vec2, ThrustState]:
+    def _execute_attack(self) -> Vec2:
         """Return desired direction and thrust state for attack behavior."""
-        thrust_state = self._keep_distance()
-        return self.delta_target, thrust_state
+        self.ship.thrust_state = self._keep_distance()
+        return self.delta_target
 
-    def _execute_aim(self) -> tuple[Vec2, ThrustState]:
+    def _execute_aim(self) -> Vec2:
         """Return desired direction and thrust state for aim behavior.
 
         We need to find the direction where:
@@ -671,7 +667,7 @@ class EnemyAI(BasicAI):
         # Relative position and velocity
         relative_pos = self.delta_target
         relative_vel = self.delta_target_vel
-        thrust_state = self._keep_distance()
+        self.ship.thrust_state = self._keep_distance()
 
         # Quadratic equation coefficients:
         a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
@@ -683,8 +679,7 @@ class EnemyAI(BasicAI):
 
         if discriminant < 0:
             # No real solution exists (target unreachable), Fall back to simpler approach
-            intercept_vector = relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-            return intercept_vector, thrust_state
+            return relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
 
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
@@ -699,20 +694,20 @@ class EnemyAI(BasicAI):
             intercept_time = t2
         else:
             intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED  # No positive solution: use fallback
+        return relative_pos + relative_vel * intercept_time
 
-        desired_direction = relative_pos + relative_vel * intercept_time
-        return desired_direction, thrust_state
-
-    def _execute_retreat(self) -> tuple[Vec2, ThrustState]:
+    def _execute_retreat(self) -> Vec2:
         """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
-            return Vec2(0, 0), ThrustState.NONE
-        return -self.delta_target, ThrustState.FORWARD
+            self.ship.thrust_state = ThrustState.NONE
+            return Vec2(0, 0)
+        self.ship.thrust_state = ThrustState.FORWARD
+        return -self.delta_target
 
-    def _execute_ram(self) -> tuple[Vec2, ThrustState]:
+    def _execute_ram(self) -> Vec2:
         """Return the direction vector and thrust state for ram behavior."""
-        desired_direction = self.delta_target + self.delta_target_vel
-        return desired_direction, ThrustState.FORWARD
+        self.ship.thrust_state = ThrustState.FORWARD
+        return self.delta_target + self.delta_target_vel
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
