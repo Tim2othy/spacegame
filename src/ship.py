@@ -653,7 +653,7 @@ class EnemyAI(BasicAI):
     def _execute_attack(self) -> Vec2:
         """Return desired direction and thrust state for attack behavior."""
         self.ship.thrust_state = self._keep_distance()
-        return self.delta_target
+        return self.delta_target + Vec2(random.random(), random.random()) * 3
 
     def _execute_aim(self) -> Vec2:
         """Return desired direction and thrust state for aim behavior.

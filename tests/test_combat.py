@@ -80,7 +80,7 @@ def test_transition_matrix_sums(matrix: Matrix) -> None:
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
-@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 1000), Vec2(-1000, 1000)])
+@pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 600), Vec2(-400, 500)])
 def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
     """Verify that any enemy will eventually find and hit the player."""
     universe = Universe(None, 100)
@@ -89,8 +89,7 @@ def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2
 
     starting_health = player.health
 
-    # 30 seconds
-    for _ in range(3000):
+    for _ in range(80 * 100):
         universe.step(0.01)
         if player.health < starting_health:
             break

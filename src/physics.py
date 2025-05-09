@@ -12,7 +12,7 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
-SMALL_ANGLE = 5
+SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
 FUEL_THRESHOLD = 0.2
 
