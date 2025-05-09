@@ -278,10 +278,6 @@ class Ship(Mover):
         def drawy(color: Color, points: list[Vec2]) -> None:
             camera.draw_polygon(color, [Pos(self, self.radius * p) for p in points])
 
-        # thruster_backward
-        if self.thrust_state == ThrustState.BACKWARD:
-            drawy(THRUST_COLOR, [forward * 2, left * 1.25, right * 1.25])
-
         # "For his neutral special, he wields a gun"
         camera.draw_line(
             darker_color, self, Pos(self, forward * self.radius * GUNBARREL_LENGTH), GUNBARREL_WIDTH * self.radius
@@ -296,16 +292,6 @@ class Ship(Mover):
                 2.0 * left + 1.0 * backward,
             ],
         )
-        if self.rotation_state == RotationState.LEFT:
-            # thruster_L, active
-            drawy(
-                THRUST_COLOR,
-                [
-                    1.5 * left + 1.25 * backward,
-                    0.5 * left + 0.5 * backward,
-                    2.0 * left + 1.0 * backward,
-                ],
-            )
 
         # thruster_R, material
         drawy(
@@ -316,29 +302,46 @@ class Ship(Mover):
                 2.0 * right + 1.0 * backward,
             ],
         )
-        if self.rotation_state == RotationState.RIGHT:
-            # thruster_R, active
-            drawy(
-                THRUST_COLOR,
-                [
-                    1.5 * right + 1.25 * backward,
-                    0.5 * right + 0.5 * backward,
-                    2.0 * right + 1.0 * backward,
-                ],
-            )
+        if self.fuel > 0.1:
 
-        # thruster_forward, active
-        if self.thrust_state == ThrustState.FORWARD:
-            drawy(
-                THRUST_COLOR,
-                [
-                    0.7 * left + 0.7 * backward,
-                    0.5 * left + 1.5 * backward,
-                    1.25 * backward,
-                    0.5 * right + 1.5 * backward,
-                    0.7 * right + 0.7 * backward,
-                ],
-            )
+            # thruster_backward
+            if self.thrust_state == ThrustState.BACKWARD:
+                drawy(THRUST_COLOR, [forward * 2, left * 1.25, right * 1.25])
+
+            if self.rotation_state == RotationState.LEFT:
+                # thruster_L, active
+                drawy(
+                    THRUST_COLOR,
+                    [
+                        1.5 * left + 1.25 * backward,
+                        0.5 * left + 0.5 * backward,
+                        2.0 * left + 1.0 * backward,
+                    ],
+                )
+
+            if self.rotation_state == RotationState.RIGHT:
+                # thruster_R, active
+                drawy(
+                    THRUST_COLOR,
+                    [
+                        1.5 * right + 1.25 * backward,
+                        0.5 * right + 0.5 * backward,
+                        2.0 * right + 1.0 * backward,
+                    ],
+                )
+
+            # thruster_forward, active
+            if self.thrust_state == ThrustState.FORWARD:
+                drawy(
+                    THRUST_COLOR,
+                    [
+                        0.7 * left + 0.7 * backward,
+                        0.5 * left + 1.5 * backward,
+                        1.25 * backward,
+                        0.5 * right + 1.5 * backward,
+                        0.7 * right + 0.7 * backward,
+                    ],
+                )
         # thruster_forward, material
         drawy(
             darker_color,
