@@ -560,8 +560,8 @@ class EnemyAI(BasicAI):
         self.ship: BulletEnemy = ship
         self.current_state = AIState.SEARCH
         self.can_see_target: bool = False
-        self.x: float = 0
-        self.y: float = 0
+        self.x: float = 0.0
+        self.y: float = 0.0
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
