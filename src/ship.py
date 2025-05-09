@@ -46,7 +46,7 @@ REPAIR_DELAY = 5.0
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
-PROB_ADD_NOISE = 0.01
+REFUEL = 0.02
 
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
@@ -55,6 +55,7 @@ DESIRED_APPROACH_SPEED = 500
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
 BEHAVIOUR_PROBABILITY = 0.2
+PROB_ADD_NOISE = 0.01
 
 
 class AIState(Enum):
@@ -237,7 +238,7 @@ class Ship(Mover):
     def repair_refuel(self) -> None:
         """Repair the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds. Refuel."""
         if self.fuel < FUEL:
-            self.fuel += 0.02
+            self.fuel += REFUEL
         if (
             self.damage_indicator_timer > 0
             or self.rotation_state != RotationState.NONE

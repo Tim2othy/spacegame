@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 
 SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
-FUEL_THRESHOLD = 0.2
+FUEL_USAGE = 0.1
+FUEL_THRESHOLD = FUEL_USAGE * 2
 
 
 class ThrustState(Enum):
@@ -328,9 +329,9 @@ class Mover(Disk):
                 self.apply_force(-force, dt)
 
             if self.rotation_state != RotationState.NONE:
-                self.fuel -= 0.1
+                self.fuel -= FUEL_USAGE
             if self.thrust_state != ThrustState.NONE:
-                self.fuel -= 0.1
+                self.fuel -= FUEL_USAGE
 
         super().step(dt)
 
