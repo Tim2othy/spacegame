@@ -170,3 +170,23 @@ def test_search_behaviour() -> None:
     assert (
         distance_0 > distance_1 * 2
     ), f"Enemy should move towards player in search mode. But {distance_0} wasn't larger than {distance_1} * 2"
+
+
+def test_enemy_healing() -> None:
+    """Test that an enemy ship can heal over time when undamaged and not using thrusters."""
+    universe = Universe(None, 100)
+    player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
+    enemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(10000, 10000), target_ship=player), MarkovEnemy)
+
+    starting_health = 5.0
+    health_threshold = 10.0
+    enemy.health = starting_health
+
+    for _ in range(100 * 20):
+        universe.step(0.01)
+        if enemy.health > health_threshold:
+            break
+
+    assert (
+        enemy.health >= health_threshold
+    ), f"Enemy health is {enemy.health}, but should have increased to at least {health_threshold}"
