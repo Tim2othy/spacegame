@@ -17,13 +17,13 @@ In `constants.py` you can control the size of the map (`SMALL_MODE`), whether th
 Requires [uv](https://docs.astral.sh/uv/), which installs all dependencies, including python, automatically. Running the game locally:
 
 ```sh
-uv run main.py
+uv run src/main.py
 ```
 
 Build the game for the web using pygbag (while this is running, open <localhost:8000>):
 
 ```sh
-uv run pygbag .
+uv run pygbag src/main.py
 ```
 
 Run tests with:
