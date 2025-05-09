@@ -335,7 +335,7 @@ class Universe:
                     self.create_particle_cloud(ship, 100, ship.color, 150)
                     ship.suffer_damage(projectile.DAMAGE)
                     return False
-                if isinstance(projectile, Missile) and any(
+                if (isinstance(projectile, Missile | Rocket)) and any(
                     other_projectile.distance_squared_to(projectile) < 10**2
                     for other_projectile in ship.projectiles
                     if other_projectile is not projectile
