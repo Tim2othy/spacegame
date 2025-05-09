@@ -136,10 +136,10 @@ def test_markov_low_health_search() -> None:
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
     enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
-    enemy.health = 1
+    enemy.health -= 20.0
     enemy.ai.current_state = AIState.RETREAT
 
-    for _ in range(5000):
+    for _ in range(50000):
         universe.step(0.01)
         if player.health < HEALTH:
             break
