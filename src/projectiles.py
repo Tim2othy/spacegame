@@ -105,7 +105,7 @@ class Rocket(Bullet):
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
             # Thrust flame
             camera.draw_polygon(
-                draw_color.lerp(ROCKET_THRUST_COLOR, 0.5),
+                ROCKET_THRUST_COLOR,
                 [
                     Pos(self, 3 * (left + backward)),
                     Pos(self, 4 * (left + 2 * backward)),
