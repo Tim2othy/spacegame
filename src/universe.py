@@ -360,6 +360,8 @@ class Universe:
     def step(self, dt: float) -> None:
         """Run the universe-logic, also for the object `self` contains."""
         # Ship
+        for player_ship in self._player_ships:
+            player_ship.update_closest_enemy(self._enemy_ships)
         for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
 

@@ -25,6 +25,7 @@ ROCKET_ENEMY_COLOR = Color("purple")
 MISSILE_ENEMY_COLOR = Color("lime")
 MARKOV_ENEMY_COLOR = Color("red")
 PLAYER_COLOR = Color("blue")
+ENEMY_INDICATOR_COLOR = Color("red")
 
 # Make sure these are all positive and finite
 BULLET_RATE_OF_FIRE = 0.08
@@ -46,6 +47,7 @@ REPAIR_DELAY = 5.0
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
+ARROW_THRESHOLD = 2000.0**2
 REFUEL = FUEL_USAGE / 5
 
 RETREAT_HEALTH_THRESHOLD = 30.0
@@ -420,6 +422,8 @@ class PlayerShip(Ship):
         self.turn_back_L: float = 0.0
         self.turn_back_R: float = 0.0
 
+        self.closest_enemy: Ship | None = None
+
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
 
@@ -488,6 +492,27 @@ class PlayerShip(Ship):
         self.do_rotation_for_player()
 
         super().step(dt)
+
+    def update_closest_enemy(self, enemy_ships: list[BulletEnemy]) -> None:
+        """Find and store the closest enemy from the provided list."""
+        self.closest_enemy = None
+        self.closest_enemy_distance = float("inf")
+
+        for enemy in enemy_ships:
+            dist = self.distance_squared_to(enemy)
+            if dist < self.closest_enemy_distance:
+                self.closest_enemy = enemy
+                self.closest_enemy_distance = dist
+
+    def draw(self, camera: Camera, color: Color | None = None) -> None:
+        """Draw the player ship and enemy indicator if applicable."""
+        super().draw(camera, color)
+
+        if self.closest_enemy:
+            direction = self.closest_enemy.pos_relative_to(self)
+            if direction.length_squared() > ARROW_THRESHOLD:
+                arrow_pos = Pos(self, direction.normalize() * 60)
+                camera.draw_arrow(ENEMY_INDICATOR_COLOR, arrow_pos, direction, 30)
 
 
 @dataclass(kw_only=True)

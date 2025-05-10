@@ -107,6 +107,34 @@ class Camera(Pos):
             clipped_start, clipped_end = clipped_line
             pygame.draw.line(self._surface, color, clipped_start, clipped_end, 1)
 
+    def draw_arrow(self, color: Color, start: Pos, direction: Vec2, size: float) -> None:
+        """Draw an arrow pointing in a specific direction."""
+        direction = direction.normalize()
+
+        # Calculate dimensions
+        shaft_length = size * 0.6
+        shaft_width = size * 0.15
+        head_width = size * 0.5
+
+        # Create directional vectors
+        shaft_vec = direction * shaft_length
+        head_vec = direction * size * 1.4
+        perp_vec = Vec2(-direction.y, direction.x)
+
+        back_r = Pos(start, perp_vec * shaft_width)
+        inside_r = Pos(start, shaft_vec + perp_vec * shaft_width)
+        far_r = Pos(start, shaft_vec + perp_vec * head_width)
+        tip = Pos(start, head_vec)
+        far_l = Pos(start, shaft_vec - perp_vec * head_width)
+        inside_l = Pos(start, shaft_vec - perp_vec * shaft_width)
+        back_l = Pos(start, -perp_vec * shaft_width)
+
+        # Draw the arrow as a polygon with 7 points
+        self.draw_polygon(
+            color,
+            [back_r, inside_r, far_r, tip, far_l, inside_l, back_l],
+        )
+
     def draw_text(self, text: str, pos: Vec2 | None, font: pygame.font.Font, color: Color) -> None:
         """Draw text at a surfacespace-position, or centered on the surface if not provided."""
         rendered = font.render(text, antialias=True, color=color)
