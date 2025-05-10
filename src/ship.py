@@ -22,9 +22,9 @@ GRAY = Color("gray")
 THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("purple")
-MISSILE_ENEMY_COLOR = Color("lime")
+MISSILE_ENEMY_COLOR = Color("lightgoldenrod")
 MARKOV_ENEMY_COLOR = Color("red")
-PLAYER_COLOR = Color("blue")
+PLAYER_COLOR = Color("violetred1")
 ENEMY_INDICATOR_COLOR = Color("red")
 
 # Make sure these are all positive and finite
