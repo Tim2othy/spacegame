@@ -416,10 +416,13 @@ class Universe:
 
         The particles' lifetime is randomly sampled from (1.0, 2.0).
         """
+        angle = random.random() * 360
         for _ in range(n):
-            random_lifetime = random.uniform(1.0, 2.0)
+            random_lifetime = random.lognormvariate(1.5, 0.2)
             random_vel = Vec2(0, 0)
-            random_vel.from_polar((blast_vel * random.random(), random.random() * 360))
+            random_vel.from_polar(
+                (blast_vel * random.lognormvariate(0.3, 0.4), angle + random.normalvariate(0.0, 50.0))
+            )
             self._particles.append(Particle(source, Vec2(0, 0), random_vel, color, random_lifetime))
 
     @global_profiler.profile_method
