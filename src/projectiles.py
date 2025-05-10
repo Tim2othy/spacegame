@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 BULLET_DAMAGE = 16
 ROCKET_DAMAGE = 18
 MISSILE_DAMAGE = 24
-FLARE_DAMAGE = 10
+FLARE_DAMAGE = 6
 # Thrust
 ROCKET_THRUST_COLOR = Color("orange")
 ROCKET_HOMING_THRUST = 1257.0
@@ -33,7 +33,7 @@ ROCKET_MIN_SPEED = 500.0
 
 FLARE_COLOR = Color("yellow")
 
-PROJECTILE_LIFETIME = 50.0  # Lifetime in seconds
+PROJECTILE_LIFETIME = 40.0  # Lifetime in seconds
 
 
 class Bullet(Mover):
