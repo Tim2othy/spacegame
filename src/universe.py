@@ -28,9 +28,9 @@ MU_PLANET_RADIUS = 5.7
 SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
-GRID_RADIAL_SPACING = 1000
-ANGULAR_SPACING = 4
-MAX_RADIUS = 20000
+GRID_RADIAL_SPACING = 2000
+ANGULAR_SPACING = int(360 / 72)
+MAX_RADIUS = 60000
 
 
 class Star(Disk):
@@ -131,7 +131,7 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 200 if options.small else 1400
+        star_size = 25 if options.small else 1400
         num_enemies = 0 if options.small else 20
         num_planets = 0 if options.small else 10
         planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
