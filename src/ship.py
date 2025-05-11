@@ -188,7 +188,7 @@ class Ship(Mover):
 
             # To handle multiple shots per frame:
             while self.gun_cooldown_timer < 0:
-                bullet_vel = self.forward * self._SHIP_PROJECTILE_SPEED
+                bullet_base_vel = self.forward * self._SHIP_PROJECTILE_SPEED
 
                 # When multiple shots are fired per frame,
                 # but we spawn them all at the end of the gunbarrel,
@@ -197,8 +197,23 @@ class Ship(Mover):
                 # by the (time since the shot was fired) * bullet_vel.
                 # The time since the shot was fired is simply the
                 # negative of the current gun_cooldown.
-                gunbarrel_offset = self.forward * self.radius * GUNBARREL_LENGTH
-                bullet_pos = gunbarrel_offset - self.gun_cooldown_timer * bullet_vel
+                gunbarrel_distance = self.radius * GUNBARREL_LENGTH
+                bullet_pos = self.forward * gunbarrel_distance - self.gun_cooldown_timer * bullet_base_vel
+
+                # Calculate tangential velocity
+                # The angular velocity in the physics system is in degrees/second
+                # We need to convert to radians/second for correct physics
+                angular_vel_radians = math.radians(self.angular_velocity)
+
+                # The tangential velocity vector is perpendicular to the radius vector
+                # with magnitude ω×r
+                perpendicular_direction = Vec2(-self.forward.y, self.forward.x)
+
+                # Calculate tangential velocity: v_t = ω [crossp] r = ω * r * perpendicular_unit_vector
+                tangential_vel = perpendicular_direction * angular_vel_radians * gunbarrel_distance
+
+                # Combine all velocity components
+                bullet_vel = bullet_base_vel + tangential_vel
 
                 self.projectiles.append(self.new_bullet(bullet_pos, bullet_vel))
                 self.gun_cooldown_timer += self._SHIP_GUN_COOLDOWN
