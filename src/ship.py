@@ -227,19 +227,30 @@ class Ship(Mover):
             if self.flare_cooldown_timer > 0:
                 self.flare_cooldown_timer = max(0, self.flare_cooldown_timer - dt)
         else:
-            # The ship wants to shoot.
+            # The ship wants to shoot flares.
             self.flare_cooldown_timer -= dt
 
             while self.flare_cooldown_timer < 0:
+                # Convert angular velocity to radians for physics calculations
+                angular_vel_radians = math.radians(self.angular_velocity)
 
                 for _ in range(NUM_FLARES):
                     random_rotation = random.normalvariate(0, SD_FLARE_ANGLE)
                     flare_direction = self.forward.rotate(random_rotation)
-                    flare_vel = -flare_direction * random.normalvariate(
-                        FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED
-                    )
-                    flare_offset = -self.forward * self.radius * 1.2
 
+                    # Calculate base velocity (opposite to flare direction)
+                    base_vel = -flare_direction * random.normalvariate(FLARE_MEAN_RELEASE_SPEED, FLARE_SD_RELEASE_SPEED)
+
+                    # Calculate flare position relative to ship
+                    flare_offset_distance = self.radius * 1.2
+                    flare_offset = -self.forward * flare_offset_distance
+
+                    # Calculate tangential velocity component from ship's rotation
+                    perpendicular_direction = Vec2(-flare_direction.y, flare_direction.x)
+                    tangential_vel = perpendicular_direction * angular_vel_radians * flare_offset_distance
+
+                    # Combine velocities for realistic momentum transfer
+                    flare_vel = base_vel + tangential_vel
                     self.projectiles.append(self.new_flare(flare_offset, flare_vel))
                 self.flare_cooldown_timer += FLARE_RATE_OF_FIRE
 
