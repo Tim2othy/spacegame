@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import GRAVITATIONAL_CONSTANT, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile, Rocket
-from ship import BulletEnemy, EnemyConfig, MarkovEnemy, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
+from ship import BulletEnemy, EnemyConfig, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -150,7 +150,7 @@ class Universe:
                 player.health = float("inf")
 
         if options.small:
-            for enemy in [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy]:
+            for enemy in [BulletEnemy, RocketEnemy, MissileEnemy, BulletEnemy]:
                 random_angle = random.uniform(0, 360)
                 vec = Vec2(0, 0)
                 vec.from_polar((1000, random_angle))
@@ -166,7 +166,7 @@ class Universe:
                 vec.from_polar((random_radius, random_angle))
 
                 spawn_weights = [0.3, 0.3, 0.2, 0.2]
-                enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy], spawn_weights)[0]
+                enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy, BulletEnemy], spawn_weights)[0]
                 targeting = random.choice(player_ships)
 
                 universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)

@@ -23,8 +23,7 @@ THRUST_COLOR = Color("orange")
 BULLET_ENEMY_COLOR = Color("lightblue")
 ROCKET_ENEMY_COLOR = Color("aquamarine4")
 MISSILE_ENEMY_COLOR = Color("lightgoldenrod")
-MARKOV_ENEMY_COLOR = Color("lightcoral")
-PLAYER_COLOR = Color("lightgreen")
+PLAYER_COLOR = Color("lightcoral")
 ENEMY_INDICATOR_COLOR = Color("red")
 
 # Make sure these are all positive and finite
@@ -205,7 +204,7 @@ class Ship(Mover):
                 angular_vel_radians = math.radians(self.angular_velocity)
 
                 # The tangential velocity vector is perpendicular to the radius vector
-                # with magnitude ω×r
+                # with magnitude ω [cross] r
                 perpendicular_direction = Vec2(-self.forward.y, self.forward.x)
 
                 # Calculate tangential velocity: v_t = ω [crossp] r = ω * r * perpendicular_unit_vector
@@ -593,13 +592,6 @@ class MissileEnemy(BulletEnemy):
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new missile relative to `self` targeting `self.target`."""
         return Missile(self, pos, vel, self.projectile_color, self.target)
-
-
-class MarkovEnemy(BulletEnemy):
-    """An enemy ship using Markov chain AI for more sophisticated behavior."""
-
-    # Class configuration
-    _SHIP_COLOR = MARKOV_ENEMY_COLOR
 
 
 class EnemyAI(BasicAI):

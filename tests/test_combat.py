@@ -10,7 +10,6 @@ from ship import (
     AIState,
     BulletEnemy,
     EnemyConfig,
-    MarkovEnemy,
     Matrix,
     MissileEnemy,
     PlayerConfig,
@@ -19,7 +18,7 @@ from ship import (
 from universe import PlanetConfig, Universe
 
 
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEnemy]) -> None:
     monkeypatch.setattr(Universe, "apply_gravity", lambda _self, _dt: None)
     monkeypatch.setattr(BulletEnemy, "step", lambda _self, _dt: None)
@@ -79,7 +78,7 @@ def test_transition_matrix_sums(matrix: Matrix) -> None:
         assert total == 1.0, f"Row for {from_state} does not sum to 1: {total}"
 
 
-@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy, MarkovEnemy])
+@pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
 @pytest.mark.parametrize("enemy_starting_pos", [Vec2(0, 600), Vec2(-400, 500)])
 def test_enemy_hostility(enemy_type: type[BulletEnemy], enemy_starting_pos: Vec2) -> None:
     """Verify that any enemy will eventually find and hit the player."""
@@ -101,7 +100,7 @@ def test_enemy_retreat_behavior() -> None:
     """Test that a MarkovEnemy moves away from player when in retreat mode."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
+    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), BulletEnemy)
 
     # Run simulation for a few seconds
     for _ in range(10):
@@ -120,7 +119,7 @@ def test_aim_behaviour(player_vel: Vec2, enemy_vel: Vec2) -> None:
     """Test that a MarkovEnemy will hit a moving player with various relative velocities."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
+    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), BulletEnemy)
 
     player._add_vel(player_vel)
     enemy._add_vel(enemy_vel)
@@ -135,7 +134,7 @@ def test_markov_low_health_search() -> None:
     """Test whether a low health MarkovEnemy eventually finds a distant player."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), MarkovEnemy)
+    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(250, 0), target_ship=player), BulletEnemy)
     enemy.health -= 20.0
     enemy.ai.current_state = AIState.RETREAT
 
@@ -153,7 +152,7 @@ def test_search_behaviour() -> None:
     """Test that an enemy moves towards a player when in search mode."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy: MarkovEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(5000, 0), target_ship=player), MarkovEnemy)
+    enemy: BulletEnemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(5000, 0), target_ship=player), BulletEnemy)
 
     distance_0 = player.distance_to(enemy)
 
@@ -162,7 +161,7 @@ def test_search_behaviour() -> None:
     for _ in range(1000):
         universe.step(0.01)
         if enemy.ai.current_state != AIState.RAM:
-            pytest.fail("Enemy should be in search mode")
+            pytest.fail("Enemy should be in RAM mode")
             break
 
     distance_1 = player.distance_to(enemy)
@@ -175,7 +174,7 @@ def test_enemy_healing() -> None:
     """Test that an enemy ship will heal when damaged and away from the player."""
     universe = Universe(None, 100)
     player = universe.add_player(PlayerConfig(relative_pos=Vec2(0, 0)))
-    enemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(10000, 10000), target_ship=player), MarkovEnemy)
+    enemy = universe.add_enemy(EnemyConfig(relative_pos=Vec2(10000, 10000), target_ship=player), BulletEnemy)
     starting_health = 5.0
     health_threshold = 9.0
     enemy.health = starting_health
