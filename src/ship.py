@@ -617,23 +617,24 @@ class EnemyAI(BasicAI):
 
     def _transition_markov(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        # Get context information
-        low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
+        if random.random() < BEHAVIOUR_PROBABILITY:
+            self.current_state = AIState.RAM
+        else:
+            low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
+            match (self.can_see_target, low_health):
+                case (True, True):
+                    matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
+                case (False, True):
+                    matrix = _LOW_HEALTH_MATRIX
+                case (True, False):
+                    matrix = _PLAYER_VISIBLE_MATRIX
+                case (False, False):
+                    matrix = _DEFAULT_MATRIX
 
-        match (self.can_see_target, low_health):
-            case (True, True):
-                matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
-            case (False, True):
-                matrix = _LOW_HEALTH_MATRIX
-            case (True, False):
-                matrix = _PLAYER_VISIBLE_MATRIX
-            case (False, False):
-                matrix = _DEFAULT_MATRIX
-
-        # Extract probabilities for current state
-        current_row: MatrixRow = matrix[self.current_state]
-        states, probabilities = list(current_row.keys()), list(current_row.values())
-        self.current_state = random.choices(states, probabilities)[0]
+            # Extract probabilities for current state
+            current_row: MatrixRow = matrix[self.current_state]
+            states, probabilities = list(current_row.keys()), list(current_row.values())
+            self.current_state = random.choices(states, probabilities)[0]
 
     def _transition_simple(self) -> None:
         if random.random() < BEHAVIOUR_PROBABILITY:
