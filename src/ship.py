@@ -603,8 +603,6 @@ class EnemyAI(BasicAI):
         self.ship: BulletEnemy = ship
         self.current_state = AIState.RAM
         self.can_see_target: bool = False
-        self.x: float = 0.0
-        self.y: float = 0.0
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
@@ -653,14 +651,6 @@ class EnemyAI(BasicAI):
             case AIState.RETREAT:
                 desired_direction = self._execute_retreat()
 
-        if (random.random() < PROB_ADD_NOISE) and (not self.can_see_target):
-            distance_to_target = self.delta_target.length()
-            self.x, self.y = (
-                random.gauss(sigma=math.sqrt(distance_to_target)),
-                random.gauss(sigma=math.sqrt(distance_to_target)),
-            )
-
-        desired_direction += Vec2(self.x, self.y)
         if (
             not self.can_see_target
             and self.ship.health < RETREAT_HEALTH_THRESHOLD
@@ -682,7 +672,7 @@ class EnemyAI(BasicAI):
     def _execute_attack(self) -> Vec2:
         """Return desired direction and thrust state for attack behavior."""
         self.ship.thrust_state = self._keep_distance()
-        return self.delta_target + Vec2(random.random(), random.random()) * 3
+        return self.delta_target
 
     def _execute_aim(self) -> Vec2:
         """Return desired direction and thrust state for aim behavior."""
