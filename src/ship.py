@@ -246,7 +246,7 @@ class Ship(Mover):
                     flare_offset = -self.forward * flare_offset_distance
 
                     # Calculate tangential velocity component from ship's rotation
-                    perpendicular_direction = Vec2(-flare_direction.y, flare_direction.x)
+                    perpendicular_direction = Vec2(-flare_offset.y, flare_offset.x)
                     tangential_vel = perpendicular_direction * angular_vel_radians * flare_offset_distance
 
                     # Combine velocities for realistic momentum transfer
