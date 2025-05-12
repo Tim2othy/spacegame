@@ -710,50 +710,25 @@ class EnemyAI(BasicAI):
         return self.delta_target + Vec2(random.random(), random.random()) * 3
 
     def _execute_aim(self) -> Vec2:
-        """Return desired direction and thrust state for aim behavior.
-
-        We need to find the direction where:
-            target_pos + target_vel*t = ship_pos + ship_vel*t + direction*bullet_speed*t
-        Which is equivalent to:
-            relative_pos + relative_vel*t = direction*bullet_speed*t
-
-        Solve quadratic equation for intercept time:
-            |relative_pos + relative_vel*t| = bullet_speed*t
-
-        This expands to:
-            |relative_pos|^2 + 2*relative_pos·relative_vel*t + (|relative_vel|^2 - bullet_speed^2)*t^2 = 0
-        """
-        # Relative position and velocity
+        """Return desired direction and thrust state for aim behavior."""
+        self.ship.thrust_state = self._keep_distance()
         relative_pos = self.delta_target
         relative_vel = self.delta_target_vel
-        self.ship.thrust_state = self._keep_distance()
 
         # Quadratic equation coefficients:
         a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
         b = 2 * relative_pos.dot(relative_vel)
         c = relative_pos.length_squared()
 
-        # Standard quadratic formula
         discriminant = b**2 - 4 * a * c
+        if discriminant < 0 or a == 0.0:
+            return relative_pos
 
-        if discriminant < 0:
-            # No real solution exists (target unreachable), Fall back to simpler approach
-            return relative_pos + relative_vel * (relative_pos.length() / BULLET_RELEASE_SPEED)
-
-        a = 1.0 if a == 0.0 else a
         # Calculate both solutions
         t1 = (-b + math.sqrt(discriminant)) / (2 * a)
         t2 = (-b - math.sqrt(discriminant)) / (2 * a)
 
-        # Select the smallest positive time
-        if t1 > 0 and t2 > 0:
-            intercept_time = min(t1, t2)
-        elif t1 > 0:
-            intercept_time = t1
-        elif t2 > 0:
-            intercept_time = t2
-        else:
-            intercept_time = relative_pos.length() / BULLET_RELEASE_SPEED  # No positive solution: use fallback
+        intercept_time = min(max(0, t1), max(0, t2))
         return relative_pos + relative_vel * intercept_time
 
     def _execute_retreat(self) -> Vec2:
