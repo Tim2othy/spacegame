@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
 FUEL_USAGE = 0.03
+APPROACH_SPEED = 500
 
 
 class ThrustState(Enum):
@@ -343,3 +344,8 @@ class BasicAI:
         self.action_timer: float = 0.0
         self.delta_target: Vec2 = Vec2(1, 1)
         self.delta_target_vel: Vec2 = Vec2(1, 1)
+
+    def _execute_ram(self) -> Vec2:
+        """Return desired direction and thrust state for ram behavior."""
+        desired_relative_vel = self.delta_target.normalize() * APPROACH_SPEED
+        return desired_relative_vel + self.delta_target_vel

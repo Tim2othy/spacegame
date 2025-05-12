@@ -12,7 +12,18 @@ import pygame
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import FUEL, FUEL_USAGE, SMALL_ANGULAR_VEL, BasicAI, Mover, Pos, PosVel, RotationState, ThrustState
+from physics import (
+    APPROACH_SPEED,
+    FUEL,
+    FUEL_USAGE,
+    SMALL_ANGULAR_VEL,
+    BasicAI,
+    Mover,
+    Pos,
+    PosVel,
+    RotationState,
+    ThrustState,
+)
 from projectiles import Bullet, Flare, Missile, Rocket
 
 if TYPE_CHECKING:
@@ -52,7 +63,6 @@ REFUEL = FUEL_USAGE / 5
 RETREAT_HEALTH_THRESHOLD = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
-DESIRED_APPROACH_SPEED = 500
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
 BEHAVIOUR_PROBABILITY = 0.2
@@ -644,6 +654,9 @@ class EnemyAI(BasicAI):
         match self.current_state:
             case AIState.RAM:
                 desired_direction = self._execute_ram()
+                self.ship.thrust_state = (
+                    ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
+                )
             case AIState.ATTACK:
                 desired_direction = self._execute_attack()
             case AIState.AIM:
@@ -660,14 +673,6 @@ class EnemyAI(BasicAI):
             return
 
         self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
-
-    def _execute_ram(self) -> Vec2:
-        """Return desired direction and thrust state for ram behavior."""
-        self.ship.thrust_state = (
-            ThrustState.FORWARD if self.delta_target_vel.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
-        )
-        desired_relative_vel = self.delta_target.normalize() * DESIRED_APPROACH_SPEED
-        return desired_relative_vel + self.delta_target_vel
 
     def _execute_attack(self) -> Vec2:
         """Return desired direction and thrust state for attack behavior."""
