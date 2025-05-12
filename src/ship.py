@@ -63,39 +63,38 @@ PROB_ADD_NOISE = 0.01
 class AIState(Enum):
     """Possible AI states for enemies chain."""
 
-    SEARCH = auto()
+    RAM = auto()
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
-    RAM = auto()
 
 
 type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
 
 _DEFAULT_MATRIX: Matrix = {
-    AIState.SEARCH: {AIState.SEARCH: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.8},
-    AIState.AIM: {AIState.SEARCH: 1.0},
-    AIState.RETREAT: {AIState.SEARCH: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
+    AIState.RAM: {AIState.RAM: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
+    AIState.ATTACK: {AIState.RAM: 0.2, AIState.ATTACK: 0.8},
+    AIState.AIM: {AIState.RAM: 1.0},
+    AIState.RETREAT: {AIState.RAM: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
 }
 
 _LOW_HEALTH_MATRIX: Matrix = {
-    AIState.SEARCH: {AIState.SEARCH: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
-    AIState.ATTACK: {AIState.SEARCH: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
+    AIState.RAM: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
+    AIState.ATTACK: {AIState.RAM: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
     AIState.AIM: {AIState.RETREAT: 1.0},
-    AIState.RETREAT: {AIState.SEARCH: 0.03, AIState.ATTACK: 0.02, AIState.RETREAT: 0.95},
+    AIState.RETREAT: {AIState.RAM: 0.03, AIState.ATTACK: 0.02, AIState.RETREAT: 0.95},
 }
 
 _PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.SEARCH: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
+    AIState.RAM: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
     AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.RETREAT: {AIState.SEARCH: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
+    AIState.RETREAT: {AIState.RAM: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
 }
 
 _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.SEARCH: {AIState.SEARCH: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
+    AIState.RAM: {AIState.RAM: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
     AIState.ATTACK: {AIState.ATTACK: 0.0, AIState.AIM: 0.1, AIState.RETREAT: 0.9},
     AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
     AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
@@ -610,31 +609,28 @@ class EnemyAI(BasicAI):
         """Create a new AI controller."""
         super().__init__()
         self.ship: BulletEnemy = ship
-        self.current_state = AIState.SEARCH
+        self.current_state = AIState.RAM
         self.can_see_target: bool = False
         self.x: float = 0.0
         self.y: float = 0.0
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        if random.random() < BEHAVIOUR_PROBABILITY:
-            self.current_state = AIState.RAM
-        else:
-            low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
-            match (self.can_see_target, low_health):
-                case (True, True):
-                    matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
-                case (False, True):
-                    matrix = _LOW_HEALTH_MATRIX
-                case (True, False):
-                    matrix = _PLAYER_VISIBLE_MATRIX
-                case (False, False):
-                    matrix = _DEFAULT_MATRIX
+        low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
+        match (self.can_see_target, low_health):
+            case (True, True):
+                matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
+            case (False, True):
+                matrix = _LOW_HEALTH_MATRIX
+            case (True, False):
+                matrix = _PLAYER_VISIBLE_MATRIX
+            case (False, False):
+                matrix = _DEFAULT_MATRIX
 
-            # Extract probabilities for current state
-            current_row: MatrixRow = matrix[self.current_state]
-            states, probabilities = list(current_row.keys()), list(current_row.values())
-            self.current_state = random.choices(states, probabilities)[0]
+        # Extract probabilities for current state
+        current_row: MatrixRow = matrix[self.current_state]
+        states, probabilities = list(current_row.keys()), list(current_row.values())
+        self.current_state = random.choices(states, probabilities)[0]
 
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
@@ -656,16 +652,14 @@ class EnemyAI(BasicAI):
         desired_direction = Vec2(0, 0)
 
         match self.current_state:
-            case AIState.SEARCH:
-                desired_direction = self._execute_search()
+            case AIState.RAM:
+                desired_direction = self._execute_ram()
             case AIState.ATTACK:
                 desired_direction = self._execute_attack()
             case AIState.AIM:
                 desired_direction = self._execute_aim()
             case AIState.RETREAT:
                 desired_direction = self._execute_retreat()
-            case AIState.RAM:
-                desired_direction = self._execute_ram()
 
         if (random.random() < PROB_ADD_NOISE) and (not self.can_see_target):
             distance_to_target = self.delta_target.length()
@@ -685,8 +679,8 @@ class EnemyAI(BasicAI):
 
         self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
 
-    def _execute_search(self) -> Vec2:
-        """Return desired direction and thrust state for search behavior."""
+    def _execute_ram(self) -> Vec2:
+        """Return desired direction and thrust state for ram behavior."""
         self.ship.thrust_state = (
             ThrustState.FORWARD if self.delta_target_vel.length() < DESIRED_APPROACH_SPEED else ThrustState.NONE
         )
@@ -727,11 +721,6 @@ class EnemyAI(BasicAI):
             return Vec2(0, 0)
         self.ship.thrust_state = ThrustState.FORWARD
         return -self.delta_target
-
-    def _execute_ram(self) -> Vec2:
-        """Return the direction vector and thrust state for ram behavior."""
-        self.ship.thrust_state = ThrustState.FORWARD
-        return self.delta_target + self.delta_target_vel
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())

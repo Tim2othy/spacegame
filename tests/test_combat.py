@@ -158,10 +158,10 @@ def test_search_behaviour() -> None:
     distance_0 = player.distance_to(enemy)
 
     enemy.ai.action_timer = 60000
-    enemy.ai.current_state = AIState.SEARCH
+    enemy.ai.current_state = AIState.RAM
     for _ in range(1000):
         universe.step(0.01)
-        if enemy.ai.current_state != AIState.SEARCH:
+        if enemy.ai.current_state != AIState.RAM:
             pytest.fail("Enemy should be in search mode")
             break
 
