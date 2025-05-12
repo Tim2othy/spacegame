@@ -615,7 +615,7 @@ class EnemyAI(BasicAI):
         self.x: float = 0.0
         self.y: float = 0.0
 
-    def _transition_markov(self) -> None:
+    def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         if random.random() < BEHAVIOUR_PROBABILITY:
             self.current_state = AIState.RAM
@@ -636,14 +636,6 @@ class EnemyAI(BasicAI):
             states, probabilities = list(current_row.keys()), list(current_row.values())
             self.current_state = random.choices(states, probabilities)[0]
 
-    def _transition_simple(self) -> None:
-        if random.random() < BEHAVIOUR_PROBABILITY:
-            self.current_state = AIState.RAM
-        elif random.random() < BEHAVIOUR_PROBABILITY:
-            self.current_state = AIState.AIM
-        else:
-            self.current_state = AIState.ATTACK
-
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer -= dt
@@ -651,11 +643,7 @@ class EnemyAI(BasicAI):
 
         if self.action_timer <= 0:
             self.action_timer = ENEMY_ACTION_TIMER
-
-            if isinstance(self.ship, MarkovEnemy):
-                self._transition_markov()
-            else:
-                self._transition_simple()
+            self._transition()
 
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
         self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
