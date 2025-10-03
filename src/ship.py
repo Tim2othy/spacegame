@@ -53,7 +53,7 @@ SD_FLARE_ANGLE = 30
 
 HEALTH = 100
 DAMAGE_INDICATOR_TIME = 1
-REPAIR_DELAY = 5.0
+REPAIR_DELAY = 1.0  # Is this in seconds?
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
@@ -284,7 +284,7 @@ class Ship(Mover):
         self.repair_eligibility_timer += 0.01
 
         if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < HEALTH:
-            self.health += 0.01
+            self.health += 0.05
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
