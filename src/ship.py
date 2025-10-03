@@ -53,20 +53,20 @@ SD_FLARE_ANGLE = 30
 
 HEALTH = 100
 DAMAGE_INDICATOR_TIME = 1
-REPAIR_DELAY = 5.0
+REPAIR_DELAY = 1.0  # Is this in seconds?
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
 ARROW_THRESHOLD = 2000.0**2
 REFUEL = FUEL_USAGE / 5
 
-RETREAT_HEALTH_THRESHOLD = 30.0
+LOW_HEALTH = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
-BEHAVIOUR_PROBABILITY = 0.2
-PROB_ADD_NOISE = 0.01
+RETREAT_C_PARAMETER = 60
+RETREAT_B_PARAMETER = 0.33
 
 
 class AIState(Enum):
@@ -165,6 +165,7 @@ class Ship(Mover):
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
+        self.max_repair_health: float = HEALTH
 
         self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
@@ -271,6 +272,12 @@ class Ship(Mover):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
+            # Sometimes degrade the ship's maximum repairable health.
+            p = 1 - math.exp(-0.0026 * damage**2)
+            # sigmoid like function with p(0) = 0, p(inf) = 1
+            if random.random() < p:
+                self.max_repair_health -= damage * random.random()
+
     def repair_refuel(self) -> None:
         """Repair the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds. Refuel."""
         if self.fuel < FUEL:
@@ -285,8 +292,8 @@ class Ship(Mover):
 
         self.repair_eligibility_timer += 0.01
 
-        if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < HEALTH:
-            self.health += 0.01
+        if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < self.max_repair_health - 0.05:
+            self.health += 0.05
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
@@ -616,7 +623,11 @@ class EnemyAI(BasicAI):
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
+        m = self.ship.max_repair_health
+        # formula makes threshold vary from 36 at 100 to 6 at 10 health
+        low_health = self.ship.health < (100 - m) / (100 * RETREAT_C_PARAMETER) * (
+            RETREAT_B_PARAMETER * (RETREAT_C_PARAMETER - 1) * (m - 50) + 50 * (RETREAT_C_PARAMETER + 1)
+        )
         match (self.can_see_target, low_health):
             case (True, True):
                 matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
@@ -664,11 +675,7 @@ class EnemyAI(BasicAI):
             case AIState.RETREAT:
                 desired_direction = self._execute_retreat()
 
-        if (
-            not self.can_see_target
-            and self.ship.health < RETREAT_HEALTH_THRESHOLD
-            and self.current_state == AIState.RETREAT
-        ):
+        if not self.can_see_target and self.ship.health < LOW_HEALTH and self.current_state == AIState.RETREAT:
             self.ship.rotation_state = RotationState.NONE
             return
 
