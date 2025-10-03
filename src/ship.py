@@ -60,7 +60,7 @@ ROT_STATE_DELTA = 1.0
 ARROW_THRESHOLD = 2000.0**2
 REFUEL = FUEL_USAGE / 5
 
-RETREAT_HEALTH_THRESHOLD = 30.0
+LOW_HEALTH = 30.0
 ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 APPROACH_LOWER = 50
@@ -621,7 +621,7 @@ class EnemyAI(BasicAI):
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        low_health = self.ship.health < RETREAT_HEALTH_THRESHOLD
+        low_health = self.ship.health < LOW_HEALTH
         match (self.can_see_target, low_health):
             case (True, True):
                 matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
@@ -669,11 +669,7 @@ class EnemyAI(BasicAI):
             case AIState.RETREAT:
                 desired_direction = self._execute_retreat()
 
-        if (
-            not self.can_see_target
-            and self.ship.health < RETREAT_HEALTH_THRESHOLD
-            and self.current_state == AIState.RETREAT
-        ):
+        if not self.can_see_target and self.ship.health < LOW_HEALTH and self.current_state == AIState.RETREAT:
             self.ship.rotation_state = RotationState.NONE
             return
 
