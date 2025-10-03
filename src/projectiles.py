@@ -97,8 +97,12 @@ class Rocket(Bullet):
         right = -left
         backward = -forward
 
-        current_cycle = int(self.ai.action_timer / self.CYCLE_DURATION)
-        time_in_current_cycle = self.ai.action_timer % self.CYCLE_DURATION
+        # Convert decreasing timer to the equivalent increasing timer logic
+        total_duration = ROCKET_TIMES_HOMES * self.CYCLE_DURATION
+        elapsed_time = total_duration - self.ai.action_timer
+
+        current_cycle = int(elapsed_time / self.CYCLE_DURATION)
+        time_in_current_cycle = elapsed_time % self.CYCLE_DURATION
         is_homing_phase = time_in_current_cycle <= self.HOMING_DURATION
 
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase:
@@ -167,24 +171,35 @@ class Flare(Bullet):
 
 
 class ProjectileAI(BasicAI):
-    """AI for enemy ships."""
+    """AI for enemy ships with a countdown timer instead of a count-up timer."""
 
     def __init__(self, projectile: Rocket) -> None:
         """Create a new AI controller."""
         super().__init__()
         self.projectile: Rocket = projectile
 
+        # Initialize with total homing time
+        total_cycle_time = ROCKET_TIMES_HOMES * projectile.CYCLE_DURATION
+        self.action_timer = total_cycle_time
+
     def step(self, dt: float) -> None:
-        """Transition state and apply appropriate behavior for different enemy types."""
-        self.action_timer += dt
+        """Apply homing behavior based on a decreasing timer."""
+        # Decrease timer instead of increasing it
+        self.action_timer -= dt
+
         self.delta_target = self.projectile.target.pos_relative_to(self.projectile)
         self.delta_target_vel = self.projectile.target.vel_relative_to(self.projectile)
 
-        current_cycle = int(self.action_timer / self.projectile.CYCLE_DURATION)
-        time_in_current_cycle = self.action_timer % self.projectile.CYCLE_DURATION
+        # Determine which cycle we're in and position within that cycle
+        total_duration = ROCKET_TIMES_HOMES * self.projectile.CYCLE_DURATION
+        elapsed_time = total_duration - self.action_timer
+
+        # Calculate the same values as in the original version
+        current_cycle = int(elapsed_time / self.projectile.CYCLE_DURATION)
+        time_in_current_cycle = elapsed_time % self.projectile.CYCLE_DURATION
         is_homing_phase = time_in_current_cycle <= self.projectile.HOMING_DURATION
 
-        # Only home if we're in a homing phase and haven't exceeded 3 cycles
+        # Logic remains the same as original
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and self.delta_target != Vec2(0, 0):
             self.my_force = self._execute_ram()
 
