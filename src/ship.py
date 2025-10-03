@@ -65,6 +65,8 @@ ENEMY_FIRE_RANGE_SQUARED = 1700**2
 ENEMY_ACTION_TIMER = 6
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
+RETREAT_C_PARAMETER = 60
+RETREAT_B_PARAMETER = 0.33
 
 
 class AIState(Enum):
@@ -621,7 +623,11 @@ class EnemyAI(BasicAI):
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        low_health = self.ship.health < LOW_HEALTH
+        m = self.ship.max_repair_health
+        # formula makes threshold vary from 36 at 100 to 6 at 10 health
+        low_health = self.ship.health < (100 - m) / (100 * RETREAT_C_PARAMETER) * (
+            RETREAT_B_PARAMETER * (RETREAT_C_PARAMETER - 1) * (m - 50) + 50 * (RETREAT_C_PARAMETER + 1)
+        )
         match (self.can_see_target, low_health):
             case (True, True):
                 matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
