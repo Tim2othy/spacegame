@@ -53,7 +53,7 @@ SD_FLARE_ANGLE = 30
 
 HEALTH = 100
 DAMAGE_INDICATOR_TIME = 1
-REPAIR_DELAY = 5.0
+REPAIR_DELAY = 1.0  # Is this in seconds?
 GUNBARREL_LENGTH = 3  # relative to radius
 GUNBARREL_WIDTH = 0.5  # relative to radius
 ROT_STATE_DELTA = 1.0
@@ -165,6 +165,7 @@ class Ship(Mover):
 
         self.projectiles: list[Bullet] = []
         self.health: float = HEALTH
+        self.max_repair_health: float = HEALTH
 
         self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
@@ -271,6 +272,12 @@ class Ship(Mover):
             self.health -= damage
             self.damage_indicator_timer = DAMAGE_INDICATOR_TIME
 
+            # Sometimes degrade the ship's maximum repairable health.
+            p = 1 - math.exp(-0.0026 * damage**2)
+            # sigmoid like function with p(0) = 0, p(inf) = 1
+            if random.random() < p:
+                self.max_repair_health -= damage * random.random()
+
     def repair_refuel(self) -> None:
         """Repair the ship, if it hasn't been damaged and no thrusters have been active for 5 seconds. Refuel."""
         if self.fuel < FUEL:
@@ -285,8 +292,8 @@ class Ship(Mover):
 
         self.repair_eligibility_timer += 0.01
 
-        if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < HEALTH:
-            self.health += 0.01
+        if self.repair_eligibility_timer >= REPAIR_DELAY and self.health < self.max_repair_health - 0.05:
+            self.health += 0.05
 
     def step(self, dt: float) -> None:
         """Step physics, control, and `self`'s bullets."""
