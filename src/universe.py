@@ -593,6 +593,8 @@ class Universe:
         text_v = 10
         text_v = texty(text_v, f"{fps:.0f} fps")
         text_v = texty(text_v, f"Health: {player.health:.0f}")
+        if player.max_repair_health - player.health > 1:
+            text_v = texty(text_v, f"Repairable Damage: {player.max_repair_health - player.health:.0f}")
         text_v = texty(text_v, f"Fuel: {player.fuel:.0f}")
 
         enemy_count = len(self._enemy_ships)
