@@ -596,7 +596,17 @@ class Universe:
         if player.max_repair_health - player.health > 1:
             text_v = texty(text_v, f"Repairable Damage: {player.max_repair_health - player.health:.0f}")
         text_v = texty(text_v, f"Fuel: {player.fuel:.0f}")
-
+        """
+        Useful for debugging purposes:
+        if player.closest_enemy:
+            direction = player.closest_enemy.pos_relative_to(player)
+            text_v = texty(
+                text_v, f"Closest Enemy at: {direction[0]:.0f},{direction[1]:.0f} distance is {direction.length():.0f}"
+            )
+            text_v = texty(text_v, f"Enemy State: {player.closest_enemy.ai.current_state}")
+            text_v = texty(text_v, f"Enemy Health: {player.closest_enemy.health:.0f}")
+            text_v = texty(text_v, f"Enemy Low Health: {player.closest_enemy.ai.low_health}")
+        """
         enemy_count = len(self._enemy_ships)
         text_v = texty(text_v, f"Enemies left: {enemy_count}")
 
