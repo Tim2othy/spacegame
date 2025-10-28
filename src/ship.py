@@ -458,7 +458,7 @@ class PlayerShip(Ship):
         self.turn_back_L: float = 0.0
         self.turn_back_R: float = 0.0
 
-        self.closest_enemy: Ship | None = None
+        self.closest_enemy: BulletEnemy | None = None
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
