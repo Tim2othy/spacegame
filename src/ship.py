@@ -80,10 +80,10 @@ type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
 
 _DEFAULT_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.RAM: 0.2, AIState.ATTACK: 0.8},
+    AIState.RAM: {AIState.RAM: 0.85, AIState.ATTACK: 0.1, AIState.RETREAT: 0.05},
+    AIState.ATTACK: {AIState.RAM: 0.5, AIState.ATTACK: 0.5},
     AIState.AIM: {AIState.RAM: 1.0},
-    AIState.RETREAT: {AIState.RAM: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
+    AIState.RETREAT: {AIState.RAM: 0.7, AIState.ATTACK: 0.1, AIState.RETREAT: 0.2},
     AIState.HEAL: {AIState.RAM: 0.3, AIState.HEAL: 0.7},
 }
 
