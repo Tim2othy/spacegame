@@ -668,9 +668,11 @@ class EnemyAI(BasicAI):
             case AIState.RETREAT:
                 self._execute_retreat()
             case AIState.HEAL:
-                self.ship.thrust_state = ThrustState.NONE
-                self.ship.rotation_state = RotationState.NONE
-                return
+                if self.ship.max_repair_health - self.ship.health > 1:
+                    self.ship.thrust_state = ThrustState.NONE
+                    self.ship.rotation_state = RotationState.NONE
+                    return
+                self._execute_ram()
 
         self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
