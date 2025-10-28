@@ -598,7 +598,7 @@ class Universe:
         text_v = texty(text_v, f"Fuel: {player.fuel:.0f}")
 
         enemy_count = len(self._enemy_ships)
-        texty(text_v, f"Enemies left: {enemy_count}")
+        text_v = texty(text_v, f"Enemies left: {enemy_count}")
 
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
