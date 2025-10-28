@@ -691,24 +691,22 @@ class EnemyAI(BasicAI):
     def _execute_aim(self) -> None:
         """Return desired direction and thrust state for aim behavior."""
         self.ship.thrust_state = self._keep_distance()
-        relative_pos = self.delta_target
-        relative_vel = self.delta_target_vel
 
         # Quadratic equation coefficients:
-        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
-        b = 2 * relative_pos.dot(relative_vel)
-        c = relative_pos.length_squared()
+        a = self.delta_target_vel.length_squared() - BULLET_RELEASE_SPEED**2
+        b = 2 * self.delta_target.dot(self.delta_target_vel)
+        c = self.delta_target.length_squared()
 
         discriminant = b**2 - 4 * a * c
         if discriminant < 0 or a == 0.0:
-            self.desired_direction = relative_pos
+            self.desired_direction = self.delta_target
         else:
             # Calculate both solutions
             t1 = (-b + math.sqrt(discriminant)) / (2 * a)
             t2 = (-b - math.sqrt(discriminant)) / (2 * a)
 
             intercept_time = min(max(0, t1), max(0, t2))
-            self.desired_direction = relative_pos + relative_vel * intercept_time
+            self.desired_direction = self.delta_target + self.delta_target_vel * intercept_time
 
     def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
