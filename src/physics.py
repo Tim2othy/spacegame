@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
 FUEL_USAGE = 0.03
-APPROACH_SPEED = 500
+APPROACH_SPEED = 1000.0
 
 
 class ThrustState(Enum):
@@ -274,8 +274,10 @@ class Mover(Disk):
         direction.from_polar((1, self.angle))
         return direction
 
-    def calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+    def calculate_rotation(self, desired_direction: Vec2 | None) -> RotationState:
         """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
+        if desired_direction is None:
+            return RotationState.NONE
         current_angle = self.angle
         angular_velocity = self.angular_velocity
         desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
@@ -345,7 +347,7 @@ class BasicAI:
         self.delta_target: Vec2 = Vec2(1, 1)
         self.delta_target_vel: Vec2 = Vec2(1, 1)
 
-    def _execute_ram(self) -> Vec2:
+    def _execute_ram(self) -> None:
         """Return desired direction and thrust state for ram behavior."""
         desired_relative_vel = self.delta_target.normalize() * APPROACH_SPEED
-        return desired_relative_vel + self.delta_target_vel
+        self.desired_direction = desired_relative_vel + self.delta_target_vel

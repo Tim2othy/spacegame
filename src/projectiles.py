@@ -201,7 +201,7 @@ class ProjectileAI(BasicAI):
 
         # Logic remains the same as original
         if current_cycle < ROCKET_TIMES_HOMES and is_homing_phase and self.delta_target != Vec2(0, 0):
-            self.my_force = self._execute_ram()
+            self._execute_ram()
 
-        self.projectile.rotation_state = self.projectile.calculate_rotation(self.my_force)
+        self.projectile.rotation_state = self.projectile.calculate_rotation(self.desired_direction)
         self.projectile.thrust_state = ThrustState.FORWARD

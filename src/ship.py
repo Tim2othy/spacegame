@@ -73,37 +73,26 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
+    HEAL = auto()
 
 
 type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
 
 _DEFAULT_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.6, AIState.ATTACK: 0.2, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.RAM: 0.2, AIState.ATTACK: 0.8},
-    AIState.AIM: {AIState.RAM: 1.0},
-    AIState.RETREAT: {AIState.RAM: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
-}
-
-_LOW_HEALTH_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
-    AIState.ATTACK: {AIState.RAM: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
-    AIState.AIM: {AIState.RETREAT: 1.0},
-    AIState.RETREAT: {AIState.RAM: 0.03, AIState.ATTACK: 0.02, AIState.RETREAT: 0.95},
+    AIState.RAM: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
+    AIState.ATTACK: {AIState.RAM: 0.9, AIState.AIM: 0.1},
+    AIState.AIM: {AIState.RAM: 0.9, AIState.ATTACK: 0.1},
+    AIState.RETREAT: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
+    AIState.HEAL: {AIState.RAM: 0.3, AIState.HEAL: 0.7},
 }
 
 _PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.RAM: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
-    AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
-    AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.RETREAT: {AIState.RAM: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
-}
-
-_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.ATTACK: 0.0, AIState.AIM: 0.1, AIState.RETREAT: 0.9},
-    AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
-    AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+    AIState.RAM: {AIState.ATTACK: 0.9, AIState.AIM: 0.1},
+    AIState.ATTACK: {AIState.RAM: 0.1, AIState.ATTACK: 0.7, AIState.AIM: 0.2},
+    AIState.AIM: {AIState.RAM: 0.05, AIState.ATTACK: 0.05, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
+    AIState.RETREAT: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.AIM: 0.1, AIState.RETREAT: 0.2},
+    AIState.HEAL: {AIState.AIM: 1.0},
 }
 
 
@@ -257,7 +246,7 @@ class Ship(Mover):
             self.flare_cooldown_timer = FLARE_RATE_OF_FIRE
 
     def handle_boost(self, dt: float) -> None:
-        """Simple instantaneous strong forward boost."""
+        """Give player instantaneous strong forward boost."""
         if self.boost_cooldown_timer > 0:
             self.boost_cooldown_timer -= dt
             return
@@ -469,7 +458,7 @@ class PlayerShip(Ship):
         self.turn_back_L: float = 0.0
         self.turn_back_R: float = 0.0
 
-        self.closest_enemy: Ship | None = None
+        self.closest_enemy: BulletEnemy | None = None
 
     def handle_input(self, keys: pygame.key.ScancodeWrapper) -> None:
         """Handle input for `self` using ScancodeWrapper `keys`.
@@ -629,24 +618,6 @@ class EnemyAI(BasicAI):
         self.can_see_target: bool = False
         self.low_health: bool = False
 
-    def _transition(self) -> None:
-        """Transition to a new state based on the Markov transition matrix."""
-        self.low_health = self.ship.health < 40 - 0.6 * self.ship.max_repair_health
-        match (self.can_see_target, self.low_health):
-            case (True, True):
-                matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
-            case (False, True):
-                matrix = _LOW_HEALTH_MATRIX
-            case (True, False):
-                matrix = _PLAYER_VISIBLE_MATRIX
-            case (False, False):
-                matrix = _DEFAULT_MATRIX
-
-        # Extract probabilities for current state
-        current_row: MatrixRow = matrix[self.current_state]
-        states, probabilities = list(current_row.keys()), list(current_row.values())
-        self.current_state = random.choices(states, probabilities)[0]
-
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer -= dt
@@ -662,63 +633,87 @@ class EnemyAI(BasicAI):
         self._match()
         self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
+    def _transition(self) -> None:
+        """Transition to a new state based on the Markov transition matrix."""
+        self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
+        match (self.can_see_target, self.low_health):
+            case (True, True):
+                self.current_state = AIState.RETREAT
+                return
+            case (False, True):
+                self.current_state = AIState.HEAL
+                return
+            case (True, False):
+                matrix = _PLAYER_VISIBLE_MATRIX
+            case (False, False):
+                matrix = _DEFAULT_MATRIX
+
+        # Extract probabilities for current state
+        current_row: MatrixRow = matrix[self.current_state]
+        states, probabilities = list(current_row.keys()), list(current_row.values())
+        self.current_state = random.choices(states, probabilities)[0]
+
     def _match(self) -> None:
         """Match current state to behavior."""
-        desired_direction = Vec2(0, 0)
-
         match self.current_state:
             case AIState.RAM:
-                desired_direction = self._execute_ram()
+                self._execute_ram()
                 self.ship.thrust_state = (
                     ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
                 )
             case AIState.ATTACK:
-                desired_direction = self._execute_attack()
+                self._execute_attack()
             case AIState.AIM:
-                desired_direction = self._execute_aim()
+                self._execute_aim()
             case AIState.RETREAT:
-                desired_direction = self._execute_retreat()
+                self._execute_retreat()
+            case AIState.HEAL:
+                if self.ship.max_repair_health - self.ship.health > 1:
+                    self.ship.thrust_state = ThrustState.NONE
+                    self.ship.rotation_state = RotationState.NONE
+                    return
+                self._execute_ram()
 
-        if not self.can_see_target and self.low_health and self.current_state == AIState.RETREAT:
-            self.ship.rotation_state = RotationState.NONE
-            return
+        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
-        self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
-
-    def _execute_attack(self) -> Vec2:
+    def _execute_attack(self) -> None:
         """Return desired direction and thrust state for attack behavior."""
         self.ship.thrust_state = self._keep_distance()
-        return self.delta_target
+        self.desired_direction = self.delta_target
 
-    def _execute_aim(self) -> Vec2:
+    def _execute_aim(self) -> None:
         """Return desired direction and thrust state for aim behavior."""
         self.ship.thrust_state = self._keep_distance()
-        relative_pos = self.delta_target
-        relative_vel = self.delta_target_vel
 
         # Quadratic equation coefficients:
-        a = relative_vel.length_squared() - BULLET_RELEASE_SPEED**2
-        b = 2 * relative_pos.dot(relative_vel)
-        c = relative_pos.length_squared()
+        a = self.delta_target_vel.length_squared() - BULLET_RELEASE_SPEED**2
+        b = 2 * self.delta_target.dot(self.delta_target_vel)
+        c = self.delta_target.length_squared()
 
         discriminant = b**2 - 4 * a * c
         if discriminant < 0 or a == 0.0:
-            return relative_pos
+            self.desired_direction = self.delta_target
+        else:
+            # Calculate both solutions
+            t1 = (-b + math.sqrt(discriminant)) / (2 * a)
+            t2 = (-b - math.sqrt(discriminant)) / (2 * a)
 
-        # Calculate both solutions
-        t1 = (-b + math.sqrt(discriminant)) / (2 * a)
-        t2 = (-b - math.sqrt(discriminant)) / (2 * a)
+            valid_times = [t for t in [t1, t2] if t > 0]
+            if valid_times:
+                intercept_time = min(valid_times)
+                self.desired_direction = self.delta_target + self.delta_target_vel * intercept_time
+            else:
+                # If no valid solution, aim directly at predicted position
+                self.desired_direction = self.delta_target
 
-        intercept_time = min(max(0, t1), max(0, t2))
-        return relative_pos + relative_vel * intercept_time
-
-    def _execute_retreat(self) -> Vec2:
+    def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
             self.ship.thrust_state = ThrustState.NONE
-            return Vec2(0, 0)
-        self.ship.thrust_state = ThrustState.FORWARD
-        return -self.delta_target
+            self.desired_direction = None
+        else:
+            self.ship.thrust_state = ThrustState.FORWARD
+            self.desired_direction = -self.delta_target
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
