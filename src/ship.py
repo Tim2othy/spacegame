@@ -698,8 +698,13 @@ class EnemyAI(BasicAI):
             t1 = (-b + math.sqrt(discriminant)) / (2 * a)
             t2 = (-b - math.sqrt(discriminant)) / (2 * a)
 
-            intercept_time = min(max(0, t1), max(0, t2))
-            self.desired_direction = self.delta_target + self.delta_target_vel * intercept_time
+            valid_times = [t for t in [t1, t2] if t > 0]
+            if valid_times:
+                intercept_time = min(valid_times)
+                self.desired_direction = self.delta_target + self.delta_target_vel * intercept_time
+            else:
+                # If no valid solution, aim directly at predicted position
+                self.desired_direction = self.delta_target
 
     def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
