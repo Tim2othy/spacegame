@@ -257,7 +257,7 @@ class Ship(Mover):
             self.flare_cooldown_timer = FLARE_RATE_OF_FIRE
 
     def handle_boost(self, dt: float) -> None:
-        """Simple instantaneous strong forward boost."""
+        """Give player instantaneous strong forward boost."""
         if self.boost_cooldown_timer > 0:
             self.boost_cooldown_timer -= dt
             return
