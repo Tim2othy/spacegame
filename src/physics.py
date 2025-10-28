@@ -345,7 +345,7 @@ class BasicAI:
         self.delta_target: Vec2 = Vec2(1, 1)
         self.delta_target_vel: Vec2 = Vec2(1, 1)
 
-    def _execute_ram(self) -> Vec2:
+    def _execute_ram(self) -> None:
         """Return desired direction and thrust state for ram behavior."""
         desired_relative_vel = self.delta_target.normalize() * APPROACH_SPEED
-        return desired_relative_vel + self.delta_target_vel
+        self.desired_direction = desired_relative_vel + self.delta_target_vel

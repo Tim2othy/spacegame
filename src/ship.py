@@ -664,33 +664,31 @@ class EnemyAI(BasicAI):
 
     def _match(self) -> None:
         """Match current state to behavior."""
-        desired_direction = Vec2(0, 0)
-
         match self.current_state:
             case AIState.RAM:
-                desired_direction = self._execute_ram()
+                self._execute_ram()
                 self.ship.thrust_state = (
                     ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
                 )
             case AIState.ATTACK:
-                desired_direction = self._execute_attack()
+                self._execute_attack()
             case AIState.AIM:
-                desired_direction = self._execute_aim()
+                self._execute_aim()
             case AIState.RETREAT:
-                desired_direction = self._execute_retreat()
+                self._execute_retreat()
 
         if not self.can_see_target and self.low_health and self.current_state == AIState.RETREAT:
             self.ship.rotation_state = RotationState.NONE
             return
 
-        self.ship.rotation_state = self.ship.calculate_rotation(desired_direction)
+        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
-    def _execute_attack(self) -> Vec2:
+    def _execute_attack(self) -> None:
         """Return desired direction and thrust state for attack behavior."""
         self.ship.thrust_state = self._keep_distance()
-        return self.delta_target
+        self.desired_direction = self.delta_target
 
-    def _execute_aim(self) -> Vec2:
+    def _execute_aim(self) -> None:
         """Return desired direction and thrust state for aim behavior."""
         self.ship.thrust_state = self._keep_distance()
         relative_pos = self.delta_target
@@ -703,22 +701,23 @@ class EnemyAI(BasicAI):
 
         discriminant = b**2 - 4 * a * c
         if discriminant < 0 or a == 0.0:
-            return relative_pos
+            self.desired_direction = relative_pos
+        else:
+            # Calculate both solutions
+            t1 = (-b + math.sqrt(discriminant)) / (2 * a)
+            t2 = (-b - math.sqrt(discriminant)) / (2 * a)
 
-        # Calculate both solutions
-        t1 = (-b + math.sqrt(discriminant)) / (2 * a)
-        t2 = (-b - math.sqrt(discriminant)) / (2 * a)
+            intercept_time = min(max(0, t1), max(0, t2))
+            self.desired_direction = relative_pos + relative_vel * intercept_time
 
-        intercept_time = min(max(0, t1), max(0, t2))
-        return relative_pos + relative_vel * intercept_time
-
-    def _execute_retreat(self) -> Vec2:
+    def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
             self.ship.thrust_state = ThrustState.NONE
-            return Vec2(0, 0)
-        self.ship.thrust_state = ThrustState.FORWARD
-        return -self.delta_target
+            self.desired_direction = Vec2(0, 0)
+        else:
+            self.ship.thrust_state = ThrustState.FORWARD
+            self.desired_direction = -self.delta_target
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
