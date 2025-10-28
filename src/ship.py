@@ -167,10 +167,12 @@ class Ship(Mover):
         self.damage_indicator_timer: float = 0
         self.gun_cooldown_timer: float = 0
         self.flare_cooldown_timer: float = 0
+        self.boost_cooldown_timer: float = 0
         self.repair_eligibility_timer: float = 0
 
         self.releasing_flares: bool = False
         self.shooting: bool = False
+        self.boost: bool = False
 
     def new_bullet(self, pos: Vec2, vel: Vec2) -> Bullet:
         """Create a new bullet at `pos` with velocity `vel`, relative to self."""
@@ -254,6 +256,17 @@ class Ship(Mover):
                 self.projectiles.append(self.new_flare(flare_exit_point, flare_vel))
             self.flare_cooldown_timer = FLARE_RATE_OF_FIRE
 
+    def handle_boost(self, dt: float) -> None:
+        """Simple instantaneous strong forward boost."""
+        if self.boost_cooldown_timer > 0:
+            self.boost_cooldown_timer -= dt
+            return
+        if self.boost:
+            force = self.forward * self.THRUST * 100
+            self.thrust_state = ThrustState.FORWARD
+            self.apply_force(force, dt)
+            self.boost_cooldown_timer = 5.0
+
     def suffer_damage(self, damage: float) -> None:
         """Deal damage to the ship and activate its damage-indicator.
 
@@ -297,6 +310,7 @@ class Ship(Mover):
 
         self.handle_shooting(dt)
         self.handle_flares(dt)
+        self.handle_boost(dt)
         self.repair_refuel()
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
@@ -413,16 +427,17 @@ class ShipInput:
     thruster_backward: PygameKey
     shoot: PygameKey
     release_flares: PygameKey
+    boost: PygameKey
 
     @classmethod
     def arrows(cls) -> ShipInput:
         """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
-        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN, pygame.K_m)
+        return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN, pygame.K_m, pygame.K_b)
 
     @classmethod
     def wasd(cls) -> ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
-        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e)
+        return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e, pygame.K_g)
 
 
 @dataclass(kw_only=True)
@@ -481,6 +496,7 @@ class PlayerShip(Ship):
 
         self.shooting = keys[self.spaceship_input.shoot]
         self.releasing_flares = keys[self.spaceship_input.release_flares]
+        self.boost = keys[self.spaceship_input.boost]
 
     def do_rotation_for_player(self) -> None:
         """Activates rotation thrusters for player based on attributes modified by `increment_rot_counters()`.
