@@ -629,6 +629,21 @@ class EnemyAI(BasicAI):
         self.can_see_target: bool = False
         self.low_health: bool = False
 
+    def step(self, dt: float) -> None:
+        """Transition state and apply appropriate behavior for different enemy types."""
+        self.action_timer -= dt
+        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+
+        if self.action_timer <= 0:
+            self.action_timer = ENEMY_ACTION_TIMER
+            self._transition()
+
+        self.delta_target = self.ship.target.pos_relative_to(self.ship)
+        self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
+
+        self._match()
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
         self.low_health = self.ship.health < 40 - 0.6 * self.ship.max_repair_health
@@ -646,21 +661,6 @@ class EnemyAI(BasicAI):
         current_row: MatrixRow = matrix[self.current_state]
         states, probabilities = list(current_row.keys()), list(current_row.values())
         self.current_state = random.choices(states, probabilities)[0]
-
-    def step(self, dt: float) -> None:
-        """Transition state and apply appropriate behavior for different enemy types."""
-        self.action_timer -= dt
-        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
-
-        if self.action_timer <= 0:
-            self.action_timer = ENEMY_ACTION_TIMER
-            self._transition()
-
-        self.delta_target = self.ship.target.pos_relative_to(self.ship)
-        self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
-
-        self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
 
     def _match(self) -> None:
         """Match current state to behavior."""
