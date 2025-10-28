@@ -714,7 +714,7 @@ class EnemyAI(BasicAI):
         """Return desired angle and thrust state for retreat behavior."""
         if not self.can_see_target:
             self.ship.thrust_state = ThrustState.NONE
-            self.desired_direction = Vec2(0, 0)
+            self.desired_direction = None
         else:
             self.ship.thrust_state = ThrustState.FORWARD
             self.desired_direction = -self.delta_target

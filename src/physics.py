@@ -274,8 +274,10 @@ class Mover(Disk):
         direction.from_polar((1, self.angle))
         return direction
 
-    def calculate_rotation(self, desired_direction: Vec2) -> RotationState:
+    def calculate_rotation(self, desired_direction: Vec2 | None) -> RotationState:
         """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
+        if desired_direction is None:
+            return RotationState.NONE
         current_angle = self.angle
         angular_velocity = self.angular_velocity
         desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
