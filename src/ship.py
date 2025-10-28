@@ -73,6 +73,7 @@ class AIState(Enum):
     ATTACK = auto()
     AIM = auto()
     RETREAT = auto()
+    HEAL = auto()
 
 
 type MatrixRow = dict[AIState, float]
@@ -83,13 +84,7 @@ _DEFAULT_MATRIX: Matrix = {
     AIState.ATTACK: {AIState.RAM: 0.2, AIState.ATTACK: 0.8},
     AIState.AIM: {AIState.RAM: 1.0},
     AIState.RETREAT: {AIState.RAM: 0.3, AIState.ATTACK: 0.2, AIState.RETREAT: 0.5},
-}
-
-_LOW_HEALTH_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.RETREAT: 0.3},
-    AIState.ATTACK: {AIState.RAM: 0.5, AIState.ATTACK: 0.3, AIState.RETREAT: 0.2},
-    AIState.AIM: {AIState.RETREAT: 1.0},
-    AIState.RETREAT: {AIState.RAM: 0.03, AIState.ATTACK: 0.02, AIState.RETREAT: 0.95},
+    AIState.HEAL: {AIState.RAM: 0.3, AIState.HEAL: 0.7},
 }
 
 _PLAYER_VISIBLE_MATRIX: Matrix = {
@@ -97,13 +92,7 @@ _PLAYER_VISIBLE_MATRIX: Matrix = {
     AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
     AIState.AIM: {AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
     AIState.RETREAT: {AIState.RAM: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
-}
-
-_LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.0, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.2},
-    AIState.ATTACK: {AIState.ATTACK: 0.0, AIState.AIM: 0.1, AIState.RETREAT: 0.9},
-    AIState.AIM: {AIState.ATTACK: 0.1, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
-    AIState.RETREAT: {AIState.ATTACK: 0.1, AIState.AIM: 0.1, AIState.RETREAT: 0.8},
+    AIState.HEAL: {AIState.AIM: 1.0},
 }
 
 
@@ -646,12 +635,14 @@ class EnemyAI(BasicAI):
 
     def _transition(self) -> None:
         """Transition to a new state based on the Markov transition matrix."""
-        self.low_health = self.ship.health < 40 - 0.6 * self.ship.max_repair_health
+        self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
         match (self.can_see_target, self.low_health):
             case (True, True):
-                matrix = _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX
+                self.current_state = AIState.RETREAT
+                return
             case (False, True):
-                matrix = _LOW_HEALTH_MATRIX
+                self.current_state = AIState.HEAL
+                return
             case (True, False):
                 matrix = _PLAYER_VISIBLE_MATRIX
             case (False, False):
@@ -676,10 +667,10 @@ class EnemyAI(BasicAI):
                 self._execute_aim()
             case AIState.RETREAT:
                 self._execute_retreat()
-
-        if not self.can_see_target and self.low_health and self.current_state == AIState.RETREAT:
-            self.ship.rotation_state = RotationState.NONE
-            return
+            case AIState.HEAL:
+                self.ship.thrust_state = ThrustState.NONE
+                self.ship.rotation_state = RotationState.NONE
+                return
 
         self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
