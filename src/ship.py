@@ -80,18 +80,18 @@ type MatrixRow = dict[AIState, float]
 type Matrix = dict[AIState, MatrixRow]
 
 _DEFAULT_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.85, AIState.ATTACK: 0.1, AIState.RETREAT: 0.05},
-    AIState.ATTACK: {AIState.RAM: 0.5, AIState.ATTACK: 0.5},
-    AIState.AIM: {AIState.RAM: 1.0},
-    AIState.RETREAT: {AIState.RAM: 0.7, AIState.ATTACK: 0.1, AIState.RETREAT: 0.2},
+    AIState.RAM: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
+    AIState.ATTACK: {AIState.RAM: 0.9, AIState.AIM: 0.1},
+    AIState.AIM: {AIState.RAM: 0.9, AIState.ATTACK: 0.1},
+    AIState.RETREAT: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
     AIState.HEAL: {AIState.RAM: 0.3, AIState.HEAL: 0.7},
 }
 
 _PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.RAM: {AIState.ATTACK: 0.8, AIState.AIM: 0.2},
-    AIState.ATTACK: {AIState.ATTACK: 0.7, AIState.AIM: 0.3},
-    AIState.AIM: {AIState.RAM: 0.1, AIState.ATTACK: 0.4, AIState.AIM: 0.4, AIState.RETREAT: 0.1},
-    AIState.RETREAT: {AIState.RAM: 0.2, AIState.ATTACK: 0.3, AIState.RETREAT: 0.5},
+    AIState.RAM: {AIState.ATTACK: 0.9, AIState.AIM: 0.1},
+    AIState.ATTACK: {AIState.RAM: 0.1, AIState.ATTACK: 0.7, AIState.AIM: 0.2},
+    AIState.AIM: {AIState.RAM: 0.05, AIState.ATTACK: 0.05, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
+    AIState.RETREAT: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.AIM: 0.1, AIState.RETREAT: 0.2},
     AIState.HEAL: {AIState.AIM: 1.0},
 }
 
