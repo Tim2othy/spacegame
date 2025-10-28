@@ -273,6 +273,24 @@ class Universe:
                 chunk = (x + i, y + j)
                 yield from self._planet_chunks.get(chunk, [])
 
+    def find_nearest_object_to(self, pos: Pos) -> PosVel | None:
+        """Find the nearest object (planet, enemy ship, or star) to the given position."""
+        min_dist = float("inf")
+        nearest = None
+
+        for item in chain(self._nearby_planets(pos), self._enemy_ships):
+            dist = item.distance_squared_to(pos)
+            if dist < min_dist:
+                min_dist = dist
+                nearest = item
+        if isinstance(self.__star, Star):
+            dist = self.__star.distance_squared_to(pos)
+            if dist < min_dist:
+                min_dist = dist
+                nearest = self.__star
+
+        return nearest
+
     def apply_gravity_to(self, pobj: Disk, dt: float) -> None:
         """Affect pobj by `self`'s entire gravity."""
         force_sum = Vec2(0, 0)

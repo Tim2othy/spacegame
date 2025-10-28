@@ -85,6 +85,7 @@ async def main() -> None:
                     await asyncio.sleep(2)
                     running = False
                     break
+                camera.nearest_object = universe.find_nearest_object_to(player)
                 camera.step()
                 minimap_camera.step()
                 universe.draw(camera)

@@ -20,6 +20,10 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
 
+MAX_ZOOM_SPEED = 5000
+MIN_ZOOM = 0.3
+
+
 class Camera(Pos):
     """A camera with dynamic position and zoom, drawing to a fixed Surface."""
 
@@ -36,15 +40,28 @@ class Camera(Pos):
         self._tracking: PosVel = tracking
         if not (math.isfinite(zoom) and zoom > 0):
             raise ValueError
+        self._base_zoom: float = zoom
         self._zoom: float = zoom
+        self.nearest_object: PosVel | None = None
 
         self._surface: pygame.Surface = surface
         surface_size: tuple[int, int] = surface.get_size()
         self._surface_size: Vec2 = Vec2(*surface_size)
         self._surface_rect: Rect = Rect((0, 0), surface_size)
 
+    def _update_zoom(self) -> None:
+        """Calculate zoom based on relative velocity to nearest object."""
+        if self.nearest_object is None:
+            new_zoom = 1
+        else:
+            speed = self._tracking.vel_relative_to(self.nearest_object).length()
+            new_zoom = MIN_ZOOM if speed >= MAX_ZOOM_SPEED else 1 + speed / MAX_ZOOM_SPEED * (MIN_ZOOM - 1)
+            self._zoom *= 0.99
+            self._zoom += 0.01 * new_zoom * self._base_zoom
+
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
+        self._update_zoom()
         self._shift(self._tracking.pos_relative_to(self) - self._surface_size / (2.0 * self._zoom))
 
     def _rectangle_intersects_surface(self, rect: Rect) -> bool:
