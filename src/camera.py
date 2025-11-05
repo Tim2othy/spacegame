@@ -22,6 +22,8 @@ if TYPE_CHECKING:
 
 MAX_ZOOM_SPEED = 5000
 MIN_ZOOM = 0.3
+DIST_ZOOM_FACTOR = 1.2  # adjusts how quickly to zoom as a function of distance at 1 zoom and dist exactly cancel out
+REFERENCE_DIST = 1000  # adjusts minimal zoom as a function of distance, but in an odd way
 
 
 class Camera(Pos):
@@ -49,7 +51,7 @@ class Camera(Pos):
         self._surface_size: Vec2 = Vec2(*surface_size)
         self._surface_rect: Rect = Rect((0, 0), surface_size)
 
-    def _update_zoom(self) -> None:
+    def _update_zoom_vel(self) -> None:
         """Calculate zoom based on relative velocity to nearest object."""
         if self.nearest_object is None:
             new_zoom = 1
@@ -59,9 +61,21 @@ class Camera(Pos):
             self._zoom *= 0.99
             self._zoom += 0.01 * new_zoom * self._base_zoom
 
+    def _update_zoom_dist(self) -> None:
+        """Calculate zoom based on distance to nearest object."""
+        if self.nearest_object is None:
+            new_zoom = 1
+        else:
+            dist = self._tracking.pos_relative_to(self.nearest_object).length()
+            # Inverse relationship produces sensible zooming
+            new_zoom = DIST_ZOOM_FACTOR * self._base_zoom * (REFERENCE_DIST / (dist + 0.5 * REFERENCE_DIST))
+            # Prevent tiny zoom values, giant zoom values are prevented by the "+ REFERENCE_DIST" above
+            new_zoom = max(MIN_ZOOM / 7, new_zoom)
+            self._zoom = new_zoom
+
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
-        self._update_zoom()
+        self._update_zoom_dist()
         self._shift(self._tracking.pos_relative_to(self) - self._surface_size / (2.0 * self._zoom))
 
     def _rectangle_intersects_surface(self, rect: Rect) -> bool:
