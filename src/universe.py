@@ -84,6 +84,7 @@ class UniverseOptions:
     small: bool = False
     splitscreen: bool = False
     invincible: bool = False
+    use_dvorak: bool = True
 
 
 T = TypeVar("T", bound=BulletEnemy)
@@ -137,7 +138,9 @@ class Universe:
         planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
 
         universe = Universe(star_size, 1000)
-        player_ships = [universe.add_player(PlayerConfig(relative_pos=Vec2(star_size + 100, star_size + 100)))]
+        player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
+        player_pos = Vec2(star_size + 100, star_size + 100)
+        player_ships = [universe.add_player(PlayerConfig(relative_pos=player_pos, ship_input=player_input))]
 
         if options.splitscreen:
             second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())

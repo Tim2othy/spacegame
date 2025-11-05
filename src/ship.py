@@ -424,6 +424,11 @@ class ShipInput:
         return cls(pygame.K_RIGHT, pygame.K_LEFT, pygame.K_UP, pygame.K_DOWN, pygame.K_RETURN, pygame.K_m, pygame.K_b)
 
     @classmethod
+    def dvorak(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(pygame.K_n, pygame.K_d, pygame.K_c, pygame.K_r, pygame.K_o, pygame.K_e, pygame.K_i)
+
+    @classmethod
     def wasd(cls) -> ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e, pygame.K_g)
@@ -440,7 +445,7 @@ class PlayerConfig(ShipConfig):
 
     """
 
-    ship_input: ShipInput = field(default_factory=ShipInput.arrows)
+    ship_input: ShipInput
 
 
 class PlayerShip(Ship):
