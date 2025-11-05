@@ -21,8 +21,17 @@ if TYPE_CHECKING:
 
 
 MIN_ZOOM = 0.04
+MAX_ZOOM = 0.9  # not really being used yet
 DIST_ZOOM_FACTOR = 1.2  # adjusts how quickly to zoom as a function of distance at 1 zoom and dist exactly cancel out
 REFERENCE_DIST = 1000  # adjusts minimal zoom as a function of distance, but in an odd way
+MAX_CAMERA_SHIFT = 5
+
+
+def cap_vector_length(vector: Vec2, max_length: float) -> Vec2:
+    """Cap a vector to a maximum length while preserving direction."""
+    if vector == Vec2(0, 0):
+        return Vec2(0, 0)
+    return vector * (min(max_length, vector.length()) / vector.length())
 
 
 class Camera(Pos):
@@ -49,6 +58,7 @@ class Camera(Pos):
         surface_size: tuple[int, int] = surface.get_size()
         self._surface_size: Vec2 = Vec2(*surface_size)
         self._surface_rect: Rect = Rect((0, 0), surface_size)
+        self._midpoint = Vec2(0, 0)
 
     def _update_zoom(self) -> None:
         """Calculate zoom based on distance to nearest object."""
@@ -65,10 +75,23 @@ class Camera(Pos):
             self._zoom *= 0.99
             self._zoom += 0.01 * new_zoom
 
+    def _update_midpoint(self) -> None:
+        """Update the midpoint that the camera is centered on."""
+        if self.nearest_object is None:
+            return
+        # Get  midpoint between player and nearest object
+        new_midpoint = self.nearest_object.pos_relative_to(self._tracking) / 2.0
+        difference = new_midpoint - self._midpoint
+        # cap size of shift, but make camera shift more the more zoomed out
+        max_length_shift = MAX_CAMERA_SHIFT / (1 - MIN_ZOOM) * (MAX_ZOOM - self._zoom)
+        midpoint_shift = cap_vector_length(difference, max_length_shift)
+        self._midpoint += midpoint_shift
+
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
         self._update_zoom()
-        self._shift(self._tracking.pos_relative_to(self) - self._surface_size / (2.0 * self._zoom))
+        self._update_midpoint()
+        self._shift(self._tracking.pos_relative_to(self) + self._midpoint - self._surface_size / (2.0 * self._zoom))
 
     def _rectangle_intersects_surface(self, rect: Rect) -> bool:
         """Return whether a surfacespace-rectangle intersects the camera's surface."""
