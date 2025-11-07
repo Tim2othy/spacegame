@@ -132,7 +132,6 @@ class Universe:
         """Create a universe from `options`."""
         star_size = 300 if options.small else 1400
         num_planets = 5 if options.small else 10
-        planet_size_parameter = math.log(star_size) - PLANET_RADIUS_PARAMETER
 
         universe = Universe(star_size, 1000)
         player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
@@ -171,7 +170,7 @@ class Universe:
 
                 universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
 
-        universe.add_planets(num_planets, planet_size_parameter)
+        universe.add_planets(num_planets)
 
         return universe, player_ships
 
@@ -206,7 +205,7 @@ class Universe:
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
 
-    def add_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
+    def add_planets(self, num_planets: int) -> list[Planet]:
         """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
         """
         What the random variables do:
@@ -233,6 +232,7 @@ class Universe:
         disk = self.__star
         planets = []
         current_min_a = disk.radius * 2
+        planet_size_parameter = math.log(disk.radius) - PLANET_RADIUS_PARAMETER
 
         for _ in range(num_planets):
             # random variables
