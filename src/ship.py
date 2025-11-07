@@ -17,6 +17,7 @@ from physics import (
     FUEL_USAGE,
     SMALL_ANGULAR_VEL,
     BasicAI,
+    Disk,
     Mover,
     Pos,
     PosVel,
@@ -547,12 +548,28 @@ class BulletEnemy(Ship):
         """Create a new enemy ship."""
         super().__init__(relative_to, config)
         self.target: Ship = config.target_ship
+        self.closest_object: Disk | None = None
         self.ai = EnemyAI(self)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
         self.ai.step(dt)
         super().step(dt)
+
+    def update_closest_object(self, close_planets, star) -> None:
+        """Find and store the closest enemy from the provided list."""
+        self.closest_object = None
+        self.closest_object_distance = float("inf")
+        dist = self.distance_squared_to(star)
+        if dist < self.closest_object_distance:
+            self.closest_object = star
+            self.closest_object_distance = dist
+
+        for planet in close_planets:
+            dist = self.distance_squared_to(planet)
+            if dist < self.closest_object_distance:
+                self.closest_object = planet
+                self.closest_object_distance = dist
 
 
 class RocketEnemy(BulletEnemy):
@@ -607,6 +624,7 @@ class EnemyAI(BasicAI):
 
         self._match()
         self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
+        self._avoid()
 
     def _match(self) -> None:
         """Match current state bools to behavior."""
@@ -674,3 +692,16 @@ class EnemyAI(BasicAI):
             if approach_speed < APPROACH_LOWER
             else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
         )
+
+    def _avoid(self) -> None:
+        obj = self.ship.closest_object
+        if obj is not None:
+            delta_obj = obj.pos_relative_to(self.ship)
+            delta_obj_vel = obj.vel_relative_to(self.ship)
+
+            object_angle = math.degrees(math.atan2(delta_obj.y, delta_obj.x))
+            object_vel_angle = math.degrees(math.atan2(delta_obj_vel.y, delta_obj_vel.x))
+            if abs(object_vel_angle - object_angle) < 50:
+                self.desired_direction = delta_obj.rotate(90)
+                self.ship.thrust_state = ThrustState.FORWARD
+                print("avoid")

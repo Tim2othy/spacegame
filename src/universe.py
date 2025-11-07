@@ -367,6 +367,9 @@ class Universe:
             player_ship.update_closest_enemy(self._enemy_ships)
         for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
+        for enemy in self._enemy_ships:
+            close_objects = self._nearby_planets(enemy)
+            enemy.update_closest_object(close_objects, self.__star)
 
         # Planets
         new_planet_chunks: dict[PlanetChunk, list[Planet]] = {}
