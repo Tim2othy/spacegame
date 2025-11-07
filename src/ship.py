@@ -620,10 +620,7 @@ class EnemyAI(BasicAI):
                 else:
                     self._execute_attack()
             case (False, False):
-                self._execute_ram()
-                self.ship.thrust_state = (
-                    ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
-                )
+                self._execute_search()
 
         self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
@@ -665,6 +662,14 @@ class EnemyAI(BasicAI):
     def _execute_heal(self) -> None:
         self.desired_direction = None
         self.ship.thrust_state = ThrustState.NONE
+
+    def _execute_search(self) -> None:
+        """Set desired direction and thrust state for search behavior."""
+        desired_relative_vel = self.delta_target.normalize() * APPROACH_SPEED
+        self.desired_direction = desired_relative_vel + self.delta_target_vel
+        self.ship.thrust_state = (
+            ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
+        )
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
