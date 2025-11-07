@@ -29,8 +29,6 @@ SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
 RADIAL_LINE_SPACING = 1500
-ANGULAR_SPACING = int(360 / 72)
-MAX_RADIUS = 60000
 
 
 class Star(Disk):
@@ -634,14 +632,8 @@ class Universe:
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
         """Draw a polar grid centered on the star."""
-        center = self.__star
-
         for i in range(10):
-            camera.draw_circle(GRID_COLOR, center, RADIAL_LINE_SPACING * 2**i, 2)
-
-        for angle in range(0, 360, ANGULAR_SPACING * 2):
-            end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
-            camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
+            camera.draw_circle(GRID_COLOR, self.__star, RADIAL_LINE_SPACING * 2**i, 2)
 
     @global_profiler.profile_method
     def draw(self, camera: Camera, *, minimap: bool = False) -> None:
