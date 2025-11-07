@@ -28,7 +28,7 @@ MU_PLANET_RADIUS = 5.7
 SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
-GRID_RADIAL_SPACING = 2000
+RADIAL_LINE_SPACING = 1500
 ANGULAR_SPACING = int(360 / 72)
 MAX_RADIUS = 60000
 
@@ -636,8 +636,8 @@ class Universe:
         """Draw a polar grid centered on the star."""
         center = self.__star
 
-        for r in range(GRID_RADIAL_SPACING, MAX_RADIUS + 1, GRID_RADIAL_SPACING):
-            camera.draw_circle(GRID_COLOR, center, r, 2)
+        for i in range(10):
+            camera.draw_circle(GRID_COLOR, center, RADIAL_LINE_SPACING * 2**i, 2)
 
         for angle in range(0, 360, ANGULAR_SPACING * 2):
             end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
