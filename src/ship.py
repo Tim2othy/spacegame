@@ -613,8 +613,7 @@ class EnemyAI(BasicAI):
             case (True, True):
                 self._execute_retreat()
             case (False, True):
-                self.desired_direction = None
-                self.ship.thrust_state = ThrustState.NONE
+                self._execute_heal()
             case (True, False):
                 if random.random() < 0.3:
                     self._execute_aim()
@@ -662,6 +661,10 @@ class EnemyAI(BasicAI):
         """Return desired angle and thrust state for retreat behavior."""
         self.ship.thrust_state = ThrustState.FORWARD
         self.desired_direction = -self.delta_target
+
+    def _execute_heal(self) -> None:
+        self.desired_direction = None
+        self.ship.thrust_state = ThrustState.NONE
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
