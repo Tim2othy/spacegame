@@ -130,9 +130,8 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 25 if options.small else 1400
-        num_enemies = 0 if options.small else 20
-        num_planets = 0 if options.small else 10
+        star_size = 300 if options.small else 1400
+        num_planets = 5 if options.small else 10
         planet_size_parameter = math.log(star_size) - PLANET_RADIUS_PARAMETER
 
         universe = Universe(star_size, 1000)
@@ -160,7 +159,7 @@ class Universe:
                 universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
 
         else:
-            for _ in range(num_enemies):
+            for _ in range(20):
                 random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
                 random_angle = random.uniform(0, 360)
                 vec = Vec2(0, 0)
