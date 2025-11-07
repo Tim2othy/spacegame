@@ -7,7 +7,7 @@ from pygame.math import Vector2 as Vec2
 
 from physics import PosVel
 from ship import PlayerConfig, PlayerShip
-from universe import MU_PLANET_RADIUS, Planet, PlanetConfig, Universe
+from universe import PLANET_RADIUS_PARAMETER, Planet, PlanetConfig, Universe
 
 
 def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -187,7 +187,7 @@ def test_planet_generation() -> None:
 
     # run test 10 times
     for _ in range(10):
-        planets = universe.add_planets(10, MU_PLANET_RADIUS)
+        planets = universe.add_planets(10, PLANET_RADIUS_PARAMETER)
 
         for planet in planets:
             assert 200 < planet.radius < 1200, f"Planet has invalid radius: {planet.radius}"
