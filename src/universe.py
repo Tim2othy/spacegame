@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-MU_PLANET_RADIUS = 5.7
+PLANET_RADIUS_PARAMETER = 1.55  # Makes Planets smaller
 SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
@@ -133,7 +133,7 @@ class Universe:
         star_size = 25 if options.small else 1400
         num_enemies = 0 if options.small else 20
         num_planets = 0 if options.small else 10
-        planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
+        planet_size_parameter = math.log(star_size) - PLANET_RADIUS_PARAMETER
 
         universe = Universe(star_size, 1000)
         player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
