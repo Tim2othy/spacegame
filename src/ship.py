@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import pygame
@@ -64,16 +63,6 @@ ENEMY_FIRE_RANGE_SQUARED = 4000.0**2
 ENEMY_ACTION_TIMER = 6
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
-
-
-class AIState(Enum):
-    """Possible AI states for enemies chain."""
-
-    RAM = auto()
-    ATTACK = auto()
-    AIM = auto()
-    RETREAT = auto()
-    HEAL = auto()
 
 
 def generate_complementary_color(base_color: Color) -> Color:
@@ -599,7 +588,7 @@ class EnemyAI(BasicAI):
         """Create a new AI controller."""
         super().__init__()
         self.ship: BulletEnemy = ship
-        self.current_state = AIState.RAM
+
         self.can_see_target: bool = False
         self.low_health: bool = False
 
@@ -614,46 +603,28 @@ class EnemyAI(BasicAI):
 
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
         self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
+        self.ship.shooting = self.can_see_target
 
-        self._transition()
         self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM}
-
-    def _transition(self) -> None:
-        """Transition to a new state based on health and proximity to target."""
-        match (self.can_see_target, self.low_health):
-            case (True, True):
-                self.current_state = AIState.RETREAT
-            case (False, True):
-                self.current_state = AIState.HEAL
-            case (True, False):
-                if random.random() < 0.3:
-                    self.current_state = AIState.AIM
-                else:
-                    self.current_state = AIState.ATTACK
-            case (False, False):
-                self.current_state = AIState.RAM
 
     def _match(self) -> None:
-        """Match current state to behavior."""
-        match self.current_state:
-            case AIState.RAM:
+        """Match current state bools to behavior."""
+        match (self.can_see_target, self.low_health):
+            case (True, True):
+                self._execute_retreat()
+            case (False, True):
+                self.desired_direction = None
+                self.ship.thrust_state = ThrustState.NONE
+            case (True, False):
+                if random.random() < 0.3:
+                    self._execute_aim()
+                else:
+                    self._execute_attack()
+            case (False, False):
                 self._execute_ram()
                 self.ship.thrust_state = (
                     ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
                 )
-            case AIState.ATTACK:
-                self._execute_attack()
-            case AIState.AIM:
-                self._execute_aim()
-            case AIState.RETREAT:
-                self._execute_retreat()
-            case AIState.HEAL:
-                if self.ship.max_repair_health - self.ship.health > 1:
-                    self.ship.thrust_state = ThrustState.NONE
-                    self.ship.rotation_state = RotationState.NONE
-                    return
-                self._execute_ram()
 
         self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
@@ -689,12 +660,8 @@ class EnemyAI(BasicAI):
 
     def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
-        if not self.can_see_target:
-            self.ship.thrust_state = ThrustState.NONE
-            self.desired_direction = None
-        else:
-            self.ship.thrust_state = ThrustState.FORWARD
-            self.desired_direction = -self.delta_target
+        self.ship.thrust_state = ThrustState.FORWARD
+        self.desired_direction = -self.delta_target
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
