@@ -326,8 +326,9 @@ class Universe:
                 if damage := ship.bounce_disks(planet) is not None:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
-            if isinstance(self.__star, Star) and ship.intersects_disk(self.__star):
-                ship.suffer_damage(1e100)  # 💀
+            if isinstance(self.__star, Star) and (damage := ship.bounce_disks(self.__star) is not None):
+                ship.suffer_damage(damage)
+                self.create_particles_on_disk(self.__star, ship, 25, ship.color, 100)
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
