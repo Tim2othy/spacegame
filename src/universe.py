@@ -130,12 +130,12 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 300 if options.small else 1400
-        num_planets = 5 if options.small else 10
+        star_size = 300 if options.small else 3000
+        num_planets = 20 if options.small else 30
 
         universe = Universe(star_size, 1000)
         player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
-        player_pos = Vec2(star_size + 100, star_size + 100)
+        player_pos = 2 * Vec2(star_size + 100, star_size + 100)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=player_pos, ship_input=player_input))]
 
         if options.splitscreen:
@@ -151,10 +151,7 @@ class Universe:
         enemies = [BulletEnemy, RocketEnemy, MissileEnemy]
         if not options.small:
             spawn_weights = [0.4, 0.3, 0.3]
-
-            for _ in range(20):
-                enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], spawn_weights)[0]
-                enemies.append(enemy_type)
+            enemies.append(random.choices([BulletEnemy, RocketEnemy, MissileEnemy], spawn_weights)[0])
 
         for enemy in enemies:
             random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
