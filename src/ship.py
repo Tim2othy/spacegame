@@ -659,8 +659,8 @@ class EnemyAI(BasicAI):
 
     def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
-        self.ship.thrust_state = ThrustState.FORWARD
-        self.desired_direction = -self.delta_target
+        self.ship.thrust_state = ThrustState.BACKWARD
+        self.desired_direction = self.delta_target
 
     def _execute_heal(self) -> None:
         self.desired_direction = None
