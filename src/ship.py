@@ -606,6 +606,7 @@ class EnemyAI(BasicAI):
         self.ship.shooting = self.can_see_target
 
         self._match()
+        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
     def _match(self) -> None:
         """Match current state bools to behavior."""
@@ -615,14 +616,9 @@ class EnemyAI(BasicAI):
             case (False, True):
                 self._execute_heal()
             case (True, False):
-                if random.random() < 0.3:
-                    self._execute_aim()
-                else:
-                    self._execute_attack()
+                self._execute_aim()
             case (False, False):
                 self._execute_search()
-
-        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
 
     def _execute_attack(self) -> None:
         """Return desired direction and thrust state for attack behavior."""
