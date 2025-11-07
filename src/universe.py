@@ -255,14 +255,11 @@ class Universe:
             tangential_vector = radial_vector.rotate(planet_angle)
             vel_planet = tangential_vector * orbital_velocity
 
-            planets.append(
-                self.add_planet(
-                    PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet),
-                    relative_to=disk,
-                )
-            )
-            r_a = semi_major_axis * (1 + eccentricity)
+            planet_config = PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet)
+            planets.append(self.add_planet(planet_config, relative_to=disk))
+
             # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+            r_a = semi_major_axis * (1 + eccentricity)
             current_min_a = r_a + radius_planet
         return planets
 
