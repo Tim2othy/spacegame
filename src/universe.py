@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-PLANET_RADIUS_PARAMETER = 1.55  # Makes Planets smaller
+GENERAL_PLANET_RADIUS_PMR = 1.55  # Makes Planets smaller
 SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
@@ -228,13 +228,13 @@ class Universe:
         disk = self.__star
         planets = []
         current_min_a = disk.radius * 2
-        planet_size_parameter = math.log(disk.radius) - PLANET_RADIUS_PARAMETER
+        specific_radius_pmr = math.log(disk.radius) - GENERAL_PLANET_RADIUS_PMR
 
         for _ in range(num_planets):
             # random variables
             semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-            mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
-            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+            radius_mu = specific_radius_pmr + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+            radius_planet = min(random.lognormvariate(radius_mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
             eccentricity = random.betavariate(1, 15)
             true_anomaly = random.uniform(0, 2 * math.pi)
             orbit_direction = random.uniform(0, 2 * math.pi)
