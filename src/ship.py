@@ -606,21 +606,21 @@ class EnemyAI(BasicAI):
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer -= dt
-        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
         if self.action_timer <= 0:
+            self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+            self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
             self.action_timer = ENEMY_ACTION_TIMER
-            self._transition()
 
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
         self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
 
+        self._transition()
         self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
+        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM}
 
     def _transition(self) -> None:
         """Transition to a new state based on health and proximity to target."""
-        self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
         match (self.can_see_target, self.low_health):
             case (True, True):
                 self.current_state = AIState.RETREAT
