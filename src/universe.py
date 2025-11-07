@@ -148,27 +148,21 @@ class Universe:
             for player in player_ships:
                 player.health = float("inf")
 
-        if options.small:
-            for enemy in [BulletEnemy, RocketEnemy, MissileEnemy]:
-                random_angle = random.uniform(0, 360)
-                vec = Vec2(0, 0)
-                vec.from_polar((1000, random_angle))
+        enemies = [BulletEnemy, RocketEnemy, MissileEnemy]
+        if not options.small:
+            spawn_weights = [0.4, 0.3, 0.3]
 
-                targeting = random.choice(player_ships)
-                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
-
-        else:
             for _ in range(20):
-                random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
-                random_angle = random.uniform(0, 360)
-                vec = Vec2(0, 0)
-                vec.from_polar((random_radius, random_angle))
-
-                spawn_weights = [0.4, 0.3, 0.3]
                 enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], spawn_weights)[0]
-                targeting = random.choice(player_ships)
+                enemies.append(enemy_type)
 
-                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
+        for enemy in enemies:
+            random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
+            random_angle = random.uniform(0, 360)
+            vec = Vec2(0, 0)
+            vec.from_polar((random_radius, random_angle))
+            targeting = random.choice(player_ships)
+            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
 
         universe.add_planets(num_planets)
 
