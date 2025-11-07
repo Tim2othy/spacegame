@@ -206,27 +206,23 @@ class Universe:
         return planet
 
     def add_planets(self, num_planets: int) -> list[Planet]:
-        """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
-        """
+        """Create num_planets orbiting a Disk, defaulting to the universe's star, with orbits that won't intersect.
+
         What the random variables do:
-        - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
-        - radius_planet   - follows a lognormal distribution.
-        - eccentricity    - how non round orbit is - drawn from a beta distribution
-        - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
-        - orbit_direction - in which direction (in degrees) of the star it starts
-        - planet_angle  - does it go clockwise or anticlockwise
+        - semi_major_axis - Determines the size of orbit of the planet
+        - radius_planet   - Clear
+        - eccentricity    - How elliptical the orbit is
+        - true_anomaly    - Where along it's orbit it starts, as in near r_a or near r_p
+        - orbit_direction - At what angle around the star it starts
+        - planet_angle    - Does it go clockwise or anticlockwise
 
-        The method:
+        What the function does:
         1. Starts with a minimum semi-major axis (just beyond the star).
-        2. For each planet, picks a new semi-major axis by multiplying the previous orbit
-            by a random factor (ensuring increasing distance).
-        3. Samples a low eccentricity from a beta distribution.
-        4. Determines the planet's radius from a lognormal distribution whose mean is slightly
-            shifted with the orbit distance.
-        5. Calculates the orbit geometry and initial position/velocity.
-        6. Updates the minimum allowed semi-major axis for the next planet.
+        2. For each planet, picks a new slightly larger semi-major axis
+        3. Generate the random variables for each planet
+        4. Calculate correct vel_planet and pos_planet based on these random variables to ensure a stable orbit
+        5. Add Planet
         """
-
         if not isinstance(self.__star, Star):
             return []
         disk = self.__star
