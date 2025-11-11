@@ -24,7 +24,7 @@ MIN_ZOOM = 0.04
 MAX_ZOOM = 0.9  # not really being used yet
 # These three parameters influence the main camera zoom, for the explanation asume the sun is the closest object
 ZOOM_POWER = 0.97  # Smaller -> when zooming out, the sun gains screen distance more slowly, also zoom out more slow
-ZOOM_ADD = 380  # Larger -> When very zoomed in the screen distance to sun will be smaller
+ZOOM_ADD = 200  # Larger -> When very zoomed in the screen distance to sun will be smaller
 ZOOM_MULTI = 1000  # Smaller -> Everything is zoomed out more
 
 MAX_CAMERA_SHIFT = 5
@@ -82,8 +82,8 @@ class Camera(Pos):
             # Prevent tiny zoom values, giant zoom values are prevented by "+ ZOOM_ADD" above
             new_zoom = max(MIN_ZOOM, new_zoom)
 
-        self._zoom *= 0.99
-        self._zoom += 0.01 * new_zoom
+        self._zoom *= 0.9
+        self._zoom += 0.1 * new_zoom
 
     def _update_midpoint(self) -> None:
         """Update the midpoint that the camera is centered on."""
