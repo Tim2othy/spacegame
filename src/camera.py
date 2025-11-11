@@ -50,7 +50,7 @@ class Camera(Pos):
         self._tracking: PosVel = tracking
         if not (math.isfinite(zoom) and zoom > 0):
             raise ValueError
-        self._base_zoom: float = zoom
+        self._BASE_ZOOM: float = zoom
         self._zoom: float = zoom
         self.nearest_object: PosVel | None = None
 
@@ -69,11 +69,12 @@ class Camera(Pos):
             speed = self._tracking.vel_relative_to(self.nearest_object).length()
             average = 0.9 * dist + speed
             # Inverse relationship produces sensible zooming
-            new_zoom = DIST_ZOOM_FACTOR * self._base_zoom * (REFERENCE_DIST / (average + 0.5 * REFERENCE_DIST))
+            new_zoom = DIST_ZOOM_FACTOR * self._BASE_ZOOM * (REFERENCE_DIST / (average + 0.5 * REFERENCE_DIST))
             # Prevent tiny zoom values, giant zoom values are prevented by the "+ REFERENCE_DIST" above
             new_zoom = max(MIN_ZOOM, new_zoom)
-            self._zoom *= 0.99
-            self._zoom += 0.01 * new_zoom
+
+        self._zoom *= 0.99
+        self._zoom += 0.01 * new_zoom
 
     def _update_midpoint(self) -> None:
         """Update the midpoint that the camera is centered on."""
