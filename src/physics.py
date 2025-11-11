@@ -17,6 +17,16 @@ SMALL_ANGULAR_VEL = 5.0
 FUEL_USAGE = 0.03
 APPROACH_SPEED = 1000.0
 
+GRAVITATIONAL_CONSTANT = 0.02
+GRAY = Color("gray")
+FUEL = 100
+BOUNCINESS = 0.7
+"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
+BOUNCE_DAMAGE_THRESHOLD = 1.3e6
+"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
+BOUNCE_DAMAGE_SCALAR = 1e-4
+"""Bounce-damage is scaled by this amount."""
+
 
 class ThrustState(Enum):
     """Possible thrust states for the ship."""
@@ -32,23 +42,6 @@ class RotationState(Enum):
     NONE = auto()
     LEFT = auto()
     RIGHT = auto()
-
-
-GRAVITATIONAL_CONSTANT = 0.02
-
-GRAY = Color("gray")
-FUEL = 100
-
-
-# physics constants
-BOUNCINESS = 0.7
-"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
-
-BOUNCE_DAMAGE_THRESHOLD = 1.3e6
-"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
-
-BOUNCE_DAMAGE_SCALAR = 1e-4
-"""Bounce-damage is scaled by this amount."""
 
 
 class Pos:
