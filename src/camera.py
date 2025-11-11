@@ -22,8 +22,11 @@ if TYPE_CHECKING:
 
 MIN_ZOOM = 0.04
 MAX_ZOOM = 0.9  # not really being used yet
-DIST_ZOOM_FACTOR = 1.2  # adjusts how quickly to zoom as a function of distance at 1 zoom and dist exactly cancel out
-REFERENCE_DIST = 1000  # adjusts minimal zoom as a function of distance, but in an odd way
+# These three parameters influence the main camera zoom, for the explanation asume the sun is the closest object
+ZOOM_POWER = 0.97  # Smaller -> when zooming out, the sun gains screen distance more slowly, also zoom out more slow
+ZOOM_ADD = 380  # Larger -> When very zoomed in the screen distance to sun will be smaller
+ZOOM_MULTI = 1000  # Smaller -> Everything is zoomed out more
+
 MAX_CAMERA_SHIFT = 5
 
 
@@ -69,8 +72,8 @@ class Camera(Pos):
             speed = self._tracking.vel_relative_to(self.nearest_object).length()
             average = 0.9 * dist + speed
             # Inverse relationship produces sensible zooming
-            new_zoom = DIST_ZOOM_FACTOR * self._BASE_ZOOM * (REFERENCE_DIST / (average + 0.5 * REFERENCE_DIST))
-            # Prevent tiny zoom values, giant zoom values are prevented by the "+ REFERENCE_DIST" above
+            new_zoom = ZOOM_MULTI * self._BASE_ZOOM / (average**ZOOM_POWER + ZOOM_ADD)
+            # Prevent tiny zoom values, giant zoom values are prevented by "+ ZOOM_ADD" above
             new_zoom = max(MIN_ZOOM, new_zoom)
 
         self._zoom *= 0.99
