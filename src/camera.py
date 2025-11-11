@@ -70,9 +70,10 @@ class Camera(Pos):
         else:
             dist = self._tracking.pos_relative_to(self.nearest_object).length()
             speed = self._tracking.vel_relative_to(self.nearest_object).length()
-            average = 0.9 * dist + speed
+            average = dist + speed * 0.2
+            zoom_value = average**ZOOM_POWER + ZOOM_ADD
             # Inverse relationship produces sensible zooming
-            new_zoom = ZOOM_MULTI * self._BASE_ZOOM / (average**ZOOM_POWER + ZOOM_ADD)
+            new_zoom = ZOOM_MULTI * self._BASE_ZOOM / zoom_value
             # Prevent tiny zoom values, giant zoom values are prevented by "+ ZOOM_ADD" above
             new_zoom = max(MIN_ZOOM, new_zoom)
 
