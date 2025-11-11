@@ -297,21 +297,27 @@ class Universe:
         """Run all bounce-interactions within `self`."""
         ships: Sequence[Ship] = [*self._player_ships, *self._enemy_ships]
 
+        # Bounce ships
         for ix, ship in enumerate(ships):
-            # Bounce ships off of each other
             for other_ship in ships[ix + 1 :]:
-                if damage := ship.bounce_disks(other_ship) is not None:
+                damage = ship.bounce_disks(other_ship)
+                if damage is not None:
                     ship.suffer_damage(damage)
                     other_ship.suffer_damage(damage)
                     self.create_particles_on_disk(ship, other_ship, 25, other_ship.color, 100)
                     self.create_particles_on_disk(other_ship, ship, 25, ship.color, 100)
+
             for planet in self._nearby_planets(ship):
-                if damage := ship.bounce_disks(planet) is not None:
+                damage = ship.bounce_disks(planet)
+                if damage is not None:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
-            if isinstance(self.__star, Star) and (damage := ship.bounce_disks(self.__star) is not None):
-                ship.suffer_damage(damage)
-                self.create_particles_on_disk(self.__star, ship, 25, ship.color, 100)
+
+            if isinstance(self.__star, Star):
+                damage = ship.bounce_disks(self.__star)
+                if damage is not None:
+                    ship.suffer_damage(damage)
+                    self.create_particles_on_disk(self.__star, ship, 25, ship.color, 100)
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
