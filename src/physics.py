@@ -12,20 +12,18 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
+GRAY = Color("gray")
+
 SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
-FUEL_USAGE = 0.03
 APPROACH_SPEED = 1000.0
+FUEL_USAGE = 0.03
+FUEL = 100
 
 GRAVITATIONAL_CONSTANT = 0.02
-GRAY = Color("gray")
-FUEL = 100
-BOUNCINESS = 0.7
-"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
-BOUNCE_DAMAGE_THRESHOLD = 1.3e6
-"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
+BOUNCINESS = 0.7  # In [0,1], if set to 1, collisions cause no damage.
+BOUNCE_DAMAGE_THRESHOLD = 1.3e6  # Threshold so bouncing causes damage.
 BOUNCE_DAMAGE_SCALAR = 1e-4
-"""Bounce-damage is scaled by this amount."""
 
 
 class ThrustState(Enum):
