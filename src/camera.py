@@ -64,7 +64,12 @@ class Camera(Pos):
         self._midpoint = Vec2(0, 0)
 
     def _update_zoom(self) -> None:
-        """Calculate zoom based on distance to nearest object."""
+        """Calculate zoom based on distance to nearest object.
+
+        Typical values around are:
+        dist =  600 and zoom =  0.3
+        dist = 2500 and zoom =  0.15
+        """
         if self.nearest_object is None:
             new_zoom = 1
         else:
