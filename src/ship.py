@@ -495,6 +495,59 @@ class ShipInputTank(ShipInput):
         """Create a new ShipInput, WASD-movement and space-shooting."""
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e, pygame.K_g)
 
+@dataclass
+class ShipInputAbsolute(ShipInput):
+    north: PygameKey
+    west: PygameKey
+    south: PygameKey
+    east: PygameKey
+    shoot: PygameKey
+    release_flares: PygameKey
+    boost: PygameKey
+
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        desired_direction = Vec2(0.0, 0.0)
+        # We could use a fancy single-line-stunt with zip() and list-comprehensions, but this is way more readable.
+        if keys[self.north]:
+            desired_direction += Vec2(0.0, -1.0)
+        if keys[self.south]:
+            desired_direction += Vec2(0.0, 1.0)
+        if keys[self.west]:
+            desired_direction += Vec2(-1.0, 0.0)
+        if keys[self.east]:
+            desired_direction += Vec2(1.0, 0.0)
+
+        rotation_state = ship.calculate_rotation(desired_direction)
+
+        # Thrust forward iff the ship is facing the same direction, otherwise thrust backward.
+        thrust_state = ThrustState.NONE
+        if desired_direction != Vec2(0.0, 0.0):
+            dot_product = ship.get_faced_direction().dot(desired_direction)
+            thrust_state = ThrustState.FORWARD if dot_product > 0.0 else ThrustState.BACKWARD
+
+        return ShipActions(
+            rotation_state = rotation_state,
+            thrust_state = thrust_state,
+            shooting = keys[self.shoot],
+            releasing_flares = keys[self.release_flares],
+            boost = keys[self.boost],
+        )
+
+    @classmethod
+    def arrows(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN, pygame.K_RIGHT, pygame.K_RETURN, pygame.K_m, pygame.K_b)
+
+    @classmethod
+    def dvorak(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(pygame.K_c, pygame.K_d, pygame.K_r, pygame.K_n, pygame.K_o, pygame.K_e, pygame.K_i)
+
+    @classmethod
+    def wasd(cls) -> ShipInput:
+        """Create a new ShipInput, WASD-movement and space-shooting."""
+        return cls(pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_SPACE, pygame.K_e, pygame.K_g)
+
 
 @dataclass(kw_only=True)
 class PlayerConfig(ShipConfig):
