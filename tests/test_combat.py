@@ -1,7 +1,7 @@
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from ship import (
+from src.ship import (
     _DEFAULT_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
     HEALTH,
@@ -13,7 +13,7 @@ from ship import (
     PlayerConfig,
     RocketEnemy,
 )
-from universe import PlanetConfig, Universe
+from src.universe import PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])

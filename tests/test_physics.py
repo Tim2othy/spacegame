@@ -6,8 +6,8 @@ import pytest
 from pygame import Color, Surface
 from pygame.math import Vector2 as Vec2
 
-from camera import Camera
-from physics import Disk, Pos, PosVel
+from src.camera import Camera
+from src.physics import Disk, Pos, PosVel
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 
