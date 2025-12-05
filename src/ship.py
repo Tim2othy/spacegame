@@ -505,24 +505,29 @@ class ShipInputAbsolute(ShipInput):
     release_flares: PygameKey
     boost: PygameKey
 
-    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
-        desired_direction = Vec2(0.0, 0.0)
-        # We could use a fancy single-line-stunt with zip() and list-comprehensions, but this is way more readable.
-        if keys[self.north]:
-            desired_direction += Vec2(0.0, -1.0)
-        if keys[self.south]:
-            desired_direction += Vec2(0.0, 1.0)
-        if keys[self.west]:
-            desired_direction += Vec2(-1.0, 0.0)
-        if keys[self.east]:
-            desired_direction += Vec2(1.0, 0.0)
+    _desired_direction = Vec2(0.0, 0.0)
 
-        rotation_state = ship.calculate_rotation(desired_direction)
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        if any([keys[self.north], keys[self.south], keys[self.west], keys[self.east]]):
+            desired_direction = Vec2(0.0, 0.0)
+            # We could use a fancy single-line-stunt with zip() and list-comprehensions, but this is way more readable.
+            if keys[self.north]:
+                desired_direction += Vec2(0.0, -1.0)
+            if keys[self.south]:
+                desired_direction += Vec2(0.0, 1.0)
+            if keys[self.west]:
+                desired_direction += Vec2(-1.0, 0.0)
+            if keys[self.east]:
+                desired_direction += Vec2(1.0, 0.0)
+            
+            self._desired_direction = desired_direction
+
+        rotation_state = ship.calculate_rotation(self._desired_direction)
 
         # Thrust forward iff the ship is facing the same direction, otherwise thrust backward.
         thrust_state = ThrustState.NONE
-        if desired_direction != Vec2(0.0, 0.0):
-            dot_product = ship.get_faced_direction().dot(desired_direction)
+        if self._desired_direction != Vec2(0.0, 0.0):
+            dot_product = ship.get_faced_direction().dot(self._desired_direction)
             thrust_state = ThrustState.FORWARD if dot_product > 0.0 else ThrustState.BACKWARD
 
         return ShipActions(
