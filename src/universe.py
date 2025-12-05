@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import GRAVITATIONAL_CONSTANT, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile, Rocket
-from ship import BulletEnemy, EnemyConfig, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
+from ship import BulletEnemy, EnemyConfig, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInputTank
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -138,12 +138,12 @@ class Universe:
         planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
 
         universe = Universe(star_size, 1000)
-        player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
+        player_input = ShipInputTank.dvorak() if options.use_dvorak else ShipInputTank.arrows()
         player_pos = Vec2(star_size + 100, star_size + 100)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=player_pos, ship_input=player_input))]
 
         if options.splitscreen:
-            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInput.wasd())
+            second_config = PlayerConfig(relative_pos=Vec2(100, 0), ship_input=ShipInputTank.wasd())
             # TODO: fix color for second player color=Color("darkred")
             second_player = universe.add_player(second_config, relative_to=player_ships[0])
             player_ships.append(second_player)

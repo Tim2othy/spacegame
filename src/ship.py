@@ -395,9 +395,20 @@ class Ship(Mover):
 
 type PygameKey = int
 
+@dataclass(kw_only=True)
+class ShipActions:
+    rotation_state: RotationState = RotationState.NONE
+    thrust_state: ThrustState = ThrustState.NONE
+    shoot: bool = False
+    releasing_flares: bool = False
+    boost: bool = False
+
+class ShipInput:
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        pass
 
 @dataclass
-class ShipInput:
+class ShipInputTank(ShipInput):
     """Specification for which keys trigger what spaceship-action.
 
     Attributes:
@@ -417,6 +428,15 @@ class ShipInput:
     shoot: PygameKey
     release_flares: PygameKey
     boost: PygameKey
+
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        return ShipActions(
+            rotation_state = RotationState.NONE if (keys[self.thruster_L] == keys[self.thruster_R]) else (RotationState.LEFT if keys[self.thruster_L] else RotationState.RIGHT),
+            thrust_state = ThrustState.FORWARD if (keys[self.thruster_forward] == keys[self.thruster_backward]) else (ThrustState.FORWARD if keys[self.thruster_forward] else ThrustState.BACKWARD),
+            shoot = keys[self.shoot],
+            releasing_flares = keys[self.release_flares],
+            boost = keys[self.boost],
+        )
 
     @classmethod
     def arrows(cls) -> ShipInput:
@@ -470,27 +490,14 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        match (keys[self.spaceship_input.thruster_L], keys[self.spaceship_input.thruster_R]):
-            case (True, True) | (False, False):
-                rotation_state = RotationState.NONE
-            case (True, False):
-                rotation_state = RotationState.LEFT
-            case (False, True):
-                rotation_state = RotationState.RIGHT
-
-        match (keys[self.spaceship_input.thruster_forward], keys[self.spaceship_input.thruster_backward]):
-            case (True, True) | (False, False):
-                self.thrust_state = ThrustState.NONE
-            case (True, False):
-                self.thrust_state = ThrustState.FORWARD
-            case (False, True):
-                self.thrust_state = ThrustState.BACKWARD
-
+        ship_actions = self.spaceship_input.get_ship_actions(self, keys)
+        rotation_state = ship_actions.rotation_state
+        self.thrust_state = ship_actions.thrust_state
         self.increment_rot_counters(rotation_state)
 
-        self.shooting = keys[self.spaceship_input.shoot]
-        self.releasing_flares = keys[self.spaceship_input.release_flares]
-        self.boost = keys[self.spaceship_input.boost]
+        self.shooting = ship_actions.shoot
+        self.releasing_flares = ship_actions.releasing_flares
+        self.boost = ship_actions.boost
 
     def do_rotation_for_player(self) -> None:
         """Activates rotation thrusters for player based on attributes modified by `increment_rot_counters()`.
