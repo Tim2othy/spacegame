@@ -565,7 +565,7 @@ class PlayerConfig(ShipConfig):
 
     """
 
-    ship_input: ShipInput
+    ship_input: ShipInput= field(default_factory = lambda: ShipInputTank.arrows())
 
 
 class PlayerShip(Ship):
