@@ -701,7 +701,6 @@ class EnemyAI(BasicAI):
 
             object_angle = math.degrees(math.atan2(delta_obj.y, delta_obj.x))
             object_vel_angle = math.degrees(math.atan2(delta_obj_vel.y, delta_obj_vel.x))
-            if abs(object_vel_angle - object_angle) < 50:
-                self.desired_direction = delta_obj.rotate(90)
+            if abs(object_vel_angle - object_angle) < 1:
+                self.desired_direction = delta_obj.rotate(120)
                 self.ship.thrust_state = ThrustState.FORWARD
-                print("avoid")

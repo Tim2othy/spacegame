@@ -93,7 +93,7 @@ class Camera(Pos):
         new_midpoint = self.nearest_object.pos_relative_to(self._tracking) / 2.0
         difference = new_midpoint - self._midpoint
         # cap size of shift, but make camera shift more the more zoomed out
-        max_length_shift = MAX_CAMERA_SHIFT / (1 - MIN_ZOOM) * (MAX_ZOOM - self._zoom)
+        max_length_shift = MAX_CAMERA_SHIFT / (1 - MIN_ZOOM) * (MAX_ZOOM - self._zoom) * 2
         midpoint_shift = cap_vector_length(difference, max_length_shift)
         self._midpoint += midpoint_shift
 
