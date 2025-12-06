@@ -100,7 +100,8 @@ class Camera(Pos):
     def step(self) -> None:
         """Update the camera's position and zoom to track the object it's tracking."""
         self._update_zoom()
-        self._update_midpoint()
+        # self._update_midpoint()
+        # self._midpoint = cap_vector_length(self._midpoint, 1000)
         self._shift(self._tracking.pos_relative_to(self) + self._midpoint - self._surface_size / (2.0 * self._zoom))
 
     def _rectangle_intersects_surface(self, rect: Rect) -> bool:
