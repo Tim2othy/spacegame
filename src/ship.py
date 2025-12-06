@@ -395,9 +395,20 @@ class Ship(Mover):
 
 type PygameKey = int
 
+@dataclass(kw_only=True)
+class ShipActions:
+    rotation_state: RotationState = RotationState.NONE
+    thrust_state: ThrustState = ThrustState.NONE
+    shooting: bool = False
+    releasing_flares: bool = False
+    boost: bool = False
+
+class ShipInput:
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        pass
 
 @dataclass
-class ShipInput:
+class ShipInputTank(ShipInput):
     """Specification for which keys trigger what spaceship-action.
 
     Attributes:
@@ -418,6 +429,57 @@ class ShipInput:
     release_flares: PygameKey
     boost: PygameKey
 
+    _rotation_state: RotationState = RotationState.NONE
+    _turn_L: float = 0.0
+    _turn_R: float = 0.0
+    _turn_back_L: float = 0.0
+    _turn_back_R: float = 0.0
+
+    def _handle_rotation(self, ship) -> None:
+        if self._rotation_state == RotationState.LEFT:
+            self._turn_L += ROT_STATE_DELTA
+            self._turn_back_R += ROT_STATE_DELTA
+        if self._rotation_state == RotationState.RIGHT:
+            self._turn_R += ROT_STATE_DELTA
+            self._turn_back_L += ROT_STATE_DELTA
+
+        self._rotation_state = RotationState.NONE
+
+        # If you want to turn from 40° to 110° you have to press the left key until you reach 75°.
+        # Then you automatically decelerate from  75° to 110° and come to a stop there.
+
+        if self._turn_L > 0:
+            self._turn_L -= ROT_STATE_DELTA
+            self._rotation_state = RotationState.LEFT
+        elif self._turn_back_R > 0:
+            self._turn_back_R -= ROT_STATE_DELTA
+            self._rotation_state = RotationState.RIGHT
+
+        if self._turn_R > 0:
+            self._turn_R -= ROT_STATE_DELTA
+            self._rotation_state = RotationState.RIGHT
+        elif self._turn_back_L > 0:
+            self._turn_back_L -= ROT_STATE_DELTA
+            self._rotation_state = RotationState.LEFT
+
+        if self._rotation_state == RotationState.NONE:
+            if ship.angular_velocity < -SMALL_ANGULAR_VEL:
+                self._rotation_state = RotationState.LEFT
+            if ship.angular_velocity > SMALL_ANGULAR_VEL:
+                self._rotation_state = RotationState.RIGHT
+
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        self._rotation_state = RotationState.NONE if (keys[self.thruster_L] == keys[self.thruster_R]) else (RotationState.LEFT if keys[self.thruster_L] else RotationState.RIGHT)
+        self._handle_rotation(ship)
+
+        return ShipActions(
+            rotation_state = self._rotation_state,
+            thrust_state = ThrustState.FORWARD if (keys[self.thruster_forward] == keys[self.thruster_backward]) else (ThrustState.FORWARD if keys[self.thruster_forward] else ThrustState.BACKWARD),
+            shooting = keys[self.shoot],
+            releasing_flares = keys[self.release_flares],
+            boost = keys[self.boost],
+        )
+
     @classmethod
     def arrows(cls) -> ShipInput:
         """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
@@ -433,6 +495,64 @@ class ShipInput:
         """Create a new ShipInput, WASD-movement and space-shooting."""
         return cls(pygame.K_d, pygame.K_a, pygame.K_w, pygame.K_s, pygame.K_SPACE, pygame.K_e, pygame.K_g)
 
+@dataclass
+class ShipInputAbsolute(ShipInput):
+    north: PygameKey
+    west: PygameKey
+    south: PygameKey
+    east: PygameKey
+    shoot: PygameKey
+    release_flares: PygameKey
+    boost: PygameKey
+
+    _desired_direction = Vec2(0.0, 0.0)
+
+    def get_ship_actions(self, ship: Ship, keys: PygameKey) -> ShipActions:
+        if any([keys[self.north], keys[self.south], keys[self.west], keys[self.east]]):
+            desired_direction = Vec2(0.0, 0.0)
+            # We could use a fancy single-line-stunt with zip() and list-comprehensions, but this is way more readable.
+            if keys[self.north]:
+                desired_direction += Vec2(0.0, -1.0)
+            if keys[self.south]:
+                desired_direction += Vec2(0.0, 1.0)
+            if keys[self.west]:
+                desired_direction += Vec2(-1.0, 0.0)
+            if keys[self.east]:
+                desired_direction += Vec2(1.0, 0.0)
+            
+            self._desired_direction = desired_direction
+
+        rotation_state = ship.calculate_rotation(self._desired_direction)
+
+        # Thrust forward iff the ship is facing the same direction, otherwise thrust backward.
+        thrust_state = ThrustState.NONE
+        if self._desired_direction != Vec2(0.0, 0.0):
+            dot_product = ship.get_faced_direction().dot(self._desired_direction)
+            thrust_state = ThrustState.FORWARD if dot_product > 0.0 else ThrustState.BACKWARD
+
+        return ShipActions(
+            rotation_state = rotation_state,
+            thrust_state = thrust_state,
+            shooting = keys[self.shoot],
+            releasing_flares = keys[self.release_flares],
+            boost = keys[self.boost],
+        )
+
+    @classmethod
+    def arrows(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(pygame.K_UP, pygame.K_LEFT, pygame.K_DOWN, pygame.K_RIGHT, pygame.K_RETURN, pygame.K_m, pygame.K_b)
+
+    @classmethod
+    def dvorak(cls) -> ShipInput:
+        """Create a new ShipInput, Arrow-Key-movement and return-shooting."""
+        return cls(pygame.K_c, pygame.K_d, pygame.K_r, pygame.K_n, pygame.K_o, pygame.K_e, pygame.K_i)
+
+    @classmethod
+    def wasd(cls) -> ShipInput:
+        """Create a new ShipInput, WASD-movement and space-shooting."""
+        return cls(pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_SPACE, pygame.K_e, pygame.K_g)
+
 
 @dataclass(kw_only=True)
 class PlayerConfig(ShipConfig):
@@ -445,7 +565,7 @@ class PlayerConfig(ShipConfig):
 
     """
 
-    ship_input: ShipInput
+    ship_input: ShipInput= field(default_factory = lambda: ShipInputTank.arrows())
 
 
 class PlayerShip(Ship):
@@ -457,11 +577,7 @@ class PlayerShip(Ship):
     def __init__(self, relative_to: PosVel, config: PlayerConfig) -> None:
         """Create a new player-spaceship."""
         super().__init__(relative_to, config)
-        self.spaceship_input = config.ship_input
-        self.turn_L: float = 0.0
-        self.turn_R: float = 0.0
-        self.turn_back_L: float = 0.0
-        self.turn_back_R: float = 0.0
+        self.ship_input = config.ship_input
 
         self.closest_enemy: BulletEnemy | None = None
 
@@ -470,69 +586,16 @@ class PlayerShip(Ship):
 
         `keys` is typically retreived using `pygame.key.get_pressed()`.
         """
-        match (keys[self.spaceship_input.thruster_L], keys[self.spaceship_input.thruster_R]):
-            case (True, True) | (False, False):
-                rotation_state = RotationState.NONE
-            case (True, False):
-                rotation_state = RotationState.LEFT
-            case (False, True):
-                rotation_state = RotationState.RIGHT
+        ship_actions = self.ship_input.get_ship_actions(self, keys)
+        self.rotation_state = ship_actions.rotation_state
+        self.thrust_state = ship_actions.thrust_state
 
-        match (keys[self.spaceship_input.thruster_forward], keys[self.spaceship_input.thruster_backward]):
-            case (True, True) | (False, False):
-                self.thrust_state = ThrustState.NONE
-            case (True, False):
-                self.thrust_state = ThrustState.FORWARD
-            case (False, True):
-                self.thrust_state = ThrustState.BACKWARD
-
-        self.increment_rot_counters(rotation_state)
-
-        self.shooting = keys[self.spaceship_input.shoot]
-        self.releasing_flares = keys[self.spaceship_input.release_flares]
-        self.boost = keys[self.spaceship_input.boost]
-
-    def do_rotation_for_player(self) -> None:
-        """Activates rotation thrusters for player based on attributes modified by `increment_rot_counters()`.
-
-        If you want to turn from 40° to 110° you have to press the left key until you reach 75°.
-        Then you automatically decelerate from  75° to 110° and come to a stop there.
-        """
-        self.rotation_state = RotationState.NONE
-
-        if self.turn_L > 0:
-            self.turn_L -= ROT_STATE_DELTA
-            self.rotation_state = RotationState.LEFT
-        elif self.turn_back_R > 0:
-            self.turn_back_R -= ROT_STATE_DELTA
-            self.rotation_state = RotationState.RIGHT
-
-        if self.turn_R > 0:
-            self.turn_R -= ROT_STATE_DELTA
-            self.rotation_state = RotationState.RIGHT
-        elif self.turn_back_L > 0:
-            self.turn_back_L -= ROT_STATE_DELTA
-            self.rotation_state = RotationState.LEFT
-
-        if self.rotation_state == RotationState.NONE:
-            if self.angular_velocity < -SMALL_ANGULAR_VEL:
-                self.rotation_state = RotationState.LEFT
-            if self.angular_velocity > SMALL_ANGULAR_VEL:
-                self.rotation_state = RotationState.RIGHT
-
-    def increment_rot_counters(self, rotation_state: RotationState) -> None:
-        """Increment rotation counters based on key-press info taken from `handle_input`."""
-        if rotation_state == RotationState.LEFT:
-            self.turn_L += ROT_STATE_DELTA
-            self.turn_back_R += ROT_STATE_DELTA
-        if rotation_state == RotationState.RIGHT:
-            self.turn_R += ROT_STATE_DELTA
-            self.turn_back_L += ROT_STATE_DELTA
+        self.shooting = ship_actions.shooting
+        self.releasing_flares = ship_actions.releasing_flares
+        self.boost = ship_actions.boost
 
     def step(self, dt: float) -> None:
         """Handle player rotation and call super step."""
-        self.do_rotation_for_player()
-
         super().step(dt)
 
     def update_closest_enemy(self, enemy_ships: list[BulletEnemy]) -> None:

@@ -4,9 +4,9 @@ import pytest
 from pygame import Color
 from pygame.math import Vector2 as Vec2
 
-from physics import PosVel
-from projectiles import Missile, Rocket
-from ship import Ship, ShipConfig
+from src.physics import PosVel
+from src.projectiles import Missile, Rocket
+from src.ship import Ship, ShipConfig
 
 ORIGIN = PosVel._new_origin_and_only_use_this_if_you_really_know_what_you_are_doing()
 

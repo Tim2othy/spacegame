@@ -1,10 +1,8 @@
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from ship import (
+from src.ship import (
     _DEFAULT_MATRIX,
-    _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
-    _LOW_HEALTH_MATRIX,
     _PLAYER_VISIBLE_MATRIX,
     HEALTH,
     AIState,
@@ -15,7 +13,7 @@ from ship import (
     PlayerConfig,
     RocketEnemy,
 )
-from universe import PlanetConfig, Universe
+from src.universe import PlanetConfig, Universe
 
 
 @pytest.mark.parametrize("enemy_type", [BulletEnemy, RocketEnemy, MissileEnemy])
@@ -66,9 +64,7 @@ def test_bullet_paths(monkeypatch: pytest.MonkeyPatch, enemy_type: type[BulletEn
     "matrix",
     [
         _DEFAULT_MATRIX,
-        _LOW_HEALTH_MATRIX,
         _PLAYER_VISIBLE_MATRIX,
-        _LOW_HEALTH_AND_PLAYER_VISIBLE_MATRIX,
     ],
 )
 def test_transition_matrix_sums(matrix: Matrix) -> None:

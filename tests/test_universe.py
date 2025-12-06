@@ -5,9 +5,9 @@ from math import isclose
 import pytest
 from pygame.math import Vector2 as Vec2
 
-from physics import PosVel
-from ship import PlayerConfig, PlayerShip
-from universe import MU_PLANET_RADIUS, Planet, PlanetConfig, Universe
+from src.physics import PosVel
+from src.ship import PlayerConfig, PlayerShip
+from src.universe import MU_PLANET_RADIUS, Planet, PlanetConfig, Universe
 
 
 def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
