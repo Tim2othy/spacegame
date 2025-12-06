@@ -5,7 +5,6 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 import pygame
@@ -18,6 +17,7 @@ from physics import (
     FUEL_USAGE,
     SMALL_ANGULAR_VEL,
     BasicAI,
+    Disk,
     Mover,
     Pos,
     PosVel,
@@ -39,14 +39,14 @@ ENEMY_INDICATOR_COLOR = Color("red")
 
 # Make sure these are all positive and finite
 BULLET_RATE_OF_FIRE = 0.08
-ROCKET_RATE_OF_FIRE = 0.7
-MISSILE_RATE_OF_FIRE = 4.0
+ROCKET_RATE_OF_FIRE = 0.6
+MISSILE_RATE_OF_FIRE = 3.5
 FLARE_RATE_OF_FIRE = 4.0
 
 FLARE_MEAN_RELEASE_SPEED = 140
 FLARE_SD_RELEASE_SPEED = 35.0
-BULLET_RELEASE_SPEED = 1100.0
-ROCKET_RELEASE_SPEED = 500.0
+BULLET_RELEASE_SPEED = 2500.0
+ROCKET_RELEASE_SPEED = 800.0
 
 NUM_FLARES = 40
 SD_FLARE_ANGLE = 30
@@ -64,36 +64,6 @@ ENEMY_FIRE_RANGE_SQUARED = 4000.0**2
 ENEMY_ACTION_TIMER = 6
 APPROACH_LOWER = 50
 APPROACH_UPPER = 90
-
-
-class AIState(Enum):
-    """Possible AI states for enemies chain."""
-
-    RAM = auto()
-    ATTACK = auto()
-    AIM = auto()
-    RETREAT = auto()
-    HEAL = auto()
-
-
-type MatrixRow = dict[AIState, float]
-type Matrix = dict[AIState, MatrixRow]
-
-_DEFAULT_MATRIX: Matrix = {
-    AIState.RAM: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
-    AIState.ATTACK: {AIState.RAM: 0.9, AIState.AIM: 0.1},
-    AIState.AIM: {AIState.RAM: 0.9, AIState.ATTACK: 0.1},
-    AIState.RETREAT: {AIState.RAM: 0.8, AIState.ATTACK: 0.1, AIState.AIM: 0.1},
-    AIState.HEAL: {AIState.RAM: 0.3, AIState.HEAL: 0.7},
-}
-
-_PLAYER_VISIBLE_MATRIX: Matrix = {
-    AIState.RAM: {AIState.ATTACK: 0.9, AIState.AIM: 0.1},
-    AIState.ATTACK: {AIState.RAM: 0.1, AIState.ATTACK: 0.7, AIState.AIM: 0.2},
-    AIState.AIM: {AIState.RAM: 0.05, AIState.ATTACK: 0.05, AIState.AIM: 0.8, AIState.RETREAT: 0.1},
-    AIState.RETREAT: {AIState.RAM: 0.4, AIState.ATTACK: 0.3, AIState.AIM: 0.1, AIState.RETREAT: 0.2},
-    AIState.HEAL: {AIState.AIM: 1.0},
-}
 
 
 def generate_complementary_color(base_color: Color) -> Color:
@@ -641,12 +611,28 @@ class BulletEnemy(Ship):
         """Create a new enemy ship."""
         super().__init__(relative_to, config)
         self.target: Ship = config.target_ship
+        self.closest_object: Disk | None = None
         self.ai = EnemyAI(self)
 
     def step(self, dt: float) -> None:
         """Apply physics and "AI" to `self`."""
         self.ai.step(dt)
         super().step(dt)
+
+    def update_closest_object(self, close_planets, star) -> None:
+        """Find and store the closest enemy from the provided list."""
+        self.closest_object = None
+        self.closest_object_distance = float("inf")
+        dist = self.distance_squared_to(star)
+        if dist < self.closest_object_distance:
+            self.closest_object = star
+            self.closest_object_distance = dist
+
+        for planet in close_planets:
+            dist = self.distance_squared_to(planet)
+            if dist < self.closest_object_distance:
+                self.closest_object = planet
+                self.closest_object_distance = dist
 
 
 class RocketEnemy(BulletEnemy):
@@ -682,67 +668,38 @@ class EnemyAI(BasicAI):
         """Create a new AI controller."""
         super().__init__()
         self.ship: BulletEnemy = ship
-        self.current_state = AIState.RAM
+
         self.can_see_target: bool = False
         self.low_health: bool = False
 
     def step(self, dt: float) -> None:
         """Transition state and apply appropriate behavior for different enemy types."""
         self.action_timer -= dt
-        self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
 
         if self.action_timer <= 0:
+            self.can_see_target: bool = self.ship.distance_squared_to(self.ship.target) < ENEMY_FIRE_RANGE_SQUARED
+            self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
             self.action_timer = ENEMY_ACTION_TIMER
-            self._transition()
 
         self.delta_target = self.ship.target.pos_relative_to(self.ship)
         self.delta_target_vel = self.ship.target.vel_relative_to(self.ship)
+        self.ship.shooting = self.can_see_target
 
         self._match()
-        self.ship.shooting = self.current_state in {AIState.ATTACK, AIState.AIM} and self.can_see_target
-
-    def _transition(self) -> None:
-        """Transition to a new state based on the Markov transition matrix."""
-        self.low_health = self.ship.health < 55 + 0.6 * (self.ship.max_repair_health - 100)
-        match (self.can_see_target, self.low_health):
-            case (True, True):
-                self.current_state = AIState.RETREAT
-                return
-            case (False, True):
-                self.current_state = AIState.HEAL
-                return
-            case (True, False):
-                matrix = _PLAYER_VISIBLE_MATRIX
-            case (False, False):
-                matrix = _DEFAULT_MATRIX
-
-        # Extract probabilities for current state
-        current_row: MatrixRow = matrix[self.current_state]
-        states, probabilities = list(current_row.keys()), list(current_row.values())
-        self.current_state = random.choices(states, probabilities)[0]
+        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
+        self._avoid()
 
     def _match(self) -> None:
-        """Match current state to behavior."""
-        match self.current_state:
-            case AIState.RAM:
-                self._execute_ram()
-                self.ship.thrust_state = (
-                    ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
-                )
-            case AIState.ATTACK:
-                self._execute_attack()
-            case AIState.AIM:
-                self._execute_aim()
-            case AIState.RETREAT:
+        """Match current state bools to behavior."""
+        match (self.can_see_target, self.low_health):
+            case (True, True):
                 self._execute_retreat()
-            case AIState.HEAL:
-                if self.ship.max_repair_health - self.ship.health > 1:
-                    self.ship.thrust_state = ThrustState.NONE
-                    self.ship.rotation_state = RotationState.NONE
-                    return
-                self._execute_ram()
-
-        self.ship.rotation_state = self.ship.calculate_rotation(self.desired_direction)
+            case (False, True):
+                self._execute_heal()
+            case (True, False):
+                self._execute_aim()
+            case (False, False):
+                self._execute_search()
 
     def _execute_attack(self) -> None:
         """Return desired direction and thrust state for attack behavior."""
@@ -776,12 +733,20 @@ class EnemyAI(BasicAI):
 
     def _execute_retreat(self) -> None:
         """Return desired angle and thrust state for retreat behavior."""
-        if not self.can_see_target:
-            self.ship.thrust_state = ThrustState.NONE
-            self.desired_direction = None
-        else:
-            self.ship.thrust_state = ThrustState.FORWARD
-            self.desired_direction = -self.delta_target
+        self.ship.thrust_state = ThrustState.BACKWARD
+        self.desired_direction = self.delta_target
+
+    def _execute_heal(self) -> None:
+        self.desired_direction = None
+        self.ship.thrust_state = ThrustState.NONE
+
+    def _execute_search(self) -> None:
+        """Set desired direction and thrust state for search behavior."""
+        desired_relative_vel = self.delta_target.normalize() * APPROACH_SPEED
+        self.desired_direction = desired_relative_vel + self.delta_target_vel
+        self.ship.thrust_state = (
+            ThrustState.FORWARD if self.delta_target_vel.length() < APPROACH_SPEED else ThrustState.NONE
+        )
 
     def _keep_distance(self) -> ThrustState:
         approach_speed = (-self.delta_target_vel).dot(self.delta_target.normalize())
@@ -790,3 +755,15 @@ class EnemyAI(BasicAI):
             if approach_speed < APPROACH_LOWER
             else (ThrustState.BACKWARD if approach_speed > APPROACH_UPPER else ThrustState.NONE)
         )
+
+    def _avoid(self) -> None:
+        obj = self.ship.closest_object
+        if obj is not None:
+            delta_obj = obj.pos_relative_to(self.ship)
+            delta_obj_vel = obj.vel_relative_to(self.ship)
+
+            object_angle = math.degrees(math.atan2(delta_obj.y, delta_obj.x))
+            object_vel_angle = math.degrees(math.atan2(delta_obj_vel.y, delta_obj_vel.x))
+            if abs(object_vel_angle - object_angle) < 1:
+                self.desired_direction = delta_obj.rotate(120)
+                self.ship.thrust_state = ThrustState.FORWARD

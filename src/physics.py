@@ -12,10 +12,18 @@ from pygame.math import Vector2 as Vec2
 if TYPE_CHECKING:
     from camera import Camera
 
+GRAY = Color("gray")
+
 SMALL_ANGLE = 0.5
 SMALL_ANGULAR_VEL = 5.0
-FUEL_USAGE = 0.03
 APPROACH_SPEED = 1000.0
+FUEL_USAGE = 0.01
+FUEL = 100 * 3
+
+GRAVITATIONAL_CONSTANT = 0.02
+BOUNCINESS = 0.7  # In [0,1], if set to 1, collisions cause no damage.
+BOUNCE_DAMAGE_THRESHOLD = 1.3e6  # Threshold so bouncing causes damage.
+BOUNCE_DAMAGE_SCALAR = 1e-4
 
 
 class ThrustState(Enum):
@@ -32,23 +40,6 @@ class RotationState(Enum):
     NONE = auto()
     LEFT = auto()
     RIGHT = auto()
-
-
-GRAVITATIONAL_CONSTANT = 0.02
-
-GRAY = Color("gray")
-FUEL = 100
-
-
-# physics constants
-BOUNCINESS = 0.7
-"""0 <= BOUNCINESS <= 1. Set to 1, collisions cause no damage."""
-
-BOUNCE_DAMAGE_THRESHOLD = 1.3e6
-"""Impulse-scalar gets reduced by this (and clamped from negative to 0) before calculating damage."""
-
-BOUNCE_DAMAGE_SCALAR = 1e-4
-"""Bounce-damage is scaled by this amount."""
 
 
 class Pos:
@@ -278,11 +269,10 @@ class Mover(Disk):
         """Calculate rotation state based on current angle, desired angle, and current angular velocity."""
         if desired_direction is None:
             return RotationState.NONE
-        current_angle = self.angle
         angular_velocity = self.angular_velocity
         desired_angle = math.degrees(math.atan2(desired_direction.y, desired_direction.x))
 
-        angle_diff = (desired_angle - current_angle + 180) % 360 - 180
+        angle_diff = (desired_angle - self.angle + 180) % 360 - 180
 
         # Calculate stopping distance with current angular velocity
         moment_of_inertia = 0.5 * self.mass * self.radius**2
@@ -290,8 +280,7 @@ class Mover(Disk):
         stopping_distance = (angular_velocity**2) / (2 * rotation_accel) * (1 if angular_velocity >= 0 else -1)
 
         # Predict where we would stop if we start decelerating now
-        stopping_point = (current_angle + stopping_distance) % 360
-
+        stopping_point = (self.angle + stopping_distance) % 360
         # Calculate the angle difference between where we would stop and the desired angle
         stopping_diff = (desired_angle - stopping_point + 180) % 360 - 180
 
@@ -299,20 +288,9 @@ class Mover(Disk):
         if abs(angle_diff) < SMALL_ANGLE and abs(angular_velocity) < SMALL_ANGULAR_VEL:
             return RotationState.NONE
 
-        if angular_velocity > 0:  # Moving counterclockwise
-            if stopping_diff > 0:  # We would stop before reaching the desired angle
-                return RotationState.LEFT  # Continue accelerating counterclockwise
-            # We would stop past the desired angle
-            return RotationState.RIGHT  # Start decelerating
-
-        if angular_velocity < 0:  # Moving clockwise
-            if stopping_diff < 0:  # We would stop before reaching the desired angle
-                return RotationState.RIGHT  # Continue accelerating clockwise
-            # We would stop past the desired angle
-            return RotationState.LEFT  # Start decelerating
-
-        # If not moving yet, choose direction based on shortest angle
-        return RotationState.LEFT if angle_diff > 0 else RotationState.RIGHT
+        if stopping_diff > 0:
+            return RotationState.LEFT
+        return RotationState.RIGHT
 
     def step(self, dt: float) -> None:
         """Get direction and use thrusters."""

@@ -7,7 +7,7 @@ from pygame.math import Vector2 as Vec2
 
 from src.physics import PosVel
 from src.ship import PlayerConfig, PlayerShip
-from src.universe import MU_PLANET_RADIUS, Planet, PlanetConfig, Universe
+from src.universe import Planet, PlanetConfig, Universe
 
 
 def test_mutual_bounce(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -155,7 +155,8 @@ def test_gravitational_well() -> None:
         pos = Vec2(0, 0)
         pos.from_polar((12_500, 360 * i / num_disks))
         if i % 4 == 0 or i % 3 == 0:
-            universe.add_player(PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200)), relative_to=big_planet)
+            ship_config = PlayerConfig(relative_pos=pos, relative_vel=Vec2(100, -200), ship_input=ShipInput.wasd())
+            universe.add_player(ship_config, relative_to=big_planet)
         else:
             universe.add_planet(
                 PlanetConfig(relative_pos=pos, relative_vel=Vec2(100, -200), radius=2 * (i * 31) % 29),
@@ -187,7 +188,7 @@ def test_planet_generation() -> None:
 
     # run test 10 times
     for _ in range(10):
-        planets = universe.add_planets(10, MU_PLANET_RADIUS)
+        planets = universe.add_planets(10)
 
         for planet in planets:
             assert 200 < planet.radius < 1200, f"Planet has invalid radius: {planet.radius}"
@@ -195,7 +196,7 @@ def test_planet_generation() -> None:
 
 def test_empty_universe() -> None:
     universe = Universe(None, 10000)
-    planets = universe.add_planets(5, 5.9)
+    planets = universe.add_planets(5)
     assert len(planets) == 0, "Universe should have generated 0 planets"
 
 
@@ -203,7 +204,7 @@ def test_orbit_stability() -> None:
     """Test that planets generated in orbit remain stable and don't crash into the star."""
     star_size = 1400
     universe = Universe(star_size, 2 * star_size)
-    planets = universe.add_planets(10, 5.9)
+    planets = universe.add_planets(10)
 
     # Run simulation for 40 seconds
     for step in range(40000):

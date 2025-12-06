@@ -24,13 +24,11 @@ if TYPE_CHECKING:
     from projectiles import Bullet
     from ship import Ship
 
-MU_PLANET_RADIUS = 5.7
+GENERAL_PLANET_RADIUS_PMR = 1.55  # Makes Planets smaller
 SIGMA_PLANET_RADIUS = 0.24
 ORBIT_CORRELATION_FACTOR = 0.05
 GRID_COLOR = Color("darkgreen")
-GRID_RADIAL_SPACING = 2000
-ANGULAR_SPACING = int(360 / 72)
-MAX_RADIUS = 60000
+RADIAL_LINE_SPACING = 1500
 
 
 class Star(Disk):
@@ -133,17 +131,15 @@ class Universe:
     @staticmethod
     def from_options(options: UniverseOptions) -> tuple[Universe, list[PlayerShip]]:
         """Create a universe from `options`."""
-        star_size = 25 if options.small else 1400
-        num_enemies = 0 if options.small else 20
-        num_planets = 0 if options.small else 10
-        planet_size_parameter = 4.0 if options.small else MU_PLANET_RADIUS
+        star_size = 300 if options.small else 3000
+        num_planets = 20 if options.small else 30
 
         # (This is a class-variable)
         ShipInput = ShipInputTank if options.use_tank_controls else ShipInputAbsolute
 
         universe = Universe(star_size, 1000)
         player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()
-        player_pos = Vec2(star_size + 100, star_size + 100)
+        player_pos = 2 * Vec2(star_size + 100, star_size + 100)
         player_ships = [universe.add_player(PlayerConfig(relative_pos=player_pos, ship_input=player_input))]
 
         if options.splitscreen:
@@ -156,29 +152,20 @@ class Universe:
             for player in player_ships:
                 player.health = float("inf")
 
-        if options.small:
-            for enemy in [BulletEnemy, RocketEnemy, MissileEnemy]:
-                random_angle = random.uniform(0, 360)
-                vec = Vec2(0, 0)
-                vec.from_polar((1000, random_angle))
+        enemies = [BulletEnemy, RocketEnemy, MissileEnemy]
+        if not options.small:
+            spawn_weights = [0.4, 0.3, 0.3]
+            enemies.append(random.choices([BulletEnemy, RocketEnemy, MissileEnemy], spawn_weights)[0])
 
-                targeting = random.choice(player_ships)
-                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
+        for enemy in enemies:
+            random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
+            random_angle = random.uniform(0, 360)
+            vec = Vec2(0, 0)
+            vec.from_polar((random_radius, random_angle))
+            targeting = random.choice(player_ships)
+            universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy)
 
-        else:
-            for _ in range(num_enemies):
-                random_radius = random.uniform(star_size * 3 + 100, star_size * 7 + 100)
-                random_angle = random.uniform(0, 360)
-                vec = Vec2(0, 0)
-                vec.from_polar((random_radius, random_angle))
-
-                spawn_weights = [0.4, 0.3, 0.3]
-                enemy_type = random.choices([BulletEnemy, RocketEnemy, MissileEnemy], spawn_weights)[0]
-                targeting = random.choice(player_ships)
-
-                universe.add_enemy(EnemyConfig(relative_pos=vec, target_ship=targeting), enemy_type)
-
-        universe.add_planets(num_planets, planet_size_parameter)
+        universe.add_planets(num_planets)
 
         return universe, player_ships
 
@@ -213,39 +200,36 @@ class Universe:
         self._planet_chunks.setdefault(chunk, []).append(planet)
         return planet
 
-    def add_planets(self, num_planets: int, planet_size_parameter: float) -> list[Planet]:
-        """Create a num_planets orbiting a Disk, defaulting to the universe's star. With orbits that won't intersect."""
-        """
+    def add_planets(self, num_planets: int) -> list[Planet]:
+        """Create num_planets orbiting a Disk, defaulting to the universe's star, with orbits that won't intersect.
+
         What the random variables do:
-        - semi_major_axis - Choose by multiplying the current minimum by a uniformly distributed factor.
-        - radius_planet   - follows a lognormal distribution.
-        - eccentricity    - how non round orbit is - drawn from a beta distribution
-        - true_anomaly    - where along it's orbit it starts, as in near r_a or near r_p or so
-        - orbit_direction - in which direction (in degrees) of the star it starts
-        - planet_angle  - does it go clockwise or anticlockwise
+        - semi_major_axis - Determines the size of orbit of the planet
+        - radius_planet   - Clear
+        - eccentricity    - How elliptical the orbit is
+        - true_anomaly    - Where along it's orbit it starts, as in near r_a or near r_p
+        - orbit_direction - At what angle around the star it starts
+        - planet_angle    - Does it go clockwise or anticlockwise
 
-        The method:
+        What the function does:
         1. Starts with a minimum semi-major axis (just beyond the star).
-        2. For each planet, picks a new semi-major axis by multiplying the previous orbit
-            by a random factor (ensuring increasing distance).
-        3. Samples a low eccentricity from a beta distribution.
-        4. Determines the planet's radius from a lognormal distribution whose mean is slightly
-            shifted with the orbit distance.
-        5. Calculates the orbit geometry and initial position/velocity.
-        6. Updates the minimum allowed semi-major axis for the next planet.
+        2. For each planet, picks a new slightly larger semi-major axis
+        3. Generate the random variables for each planet
+        4. Calculate correct vel_planet and pos_planet based on these random variables to ensure a stable orbit
+        5. Add Planet
         """
-
         if not isinstance(self.__star, Star):
             return []
         disk = self.__star
         planets = []
         current_min_a = disk.radius * 2
+        specific_radius_pmr = math.log(disk.radius) - GENERAL_PLANET_RADIUS_PMR
 
         for _ in range(num_planets):
             # random variables
             semi_major_axis = current_min_a * random.uniform(1.0, 1.25)
-            mu = planet_size_parameter + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
-            radius_planet = min(random.lognormvariate(mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
+            radius_mu = specific_radius_pmr + ORBIT_CORRELATION_FACTOR * math.log(semi_major_axis)
+            radius_planet = min(random.lognormvariate(radius_mu, SIGMA_PLANET_RADIUS), self.max_nonstar_size / 2)
             eccentricity = random.betavariate(1, 15)
             true_anomaly = random.uniform(0, 2 * math.pi)
             orbit_direction = random.uniform(0, 2 * math.pi)
@@ -262,14 +246,11 @@ class Universe:
             tangential_vector = radial_vector.rotate(planet_angle)
             vel_planet = tangential_vector * orbital_velocity
 
-            planets.append(
-                self.add_planet(
-                    PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet),
-                    relative_to=disk,
-                )
-            )
-            r_a = semi_major_axis * (1 + eccentricity)
+            planet_config = PlanetConfig(relative_pos=pos_planet, relative_vel=vel_planet, radius=radius_planet)
+            planets.append(self.add_planet(planet_config, relative_to=disk))
+
             # Update current_min_a to just beyond this planet's apastron to avoid overlapping orbits:.
+            r_a = semi_major_axis * (1 + eccentricity)
             current_min_a = r_a + radius_planet
         return planets
 
@@ -320,20 +301,27 @@ class Universe:
         """Run all bounce-interactions within `self`."""
         ships: Sequence[Ship] = [*self._player_ships, *self._enemy_ships]
 
+        # Bounce ships
         for ix, ship in enumerate(ships):
-            # Bounce ships off of each other
             for other_ship in ships[ix + 1 :]:
-                if damage := ship.bounce_disks(other_ship) is not None:
+                damage = ship.bounce_disks(other_ship)
+                if damage is not None:
                     ship.suffer_damage(damage)
                     other_ship.suffer_damage(damage)
                     self.create_particles_on_disk(ship, other_ship, 25, other_ship.color, 100)
                     self.create_particles_on_disk(other_ship, ship, 25, ship.color, 100)
+
             for planet in self._nearby_planets(ship):
-                if damage := ship.bounce_disks(planet) is not None:
+                damage = ship.bounce_disks(planet)
+                if damage is not None:
                     ship.suffer_damage(damage)
                     self.create_particles_on_disk(planet, ship, 25, ship.color, 100)
-            if isinstance(self.__star, Star) and ship.intersects_disk(self.__star):
-                ship.suffer_damage(1e100)  # 💀
+
+            if isinstance(self.__star, Star):
+                damage = ship.bounce_disks(self.__star)
+                if damage is not None:
+                    ship.suffer_damage(damage)
+                    self.create_particles_on_disk(self.__star, ship, 25, ship.color, 100)
 
         # Bounce planets
         for planet in chain(*self._planet_chunks.values()):
@@ -389,6 +377,9 @@ class Universe:
             player_ship.update_closest_enemy(self._enemy_ships)
         for ship in chain(self._player_ships, self._enemy_ships):
             ship.step(dt)
+        for enemy in self._enemy_ships:
+            close_objects = self._nearby_planets(enemy)
+            enemy.update_closest_object(close_objects, self.__star)
 
         # Planets
         new_planet_chunks: dict[PlanetChunk, list[Planet]] = {}
@@ -638,14 +629,8 @@ class Universe:
     @global_profiler.profile_method
     def draw_grid(self, camera: Camera) -> None:
         """Draw a polar grid centered on the star."""
-        center = self.__star
-
-        for r in range(GRID_RADIAL_SPACING, MAX_RADIUS + 1, GRID_RADIAL_SPACING):
-            camera.draw_circle(GRID_COLOR, center, r, 2)
-
-        for angle in range(0, 360, ANGULAR_SPACING * 2):
-            end_vector = Vec2(0, -1).rotate(angle) * MAX_RADIUS
-            camera.draw_line(GRID_COLOR, Pos(center, -end_vector), Pos(center, end_vector), 2)
+        for i in range(10):
+            camera.draw_circle(GRID_COLOR, self.__star, RADIAL_LINE_SPACING * 2**i, 2)
 
     @global_profiler.profile_method
     def draw(self, camera: Camera, *, minimap: bool = False) -> None:

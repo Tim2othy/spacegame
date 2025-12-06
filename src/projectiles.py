@@ -167,7 +167,7 @@ class Flare(Bullet):
 
     def draw(self, camera: Camera, color: Color | None = None) -> None:
         """Draw `self` to `camera`."""
-        camera.draw_circle(color or self.color, self, 3)
+        camera.draw_circle(color or self.color, self, 5)
 
 
 class ProjectileAI(BasicAI):

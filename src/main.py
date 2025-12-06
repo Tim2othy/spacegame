@@ -19,7 +19,7 @@ from universe import Universe, UniverseOptions
 if TYPE_CHECKING:
     from ship import PlayerShip
 
-SCREEN_SIZE = pygame.math.Vector2(1700, 900)
+SCREEN_SIZE = pygame.math.Vector2(1700, 1000)
 MINIMAP_SIZE = pygame.math.Vector2(200, 200)
 
 
