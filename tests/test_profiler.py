@@ -1,6 +1,6 @@
 import time
 
-from profiler import global_profiler
+from src.profiler import global_profiler
 
 
 def test_profiler() -> None:

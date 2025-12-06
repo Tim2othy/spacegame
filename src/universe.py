@@ -15,7 +15,7 @@ from pygame.math import Vector2 as Vec2
 from physics import GRAVITATIONAL_CONSTANT, Disk, Particle, Pos, PosVel
 from profiler import global_profiler
 from projectiles import Missile, Rocket
-from ship import BulletEnemy, EnemyConfig, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInput
+from ship import BulletEnemy, EnemyConfig, MissileEnemy, PlayerConfig, PlayerShip, RocketEnemy, ShipInputTank, ShipInputAbsolute
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator, Sequence
@@ -83,6 +83,7 @@ class UniverseOptions:
     splitscreen: bool = False
     invincible: bool = False
     use_dvorak: bool = True
+    use_tank_controls: bool = True
 
 
 T = TypeVar("T", bound=BulletEnemy)
@@ -132,6 +133,9 @@ class Universe:
         """Create a universe from `options`."""
         star_size = 300 if options.small else 3000
         num_planets = 20 if options.small else 30
+
+        # (This is a class-variable)
+        ShipInput = ShipInputTank if options.use_tank_controls else ShipInputAbsolute
 
         universe = Universe(star_size, 1000)
         player_input = ShipInput.dvorak() if options.use_dvorak else ShipInput.arrows()

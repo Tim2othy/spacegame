@@ -2,8 +2,9 @@ from math import tau
 
 from pygame.math import Vector2 as Vec2
 
-from physics import PosVel
-from ship import PlayerConfig, PlayerShip, RotationState, Ship, ShipConfig, ThrustState
+from src.physics import PosVel
+from src.ship import PlayerConfig, PlayerShip, RotationState, Ship, ShipConfig, ThrustState
+from src.ship import ShipInputTank
 
 EPSILON = 1e-8
 
